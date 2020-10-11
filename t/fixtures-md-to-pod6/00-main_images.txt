@@ -1,0 +1,10 @@
+![foo](/url "title")
+~~~~~~~
+=begin pod
+=begin para
+=begin Image :title('title') :alt('foo')
+/url
+=end Image
+
+=end para
+=end pod

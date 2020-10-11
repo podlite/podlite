@@ -1,0 +1,5 @@
+=TITLE Utility library for a processing markup language.
+
+This library synergizes popular markup languages and best practices for collaborative practical use.
+
+It is primarily intended for improving the pod6 markup language.

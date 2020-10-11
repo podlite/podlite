@@ -1,0 +1,106 @@
+### Parameters
+
+-   `comments` **[Array][17]&lt;[Object][19]>** parsed comments
+-   `args` **[Object][19]** Options that can customize the output
+~~~~~~~
+{
+  "type": "block",
+  "name": "pod",
+  "content": [
+    {
+      "type": "block",
+      "level": 3,
+      "name": "head",
+      "content": [
+        "Parameters"
+      ]
+    },
+    {
+      "type": "list",
+      "level": 1,
+      "list": "itemized",
+      "content": [
+        {
+          "type": "block",
+          "name": "item",
+          "level": 1,
+          "content": [
+            {
+              "type": "para",
+              "content": [
+                {
+                  "type": "fcode",
+                  "name": "C",
+                  "content": [
+                    "comments"
+                  ]
+                },
+                " ",
+                {
+                  "type": "fcode",
+                  "name": "B",
+                  "content": [
+                    {
+                      "meta": "",
+                      "type": "fcode",
+                      "name": "L",
+                      "content": [
+                        "Array"
+                      ]
+                    },
+                    "<",
+                    {
+                      "meta": "",
+                      "type": "fcode",
+                      "name": "L",
+                      "content": [
+                        "Object"
+                      ]
+                    },
+                    ">"
+                  ]
+                },
+                " parsed comments"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "block",
+          "name": "item",
+          "level": 1,
+          "content": [
+            {
+              "type": "para",
+              "content": [
+                {
+                  "type": "fcode",
+                  "name": "C",
+                  "content": [
+                    "args"
+                  ]
+                },
+                " ",
+                {
+                  "type": "fcode",
+                  "name": "B",
+                  "content": [
+                    {
+                      "meta": "",
+                      "type": "fcode",
+                      "name": "L",
+                      "content": [
+                        "Object"
+                      ]
+                    }
+                  ]
+                },
+                " Options that can customize the output"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
