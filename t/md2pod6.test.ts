@@ -17,7 +17,7 @@ const process = (src) => {
     return mdToPod6(src)
 }
 
-describe("run parser tests", () => {
+describe("run markdown to pod6 parser tests", () => {
     loadTests('t/fixtures-md-to-pod6/*t').map( item => {
         test(item.file, ()=>expect(
             process(item.src)).toEqual(item.dst)
