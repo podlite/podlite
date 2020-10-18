@@ -1,0 +1,13 @@
+# output
+/.cache
+/coverage
+*.map
+/release
+/build
+/built
+
+# dependencies
+/node_modules
+
+# logs
+*.log

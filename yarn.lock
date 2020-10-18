@@ -3021,10 +3021,10 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-pod6@^0.0.28:
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.28.tgz#808646f81b075cbb73e7bc0611bc3a830d4e5a5f"
-  integrity sha512-Ko2yqdmvw7JcvRRNaFpCxD4pvW2ZB6oj62PwucTB/d+OzCVBvuyReNAJV+bdUdUcD91oQkyuF9R0K3huO93Bpg==
+pod6@0.0.29:
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.29.tgz#e3a4196cf0724423148538e2c9f49e3827d00913"
+  integrity sha512-kE1XakBCgsxqemyUzgMtrDTMQzFIcZ0SryARt3d4tWWb9HnOD2Q13Nx8O3sdeUExqcdO31Lw72Zf3CgzE35jSQ==
 
 posix-character-classes@^0.1.0:
   version "0.1.1"

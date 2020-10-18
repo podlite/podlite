@@ -1,0 +1,22 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 11.x
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install and Test
+        run: |
+          yarn install
+          yarn test
