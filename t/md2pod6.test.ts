@@ -1,7 +1,4 @@
 
-import clean_plugin from 'pod6/built/plugin-clean-location'
-import {loadSrcFixtures} from './test-api'
-import * as path from 'path'
 import * as fs  from 'fs'
 const glob = require('glob')
 import { mdToPod6 }  from '../src'
