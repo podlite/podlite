@@ -1,10 +1,8 @@
 import * as fs  from 'fs'
 
 
-import cleanplug from 'pod6/built/plugin-clean-location'
 import {loadSrcFixtures} from './test-api'
 import { mdToPod6 }  from '../src'
-import { mkFomattingCodeL}  from '../src/tools'
 const log = (t)=> JSON.stringify(t, null,2)
 const  allSrcFixtures  = loadSrcFixtures('t/fixtures-md/*.t', 't/fixtures-md-to-pod6')
 
