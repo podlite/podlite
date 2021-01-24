@@ -21,7 +21,7 @@ if (1 && fixture) {
     const test = md2ast(fixture.text,{
 
     })
-    if (fixture.testFile === 't/fixtures/01-node-api_1.txt') {
+    if (fixture.testFile === 't/fixtures/05-strikethrough_strikethrough.txt') {
         console.log('s')
         const saveTest = (filename, src, tree) =>{
             fs.writeFileSync( filename, [src, JSON.stringify(tree ,null, 2)].join('~~~~~~~\n'))
