@@ -1,0 +1,33 @@
+![foo](/url "title")
+~~~~~~~
+{
+  "type": "block",
+  "name": "pod",
+  "content": [
+    {
+      "type": "para",
+      "content": [
+        {
+          "type": "block",
+          "name": "Image",
+          "config": [
+            {
+              "name": "title",
+              "value": "title"
+            },
+            {
+              "name": "alt",
+              "value": "foo"
+            }
+          ],
+          "content": [
+            {
+              "type": "verbatim",
+              "value": "/url"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -37,7 +37,6 @@ export const  md2ast = ( src, extraRules? )=> {
     // first convert mardown to ast 
     const md_tree = unified().use(markdown).parse(src)
     // first pass : collect linkRefs
-    // console.log(md_tree)
     let definitionMap = {}
     toAny({processor:1})
     .use({'*:*':( writer, processor )=>( node, ctx, interator )=>{
@@ -51,7 +50,8 @@ export const  md2ast = ( src, extraRules? )=> {
     const uast = []
     const  res = toAny({processor:1})
     .use({'*:*':( writer, processor )=>( node, ctx, interator )=>{
-        console.warn(node)
+        console.warn('[Podlite]')
+        console.warn(JSON.stringify(node,null,2))
         if (node.children) interator(node.children, { ...ctx})
     }})
     .use({
@@ -69,24 +69,20 @@ export const  md2ast = ( src, extraRules? )=> {
             // return mkNode({type:"text", value: node.value})
         },
         ':list' :  ( writer, processor )=>( node, ctx, interator )=>{
-            // console.error(node)
             const savedListLevel = ctx['listLevel'] || 0
             const { children, position, ...attr} = node
             return mkBlock( { type:'list', level:savedListLevel+1, list: node.ordered ? 'ordered' : 'itemized' }, interator(children, { ...ctx, listLevel : savedListLevel + 1, ordered: node.ordered}))
         },
         ':listItem' :  ( writer, processor )=>( node, ctx, interator )=>{
-            // console.error(node)
             const savedListLevel = ctx['listLevel'] || 0
             const { children, position, ...attr} = node
             return mkBlock({name: 'item', type:'block', level:ctx['listLevel'], location:position}, interator(children, { ...ctx, listLevel : savedListLevel , ordered: node.ordered}))
         },
         ':paragraph' :  ( writer, processor )=>( node, ctx, interator )=>{
-            // console.log(log(node))
             const { children, position, ...attr} = node
             return mkBlock({type:'para'}, interator(children, { ...ctx}))
         },
         ':linkReference' : ( writer, processor )=>( node, ctx, interator )=>{
-            // console.log(log(node))
             const { children, position, ...attr} = node
             const definition = definitionMap[attr.identifier]
             const meta = definition?.url || ''
@@ -103,6 +99,10 @@ export const  md2ast = ( src, extraRules? )=> {
             const { children, position, ...attr} = node
             return mkFomattingCode({name:"B", location:position}, interator(children, { ...ctx}))
         },
+        ':emphasis' : ( writer, processor )=>( node, ctx, interator )=>{
+            const { children, position, ...attr} = node
+            return mkFomattingCode({name:"I", location:position}, interator(children, { ...ctx}))
+        },
         ':link': ( writer, processor )=>( node, ctx, interator )=>{ 
             return mkFomattingCodeL({ meta:node.url}, interator(node.children, { ...ctx}))
         },
@@ -111,11 +111,43 @@ export const  md2ast = ( src, extraRules? )=> {
             return mkBlock({type:'block', name:'Html', location:position},[mkVerbatim(node.value)]);
         },
         ':code' : ( writer, processor )=>( node, ctx, interator )=>{
-            // console.log(JSON.stringify(node,null,2))
             const { children, position, lang, ...attr} = node
             let config = {}
             if (lang) { config = { name: 'lang', value:"lang"}}
             return mkBlock({type:'block', name:'code', config, location:position},[mkVerbatim(node.value)]);
+        },
+        ':image':  ( writer, processor )=>( node, ctx, interator )=>{
+            const { title, alt, url, position, ...attr} = node
+            let config = []
+            if (!!title) { config.push({ name: 'title', value:title}) }
+            if (!!alt) { config.push({ name: 'alt', value:alt}) }
+            return mkBlock({type:'block', name:'Image', config, location:position},[mkVerbatim(url)]);
+        },
+        ':thematicBreak': ( writer, processor )=>( node, ctx, interator )=>{
+            return null
+        },
+        ':blockquote' :  ( writer, processor )=>( node, ctx, interator )=>{
+            const { children, position, ...attr} = node
+            return mkBlock({type:'nested'}, interator(children, { ...ctx}))
+        },
+        //table section
+        ':table' :  ( writer, processor )=>( node, ctx, interator )=>{
+            const { children, position, ...attr} = node
+            return mkBlock({type:'table', location:position}, interator(children, { ...ctx}))
+        },
+        ':tableRow' :  ( writer, processor )=>( node, ctx, interator )=>{
+            const { children, position, ...attr} = node
+            return mkBlock({type:'table_row', location:position}, interator(children, { ...ctx}))
+        },
+        ':tableCell' :  ( writer, processor )=>( node, ctx, interator )=>{
+            const { children, position, ...attr} = node
+            return mkBlock({type:'table_cell', location:position}, interator(children, { ...ctx}))
+        },
+        ':delete': ( writer, processor )=>( node, ctx, interator )=>{
+            return null
+        },
+        ':break': ( writer, processor )=>( node, ctx, interator )=>{
+            return null
         },
         ...extraRules
     }).run(md_tree)

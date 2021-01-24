@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=head1 0.0.3
+=item enhance md to ast converter
+
 =head1 0.0.2
 =item add markdown to pod6 converters
 =item add markdown to AST converter
