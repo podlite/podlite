@@ -80,7 +80,7 @@ export const  md2ast = ( src, extraRules? )=> {
         },
         ':paragraph' :  ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkBlock({type:'para'}, interator(children, { ...ctx}))
+            return mkBlock({type:'para', location:position}, interator(children, { ...ctx}))
         },
         ':linkReference' : ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
@@ -104,7 +104,8 @@ export const  md2ast = ( src, extraRules? )=> {
             return mkFomattingCode({name:"I", location:position}, interator(children, { ...ctx}))
         },
         ':link': ( writer, processor )=>( node, ctx, interator )=>{ 
-            return mkFomattingCodeL({ meta:node.url}, interator(node.children, { ...ctx}))
+            const { children, position, ...attr} = node
+            return mkFomattingCodeL({ meta:node.url,location:position}, interator(children, { ...ctx}))
         },
         ':html': ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node 
