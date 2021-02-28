@@ -2,6 +2,11 @@
 
 =head1 Upcoming
 
+=head1 0.0.4
+=item export utility functions
+=item add locations to para and heading nodes
+=item add type defs
+
 =head1 0.0.3
 =item enhance md to ast converter
 

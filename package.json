@@ -1,8 +1,9 @@
 {
   "name": "podlite",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Adaptation of pod6 markup language",
   "main": "index.js",
+  "types": "./built/index.d.ts",
   "scripts": {
     "clean": "rm -rf built",
     "test": "yarn build && jest",
@@ -20,9 +21,9 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
-    "pod6": "0.0.29",
-    "remark-parse": "^8.0.3",
-    "unified": "^9.2.0"
+    "pod6": "0.0.33",
+    "remark-parse": "8.0.3",
+    "unified": "9.2.0"
   },
   "devDependencies": {
     "@types/node": "^14.11.2",
