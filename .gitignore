@@ -7,7 +7,8 @@
 /built
 
 # dependencies
-/node_modules
+node_modules
 
 # logs
 *.log
+.DS_Store
