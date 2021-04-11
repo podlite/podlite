@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "outDir": "./built",
+      "rootDir": "./src",
+      "allowJs": true,
+      "target": "es5",
+      "esModuleInterop": true,
+      // "allowSyntheticDefaultImports":false,
+      "moduleResolution": "node",
+       // Generate d.ts files
+        "declaration": true,
+        "composite": true
+    },
+
+    "include": ["./src/**/*", "./package.json"],
+    "exclude": ["definitions"]
+}
