@@ -1,17 +1,21 @@
 {
-  "name": "podlite",
+  "name": "podlite-monolit",
   "version": "0.0.4",
   "description": "Adaptation of pod6 markup language",
-  "main": "index.js",
-  "types": "./built/index.d.ts",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
   "scripts": {
-    "clean": "rm -rf built",
-    "test": "yarn build && jest",
-    "build": "run-s build:ts",
-    "build:ts": "tsc",
-    "watch": "run-p -r watch:*",
-    "watch:ts": "tsc -w --pretty",
-    "watch:tests": "jest --watch -t \"test\""
+    "test": "yarn workspaces run test",
+    "buildTSC": "tsc -b ./tsconfig.monorepo.json",
+    "build": "yarn workspaces run build",
+    "clean:packages": "yarn workspaces run clean",
+    "prerelease": "npm run build && npm run test",
+    "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
+    "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed"
   },
   "keywords": [
     "markdown",
@@ -21,13 +25,15 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
-    "pod6": "0.0.33",
+    "jest-watch-typeahead": "^0.6.1",
+    "pod6": "^0.0.35",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
   "devDependencies": {
     "@types/node": "^14.11.2",
     "jest": "^26.5.2",
+    "lerna": "^4.0.0",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^26.4.1",
     "typescript": "^4.0.3"
