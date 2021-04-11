@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "properties": {
+        "ters": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "ters"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}
