@@ -1,0 +1,37 @@
+{
+  "name": "@podlite/editor-react",
+  "version": "0.0.1",
+  "description": "Podlite React component",
+  "main": "index.js",
+  "types": "lib/index.d.ts",
+  "license": "MIT",
+  "jest": {
+    "preset": "ts-jest",
+    "snapshotSerializers": [
+      "jest-serializer-html"
+    ]
+  },
+  "scripts": {
+    "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
+    "build": "tsc",
+    "test": "jest  --verbose"
+  },
+  "dependencies": {
+    "codemirror": "^5.60.0",
+    "mousetrap": "^1.6.5",
+    "mousetrap-global-bind": "^1.1.0",
+    "react-codemirror2": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.3",
+    "jest-serializer-html": "^7.0.0",
+    "prettier": "^2.2.1",
+    "react": "16.12.0",
+    "react-dom": "^17.0.2",
+    "ts-jest": "^26.5.4"
+  },
+  "peerDependencies": {
+    "pod6": "*",
+    "react": "*"
+  }
+}
