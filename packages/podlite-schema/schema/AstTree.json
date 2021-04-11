@@ -1,0 +1,1409 @@
+{
+    "$ref": "#/definitions/AstTree",
+    "definitions": {
+        "Image": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "image"
+                    ]
+                },
+                "src": {
+                    "type": "string"
+                },
+                "alt": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "src",
+                "type"
+            ]
+        },
+        "BlockImage": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "image"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "$ref": "#/definitions/Image"
+                        }
+                    ],
+                    "minItems": 1,
+                    "maxItems": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "Location": {
+            "type": "object",
+            "properties": {
+                "start": {
+                    "$ref": "#/definitions/Position"
+                },
+                "end": {
+                    "$ref": "#/definitions/Position"
+                }
+            },
+            "required": [
+                "end",
+                "start"
+            ]
+        },
+        "Position": {
+            "type": "object",
+            "properties": {
+                "line": {
+                    "type": "number"
+                },
+                "column": {
+                    "type": "number"
+                },
+                "offset": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "column",
+                "line",
+                "offset"
+            ]
+        },
+        "BrokenConfigItem": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/ConfigItemKV"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                ]
+                            }
+                        },
+                        {
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "name",
+                "value"
+            ]
+        },
+        "ConfigItemKV": {
+            "type": "object",
+            "additionalProperties": {
+                "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                ]
+            }
+        },
+        "ConfigItem": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/ConfigItemKV"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                ]
+                            }
+                        },
+                        {
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                            ]
+                        }
+                    ]
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "value"
+            ]
+        },
+        "RootBlock": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "root"
+                    ]
+                },
+                "content": {
+                    "$ref": "#/definitions/AstTree"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "AstTree": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/PodNode"
+            }
+        },
+        "PodNode": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/Image"
+                },
+                {
+                    "$ref": "#/definitions/BlockImage"
+                },
+                {
+                    "$ref": "#/definitions/RootBlock"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeB"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeC"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeE"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeN"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeX"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeZ"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeV"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeS"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeA"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeD"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeAny"
+                },
+                {
+                    "$ref": "#/definitions/Verbatim"
+                },
+                {
+                    "$ref": "#/definitions/Text"
+                },
+                {
+                    "$ref": "#/definitions/Para"
+                },
+                {
+                    "$ref": "#/definitions/Code"
+                },
+                {
+                    "$ref": "#/definitions/BlankLine"
+                },
+                {
+                    "$ref": "#/definitions/List"
+                },
+                {
+                    "$ref": "#/definitions/BlockConfig"
+                },
+                {
+                    "$ref": "#/definitions/Alias"
+                },
+                {
+                    "$ref": "#/definitions/BlockItem"
+                },
+                {
+                    "$ref": "#/definitions/BlockPara"
+                },
+                {
+                    "$ref": "#/definitions/BlockTable"
+                },
+                {
+                    "$ref": "#/definitions/BlockAny"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
+        "FormattingCodeB": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "B"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeC": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "C"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeE": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "E"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "number"
+                                ]
+                            },
+                            "value": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "value"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeN": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "N"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeX": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "X"
+                    ]
+                },
+                "entry": {
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "entry",
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeZ": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "Z"
+                    ]
+                },
+                "content": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeV": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "V"
+                    ]
+                },
+                "content": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeS": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "S"
+                    ]
+                },
+                "content": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeA": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "A"
+                    ]
+                },
+                "content": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeD": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "D"
+                    ]
+                },
+                "synonyms": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "content": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "synonyms",
+                "type"
+            ]
+        },
+        "FormattingCodeAny": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ]
+        },
+        "Verbatim": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "verbatim"
+                    ]
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+        "Text": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text"
+                    ]
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "value"
+            ]
+        },
+        "Para": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "para"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Image"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockImage"
+                            },
+                            {
+                                "$ref": "#/definitions/RootBlock"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "$ref": "#/definitions/Verbatim"
+                            },
+                            {
+                                "$ref": "#/definitions/Text"
+                            },
+                            {
+                                "$ref": "#/definitions/Para"
+                            },
+                            {
+                                "$ref": "#/definitions/Code"
+                            },
+                            {
+                                "$ref": "#/definitions/BlankLine"
+                            },
+                            {
+                                "$ref": "#/definitions/List"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockConfig"
+                            },
+                            {
+                                "$ref": "#/definitions/Alias"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockItem"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPara"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockTable"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockAny"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "text",
+                "type"
+            ]
+        },
+        "Code": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "code"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Verbatim"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "text",
+                "type"
+            ]
+        },
+        "BlankLine": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "blankline"
+                    ]
+                }
+            },
+            "required": [
+                "type"
+            ]
+        },
+        "List": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "list"
+                    ]
+                },
+                "level": {
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "list": {
+                    "type": "string",
+                    "enum": [
+                        "itemized"
+                    ]
+                }
+            },
+            "required": [
+                "content",
+                "level",
+                "list",
+                "type"
+            ]
+        },
+        "BlockConfig": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "config"
+                    ]
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "config",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "Alias": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "alias"
+                    ]
+                },
+                "replacement": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "margin",
+                "name",
+                "replacement",
+                "type"
+            ]
+        },
+        "BlockItem": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "item"
+                    ]
+                },
+                "level": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "level",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "BlockPara": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "para"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "BlockTable": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "table"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/TableRow"
+                            },
+                            {
+                                "$ref": "#/definitions/TableHead"
+                            },
+                            {
+                                "$ref": "#/definitions/TableSeparator"
+                            }
+                        ]
+                    }
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "TableRow": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "table_row"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TableCell"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "TableCell": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "table_cell"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "TableHead": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "table_head"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TableCell"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "TableSeparator": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "separator"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "text",
+                "type"
+            ]
+        },
+        "BlockAny": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        }
+    },
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}
