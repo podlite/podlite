@@ -1,0 +1,21 @@
+[#raku IRC channel](https://raku.org/community/irc)
+~~~~~~~
+{
+  "type": "block",
+  "name": "pod",
+  "content": [
+    {
+      "type": "para",
+      "content": [
+        {
+          "meta": "https://raku.org/community/irc",
+          "type": "fcode",
+          "name": "L",
+          "content": [
+            "#raku IRC channel"
+          ]
+        }
+      ]
+    }
+  ]
+}

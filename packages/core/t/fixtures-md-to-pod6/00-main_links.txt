@@ -1,0 +1,24 @@
+
+### Table of Contents
+
+-   [lint][1]
+    -   [Parameters][2]
+
+
+[1]: #lint
+
+[2]: #parameters
+~~~~~~~
+=begin pod
+=head3 Table of Contents
+=begin item1 :numbered 
+=begin para
+L<lint|#lint>
+=end para
+=begin item2 :numbered 
+=begin para
+L<Parameters|#parameters>
+=end para
+=end item2
+=end item1
+=end pod
