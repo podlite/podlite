@@ -1,0 +1,19 @@
+{
+  "name": "@podlite/image",
+  "version": "0.0.1",
+  "description": "image",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "pod6": "^0.0.33"
+  },
+  "devDependencies": {
+    "@podlite/schema": "*",
+    "podlite": "*"
+  }
+}
