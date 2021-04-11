@@ -1,0 +1,141 @@
+=table
+    Animal | Legs |    Eats
+    =======================
+    Zebra  +   4  + Cookies
+    Human  +   2  +   Pizza
+    Shark  +   0  +    Fish
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "name": "table_head",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Animal"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Legs"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "    Eats"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "text": "    =======================\n"
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Zebra "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "   4 "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Cookies"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Human "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "   2 "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "   Pizza"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Shark "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "   0 "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "    Fish"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 147,
+        "line": 7,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,56 @@
+=para
+teZ<s>tZ<>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "teZ<s>tZ<>\n",
+        "margin": "",
+        "content": [
+          "te",
+          {
+            "content": "s",
+            "type": "fcode",
+            "name": "Z"
+          },
+          "t",
+          {
+            "content": "",
+            "type": "fcode",
+            "name": "Z"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 17,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 17,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

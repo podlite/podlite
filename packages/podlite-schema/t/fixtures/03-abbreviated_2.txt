@@ -1,0 +1,44 @@
+=foo some text
+and some more
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "some text\nand some more\n",
+        "margin": "",
+        "content": [
+          "some text\nand some more\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 29,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "foo",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 29,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

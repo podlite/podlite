@@ -1,0 +1,49 @@
+=para
+A<  TERER >
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "A<  TERER >\n",
+        "margin": "",
+        "content": [
+          {
+            "content": "TERER",
+            "type": "fcode",
+            "name": "A"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 18,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 18,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

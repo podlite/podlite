@@ -1,0 +1,84 @@
+=begin pod
+    =begin code :allow<B>
+    These words have some B<importance>.
+    =end code
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "These words have some B<importance>.\n",
+            "margin": "    ",
+            "type": "para",
+            "content": [
+              "These words have some ",
+              {
+                "content": [
+                  "importance"
+                ],
+                "type": "fcode",
+                "name": "B"
+              },
+              ".\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 37,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 78,
+                "line": 4,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "code",
+        "margin": "    ",
+        "config": [
+          {
+            "name": "allow",
+            "value": [
+              "B"
+            ],
+            "type": "array"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 92,
+            "line": 5,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 101,
+        "line": 6,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,70 @@
+=para
+Use a C<for> loop instead.N<The Perl 6 C<for> loop is far more
+powerful than its Perl 5 predecessor.> Preferably with an explicit
+iterator variable.
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "Use a C<for> loop instead.N<The Perl 6 C<for> loop is far more\npowerful than its Perl 5 predecessor.> Preferably with an explicit\niterator variable.\n",
+        "margin": "",
+        "content": [
+          "Use a ",
+          {
+            "content": [
+              "for"
+            ],
+            "type": "fcode",
+            "name": "C"
+          },
+          " loop instead.",
+          {
+            "content": [
+              "The Perl 6 ",
+              {
+                "content": [
+                  "for"
+                ],
+                "type": "fcode",
+                "name": "C"
+              },
+              " loop is far more\npowerful than its Perl 5 predecessor."
+            ],
+            "type": "fcode",
+            "name": "N"
+          },
+          " Preferably with an explicit\niterator variable.\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 155,
+            "line": 5,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 155,
+        "line": 5,
+        "column": 1
+      }
+    }
+  }
+]

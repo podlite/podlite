@@ -1,0 +1,71 @@
+=begin pod
+    =for pod :number(42) :zebras :!sheep :feist<1 2 3 4>
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [],
+        "name": "pod",
+        "margin": "    ",
+        "config": [
+          {
+            "name": "number",
+            "type": "value",
+            "value": 42
+          },
+          {
+            "name": "zebras",
+            "value": true,
+            "type": "boolean"
+          },
+          {
+            "name": "sheep",
+            "value": false,
+            "type": "boolean"
+          },
+          {
+            "name": "feist",
+            "value": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "type": "array"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 68,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 77,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

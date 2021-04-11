@@ -1,0 +1,86 @@
+=begin pod
+=for Named
+  text
+=begin Named
+sdsdsdsd ssd s
+  asdasdasdasd
+
+dd
+=end Named
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "  text\n"
+          }
+        ],
+        "name": "Named",
+        "margin": "",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 29,
+            "line": 4,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "sdsdsdsd ssd s\n  asdasdasdasd\n\ndd\n"
+          }
+        ],
+        "name": "Named",
+        "margin": "",
+        "text": "=begin Named\nsdsdsdsd ssd s\n  asdasdasdasd\n\ndd\n=end Named\n",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 29,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 87,
+            "line": 10,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 97,
+        "line": 12,
+        "column": 1
+      }
+    }
+  }
+]

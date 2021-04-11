@@ -1,0 +1,34 @@
+=config table :k1<very long string, comma> :k2<2 23  23 > :k3<'23', 23233, 333>
+~~~~~~~
+[
+  {
+    "name": "table",
+    "type": "config",
+    "config": [
+      {
+        "name": "k1",
+        "value": "very long string, comma",
+        "type": "string"
+      },
+      {
+        "name": "k2",
+        "value": [
+          2,
+          23,
+          23
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k3",
+        "value": [
+          "23",
+          23233,
+          333
+        ],
+        "type": "array"
+      }
+    ],
+    "margin": ""
+  }
+]

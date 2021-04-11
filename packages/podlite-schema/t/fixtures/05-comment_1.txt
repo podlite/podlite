@@ -1,0 +1,26 @@
+=comment
+This file is deliberately specified in Raku Pod format
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      "This file is deliberately specified in Raku Pod format\n"
+    ],
+    "name": "comment",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 64,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

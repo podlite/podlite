@@ -1,0 +1,74 @@
+=begin pod
+=for comment
+foo foo
+bla bla    bla
+
+This isn't a comment
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          "foo foo\nbla bla    bla\n"
+        ],
+        "name": "comment",
+        "margin": "",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 47,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This isn't a comment\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "This isn't a comment\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 48,
+            "line": 6,
+            "column": 1
+          },
+          "end": {
+            "offset": 69,
+            "line": 7,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 78,
+        "line": 8,
+        "column": 1
+      }
+    }
+  }
+]

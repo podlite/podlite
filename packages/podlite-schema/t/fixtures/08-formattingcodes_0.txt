@@ -1,0 +1,51 @@
+=pod
+B<I am a formatting code>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "B<I am a formatting code>\n",
+        "margin": "",
+        "content": [
+          {
+            "content": [
+              "I am a formatting code"
+            ],
+            "type": "fcode",
+            "name": "B"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 31,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 31,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,47 @@
+=begin foo
+some
+spaced   text
+=end foo
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "some\nspaced   text\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "some\nspaced   text\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 30,
+            "line": 4,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "foo",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 39,
+        "line": 5,
+        "column": 1
+      }
+    }
+  }
+]

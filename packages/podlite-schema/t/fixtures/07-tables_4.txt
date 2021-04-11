@@ -1,0 +1,86 @@
+=table
+        Superhero     | Secret          |
+                      | Identity        | Superpower
+        ==============|=================|================================
+        The Shoveller | Eddie Stevens   | King Arthur's singing shovel
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "name": "table_head",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Superhero                  "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Secret        Identity     "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "  Superpower"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "text": "        ==============|=================|================================\n"
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " The Shoveller"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " Eddie Stevens"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " King Arthur's singing shovel"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 247,
+        "line": 6,
+        "column": 1
+      }
+    }
+  }
+]

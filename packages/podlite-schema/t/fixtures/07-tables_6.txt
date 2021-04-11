@@ -1,0 +1,118 @@
+=table
+    X | O |
+   ---+---+---
+      | X | O
+   ---+---+---
+      |   | X
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " X"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " O"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " "
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "text": "   ---+---+---\n"
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "  "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " X"
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " O"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "text": "   ---+---+---\n"
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "  "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              "  "
+            ]
+          },
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " X"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 77,
+        "line": 7,
+        "column": 1
+      }
+    }
+  }
+]

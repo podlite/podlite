@@ -1,0 +1,175 @@
+=begin pod
+This is an ordinary paragraph
+
+    While this is not
+    This is a code block
+
+    =head1 Mumble mumble
+
+    Suprisingly, this is not a code block
+        (with fancy indentation too)
+
+But this is just a text. Again
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "This is an ordinary paragraph\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "This is an ordinary paragraph\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 41,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "While this is not\nThis is a code block\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "While this is not\n    This is a code block\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 42,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 89,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "Mumble mumble\n",
+            "margin": "",
+            "content": [
+              "Mumble mumble\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 90,
+                "line": 7,
+                "column": 1
+              },
+              "end": {
+                "offset": 115,
+                "line": 8,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 90,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 115,
+            "line": 8,
+            "column": 1
+          }
+        },
+        "level": "1"
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "Suprisingly, this is not a code block\n        (with fancy indentation too)\n",
+        "margin": "    ",
+        "type": "para",
+        "content": [
+          "Suprisingly, this is not a code block\n        (with fancy indentation too)\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 116,
+            "line": 9,
+            "column": 1
+          },
+          "end": {
+            "offset": 195,
+            "line": 11,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "But this is just a text. Again\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "But this is just a text. Again\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 196,
+            "line": 12,
+            "column": 1
+          },
+          "end": {
+            "offset": 227,
+            "line": 13,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 237,
+        "line": 15,
+        "column": 1
+      }
+    }
+  }
+]

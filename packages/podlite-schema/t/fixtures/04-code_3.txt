@@ -1,0 +1,105 @@
+=begin pod
+Fun comes
+
+    This is code
+  Ha, what now?
+
+ one more block of code
+ just to make sure it works
+  or better: maybe it'll break!
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "Fun comes\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "Fun comes\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 21,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This is code\nHa, what now?\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "This is code\n  Ha, what now?\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 22,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 55,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "one more block of code\njust to make sure it works\n or better: maybe it'll break!\n",
+        "margin": " ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "one more block of code\n just to make sure it works\n  or better: maybe it'll break!\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 56,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 140,
+            "line": 10,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 149,
+        "line": 11,
+        "column": 1
+      }
+    }
+  }
+]

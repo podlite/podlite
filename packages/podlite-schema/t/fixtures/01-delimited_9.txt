@@ -1,0 +1,190 @@
+=begin pod
+    =head1 This is a heading block
+
+    This is an ordinary paragraph.
+    Its text  will   be     squeezed     and
+    short lines filled. It is terminated by
+    the first blank line.
+
+    This is another ordinary paragraph.
+    Its     text    will  also be squeezed and
+    short lines filled. It is terminated by
+    the trailing directive on the next line.
+        =head2 This is another heading block
+
+        This is yet another ordinary paragraph,
+        at the first virtual column set by the
+        previous directive
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "This is a heading block\n",
+            "margin": "",
+            "content": [
+              "This is a heading block\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 11,
+                "line": 2,
+                "column": 1
+              },
+              "end": {
+                "offset": 46,
+                "line": 3,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 46,
+            "line": 3,
+            "column": 1
+          }
+        },
+        "level": "1"
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This is an ordinary paragraph.\n    Its text  will   be     squeezed     and\n    short lines filled. It is terminated by\n    the first blank line.\n",
+        "margin": "    ",
+        "type": "para",
+        "content": [
+          "This is an ordinary paragraph.\n    Its text  will   be     squeezed     and\n    short lines filled. It is terminated by\n    the first blank line.\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 47,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 197,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This is another ordinary paragraph.\n    Its     text    will  also be squeezed and\n    short lines filled. It is terminated by\n    the trailing directive on the next line.\n",
+        "margin": "    ",
+        "type": "para",
+        "content": [
+          "This is another ordinary paragraph.\n    Its     text    will  also be squeezed and\n    short lines filled. It is terminated by\n    the trailing directive on the next line.\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 198,
+            "line": 9,
+            "column": 1
+          },
+          "end": {
+            "offset": 374,
+            "line": 13,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "        ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "This is another heading block\n",
+            "margin": "",
+            "content": [
+              "This is another heading block\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 374,
+                "line": 13,
+                "column": 1
+              },
+              "end": {
+                "offset": 419,
+                "line": 14,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 374,
+            "line": 13,
+            "column": 1
+          },
+          "end": {
+            "offset": 419,
+            "line": 14,
+            "column": 1
+          }
+        },
+        "level": "2"
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This is yet another ordinary paragraph,\n        at the first virtual column set by the\n        previous directive\n",
+        "margin": "        ",
+        "type": "para",
+        "content": [
+          "This is yet another ordinary paragraph,\n        at the first virtual column set by the\n        previous directive\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 420,
+            "line": 15,
+            "column": 1
+          },
+          "end": {
+            "offset": 542,
+            "line": 18,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 551,
+        "line": 19,
+        "column": 1
+      }
+    }
+  }
+]

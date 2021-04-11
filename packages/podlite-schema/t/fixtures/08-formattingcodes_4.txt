@@ -1,0 +1,48 @@
+=pod V<C<boo> B<bar> asd>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "V<C<boo> B<bar> asd>\n",
+        "margin": "",
+        "content": [
+          {
+            "content": "C<boo> B<bar> asd",
+            "type": "fcode",
+            "name": "V"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 26,
+            "line": 2,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 26,
+        "line": 2,
+        "column": 1
+      }
+    }
+  }
+]

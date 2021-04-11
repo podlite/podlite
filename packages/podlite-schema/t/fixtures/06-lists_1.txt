@@ -1,0 +1,378 @@
+=begin pod
+=item1  Animal
+=item2     Vertebrate
+=item2     Invertebrate
+
+=item1  Phase
+=item2     Solid
+=item2     Liquid
+=item2     Gas
+=item2     Chocolate
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "list",
+        "level": "1",
+        "content": [
+          {
+            "margin": "",
+            "type": "block",
+            "content": [
+              {
+                "type": "para",
+                "text": "Animal\n",
+                "margin": "",
+                "content": [
+                  "Animal\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 11,
+                    "line": 2,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 26,
+                    "line": 3,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "location": {
+              "start": {
+                "offset": 11,
+                "line": 2,
+                "column": 1
+              },
+              "end": {
+                "offset": 26,
+                "line": 3,
+                "column": 1
+              }
+            },
+            "level": "1"
+          },
+          {
+            "type": "list",
+            "level": "2",
+            "content": [
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Vertebrate\n",
+                    "margin": "",
+                    "content": [
+                      "Vertebrate\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 26,
+                        "line": 3,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 48,
+                        "line": 4,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 26,
+                    "line": 3,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 48,
+                    "line": 4,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Invertebrate\n",
+                    "margin": "",
+                    "content": [
+                      "Invertebrate\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 48,
+                        "line": 4,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 72,
+                        "line": 5,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 48,
+                    "line": 4,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 72,
+                    "line": 5,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "type": "blankline"
+              }
+            ],
+            "list": "itemized"
+          },
+          {
+            "margin": "",
+            "type": "block",
+            "content": [
+              {
+                "type": "para",
+                "text": "Phase\n",
+                "margin": "",
+                "content": [
+                  "Phase\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 73,
+                    "line": 6,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 87,
+                    "line": 7,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "location": {
+              "start": {
+                "offset": 73,
+                "line": 6,
+                "column": 1
+              },
+              "end": {
+                "offset": 87,
+                "line": 7,
+                "column": 1
+              }
+            },
+            "level": "1"
+          },
+          {
+            "type": "list",
+            "level": "2",
+            "content": [
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Solid\n",
+                    "margin": "",
+                    "content": [
+                      "Solid\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 87,
+                        "line": 7,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 104,
+                        "line": 8,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 87,
+                    "line": 7,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 104,
+                    "line": 8,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Liquid\n",
+                    "margin": "",
+                    "content": [
+                      "Liquid\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 104,
+                        "line": 8,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 122,
+                        "line": 9,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 104,
+                    "line": 8,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 122,
+                    "line": 9,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Gas\n",
+                    "margin": "",
+                    "content": [
+                      "Gas\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 122,
+                        "line": 9,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 137,
+                        "line": 10,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 122,
+                    "line": 9,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 137,
+                    "line": 10,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Chocolate\n",
+                    "margin": "",
+                    "content": [
+                      "Chocolate\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 137,
+                        "line": 10,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 158,
+                        "line": 11,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 137,
+                    "line": 10,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 158,
+                    "line": 11,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              }
+            ],
+            "list": "itemized"
+          }
+        ],
+        "list": "itemized"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 167,
+        "line": 12,
+        "column": 1
+      }
+    }
+  }
+]

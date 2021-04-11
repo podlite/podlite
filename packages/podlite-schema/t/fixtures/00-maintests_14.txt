@@ -1,0 +1,238 @@
+=d
+Such content would typically be rendered in a K<fixed-width font>
+Such content would typically be rendered in a T<fixed-width font>
+=head1 test
+=begin pod
+test
+e
+=head1 sd
+
+=end pod
+=head2 test 
+
+ambient again
+~~~~~~~
+[
+  {
+    "text": "=d\nSuch content would typically be rendered in a K<fixed-width font>\nSuch content would typically be rendered in a T<fixed-width font>\n",
+    "type": "para",
+    "margin": "",
+    "content": [
+      "=d\nSuch content would typically be rendered in a ",
+      {
+        "content": [
+          "fixed-width font"
+        ],
+        "type": "fcode",
+        "name": "K"
+      },
+      "\nSuch content would typically be rendered in a ",
+      {
+        "content": [
+          "fixed-width font"
+        ],
+        "type": "fcode",
+        "name": "T"
+      },
+      "\n"
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 135,
+        "line": 4,
+        "column": 1
+      }
+    }
+  },
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "test\n",
+        "margin": "",
+        "content": [
+          "test\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 135,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 147,
+            "line": 5,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "head",
+    "location": {
+      "start": {
+        "offset": 135,
+        "line": 4,
+        "column": 1
+      },
+      "end": {
+        "offset": 147,
+        "line": 5,
+        "column": 1
+      }
+    },
+    "level": "1"
+  },
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "test\ne\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "test\ne\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 158,
+            "line": 6,
+            "column": 1
+          },
+          "end": {
+            "offset": 165,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "sd\n",
+            "margin": "",
+            "content": [
+              "sd\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 165,
+                "line": 8,
+                "column": 1
+              },
+              "end": {
+                "offset": 175,
+                "line": 9,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 165,
+            "line": 8,
+            "column": 1
+          },
+          "end": {
+            "offset": 175,
+            "line": 9,
+            "column": 1
+          }
+        },
+        "level": "1"
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 147,
+        "line": 5,
+        "column": 1
+      },
+      "end": {
+        "offset": 185,
+        "line": 11,
+        "column": 1
+      }
+    }
+  },
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "test \n",
+        "margin": "",
+        "content": [
+          "test \n"
+        ],
+        "location": {
+          "start": {
+            "offset": 185,
+            "line": 11,
+            "column": 1
+          },
+          "end": {
+            "offset": 198,
+            "line": 12,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "head",
+    "location": {
+      "start": {
+        "offset": 185,
+        "line": 11,
+        "column": 1
+      },
+      "end": {
+        "offset": 198,
+        "line": 12,
+        "column": 1
+      }
+    },
+    "level": "2"
+  },
+  {
+    "type": "blankline"
+  },
+  {
+    "text": "ambient again\n",
+    "type": "para",
+    "margin": "",
+    "content": [
+      "ambient again\n"
+    ],
+    "location": {
+      "start": {
+        "offset": 199,
+        "line": 13,
+        "column": 1
+      },
+      "end": {
+        "offset": 213,
+        "line": 14,
+        "column": 1
+      }
+    }
+  }
+]

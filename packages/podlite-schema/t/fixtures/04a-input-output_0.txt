@@ -1,0 +1,143 @@
+=begin pod
+    =begin output
+        Name:    Baracus, B.A.
+        Age:     49
+        Print? B<K<n>>
+    =end output
+    =begin output
+        Name:    Baracus, B.A.
+        Age:     49
+        Print? B<K<n>>
+    =end output
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "Name:    Baracus, B.A.\n        Age:     49\n        Print? B<K<n>>\n",
+            "margin": "        ",
+            "type": "para",
+            "content": [
+              "Name:    Baracus, B.A.\n        Age:     49\n        Print? ",
+              {
+                "content": [
+                  {
+                    "content": [
+                      "n"
+                    ],
+                    "type": "fcode",
+                    "name": "K"
+                  }
+                ],
+                "type": "fcode",
+                "name": "B"
+              },
+              "\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 29,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 103,
+                "line": 6,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "output",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 119,
+            "line": 7,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "Name:    Baracus, B.A.\n        Age:     49\n        Print? B<K<n>>\n",
+            "margin": "        ",
+            "type": "para",
+            "content": [
+              "Name:    Baracus, B.A.\n        Age:     49\n        Print? ",
+              {
+                "content": [
+                  {
+                    "content": [
+                      "n"
+                    ],
+                    "type": "fcode",
+                    "name": "K"
+                  }
+                ],
+                "type": "fcode",
+                "name": "B"
+              },
+              "\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 137,
+                "line": 8,
+                "column": 1
+              },
+              "end": {
+                "offset": 211,
+                "line": 11,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "output",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 119,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 227,
+            "line": 12,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 236,
+        "line": 13,
+        "column": 1
+      }
+    }
+  }
+]

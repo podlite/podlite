@@ -1,0 +1,111 @@
+=begin pod
+This ordinary paragraph introduces a code block:
+
+    $this = 1 * code('block');
+    $which.is_specified(:by<indenting>);
+
+
+    $which.spans(:newlines);
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "This ordinary paragraph introduces a code block:\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "This ordinary paragraph introduces a code block:\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 60,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "$this = 1 * code('block');\n$which.is_specified(:by<indenting>);\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "$this = 1 * code('block');\n    $which.is_specified(:by<indenting>);\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 61,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 133,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "$which.spans(:newlines);\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "$which.spans(:newlines);\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 135,
+            "line": 8,
+            "column": 1
+          },
+          "end": {
+            "offset": 164,
+            "line": 9,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 174,
+        "line": 11,
+        "column": 1
+      }
+    }
+  }
+]

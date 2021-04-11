@@ -1,0 +1,33 @@
+=begin code
+=begin item1
+First
+=end item1
+=end code
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "=begin item1\nFirst\n=end item1\n"
+      }
+    ],
+    "name": "code",
+    "margin": "",
+    "text": "=begin code\n=begin item1\nFirst\n=end item1\n=end code\n",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 52,
+        "line": 6,
+        "column": 1
+      }
+    }
+  }
+]

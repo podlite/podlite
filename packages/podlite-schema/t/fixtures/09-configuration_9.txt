@@ -1,0 +1,75 @@
+=begin table :k1 :!k2 :k3(True) :k4[True] :k5(False) :k6[False]
+foo
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " foo"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "text": "=begin table :k1 :!k2 :k3(True) :k4[True] :k5(False) :k6[False]\nfoo\n=end table\n",
+    "config": [
+      {
+        "name": "k1",
+        "value": true,
+        "type": "boolean"
+      },
+      {
+        "name": "k2",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "name": "k3",
+        "type": "value",
+        "value": true
+      },
+      {
+        "name": "k4",
+        "value": [
+          true
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k5",
+        "type": "value",
+        "value": false
+      },
+      {
+        "name": "k6",
+        "value": [
+          false
+        ],
+        "type": "array"
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 79,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

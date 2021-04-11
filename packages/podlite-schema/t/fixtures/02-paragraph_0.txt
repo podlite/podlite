@@ -1,0 +1,23 @@
+=for Foo
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [],
+    "name": "Foo",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 9,
+        "line": 2,
+        "column": 1
+      }
+    }
+  }
+]

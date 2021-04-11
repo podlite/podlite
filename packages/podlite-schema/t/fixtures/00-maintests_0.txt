@@ -1,0 +1,95 @@
+=begin pod
+  =begin para
+  sdsd
+   sdasd
+ 
+        ddsds
+  d
+  =end para
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "sdsd\n   sdasd\n",
+            "margin": "  ",
+            "type": "para",
+            "content": [
+              "sdsd\n   sdasd\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 25,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 41,
+                "line": 5,
+                "column": 1
+              }
+            }
+          },
+          {
+            "type": "blankline"
+          },
+          {
+            "text": "ddsds\n  d\n",
+            "margin": "        ",
+            "type": "para",
+            "content": [
+              "ddsds\n  d\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 43,
+                "line": 6,
+                "column": 1
+              },
+              "end": {
+                "offset": 61,
+                "line": 8,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "para",
+        "margin": "  ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 73,
+            "line": 9,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 82,
+        "line": 10,
+        "column": 1
+      }
+    }
+  }
+]

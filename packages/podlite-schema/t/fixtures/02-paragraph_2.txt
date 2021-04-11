@@ -1,0 +1,30 @@
+=for Foo
+some
+spaced   text
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "some\nspaced   text\n"
+      }
+    ],
+    "name": "Foo",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 28,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

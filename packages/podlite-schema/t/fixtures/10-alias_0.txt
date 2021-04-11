@@ -1,0 +1,124 @@
+=begin pod
+    =alias PROGNAME    Earl Irradiatem Evermore
+    =alias VENDOR      4D Kingdoms
+    =alias TERMS_URLS  =item L<http://www.4dk.com/eie>
+    =                  =item L<http://www.4dk.co.uk/eie.io/>
+    =                  =item L<http://www.fordecay.ch/canttouchthis>
+The use of A<PROGNAME> is subject to the terms and conditions
+laid out by A<VENDOR>, as specified at:
+
+A<TERMS_URLS>
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "PROGNAME",
+        "type": "alias",
+        "replacement": [
+          "Earl Irradiatem Evermore"
+        ],
+        "margin": "    "
+      },
+      {
+        "name": "VENDOR",
+        "type": "alias",
+        "replacement": [
+          "4D Kingdoms"
+        ],
+        "margin": "    "
+      },
+      {
+        "name": "TERMS_URLS",
+        "type": "alias",
+        "replacement": [
+          "=item L<http://www.4dk.com/eie>",
+          "=item L<http://www.4dk.co.uk/eie.io/>",
+          "=item L<http://www.fordecay.ch/canttouchthis>"
+        ],
+        "margin": "    "
+      },
+      {
+        "text": "The use of A<PROGNAME> is subject to the terms and conditions\nlaid out by A<VENDOR>, as specified at:\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "The use of ",
+          {
+            "content": "PROGNAME",
+            "type": "fcode",
+            "name": "A"
+          },
+          " is subject to the terms and conditions\nlaid out by ",
+          {
+            "content": "VENDOR",
+            "type": "fcode",
+            "name": "A"
+          },
+          ", as specified at:\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 279,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 381,
+            "line": 9,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "A<TERMS_URLS>\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          {
+            "content": "TERMS_URLS",
+            "type": "fcode",
+            "name": "A"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 382,
+            "line": 10,
+            "column": 1
+          },
+          "end": {
+            "offset": 396,
+            "line": 11,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 406,
+        "line": 13,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,94 @@
+=para
+A X<hash|hashes, definition of; associative arrays>
+is an unordered X<collection> of X<scalar|scalars> values indexed by their
+associated string X<|puns, deliberate> key. X<> empty
+#---~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "A X<hash|hashes, definition of; associative arrays>\nis an unordered X<collection> of X<scalar|scalars> values indexed by their\nassociated string X<|puns, deliberate> key. X<> empty\n#---",
+        "margin": "",
+        "content": [
+          "A ",
+          {
+            "content": [
+              "hash"
+            ],
+            "type": "fcode",
+            "name": "X",
+            "entry": [
+              "hashes, definition of",
+              "associative arrays"
+            ]
+          },
+          "\nis an unordered ",
+          {
+            "content": [
+              "collection"
+            ],
+            "type": "fcode",
+            "name": "X",
+            "entry": null
+          },
+          " of ",
+          {
+            "content": [
+              "scalar"
+            ],
+            "type": "fcode",
+            "name": "X",
+            "entry": [
+              "scalars"
+            ]
+          },
+          " values indexed by their\nassociated string ",
+          {
+            "content": [],
+            "type": "fcode",
+            "name": "X",
+            "entry": [
+              "puns, deliberate"
+            ]
+          },
+          " key. ",
+          {
+            "content": [],
+            "type": "fcode",
+            "name": "X",
+            "entry": null
+          },
+          " empty\n#---"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 191,
+            "line": 5,
+            "column": 5
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 191,
+        "line": 5,
+        "column": 5
+      }
+    }
+  }
+]

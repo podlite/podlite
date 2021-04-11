@@ -1,0 +1,22 @@
+=foo
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [],
+    "name": "foo",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 5,
+        "line": 2,
+        "column": 1
+      }
+    }
+  }
+]

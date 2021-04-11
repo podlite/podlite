@@ -1,0 +1,82 @@
+=begin pod
+
+Tests for the feed operators
+
+    ==> and <==
+    
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "Tests for the feed operators\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "Tests for the feed operators\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 12,
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "offset": 41,
+            "line": 4,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "==> and <==\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "==> and <==\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 42,
+            "line": 5,
+            "column": 1
+          },
+          "end": {
+            "offset": 58,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 72,
+        "line": 8,
+        "column": 1
+      }
+    }
+  }
+]

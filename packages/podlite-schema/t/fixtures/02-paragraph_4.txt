@@ -1,0 +1,137 @@
+=begin pod
+=begin One
+One, delimited block
+=end One
+=for Two
+Two, paragraph block
+=for Three
+Three, still a parablock
+
+=begin Four
+Four, another delimited one
+=end Four
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "One, delimited block\n"
+          }
+        ],
+        "name": "One",
+        "margin": "",
+        "text": "=begin One\nOne, delimited block\n=end One\n",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 52,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Two, paragraph block\n"
+          }
+        ],
+        "name": "Two",
+        "margin": "",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 52,
+            "line": 5,
+            "column": 1
+          },
+          "end": {
+            "offset": 82,
+            "line": 7,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Three, still a parablock\n"
+          }
+        ],
+        "name": "Three",
+        "margin": "",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 82,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 118,
+            "line": 9,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Four, another delimited one\n"
+          }
+        ],
+        "name": "Four",
+        "margin": "",
+        "text": "=begin Four\nFour, another delimited one\n=end Four\n",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 119,
+            "line": 10,
+            "column": 1
+          },
+          "end": {
+            "offset": 169,
+            "line": 13,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 178,
+        "line": 14,
+        "column": 1
+      }
+    }
+  }
+]

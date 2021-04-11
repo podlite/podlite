@@ -1,0 +1,190 @@
+=begin foo
+and so,  all  of  the  villages chased
+Albi,   The   Racist  Dragon, into the
+very   cold   and  very  scary    cave
+
+and it was so cold and so scary in
+there,  that  Albi  began  to  cry
+
+    =bold Dragon Tears!
+
+Which, as we all know...
+
+    =bold Turn
+          into
+          Jelly
+          Beans!
+=end foo
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "and so,  all  of  the  villages chased\nAlbi,   The   Racist  Dragon, into the\nvery   cold   and  very  scary    cave\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "and so,  all  of  the  villages chased\nAlbi,   The   Racist  Dragon, into the\nvery   cold   and  very  scary    cave\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 128,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "and it was so cold and so scary in\nthere,  that  Albi  began  to  cry\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "and it was so cold and so scary in\nthere,  that  Albi  began  to  cry\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 129,
+            "line": 6,
+            "column": 1
+          },
+          "end": {
+            "offset": 199,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "Dragon Tears!\n",
+            "margin": "",
+            "content": [
+              "Dragon Tears!\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 200,
+                "line": 9,
+                "column": 1
+              },
+              "end": {
+                "offset": 224,
+                "line": 10,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "bold",
+        "location": {
+          "start": {
+            "offset": 200,
+            "line": 9,
+            "column": 1
+          },
+          "end": {
+            "offset": 224,
+            "line": 10,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "Which, as we all know...\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "Which, as we all know...\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 225,
+            "line": 11,
+            "column": 1
+          },
+          "end": {
+            "offset": 250,
+            "line": 12,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "Turn\n          into\n          Jelly\n          Beans!\n",
+            "margin": "",
+            "content": [
+              "Turn\n          into\n          Jelly\n          Beans!\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 251,
+                "line": 13,
+                "column": 1
+              },
+              "end": {
+                "offset": 314,
+                "line": 17,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "bold",
+        "location": {
+          "start": {
+            "offset": 251,
+            "line": 13,
+            "column": 1
+          },
+          "end": {
+            "offset": 314,
+            "line": 17,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "foo",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 323,
+        "line": 18,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,31 @@
+=begin comment
+foo foo
+=begin invalid pod
+=as many invalid pod as we want
+===yay!
+=end comment
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      "foo foo\n=begin invalid pod\n=as many invalid pod as we want\n===yay!\n"
+    ],
+    "name": "comment",
+    "margin": "",
+    "text": "=begin comment\nfoo foo\n=begin invalid pod\n=as many invalid pod as we want\n===yay!\n=end comment\n",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 95,
+        "line": 7,
+        "column": 1
+      }
+    }
+  }
+]
