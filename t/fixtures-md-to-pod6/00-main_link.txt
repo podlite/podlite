@@ -1,7 +1,0 @@
-[#raku IRC channel](https://raku.org/community/irc)
-~~~~~~~
-=begin pod
-=begin para
-L<#raku IRC channel|https://raku.org/community/irc>
-=end para
-=end pod
