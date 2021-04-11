@@ -1,0 +1,15 @@
+{
+  "include": ["src/**/*"],
+  "jsx": "react",
+  
+  "compilerOptions": {
+    "target": "es5",
+    // "module": "es2015",
+     "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "allowSyntheticDefaultImports": true,
+  },
+}
