@@ -1,0 +1,163 @@
+=begin pod
+=begin data :key<Virtues>
+Laziness
+
+Impatience
+Hubris
+=end data
+=data Industry
+=data Patience
+=data Humility
+
+say 'The three virtues are:';
+say $=data<Virtues>;
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Laziness\n\nImpatience\nHubris\n"
+          }
+        ],
+        "name": "data",
+        "margin": "",
+        "text": "=begin data :key<Virtues>\nLaziness\n\nImpatience\nHubris\n=end data\n",
+        "config": [
+          {
+            "name": "key",
+            "value": "Virtues",
+            "type": "string"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 75,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Industry\n"
+          }
+        ],
+        "name": "data",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 75,
+            "line": 8,
+            "column": 1
+          },
+          "end": {
+            "offset": 90,
+            "line": 9,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Patience\n"
+          }
+        ],
+        "name": "data",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 90,
+            "line": 9,
+            "column": 1
+          },
+          "end": {
+            "offset": 105,
+            "line": 10,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "Humility\n"
+          }
+        ],
+        "name": "data",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 105,
+            "line": 10,
+            "column": 1
+          },
+          "end": {
+            "offset": 120,
+            "line": 11,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "say 'The three virtues are:';\nsay $=data<Virtues>;\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "say 'The three virtues are:';\nsay $=data<Virtues>;\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 121,
+            "line": 12,
+            "column": 1
+          },
+          "end": {
+            "offset": 172,
+            "line": 14,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 181,
+        "line": 15,
+        "column": 1
+      }
+    }
+  }
+]

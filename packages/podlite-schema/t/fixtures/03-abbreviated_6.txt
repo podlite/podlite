@@ -1,0 +1,47 @@
+=table_not
+    Constants 1
+    Variables 10
+    Subroutines 33
+    Everything else 57
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "    Constants 1\n    Variables 10\n    Subroutines 33\n    Everything else 57\n",
+        "margin": "",
+        "content": [
+          "    Constants 1\n    Variables 10\n    Subroutines 33\n    Everything else 57\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 86,
+            "line": 6,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "table_not",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 86,
+        "line": 6,
+        "column": 1
+      }
+    }
+  }
+]

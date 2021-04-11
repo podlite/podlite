@@ -1,0 +1,135 @@
+=begin pod
+
+=head1 A heading
+
+This is Pod too. Specifically, this is a simple C<para> block
+
+    $this = pod('also');  # Specifically, a code block
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "blankline"
+      },
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "A heading\n",
+            "margin": "",
+            "content": [
+              "A heading\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 12,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 29,
+                "line": 4,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 12,
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "offset": 29,
+            "line": 4,
+            "column": 1
+          }
+        },
+        "level": "1"
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "This is Pod too. Specifically, this is a simple C<para> block\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "This is Pod too. Specifically, this is a simple ",
+          {
+            "content": [
+              "para"
+            ],
+            "type": "fcode",
+            "name": "C"
+          },
+          " block\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 30,
+            "line": 5,
+            "column": 1
+          },
+          "end": {
+            "offset": 92,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "$this = pod('also');  # Specifically, a code block\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "$this = pod('also');  # Specifically, a code block\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 93,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 148,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 158,
+        "line": 10,
+        "column": 1
+      }
+    }
+  }
+]

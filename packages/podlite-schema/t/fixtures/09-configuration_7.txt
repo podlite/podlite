@@ -1,0 +1,88 @@
+=begin table :k1<1> :k2(2) :k3[2] :k4[+2000000000] :k5[-2000000000] :k6[+99999999999999999] :k7[-99999999999999999]
+foo
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " foo"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "text": "=begin table :k1<1> :k2(2) :k3[2] :k4[+2000000000] :k5[-2000000000] :k6[+99999999999999999] :k7[-99999999999999999]\nfoo\n=end table\n",
+    "config": [
+      {
+        "name": "k1",
+        "value": [
+          1
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k2",
+        "type": "value",
+        "value": 2
+      },
+      {
+        "name": "k3",
+        "value": [
+          2
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k4",
+        "value": [
+          2000000000
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k5",
+        "value": [
+          -2000000000
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k6",
+        "value": [
+          100000000000000000
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k7",
+        "value": [
+          -100000000000000000
+        ],
+        "type": "array"
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 131,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,228 @@
+=begin pod
+=comment CORRECT...
+=begin item1
+The choices are:
+=end item1
+=item2 Liberty
+=item2 Death
+=item2 Beer
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "margin": "",
+        "type": "block",
+        "content": [
+          "CORRECT...\n"
+        ],
+        "name": "comment",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 31,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "list",
+        "level": "1",
+        "content": [
+          {
+            "type": "block",
+            "content": [
+              {
+                "text": "The choices are:\n",
+                "margin": "",
+                "type": "para",
+                "content": [
+                  "The choices are:\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 44,
+                    "line": 4,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 61,
+                    "line": 5,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "margin": "",
+            "config": [],
+            "location": {
+              "start": {
+                "offset": 31,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 72,
+                "line": 6,
+                "column": 1
+              }
+            },
+            "level": "1"
+          },
+          {
+            "type": "list",
+            "level": "2",
+            "content": [
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Liberty\n",
+                    "margin": "",
+                    "content": [
+                      "Liberty\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 72,
+                        "line": 6,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 87,
+                        "line": 7,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 72,
+                    "line": 6,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 87,
+                    "line": 7,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Death\n",
+                    "margin": "",
+                    "content": [
+                      "Death\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 87,
+                        "line": 7,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 100,
+                        "line": 8,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 87,
+                    "line": 7,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 100,
+                    "line": 8,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              },
+              {
+                "margin": "",
+                "type": "block",
+                "content": [
+                  {
+                    "type": "para",
+                    "text": "Beer\n",
+                    "margin": "",
+                    "content": [
+                      "Beer\n"
+                    ],
+                    "location": {
+                      "start": {
+                        "offset": 100,
+                        "line": 8,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 112,
+                        "line": 9,
+                        "column": 1
+                      }
+                    }
+                  }
+                ],
+                "name": "item",
+                "location": {
+                  "start": {
+                    "offset": 100,
+                    "line": 8,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 112,
+                    "line": 9,
+                    "column": 1
+                  }
+                },
+                "level": "2"
+              }
+            ],
+            "list": "itemized"
+          }
+        ],
+        "list": "itemized"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 121,
+        "line": 10,
+        "column": 1
+      }
+    }
+  }
+]

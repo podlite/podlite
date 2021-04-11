@@ -1,0 +1,44 @@
+=begin Foo
+and so,  all  of  the  villages chased
+Albi,   The   Racist  Dragon, into the
+very   cold   and  very  scary    cave
+
+and it was so cold and so scary in
+there,  that  Albi  began  to  cry
+
+    =for Bar
+    Dragon Tears!
+
+Which, as we all know...
+
+    =for Bar
+    Turn into Jelly Beans!
+=end Foo
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "and so,  all  of  the  villages chased\nAlbi,   The   Racist  Dragon, into the\nvery   cold   and  very  scary    cave\n\nand it was so cold and so scary in\nthere,  that  Albi  began  to  cry\n\n    =for Bar\n    Dragon Tears!\n\nWhich, as we all know...\n\n    =for Bar\n    Turn into Jelly Beans!\n"
+      }
+    ],
+    "name": "Foo",
+    "margin": "",
+    "text": "=begin Foo\nand so,  all  of  the  villages chased\nAlbi,   The   Racist  Dragon, into the\nvery   cold   and  very  scary    cave\n\nand it was so cold and so scary in\nthere,  that  Albi  began  to  cry\n\n    =for Bar\n    Dragon Tears!\n\nWhich, as we all know...\n\n    =for Bar\n    Turn into Jelly Beans!\n=end Foo\n",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 307,
+        "line": 17,
+        "column": 1
+      }
+    }
+  }
+]

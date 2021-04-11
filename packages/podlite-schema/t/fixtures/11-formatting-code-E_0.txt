@@ -1,0 +1,76 @@
+=para  E<171> xcxc E<0d171; 0o253; 0b10101011; 0xAB>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "E<171> xcxc E<0d171; 0o253; 0b10101011; 0xAB>\n",
+        "margin": "",
+        "content": [
+          {
+            "content": [
+              {
+                "type": "number",
+                "value": 171
+              }
+            ],
+            "type": "fcode",
+            "name": "E"
+          },
+          " xcxc ",
+          {
+            "content": [
+              {
+                "type": "number",
+                "value": 171
+              },
+              {
+                "type": "number",
+                "value": 171
+              },
+              {
+                "type": "number",
+                "value": 171
+              },
+              {
+                "type": "number",
+                "value": 171
+              }
+            ],
+            "type": "fcode",
+            "name": "E"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 53,
+            "line": 2,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 53,
+        "line": 2,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,239 @@
+=begin pod
+    =begin one
+    one, delimited block
+    =end one
+    =two two,
+    paragraph block
+    =for three
+    three, still a parablock
+
+    =begin four
+    four, another delimited one
+    =end four
+    =head1 And just for the sake of having a working =head1 :)
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "one, delimited block\n",
+            "margin": "    ",
+            "type": "para",
+            "content": [
+              "one, delimited block\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 26,
+                "line": 3,
+                "column": 1
+              },
+              "end": {
+                "offset": 51,
+                "line": 4,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "one",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 64,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "two,\n    paragraph block\n",
+            "margin": "",
+            "content": [
+              "two,\n    paragraph block\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 64,
+                "line": 5,
+                "column": 1
+              },
+              "end": {
+                "offset": 98,
+                "line": 7,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "two",
+        "location": {
+          "start": {
+            "offset": 64,
+            "line": 5,
+            "column": 1
+          },
+          "end": {
+            "offset": 98,
+            "line": 7,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "content": [
+              "    three, still a parablock\n"
+            ],
+            "margin": "    ",
+            "text": "    three, still a parablock\n",
+            "location": {
+              "start": {
+                "offset": 98,
+                "line": 7,
+                "column": 1
+              },
+              "end": {
+                "offset": 142,
+                "line": 9,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "three",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 98,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 142,
+            "line": 9,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "four, another delimited one\n",
+            "margin": "    ",
+            "type": "para",
+            "content": [
+              "four, another delimited one\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 159,
+                "line": 11,
+                "column": 1
+              },
+              "end": {
+                "offset": 191,
+                "line": 12,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "four",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 143,
+            "line": 10,
+            "column": 1
+          },
+          "end": {
+            "offset": 205,
+            "line": 13,
+            "column": 1
+          }
+        }
+      },
+      {
+        "margin": "    ",
+        "type": "block",
+        "content": [
+          {
+            "type": "para",
+            "text": "And just for the sake of having a working =head1 :)\n",
+            "margin": "",
+            "content": [
+              "And just for the sake of having a working =head1 :)\n"
+            ],
+            "location": {
+              "start": {
+                "offset": 205,
+                "line": 13,
+                "column": 1
+              },
+              "end": {
+                "offset": 268,
+                "line": 14,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "head",
+        "location": {
+          "start": {
+            "offset": 205,
+            "line": 13,
+            "column": 1
+          },
+          "end": {
+            "offset": 268,
+            "line": 14,
+            "column": 1
+          }
+        },
+        "level": "1"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 277,
+        "line": 15,
+        "column": 1
+      }
+    }
+  }
+]

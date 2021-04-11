@@ -1,0 +1,18 @@
+=config C<>  :allow<B>
+~~~~~~~
+[
+  {
+    "name": "C<>",
+    "type": "config",
+    "config": [
+      {
+        "name": "allow",
+        "value": [
+          "B"
+        ],
+        "type": "array"
+      }
+    ],
+    "margin": ""
+  }
+]

@@ -1,0 +1,66 @@
+=para
+  A D<formatting code|formatting codes;formatters> provides a way
+    to add inline mark-up to a D<piece> of text.
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "  A D<formatting code|formatting codes;formatters> provides a way\n    to add inline mark-up to a D<piece> of text.\n",
+        "margin": "",
+        "content": [
+          "  A ",
+          {
+            "content": [
+              "formatting code"
+            ],
+            "type": "fcode",
+            "name": "D",
+            "synonyms": [
+              "formatting codes",
+              "formatters"
+            ]
+          },
+          " provides a way\n    to add inline mark-up to a ",
+          {
+            "content": [
+              "piece"
+            ],
+            "type": "fcode",
+            "name": "D",
+            "synonyms": null
+          },
+          " of text.\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 121,
+            "line": 4,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 121,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

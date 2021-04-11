@@ -1,0 +1,72 @@
+=begin table :k1(2.3) :k2[-2.3] :k3[+1e4] :k4(3.1e+04) :k5[-3.1E-04]
+foo
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " foo"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "text": "=begin table :k1(2.3) :k2[-2.3] :k3[+1e4] :k4(3.1e+04) :k5[-3.1E-04]\nfoo\n=end table\n",
+    "config": [
+      {
+        "name": "k1",
+        "type": "value",
+        "value": 2.3
+      },
+      {
+        "name": "k2",
+        "value": [
+          -2.3
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k3",
+        "value": [
+          10000
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k4",
+        "type": "value",
+        "value": 31000
+      },
+      {
+        "name": "k5",
+        "value": [
+          -0.00031
+        ],
+        "type": "array"
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 84,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

@@ -1,0 +1,45 @@
+=head3
+Heading level 3
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "Heading level 3\n",
+        "margin": "",
+        "content": [
+          "Heading level 3\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 23,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "head",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 23,
+        "line": 3,
+        "column": 1
+      }
+    },
+    "level": "3"
+  }
+]

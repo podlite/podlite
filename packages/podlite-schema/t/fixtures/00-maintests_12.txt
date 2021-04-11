@@ -1,0 +1,61 @@
+=para
+The C<U<>> formatting code specifies that the contained text is
+U<unusual> or distinctive;
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "The C<U<>> formatting code specifies that the contained text is\nU<unusual> or distinctive;\n",
+        "margin": "",
+        "content": [
+          "The ",
+          {
+            "content": [
+              "U<>"
+            ],
+            "type": "fcode",
+            "name": "C"
+          },
+          " formatting code specifies that the contained text is\n",
+          {
+            "content": [
+              "unusual"
+            ],
+            "type": "fcode",
+            "name": "U"
+          },
+          " or distinctive;\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 97,
+            "line": 4,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "para",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 97,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

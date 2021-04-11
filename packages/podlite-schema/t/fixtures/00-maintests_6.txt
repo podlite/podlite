@@ -1,0 +1,86 @@
+=code
+  sdkljsalkdjlsd
+  asdasdasdasdsad
+=for code
+  sdkljsalkdjlsd
+  asdasdasdasdsad
+=begin code
+  sdkljsalkdjlsd
+  asdasdasdasdsad
+=end code
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "  sdkljsalkdjlsd\n  asdasdasdasdsad\n"
+      }
+    ],
+    "name": "code",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 41,
+        "line": 4,
+        "column": 1
+      }
+    }
+  },
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "  sdkljsalkdjlsd\n  asdasdasdasdsad\n"
+      }
+    ],
+    "name": "code",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 41,
+        "line": 4,
+        "column": 1
+      },
+      "end": {
+        "offset": 86,
+        "line": 7,
+        "column": 1
+      }
+    }
+  },
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "verbatim",
+        "value": "  sdkljsalkdjlsd\n  asdasdasdasdsad\n"
+      }
+    ],
+    "name": "code",
+    "margin": "",
+    "text": "=begin code\n  sdkljsalkdjlsd\n  asdasdasdasdsad\n=end code\n",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 86,
+        "line": 7,
+        "column": 1
+      },
+      "end": {
+        "offset": 143,
+        "line": 11,
+        "column": 1
+      }
+    }
+  }
+]

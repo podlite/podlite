@@ -1,0 +1,259 @@
+=begin pod
+    this is code
+
+    =for Podcast
+        this is not
+
+    this is not code either
+
+    =begin Itemization
+        this is not
+    =end Itemization
+
+    =begin Quitem
+        and this is not
+    =end Quitem
+
+    =begin item
+        and this is!
+    =end item
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "this is code\n",
+        "margin": "    ",
+        "type": "code",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "this is code\n"
+          }
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 28,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "type": "verbatim",
+            "value": "        this is not\n"
+          }
+        ],
+        "name": "Podcast",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 29,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 66,
+            "line": 6,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "this is not code either\n",
+        "margin": "    ",
+        "type": "para",
+        "content": [
+          "this is not code either\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 67,
+            "line": 7,
+            "column": 1
+          },
+          "end": {
+            "offset": 95,
+            "line": 8,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "this is not\n",
+            "margin": "        ",
+            "type": "para",
+            "content": [
+              {
+                "type": "text",
+                "value": "this is not\n"
+              }
+            ],
+            "location": {
+              "start": {
+                "offset": 119,
+                "line": 10,
+                "column": 1
+              },
+              "end": {
+                "offset": 139,
+                "line": 11,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "Itemization",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 96,
+            "line": 9,
+            "column": 1
+          },
+          "end": {
+            "offset": 160,
+            "line": 12,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "block",
+        "content": [
+          {
+            "text": "and this is not\n",
+            "margin": "        ",
+            "type": "code",
+            "content": [
+              {
+                "type": "verbatim",
+                "value": "and this is not\n"
+              }
+            ],
+            "location": {
+              "start": {
+                "offset": 179,
+                "line": 14,
+                "column": 1
+              },
+              "end": {
+                "offset": 203,
+                "line": 15,
+                "column": 1
+              }
+            }
+          }
+        ],
+        "name": "Quitem",
+        "margin": "    ",
+        "config": [],
+        "location": {
+          "start": {
+            "offset": 161,
+            "line": 13,
+            "column": 1
+          },
+          "end": {
+            "offset": 219,
+            "line": 16,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "list",
+        "level": 1,
+        "content": [
+          {
+            "type": "block",
+            "content": [
+              {
+                "text": "and this is!\n",
+                "margin": "        ",
+                "type": "code",
+                "content": [
+                  "and this is!\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 236,
+                    "line": 18,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 257,
+                    "line": 19,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "margin": "    ",
+            "config": [],
+            "location": {
+              "start": {
+                "offset": 220,
+                "line": 17,
+                "column": 1
+              },
+              "end": {
+                "offset": 271,
+                "line": 20,
+                "column": 1
+              }
+            },
+            "level": 1
+          }
+        ],
+        "list": "itemized"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 280,
+        "line": 21,
+        "column": 1
+      }
+    }
+  }
+]

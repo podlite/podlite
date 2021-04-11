@@ -1,0 +1,241 @@
+=begin pod
+Let's consider two common proverbs:
+
+=begin item
+I<The rain in Spain falls mainly on the plain.>
+
+This is a common myth and an unconscionable slur on the Spanish
+people, the majority of whom are extremely attractive.
+=end item
+
+=begin item
+I<The early bird gets the worm.>
+
+In deciding whether to become an early riser, it is worth
+considering whether you would actually enjoy annelids
+for breakfast.
+=end item
+
+As you can see, folk wisdom is often of dubious value.
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "Let's consider two common proverbs:\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "Let's consider two common proverbs:\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 11,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 47,
+            "line": 3,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      },
+      {
+        "type": "list",
+        "level": 1,
+        "content": [
+          {
+            "type": "block",
+            "content": [
+              {
+                "text": "I<The rain in Spain falls mainly on the plain.>\n",
+                "margin": "",
+                "type": "para",
+                "content": [
+                  {
+                    "content": [
+                      "The rain in Spain falls mainly on the plain."
+                    ],
+                    "type": "fcode",
+                    "name": "I"
+                  },
+                  "\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 60,
+                    "line": 5,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 108,
+                    "line": 6,
+                    "column": 1
+                  }
+                }
+              },
+              {
+                "type": "blankline"
+              },
+              {
+                "text": "This is a common myth and an unconscionable slur on the Spanish\npeople, the majority of whom are extremely attractive.\n",
+                "margin": "",
+                "type": "para",
+                "content": [
+                  "This is a common myth and an unconscionable slur on the Spanish\npeople, the majority of whom are extremely attractive.\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 109,
+                    "line": 7,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 228,
+                    "line": 9,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "margin": "",
+            "config": [],
+            "location": {
+              "start": {
+                "offset": 48,
+                "line": 4,
+                "column": 1
+              },
+              "end": {
+                "offset": 238,
+                "line": 10,
+                "column": 1
+              }
+            },
+            "level": 1
+          },
+          {
+            "type": "blankline"
+          },
+          {
+            "type": "block",
+            "content": [
+              {
+                "text": "I<The early bird gets the worm.>\n",
+                "margin": "",
+                "type": "para",
+                "content": [
+                  {
+                    "content": [
+                      "The early bird gets the worm."
+                    ],
+                    "type": "fcode",
+                    "name": "I"
+                  },
+                  "\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 251,
+                    "line": 12,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 284,
+                    "line": 13,
+                    "column": 1
+                  }
+                }
+              },
+              {
+                "type": "blankline"
+              },
+              {
+                "text": "In deciding whether to become an early riser, it is worth\nconsidering whether you would actually enjoy annelids\nfor breakfast.\n",
+                "margin": "",
+                "type": "para",
+                "content": [
+                  "In deciding whether to become an early riser, it is worth\nconsidering whether you would actually enjoy annelids\nfor breakfast.\n"
+                ],
+                "location": {
+                  "start": {
+                    "offset": 285,
+                    "line": 14,
+                    "column": 1
+                  },
+                  "end": {
+                    "offset": 412,
+                    "line": 17,
+                    "column": 1
+                  }
+                }
+              }
+            ],
+            "name": "item",
+            "margin": "",
+            "config": [],
+            "location": {
+              "start": {
+                "offset": 239,
+                "line": 11,
+                "column": 1
+              },
+              "end": {
+                "offset": 422,
+                "line": 18,
+                "column": 1
+              }
+            },
+            "level": 1
+          },
+          {
+            "type": "blankline"
+          }
+        ],
+        "list": "itemized"
+      },
+      {
+        "text": "As you can see, folk wisdom is often of dubious value.\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "As you can see, folk wisdom is often of dubious value.\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 423,
+            "line": 19,
+            "column": 1
+          },
+          "end": {
+            "offset": 478,
+            "line": 20,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 487,
+        "line": 21,
+        "column": 1
+      }
+    }
+  }
+]

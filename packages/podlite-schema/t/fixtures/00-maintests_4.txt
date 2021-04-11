@@ -1,0 +1,57 @@
+=begin table :k1<str> :k2('str') :k3("str") :k4["str"] :k5(Q[str])
+
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "config": [
+      {
+        "name": "k1",
+        "value": "str",
+        "type": "string"
+      },
+      {
+        "name": "k2",
+        "type": "value",
+        "value": "str"
+      },
+      {
+        "name": "k3",
+        "type": "value",
+        "value": "str"
+      },
+      {
+        "name": "k4",
+        "value": [
+          "str"
+        ],
+        "type": "array"
+      },
+      {
+        "name": "k5",
+        "type": "value",
+        "value": "Q[str]"
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 79,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

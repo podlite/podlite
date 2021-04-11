@@ -1,0 +1,49 @@
+=begin table :k1{2 => 'b => ?', c => ",", d => 2.3}
+foo
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " foo"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "text": "=begin table :k1{2 => 'b => ?', c => \",\", d => 2.3}\nfoo\n=end table\n",
+    "config": [
+      {
+        "name": "k1",
+        "value": {
+          "2": "b => ?",
+          "c": ",",
+          "d": 2.3
+        }
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 67,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

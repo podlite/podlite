@@ -1,0 +1,55 @@
+=begin more-discussion-needed
+
+XXX: chop(@array) should return an array of chopped strings?
+XXX: chop(%has)   should return a  hash  of chopped strings?
+
+=end more-discussion-needed
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "blankline"
+      },
+      {
+        "text": "XXX: chop(@array) should return an array of chopped strings?\nXXX: chop(%has)   should return a  hash  of chopped strings?\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "XXX: chop(@array) should return an array of chopped strings?\nXXX: chop(%has)   should return a  hash  of chopped strings?\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 31,
+            "line": 3,
+            "column": 1
+          },
+          "end": {
+            "offset": 153,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "more-discussion-needed",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 182,
+        "line": 7,
+        "column": 1
+      }
+    }
+  }
+]

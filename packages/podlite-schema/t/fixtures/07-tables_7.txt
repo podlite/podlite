@@ -1,0 +1,77 @@
+=begin table :caption<foo> :bar(0)
+=            :baz(2.3)
+
+foo
+bar
+
+=end table
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " foo"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "table_row",
+        "type": "block",
+        "content": [
+          {
+            "name": "table_cell",
+            "type": "block",
+            "content": [
+              " bar"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "text": "\n"
+      }
+    ],
+    "name": "table",
+    "margin": "",
+    "text": "=begin table :caption<foo> :bar(0)\n=            :baz(2.3)\n\nfoo\nbar\n\n=end table\n",
+    "config": [
+      {
+        "name": "caption",
+        "value": "foo",
+        "type": "string"
+      },
+      {
+        "name": "bar",
+        "type": "value",
+        "value": 0
+      },
+      {
+        "name": "baz",
+        "type": "value",
+        "value": 2.3
+      }
+    ],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 79,
+        "line": 8,
+        "column": 1
+      }
+    }
+  }
+]

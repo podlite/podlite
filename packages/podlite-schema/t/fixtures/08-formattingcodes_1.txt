@@ -1,0 +1,82 @@
+=pod
+The basic C<ln> command is: C<ln> B<R<source_file> R<target_file>>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "The basic C<ln> command is: C<ln> B<R<source_file> R<target_file>>\n",
+        "margin": "",
+        "content": [
+          "The basic ",
+          {
+            "content": [
+              "ln"
+            ],
+            "type": "fcode",
+            "name": "C"
+          },
+          " command is: ",
+          {
+            "content": [
+              "ln"
+            ],
+            "type": "fcode",
+            "name": "C"
+          },
+          " ",
+          {
+            "content": [
+              {
+                "content": [
+                  "source_file"
+                ],
+                "type": "fcode",
+                "name": "R"
+              },
+              " ",
+              {
+                "content": [
+                  "target_file"
+                ],
+                "type": "fcode",
+                "name": "R"
+              }
+            ],
+            "type": "fcode",
+            "name": "B"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 72,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 72,
+        "line": 3,
+        "column": 1
+      }
+    }
+  }
+]

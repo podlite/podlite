@@ -1,0 +1,46 @@
+=begin SYNOPSIS
+Para inside SYNOPSIS
+=end SYNOPSIS
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "text": "Para inside SYNOPSIS\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "Para inside SYNOPSIS\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 16,
+            "line": 2,
+            "column": 1
+          },
+          "end": {
+            "offset": 37,
+            "line": 3,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "SYNOPSIS",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 51,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]

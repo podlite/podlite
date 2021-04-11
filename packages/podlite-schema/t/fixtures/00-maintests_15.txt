@@ -1,0 +1,81 @@
+=begin pod
+=item
+
+test
+
+=end pod
+~~~~~~~
+[
+  {
+    "type": "block",
+    "content": [
+      {
+        "type": "list",
+        "level": 1,
+        "content": [
+          {
+            "margin": "",
+            "type": "block",
+            "content": [],
+            "name": "item",
+            "location": {
+              "start": {
+                "offset": 11,
+                "line": 2,
+                "column": 1
+              },
+              "end": {
+                "offset": 17,
+                "line": 3,
+                "column": 1
+              }
+            },
+            "level": 1
+          },
+          {
+            "type": "blankline"
+          }
+        ],
+        "list": "itemized"
+      },
+      {
+        "text": "test\n",
+        "margin": "",
+        "type": "para",
+        "content": [
+          "test\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 18,
+            "line": 4,
+            "column": 1
+          },
+          "end": {
+            "offset": 23,
+            "line": 5,
+            "column": 1
+          }
+        }
+      },
+      {
+        "type": "blankline"
+      }
+    ],
+    "name": "pod",
+    "margin": "",
+    "config": [],
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 33,
+        "line": 7,
+        "column": 1
+      }
+    }
+  }
+]

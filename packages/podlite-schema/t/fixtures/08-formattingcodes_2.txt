@@ -1,0 +1,74 @@
+=pod
+L<C<b>|a>
+L<C<b>|a>
+~~~~~~~
+[
+  {
+    "margin": "",
+    "type": "block",
+    "content": [
+      {
+        "type": "para",
+        "text": "L<C<b>|a>\nL<C<b>|a>\n",
+        "margin": "",
+        "content": [
+          {
+            "content": [
+              {
+                "content": [
+                  "b"
+                ],
+                "type": "fcode",
+                "name": "C"
+              }
+            ],
+            "type": "fcode",
+            "name": "L",
+            "meta": "a"
+          },
+          "\n",
+          {
+            "content": [
+              {
+                "content": [
+                  "b"
+                ],
+                "type": "fcode",
+                "name": "C"
+              }
+            ],
+            "type": "fcode",
+            "name": "L",
+            "meta": "a"
+          },
+          "\n"
+        ],
+        "location": {
+          "start": {
+            "offset": 0,
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "offset": 25,
+            "line": 4,
+            "column": 1
+          }
+        }
+      }
+    ],
+    "name": "pod",
+    "location": {
+      "start": {
+        "offset": 0,
+        "line": 1,
+        "column": 1
+      },
+      "end": {
+        "offset": 25,
+        "line": 4,
+        "column": 1
+      }
+    }
+  }
+]
