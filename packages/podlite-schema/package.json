@@ -1,0 +1,31 @@
+{
+  "name": "@podlite/schema",
+  "version": "0.0.1",
+  "description": "podlite schema",
+  "main": "index.js",
+  "types": "./lib/index.d.ts",
+  "license": "MIT",
+  "files": [
+    "lib/**/*.js",
+    "schema/*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "build": "yarn build:ts && yarn build:ast",
+    "build:ast": "ts-node scripts/make-ast-scheme.ts",
+    "build:ts": "tsc",
+    "watch": "npx nodemon -e js,ts --exec 'yarn' build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ajv": "^7.2.3",
+    "json-pointer": "^0.6.1",
+    "pod6": "^0.0.33"
+  },
+  "devDependencies": {
+    "ts-node": "^9.1.1",
+    "typescript-json-schema": "^0.50.0"
+  }
+}
