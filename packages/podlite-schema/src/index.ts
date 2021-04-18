@@ -11,6 +11,28 @@ export function toAst () {
 
 export type SchemaValidationError = ErrorObject<string, Record<string, any>>
 const ajv = new Ajv({strict: true, allowUnionTypes: true})
+/**
+ * Get nodes by queries
+ * @param tree 
+ * @param queries 
+ * @returns array of matched nodes
+ */
+export const getFromTree = (tree:PodliteDocument, ...queries: string[]) => { 
+    let results = []
+    let rules = {}
+    for ( let rule of queries ) {
+        rules[rule] = (n, ctx, visiter) => { 
+            results.push(n);
+            if ( 'content' in n ) {
+                return { n, content: transformer(n.content, { ...ctx } ) }
+            }
+        }
+    }
+    const transformer = makeTransformer(rules)
+    transformer(tree, {})
+    return results
+}
+
 export function validateAst( data:unknown, Name:string = 'AstTree.json'):SchemaValidationError[] {
     const AstTreeSchema: JSONSchemaType<AstTree> = require( `../schema/${Name}`)
 	const validate = ajv.compile<AstTree>(AstTreeSchema)
