@@ -273,6 +273,9 @@
     background-color: white;
   }
   
+  .Editorright .error {
+    opacity: 0.5;
+  }
   /* restore after reset*/
   .Editorright * {
     /* all: revert */
