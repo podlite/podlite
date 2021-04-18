@@ -212,19 +212,23 @@ result.errors.map((loc:any)=>{
 }
 updateMarks(cmMrks)
 
-},[text])
+},[text,result])
 
 
-//@ts-ignore
+
 const previewHtml = <div className={ "Editorright " + (isDarkTheme ? 'dark' : '' )}
                         onMouseEnter={()=>setPreviewScrolling(true)} 
                         onMouseMove={()=>setPreviewScrolling(true)} 
                         ref={previewEl} 
                         >
-                     { isElement(result) ? <div className="content">{result}</div> : <div 
-                     dangerouslySetInnerHTML={{__html: result}} 
+                     {
+                     result ? 
+                     isElement(result.result) ? <div className="content">{result.result}</div> : <div 
+                     dangerouslySetInnerHTML={{__html: result.result}} 
                      className="content" 
                      ></div>
+                     : ''
+                        
                         }
                      </div>
 //@ts-ignore
