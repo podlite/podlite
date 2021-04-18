@@ -307,7 +307,6 @@ Print? B<K<n>>
 `}
     </Podlite>
   );
-  // console.log(root.innerHTML);
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <code>
       <pre>
@@ -394,24 +393,70 @@ it("accepts N<>", () => {
   `);
 });
 
-
 it("accepts U<>, X<>, S<>", () => {
-    render(
-      <Podlite>
-        {`
+  render(
+    <Podlite>
+      {`
   =para
    An X<array|arrays> is an ordered list.
   U<a>. S<
    >
       `}
-      </Podlite>
-    );
-    console.log(root.innerHTML);
-    // expect(root.innerHTML).toMatchInlineSnapshot();
-  });
+    </Podlite>
+  );
 
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <p>
+        An array is an ordered list.
+        <u>
+          a
+        </u>
+        .
+        <br>
+        &nbsp;&nbsp;&nbsp;
+      </p>
+    </div>
+  `);
+});
 
+it("accepts =Image", () => {
+  render(
+    <Podlite>
+      {`
+  =begin pod
+  =Image [alternative] https://www.ru
+  =end pod
+`}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <img src="https://www.ru
+    "
+           alt="alternative"
+      >
+    </div>
+  `);
+});
 
+it.skip("accepts =Diagram", () => {
+  render(
+    <Podlite>
+      {`
+  =begin pod
+  =Diagram
+graph LR
+A --- B
+B-->C[fa:fa-ban forbidden]
+B-->D(fa:fa-spinner aaaaa);
+  =end pod
+      `}
+    </Podlite>
+  );
+  console.log(root.innerHTML);
+  // expect(root.innerHTML).toMatchInlineSnapshot();
+});
 
 it.skip("accepts =alias", () => {
   render(
