@@ -440,6 +440,35 @@ it("accepts =Image", () => {
   `);
 });
 
+it("accepts =TITLE", () => {
+  render(
+    <Podlite>
+      {`
+    =begin pod
+    =TITLE test
+    =para 1
+=end pod`}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <div>
+        <h1 class="TITLE">
+          TITLE
+        </h1>
+        <p>
+          test
+        </p>
+      </div>
+      <div>
+        <p>
+          1
+        </p>
+      </div>
+    </div>
+  `);
+});
+
 it.skip("accepts =Diagram", () => {
   render(
     <Podlite>

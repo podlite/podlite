@@ -337,7 +337,7 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
         let treeAfterParsed = podlite.parse(children || file)
         return podlite.toAst(treeAfterParsed)
     })(tree)
-
+    console.log(JSON.stringify(ast, null,2))
     // const   ast = parse( children || content )
     let i_key_i = 10000
     const makeComponent = helperMakeReact({wrapElement})
@@ -358,10 +358,11 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
             return null
         }
         if ( isSemanticBlock(node) ) {
-            return <><h1 className={node.name}>{node.name}</h1>
+            return makeComponent(({key, children})=>{
+                return <div key={key}><h1 className={node.name} key={key}>{node.name}</h1>
                     {interator(node.content, { ...ctx}) }
-            </>
-
+                </div>
+            }, node, interator(node.content, { ...ctx}) )
         }
         console.warn('[podlite] Not supported: ' + JSON.stringify(node,null,2))
         return React.createElement('code',{key:++i_key_i},`not supported node:${JSON.stringify(node,null,2)}`)
