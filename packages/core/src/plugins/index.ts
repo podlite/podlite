@@ -11,7 +11,7 @@ export const core = {
             writer.writeRaw(`/>`)
             }
         }
-        },
+    },
     'image': { 
         toHtml: content 
     },
