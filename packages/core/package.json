@@ -21,6 +21,8 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
+    "@podlite/diagram": "^0.0.1",
+    "@podlite/image": "^0.0.1",
     "pod6": "0.0.36",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
