@@ -30,13 +30,17 @@ function useDebouncedEffect(fn, deps, time) {
 /* set window title */ 
 // @ts-ignore
 // const setWindowTitle = (title: string) => { vmd.setWindowTitle(title) }
+export interface ConverterResult  {
+     errors?:any,
+     result:any
+}
 
-let instanceCM:CodeMirror.Editor 
+let instanceCM = null
 type Props={
     content: string,
     onChangeSource:Function,
     sourceType: 'pod6' | 'md',
-    onConvertSource: Function,
+    onConvertSource: (source:string)=>ConverterResult,
     onSavePressed?: Function,
     isDarkTheme? : boolean,
     isLineNumbers?: boolean,
@@ -69,7 +73,7 @@ useEffect(()=>{
 updateText(content)
 },[content])
 
- const [result, updateResult] = useState(useMemo( ()=> onConvertSource(content), []) )
+ const [result, updateResult] = useState<ConverterResult>() 
   useDebouncedEffect(() => {
     updateResult(onConvertSource(text))
   }, [text], 50)
