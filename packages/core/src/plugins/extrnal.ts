@@ -1,7 +1,7 @@
-import {Plugin} from '@podlite/schema'
+import {Plugins} from '@podlite/schema'
 import Image from '@podlite/image'
 import { plugin as Diagram } from '@podlite/diagram';
-const external = {
+const external:Plugins = {
     Image,
     Diagram
 }
