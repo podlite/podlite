@@ -22,9 +22,10 @@
   "dependencies": {
     "ajv": "^7.2.3",
     "json-pointer": "^0.6.1",
-    "pod6": "^0.0.33"
+    "pod6": "0.0.36"
   },
   "devDependencies": {
+    "pod6": "*",
     "ts-node": "^9.1.1",
     "typescript-json-schema": "^0.50.0"
   }
