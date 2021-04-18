@@ -13,7 +13,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "tsc",
+    "build": "tsc && cp  src/Editor.css lib",
     "test": "jest  --verbose --passWithNoTests"
   },
   "dependencies": {
