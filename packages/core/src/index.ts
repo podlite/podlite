@@ -1,16 +1,27 @@
 import {  toTree, toHtml } from 'pod6';
 import  toAny  from 'pod6/built/exportAny'
 import { AstTree, Plugins, mkRootBlock, PodliteDocument } from '@podlite/schema';
-export { mdToPod6 } from './md-to-pod6'
+export * from './mdtopod6';
 export  * from './tools'
-import core from './plugins/core';
+import core from './plugins';
 import externalPlugins  from './plugins/extrnal'
 
 
 export interface PodliteOpt {
     importPlugins: boolean
 }
+
+export interface PodliteExport {
+    errors: any;
+    toString: () => string;
+    valueOf: () => string;
+    indexingTerms: any;
+    annotations: any;
+    defenitions: any;
+    interator: any;
+}
 export interface Podlite {
+    toAstResult: (ast:PodliteDocument) => PodliteExport;
     (): any,
     use:(plugin:Plugins)=>Podlite,
     parse:(text:string, opt? : {skipChain:number, podMode:number})=>PodliteDocument,
