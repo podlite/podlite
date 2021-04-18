@@ -84,56 +84,6 @@ updateText(content)
  
   const inputEl = useRef(null)
 
-// useEffect(()=>{
-//   console.log(`setWindowTitle ${isChanged}`)
-// //   setWindowTitle (`${fileName}${isChanged ? ' *' : '' }`)
-// },[isChanged, filePath])
-
-//   // desktop section - start
-//   useEffect(() => {
-//   const handlerContent = (_, {content, filePath }) => { 
-//                                                         setFileName( filePath ? vmd.path.parse(filePath)['name'] : filePath )
-//                                                         setFileExt( filePath ? vmd.path.parse(filePath)['ext'] : filePath )
-//                                                         setFilePath(filePath)
-//                                                         console.log(updateText(content))
-//                                                         console.log('update content on file load')
-//                                                         console.log('setChanged(false)');
-//                                                         setChanged(false)
-//  }
-//   vmd.on('file', handlerContent)
-
-// //   const handlerImportMarkdownContent = (_, {content, filePath }) => { 
-// //     setFileName( filePath ? vmd.path.parse(filePath)['name'] : filePath )
-// //     setFileExt( filePath ? vmd.path.parse(filePath)['ext'] : filePath )
-// //     setFilePath(filePath)
-// //     const text = mdToPod6(content)
-// //     updateText(text)
-// //     setChanged(true)
-// // }
-
-
-//   vmd.on('importMarkdown', handlerImportMarkdownContent)
-//   return function cleanup() { 
-//     vmd.off( 'file', handlerContent ) 
-//     vmd.off('importMarkdown', handlerImportMarkdownContent)
-//   }
-// })
-// useEffect(()=>{
-//     const handlerImportMarkdownContent = (_, {content, filePath }) => { 
-//         setFileName( filePath ? vmd.path.parse(filePath)['name'] : filePath )
-//         setFileExt( filePath ? vmd.path.parse(filePath)['ext'] : filePath )
-//         setFilePath(filePath)
-//         console.log('mdToPod6(content)')
-//         const text = mdToPod6(content)
-//         updateText(text)
-//         setChanged(false)
-//     }
-//     // console.log({content,filePathSrc})
-//     // content && filePathSrc &&  handlerImportMarkdownContent(undefined, {content, filePath:filePathSrc})
-
-// },[content, filePathSrc])
-
-
 // hot keys
   useEffect( () => {
   const saveFileAction  =  () => {
@@ -161,11 +111,9 @@ updateText(content)
     }
   }
 
-//   Mousetrap.bindGlobal(['command+/'], togglePreviewMode )
   Mousetrap.bindGlobal(['ctrl+s', 'command+s'], saveFileAction)
 return () => {
     Mousetrap.unbind(['ctrl+s', 'command+s'])
-    // Mousetrap.unbind(['command+/'])
   }
 
 })
