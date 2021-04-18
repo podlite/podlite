@@ -1,6 +1,6 @@
 
-export interface RuleHandler {
-    (  writer?:any, processor?:any ) :  ( node:PodNode, ctx?:any, interator?:any ) => void | AstTree | PodNode
+export interface RuleHandler<T = any> {
+    (  writer?:any, processor?:any ) :  ( node:T, ctx?:any, interator?:any ) => void | AstTree | PodNode
 }
 export interface Plugin {
     toAst?: RuleHandler,
@@ -12,19 +12,22 @@ export interface Plugins {
     [ name: string ] : Plugin
 }
 
-
-export interface genericRule<NodeType> {
-    (writer?: any, processor?: any): (node: NodeType, ctx?: any, interator?: any) => void | AstTree | PodNode;
+interface checkFn<T> {
+    (node:T, ctx:any): any
+}
+interface SetFn<T> {
+    (check:checkFn<T>): RuleHandler<T>;
 }
 export interface Rules {
     [name: string]: RuleHandler;
-    'A<>': genericRule<FormattingCodeA>;
-    'E<>': genericRule<FormattingCodeE>,
-    'D<>': genericRule<FormattingCodeD>,
-    'N<>': genericRule<FormattingCodeN>,
-    'X<>': genericRule<FormattingCodeX>,
-    'S<>': genericRule<FormattingCodeS>,
-    'table:block': genericRule<FormattingCodeD>,
+    'A<>': RuleHandler<FormattingCodeA>;
+    'E<>': RuleHandler<FormattingCodeE>,
+    'D<>': RuleHandler<FormattingCodeD>,
+    'N<>': RuleHandler<FormattingCodeN>,
+    'X<>': RuleHandler<FormattingCodeX>,
+    'S<>': RuleHandler<FormattingCodeS>,
+    'L<>': RuleHandler<FormattingCodeL>,
+    'table:block': RuleHandler<FormattingCodeD>,
 }
 
 export interface Position {
@@ -105,13 +108,13 @@ export interface FormattingCodeV {
 export interface FormattingCodeS {
     type:"fcode",
     name: "S",
-    content?: string,
+    content?: string | Text,
 }
 
 export interface FormattingCodeA {
     type:"fcode",
     name: "A",
-    content: string,
+    content: string | Text,
 }
 
 export interface FormattingCodeD {
@@ -119,6 +122,13 @@ export interface FormattingCodeD {
     name: "D",
     synonyms: Array<string>,
     content: string,
+}
+
+export interface FormattingCodeL {
+    type:"fcode",
+    name: "L",
+    meta: string,
+    content: string | Text,
 }
 
 export interface FormattingCodeAny {
@@ -246,6 +256,7 @@ export type FormattingCodes =
     | FormattingCodeB
     | FormattingCodeD
     | FormattingCodeE
+    | FormattingCodeL
     | FormattingCodeN
     | FormattingCodeX
     | FormattingCodeZ

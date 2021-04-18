@@ -1,6 +1,7 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import * as pointer from 'json-pointer'
-import { AstTree } from './types'
+import makeTransformer from 'pod6/built/helpers/makeTransformer'
+import { AstTree, PodliteDocument } from './types'
 export { AstTree } from './types'
 export * from './types'
 export * from './blocks-helpers'
@@ -32,6 +33,8 @@ export const getFromTree = (tree:PodliteDocument, ...queries: string[]) => {
     transformer(tree, {})
     return results
 }
+
+export function  validatePodliteAst(data:unknown ):SchemaValidationError[] { return  validateAst(data,'PodliteDocument.json') }
 
 export function validateAst( data:unknown, Name:string = 'AstTree.json'):SchemaValidationError[] {
     const AstTreeSchema: JSONSchemaType<AstTree> = require( `../schema/${Name}`)
