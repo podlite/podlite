@@ -20,6 +20,7 @@
     "codemirror": "^5.60.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
+    "pod6": "0.0.36",
     "react-codemirror2": "^7.2.1"
   },
   "devDependencies": {

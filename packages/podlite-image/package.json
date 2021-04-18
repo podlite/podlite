@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "pod6": "^0.0.33"
+    "pod6": "0.0.36"
   },
   "devDependencies": {
     "@podlite/schema": "*",

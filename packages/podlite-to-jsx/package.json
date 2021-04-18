@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "mermaid": "^8.9.2",
-    "pod6": "^0.0.34",
+    "pod6": "0.0.36",
     "react-is": "^17.0.2"
   },
   "devDependencies": {

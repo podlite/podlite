@@ -21,7 +21,7 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
-    "pod6": "0.0.33",
+    "pod6": "0.0.36",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
