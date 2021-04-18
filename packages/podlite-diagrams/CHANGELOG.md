@@ -1,1 +1,1 @@
-# @podlite/diagrams
+# @podlite/diagram

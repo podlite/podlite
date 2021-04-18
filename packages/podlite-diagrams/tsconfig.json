@@ -1,4 +1,5 @@
 {
+ "extends": "../core/tsconfig.json",
   "include": ["src/**/*"],
   "jsx": "react",
   
@@ -12,4 +13,11 @@
     "rootDir": "./src",
     "allowSyntheticDefaultImports": true,
   },
+  "references": [
+    {
+      "path": "../core"
+    }
+    ]
 }
+
+
