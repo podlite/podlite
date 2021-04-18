@@ -190,11 +190,13 @@ marks.forEach(marker => marker.clear())
 let cmMrks:Array<never> = []
 //@ts-ignore
 if (result && result.errors ) {
+
   //@ts-ignore
 result.errors.map((loc:any)=>{
   // @ts-ignore
   let from = {line: loc.start.line-1, ch: loc.start.column-1 - (loc.start.offset === loc.end.offset)};
   let to = {line: loc.end.line-1, ch: loc.end.column-1};
+
   cmMrks.push(
               //@ts-ignore
               cm.markText(
