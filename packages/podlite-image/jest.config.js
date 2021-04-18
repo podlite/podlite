@@ -1,6 +1,3 @@
 
-module.exports = {
-  preset: 'ts-jest',
-  "bail": true,
-  "verbose": true
-};
+module.exports = require('../../jest.config')
+

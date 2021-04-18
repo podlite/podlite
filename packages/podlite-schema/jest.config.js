@@ -1,4 +1,3 @@
 
-module.exports = {
-  preset: 'ts-jest',
-};
+module.exports = require('../../jest.config')
+

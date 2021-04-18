@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "lib": ["dom", "esnext"],
+      "module": "esnext",
+      "target": "es5",
+      "jsx": "react",
+      "esModuleInterop": true,
+      "allowJs": true,
+      "allowSyntheticDefaultImports": true
+    }
+  }
