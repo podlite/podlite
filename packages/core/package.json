@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "./built/index.d.ts",
   "scripts": {
-    "clean": "rm -rf built",
+    "clean": "rm -rf built tsconfig.tsbuildinfo",
     "test": "yarn build && jest",
     "build": "run-s build:ts",
     "build:ts": "tsc",
