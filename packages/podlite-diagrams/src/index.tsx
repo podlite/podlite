@@ -1,45 +1,72 @@
 import React from 'react'
 import {useEffect, useRef} from 'react'
+import {Plugin, Location} from '@podlite/schema'
 import mermaid from 'mermaid';
 let i = 0;
-export const Mermaid = ({ chart }: {chart:string})=>{
+const Diagram = ({ chart , isError }: {chart:string, isError:any})=>{
     const inputEl = useRef(null);
-          // Mermaid initilize its config
-    // mermaid.initialize({...DEFAULT_CONFIG, ...config})
     const config = {
-        // startOnLoad: true,
-        // theme: "default",
         securityLevel: "loose",
         startOnLoad: false 
     }
     if ( inputEl ) {
     mermaid.initialize(config)
-    //@ts-ignore
     mermaid.init( inputEl)
     }
-    // useEffect(() => {
-    //     mermaid.contentLoaded()
-    //   }, [config])
 
     useEffect(()=>{
         var insertSvg = function(svgCode:any){
-            // if ( inputEl.current != null ) {
-                // console.log("memrmr")
-                if (!inputEl.current) {console.log("ok")}
-                //@ts-ignore
                 inputEl.current!.innerHTML = svgCode;
-            // }
         };
-  
+        if(isError) {
+            console.log('error')
+            return
+        }
         try {
             mermaid.render('graph-div' + i++, chart, insertSvg)
-            // mermaid.render(id, element.textContent.trim(), (svg, bind) => {element.innerHTML = svg;}, element);
         }  catch (e) {
             console.log({e});
           }
-        // mermaid.render('graph-div', chart, ()=>{})
     }, [chart])
-    return <div className="mermaid1" ref={inputEl}/>
+
+    return <div className={ `mermaid${ isError ? ' error' : ''}` }ref={inputEl}/>
 }
+
+export const plugin:Plugin = {
+    toAst: (writer) => (node) => {
+        if (typeof node !== "string" && 'type' in node && 'content' in node && node.type === 'block') {
+        const content = node.content[0]
+        if (typeof content !== "string" && 'location' in node && 'value' in content) {
+            // get link and alt text
+            const data = content.value
+             try {
+             mermaid.parse(data)
+            } catch (err) {
+                // calculate line in relation to node
+                const convert_line_to_absolute = (line:number, location:Location):Location => {
+                    const lineoffset=  line + location.start.line + 1
+                    return { "start": {
+                        "offset": 0,
+                        "line": lineoffset,
+                        "column": 1
+                      },
+                      "end": {
+                        "offset": 9,
+                        "line": lineoffset,
+                        "column": 2
+                      }
+                    }
+                }
+
+                node.custom = { ...err, location: convert_line_to_absolute( err['hash']['line'], node.location) }
+                writer.emit("errors", node.location )
+            }
+            return node
+        }
+        }
+
+     },
+}
+export default Diagram
 
 
