@@ -5,12 +5,6 @@
   "main": "index.js",
   "types": "lib/index.d.ts",
   "license": "MIT",
-  "jest": {
-    "preset": "ts-jest",
-    "snapshotSerializers": [
-      "jest-serializer-html"
-    ]
-  },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "tsc",
