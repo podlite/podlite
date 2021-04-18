@@ -7,10 +7,12 @@ import makeAttrs from 'pod6/built/helpers/config'
 import { isNamedBlock, isSemanticBlock } from 'pod6/built/helpers/makeTransformer'
 import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
-import {isValidElementType} from  'react-is'
+import { podlite as podlite_core, PodliteExport } from 'podlite'
+import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
 import {Verbatim, PodNode, Text, Rules} from '@podlite/schema'
-import * as SCHEMA from '@podlite/schema'
 
+// interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
+// }
 export type CreateElement = typeof React.createElement
 // const createElement = React.createElement
 const helperMakeReact = ({wrapElement})=>{
@@ -28,12 +30,14 @@ const helperMakeReact = ({wrapElement})=>{
             return node
         }
         const { ...attr} = node
+
         const key = 'type' in node  &&  node.type ? getIdForNode(node) : ++i_key_i
+
         const result = 
             typeof src === 'function'
                             ? src({ ...attr, key , children}, children)
                             : React.createElement(src,{ key }, children  )
-        // console.log(result.props.children)
+
         // // create react element and pass key
         // if (!isValidElementType(src)) {
         //     throw new Error(`Bad React element for ${ruleName} rule `)
@@ -55,7 +59,6 @@ export interface  WrapElement {
 const Podlite: React.FC<{
     [key: string]: any
     children: string
-    // options?: {file?:string, plugins?:any, wrapElement?:WrapElement}
     file?:string,
     plugins?:any,
     wrapElement?:WrapElement
@@ -73,15 +76,26 @@ const Podlite: React.FC<{
   }
 const mapToReact = (makeComponent):Rules => {
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
-            return makeComponent(src, node, interator(node.content, { ...ctx}) )
+            // check if node.content defined
+            return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [] )
         }
     return {
     'pod': mkComponent('div'),
+    'root': nodeContent,
     'data': emptyContent(),
     ':ambient': emptyContent(),
     ':code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
     'code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
+    'image': nodeContent,
+    ':image': setFn(( node, ctx ) => {
+        return mkComponent(({ children, key })=><img key={key} src={node.src} alt={node.alt}/>)
+    }),
 
+    'Diagram':  () => (node, ctx, interator) => {
+        return makeComponent(({children, key} )=>{ 
+            return <Diagram  isError={node.custom} chart={node.content[0].value}/>
+            },node,interator(node.content, { ...ctx}) )
+      },
     ':text':( writer, processor )=>( node:Text, ctx, interator )=>{
         return node.value
     },
@@ -122,11 +136,15 @@ const mapToReact = (makeComponent):Rules => {
 
     // Formatting codes
     'A<>': ( writer, processor ) => ( node, ctx, interator ) => {
+        let term = node.content
+        if ( typeof term  !== 'string' && 'value' in term ) {
+                term = term.value
+        }
         //get replacement text
-        if (! (ctx.alias && ctx.alias.hasOwnProperty(node.content)) ) {
-            return makeComponent(({children, key})=><code key={key}>A&lt;{children}&gt;</code>, node, node.content )
+        if (! (ctx.alias && ctx.alias.hasOwnProperty(term)) ) {
+            return makeComponent(({children, key})=><code key={key}>A&lt;{children}&gt;</code>, node, interator( node.content, ctx ))
         } else {
-            const src = ctx.alias[ node.content ].join('\n')
+            const src = ctx.alias[ term ].join('\n')
             const tree_1 = processor( src )
             // now clean locations
             const tree = clean_plugin()(tree_1)
@@ -218,10 +236,20 @@ const mapToReact = (makeComponent):Rules => {
         if ( meta === null) {
             meta = node.content
         }
+        //TODO: extract text from content array
+        if ( Array.isArray(meta)) {
+            meta = meta[0]
+        }
+        if (typeof meta !== 'string' && 'value' in meta ) {
+            meta = meta.value
+        }
         return mkComponent(({children, key })=><a href={meta} key={key}>{children}</a>)
     }),
     'S<>' :( writer, processor )=>( node, ctx, interator )=>{
-        const content = node.content || ''
+        let content = node.content || ''
+        if (typeof content !== 'string' && 'value' in content ) {
+                content = content.value
+        }
         const Content = content.split('').map((symbol,index) => { 
             if (symbol === ' ') return "\u00a0";
             if (symbol === '\n') return <br key={index}/>;
@@ -301,12 +329,20 @@ const mapToReact = (makeComponent):Rules => {
 
     }
 }
-function  podlite (children:string, { file,plugins=()=>{}, wrapElement}:{file?:string, plugins?:any, wrapElement?:WrapElement}, ...args) {
-    const content = file
-    const   ast = parse( children || content)
+function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{file?:string, plugins?:any, wrapElement?:WrapElement, tree?:PodliteExport}, ...args) {
+    
+    const ast = ((tree)=>{
+        if (tree) return tree.interator
+        let podlite = podlite_core({ importPlugins: true })
+        let treeAfterParsed = podlite.parse(children || file)
+        return podlite.toAst(treeAfterParsed)
+    })(tree)
+
+    // const   ast = parse( children || content )
     let i_key_i = 10000
     const makeComponent = helperMakeReact({wrapElement})
-
+    // TODO: move toJSX to podlite/core
+    // const toJSXPlugins= toAnyRules('toJSX', instance.getPlugins())
     const rules:Rules = {
         ...mapToReact(makeComponent),
         ...plugins(makeComponent)
@@ -333,6 +369,7 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement}:{file?:s
     .use(rules)
     .run(ast, writer)
 // union main react elements and post processed via onEnd event
+//@ts-ignore
 return new Array().concat( res.interator, writer.postInterator )
 }
 export default Podlite
