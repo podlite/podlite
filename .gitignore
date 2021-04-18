@@ -13,4 +13,7 @@ node_modules
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+lib
+built
+
 
