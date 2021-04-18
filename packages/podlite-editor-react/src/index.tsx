@@ -263,9 +263,12 @@ return (
                                onMouseMove={()=>setPreviewScrolling(false)}
         >
         <CodeMirror 
-            value={text}
+            value={content}
             editorDidMount={ editor => { instanceCM = editor } }
-            onBeforeChange={ (editor, data, value) => { setChanged(true); updateText(value) } }
+            onChange = { (editor, data, value) => { 
+                setChanged(true); 
+                updateText(value)
+            } }
             onScroll={scrollEditorHandler}
             options={options} 
             className="editorApp"
