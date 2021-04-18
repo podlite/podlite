@@ -1,9 +1,24 @@
 {
+    // // "extends": "../core/tsconfig.json",
+    // "include": ["src/**/*"],
+    // "compilerOptions": {
+    //     "outDir": "./lib",
+    //     "rootDir": "./src",
+    //     "jsx": "react",
+    //     "esModuleInterop": true,
+    // },
+    // "references": [
+    //     {
+    //     "path": "../core"
+    //     }
+    // ]
+
+
   "include": ["src/**/*"],
   "jsx": "react",
   
   "compilerOptions": {
-    // "target": "es5",
+    "target": "es5",
     // "module": "es2015",
      "module": "esnext",
     "moduleResolution": "node",
@@ -15,6 +30,11 @@
     "declaration": true,
     "esModuleInterop": true,
     "incremental": true,
-    "target": "ES2018"
+    // "target": "ES2018" 
   },
+  "references": [
+    {
+      "path": "../podlite-schema"
+    }
+  ]
 }
