@@ -15,7 +15,7 @@
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
     "prepublishOnly": "yarn build && yarn test",
-    "github:publish": "yarn lerna publish from-package --registry https://npm.pkg.github.com/",
+    "github:publish": "yarn lerna publish from-package",
     "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed"
   },
