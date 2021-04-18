@@ -285,6 +285,9 @@
                     "$ref": "#/definitions/FormattingCodeD"
                 },
                 {
+                    "$ref": "#/definitions/FormattingCodeL"
+                },
+                {
                     "$ref": "#/definitions/FormattingCodeAny"
                 },
                 {
@@ -405,6 +408,9 @@
                                 "$ref": "#/definitions/FormattingCodeD"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeAny"
                             },
                             {
@@ -512,6 +518,9 @@
                                 "$ref": "#/definitions/FormattingCodeD"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeAny"
                             },
                             {
@@ -587,6 +596,9 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeL"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeAny"
@@ -668,12 +680,37 @@
                     ]
                 },
                 "content": {
-                    "type": "string"
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 }
             },
             "required": [
                 "name",
                 "type"
+            ]
+        },
+        "Text": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text"
+                    ]
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "value"
             ]
         },
         "FormattingCodeA": {
@@ -692,7 +729,14 @@
                     ]
                 },
                 "content": {
-                    "type": "string"
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -730,6 +774,42 @@
                 "content",
                 "name",
                 "synonyms",
+                "type"
+            ]
+        },
+        "FormattingCodeL": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "fcode"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "L"
+                    ]
+                },
+                "meta": {
+                    "type": "string"
+                },
+                "content": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "content",
+                "meta",
+                "name",
                 "type"
             ]
         },
@@ -780,6 +860,9 @@
                                 "$ref": "#/definitions/FormattingCodeD"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeAny"
                             },
                             {
@@ -801,24 +884,6 @@
                     "type": "string",
                     "enum": [
                         "verbatim"
-                    ]
-                },
-                "value": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "type",
-                "value"
-            ]
-        },
-        "Text": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "text"
                     ]
                 },
                 "value": {
@@ -890,6 +955,9 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeL"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeAny"
