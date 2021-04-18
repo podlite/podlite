@@ -205,6 +205,12 @@
     border: none;
   }
   
+  /* plugins */
+  .mermaid svg {
+    display: block;
+    margin: auto;
+  }
+  
   /* End of pod6 */ 
   
   
@@ -272,7 +278,7 @@
     overflow-x: hidden;
     background-color: white;
   }
-  
+
   .Editorright .error {
     opacity: 0.5;
   }
