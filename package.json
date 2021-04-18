@@ -11,7 +11,7 @@
   "scripts": {
     "test": "jest",
     "buildTSC": "tsc -b ./tsconfig.monorepo.json",
-    "build": "yarn workspace @podlite/schema run build && yarn workspaces run build",
+    "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
     "prepublishOnly": "yarn build && yarn test",
