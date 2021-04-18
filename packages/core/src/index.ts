@@ -80,6 +80,20 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
        return <PodliteDocument>result.interator
     }
 
+    instance.toAstResult = (ast) =>{
+        // get plugins  for Ast
+        const toAstPlugins= toAnyRules('toAst', instance.getPlugins())
+        const result:PodliteExport = toAny().use({
+            '*':( )=>( node, ctx, interator )=>{ 
+             if ( 'content' in node ) {
+                 node.content = interator(node.content, ctx)
+             }
+             return node
+             }
+        }).use(toAstPlugins).run(ast)
+        return result
+    }
+
     instance.toHtml = ( ast ) => { 
         const toHtmlPlugins= toAnyRules('toHtml', instance.getPlugins())
         return toHtml({}).use(toHtmlPlugins).run(ast,null)
