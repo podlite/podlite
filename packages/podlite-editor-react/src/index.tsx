@@ -47,7 +47,7 @@ type Props={
     isPreviewModeEnabled? :boolean
 }
 
-export default ({content, isDarkTheme = false ,isLineNumbers=false, isPreviewModeEnabled=false, onConvertSource, onSavePressed, sourceType }:Props) => {
+export default ({content, isDarkTheme = false ,isLineNumbers=false, isPreviewModeEnabled=false, onConvertSource, onSavePressed = ()=>{}, sourceType }:Props) => {
   const [text, updateText] = useState(content)
 
   const [marks, updateMarks] = useState([])
@@ -65,9 +65,6 @@ export default ({content, isDarkTheme = false ,isLineNumbers=false, isPreviewMod
   const [isChanged, setChanged] = useState(false)
 
   const [fileLoading, setFileLoading] = useState(true)
-  // const [marks, updateMarks] = useState([])
-  
-//   const [result, updateResult] = useState(makeHtml(''))
 
 useEffect(()=>{
 updateText(content)
@@ -84,29 +81,12 @@ updateText(content)
   useEffect( () => {
   const saveFileAction  =  () => {
     if (isChanged)  {
-        // vmd.saveFile({content:text, filePath})
         console.warn("Save File")
         onSavePressed(text)
 
     }
   }
-
-  const togglePreviewMode  =  (e) => {
-    e.preventDefault()
-    setPreviewMode(!isPreviewMode)
-    if (!isPreviewMode) {
-      const el = previewEl.current
-      console.log({el})
-      el.focus()
-    }
-    if (isPreviewMode) {
-      if (instanceCM) {
-        console.log({instanceCM})
-        instanceCM.focus()
-      }
-    }
-  }
-
+// TODO: remove save keys binds
   Mousetrap.bindGlobal(['ctrl+s', 'command+s'], saveFileAction)
 return () => {
     Mousetrap.unbind(['ctrl+s', 'command+s'])
