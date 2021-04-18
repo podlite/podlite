@@ -5,8 +5,9 @@ import * as path from 'path'
 import * as fs  from 'fs'
 const glob = require('glob')
 import { md2ast }  from '../src/'
-const loadTests = (path) => {
-    return glob.sync(path).map( f => {
+const loadTests = (testsPath) => {
+    const pathToTests = path.resolve(__dirname, testsPath)
+    return glob.sync(pathToTests).map( f => {
         const testData = fs.readFileSync(f)
         const [ src, dst ] = `${testData}`.split('~~~~~~~\n')
         return { src, dst, file: f}
@@ -19,7 +20,7 @@ const process = (src) => {
 }
 
 describe("run parser tests", () => {
-    loadTests('t/fixtures/*t').map( item => {
+    loadTests('fixtures/*t').map( item => {
         test(item.file, ()=>expect(
             process(item.src)).toEqual( JSON.parse(item.dst))
         )
