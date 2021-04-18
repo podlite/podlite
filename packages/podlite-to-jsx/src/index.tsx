@@ -337,7 +337,7 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
         let treeAfterParsed = podlite.parse(children || file)
         return podlite.toAst(treeAfterParsed)
     })(tree)
-    console.log(JSON.stringify(ast, null,2))
+
     // const   ast = parse( children || content )
     let i_key_i = 10000
     const makeComponent = helperMakeReact({wrapElement})
