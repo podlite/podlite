@@ -16,7 +16,8 @@ jobs:
         uses: actions/checkout@v1
       - name: Install and Build
         run: |
-          yarn install
+          yarn install 
+          yarn build
           yarn test
 
   publish-npm:
