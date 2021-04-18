@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@podlite/schema": "*",
-    "podlite": "*"
+    "podlite": "*",
+    "typescript": "4.2.3"
   }
 }
