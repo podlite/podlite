@@ -11,6 +11,9 @@
       "jest-serializer-html"
     ]
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "tsc && cp  src/Editor.css lib",
