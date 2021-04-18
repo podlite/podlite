@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {Controlled as CodeMirror} from 'react-codemirror2'
+import {UnControlled as CodeMirror} from 'react-codemirror2'
 import {EditorConfiguration} from 'codemirror'
 import { useState, useEffect, useRef, useMemo } from 'react'
 
@@ -14,14 +14,6 @@ import 'mousetrap-global-bind';
 import 'codemirror/mode/gfm/gfm';
 
 import path from 'path'
-
-
-// const styles: React.CSSProperties = {
-//   marginTop: 100,
-//   textAlign: 'center'
-// }
-
-
 
 
 //@ts-ignore
@@ -117,16 +109,6 @@ return () => {
   }
 
 })
-
-
-//   useEffect(() => {
-//   const handlerFileSaved = (_, { filePath }) => {
-//   setChanged(false)
-//   setFilePath(filePath)
-//  }
-//   vmd.on('file-saved', handlerFileSaved)
-//   return function cleanup() { vmd.off('file-saved', handlerFileSaved ) }
-// })
 
 
 useEffect(() => {
