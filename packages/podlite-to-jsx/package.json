@@ -15,6 +15,9 @@
     "pod6": "0.0.36",
     "react-is": "^17.0.2"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "@types/react": "^17.0.3",
