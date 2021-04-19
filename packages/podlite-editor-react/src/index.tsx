@@ -9,7 +9,8 @@ import {isValidElementType, isElement} from  'react-is'
 import Mousetrap from 'mousetrap'
 ; // global-bind must be import after Mousetrap
 import 'mousetrap-global-bind';
-import '../../../node_modules/codemirror/lib/codemirror.css';
+// TODO: use bundler to add into package
+// import '../../../node_modules/codemirror/lib/codemirror.css';
 import './Editor.css';
 import 'codemirror/mode/gfm/gfm';
 
