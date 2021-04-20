@@ -222,29 +222,7 @@
   .title {
     margin:0em;
   }
-  
-  
-  @keyframes fadeOut {
-    20% {
-      visibility: hidden;
-      opacity: 0
-    }
-    100% {
-      visibility: visible;
-      opacity: 1
-    }
-  }
-  
-  @keyframes fadeIn {
-    20% {
-      opacity: 1
-    }
-   
-    100% {
-      visibility: hidden;
-      opacity: 0
-    }
-  }
+
   
   .Editorleft {
     border-right: 1px dotted lightgrey;
@@ -257,9 +235,9 @@
     float: left;
     height: 100%;
     padding-left: 10px;
-    visibility: hidden;
-    animation: 1s fadeOut;
-    animation-fill-mode: forwards;
+    visibility:visible;
+    opacity: 1;
+     transition: all 0.2s ease-out;
   }
   
   .editorApp,.CodeMirror {
@@ -309,9 +287,8 @@
     background-color: white;
   }
   .layoutPreview .Editorleft {
-    visibility: visible;
-    animation: 0.5s fadeIn;
-    animation-fill-mode: forwards;
+    visibility: hidden;
+    opacity: 0;
   }
   
   .layoutPreview .content {
