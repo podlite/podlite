@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Podlite React component",
   "main": "index.js",
   "types": "lib/index.d.ts",
@@ -16,7 +16,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "tsc && cp  src/Editor.css lib",
+    "build": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react*' --format=esm &&  tsc  --declaration --emitDeclarationOnly",
     "test": "jest  --verbose --passWithNoTests"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@types/react": "^17.0.3",
+    "esbuild": "^0.11.12",
     "jest-serializer-html": "^7.0.0",
     "prettier": "^2.2.1",
     "react": "16.12.0",
