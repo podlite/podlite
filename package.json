@@ -14,7 +14,6 @@
     "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
-    "prepublishOnly": "yarn build && yarn test && yarn install --production",
     "github:publish": "yarn lerna publish from-package",
     "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed"
@@ -28,6 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "jest-watch-typeahead": "^0.6.1",
+    "lerna": "^4.0.0",
     "pod6": "0.0.36",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
@@ -37,7 +37,6 @@
     "@babel/preset-env": "^7.13.15",
     "@types/node": "^14.11.2",
     "jest": "^26.5.2",
-    "lerna": "^4.0.0",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^26.4.1",
     "typescript": "4.2.3"
