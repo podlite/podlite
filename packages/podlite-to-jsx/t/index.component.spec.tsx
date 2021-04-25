@@ -432,8 +432,7 @@ it("accepts =Image", () => {
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div>
-      <img src="https://www.ru
-    "
+      <img src="https://www.ru"
            alt="alternative"
       >
     </div>
@@ -466,6 +465,78 @@ it("accepts =TITLE", () => {
         </p>
       </div>
     </div>
+  `);
+});
+
+it("accepts =defn", () => {
+  render(
+    <Podlite>
+      {`
+=defn  MAD
+Affected with a high degree of intellectual independence.
+=defn  MEEKNESS
+Uncommon patience in planning a revenge that is worth while.
+=defn
+MORAL
+Conforming to a local and mutable standard of right.
+Having the quality of general expediency.
+    `}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <dl>
+      <dt>
+        MAD
+      </dt>
+      <dd>
+        Affected with a high degree of intellectual independence.
+      </dd>
+      <dt>
+        MEEKNESS
+      </dt>
+      <dd>
+        Uncommon patience in planning a revenge that is worth while.
+      </dd>
+      <dt>
+        MORAL
+      </dt>
+      <dd>
+        Conforming to a local and mutable standard of right.
+    Having the quality of general expediency.
+      </dd>
+    </dl>
+  `);
+});
+
+it("accepts =nested", () => {
+  render(
+    <Podlite>
+      {`
+=begin nested
+We are all of us in the gutter,B<NL>
+but some of us are looking at the stars!
+    =begin nested
+    -- Oscar Wilde
+    =end nested
+=end nested
+`}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <blockquote>
+      <p>
+        We are all of us in the gutter,
+        <strong>
+          NL
+        </strong>
+        but some of us are looking at the stars!
+      </p>
+      <blockquote>
+        <p>
+          -- Oscar Wilde
+        </p>
+      </blockquote>
+    </blockquote>
   `);
 });
 
