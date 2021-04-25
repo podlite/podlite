@@ -80,6 +80,24 @@ const mapToReact = (makeComponent):Rules => {
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [] )
     }
+    // Handle nested block and :nested block attribute
+    const handleNested = ( defaultHandler, implicitLevel?:number ) => {
+
+        return ( writer, processor ) => {
+            const defaultHandlerInited = defaultHandler( writer, processor )
+            return ( node, ctx, interator ) => {
+
+                const nesting = makeAttrs(node, ctx).getFirstValue('nested') || implicitLevel
+                const children = defaultHandlerInited( node, ctx, interator )
+                // if no nesting needs - simply return children
+                if (!nesting) {return children }
+                const arr =  [...Array(nesting).keys()]
+                return  arr.reduce((acc)=>makeComponent('blockquote', node, acc), children)
+
+            }
+        }
+    }
+
     return {
     'pod': mkComponent('div'),
     'root': nodeContent,
