@@ -1,5 +1,13 @@
 # @podlite/editor-react
 
+## Upcoming
+
+## 0.0.4
+- fix parameters
+- move out from editor key bindings
+- add controlled editor support
+- clean deps
+
 ## 0.0.3
 - fix animation
 ## 0.0.2
