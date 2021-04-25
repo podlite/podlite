@@ -6,9 +6,9 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 //@ts-ignore
 import {isValidElementType, isElement} from  'react-is'
 
-import Mousetrap from 'mousetrap'
-; // global-bind must be import after Mousetrap
-import 'mousetrap-global-bind';
+// import Mousetrap from 'mousetrap'
+// ; // global-bind must be import after Mousetrap
+// import 'mousetrap-global-bind';
 // TODO: use bundler to add into package
 // import '../../../node_modules/codemirror/lib/codemirror.css';
 import './Editor.css';
