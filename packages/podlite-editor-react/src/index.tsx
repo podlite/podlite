@@ -40,7 +40,7 @@ let instanceCM = null
 type Props={
     content: string,
     onChangeSource:Function,
-    sourceType: 'pod6' | 'md',
+    sourceType?: 'pod6' | 'md',
     onConvertSource: (source:string)=>ConverterResult,
     onSavePressed?: Function,
     isDarkTheme? : boolean,
