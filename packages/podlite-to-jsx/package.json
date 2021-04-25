@@ -11,7 +11,7 @@
     "test": "jest  --verbose"
   },
   "dependencies": {
-    "@podlite/diagram": "^0.0.1",
+    "@podlite/diagram": "0.0.2",
     "pod6": "0.0.37",
     "react-is": "^17.0.2"
   },
@@ -29,8 +29,8 @@
     "typescript": "4.2.3"
   },
   "peerDependencies": {
+    "@podlite/diagram": "*",
     "pod6": "*",
-    "react": "*",
-    "@podlite/diagram": "*"
+    "react": "*"
   }
 }
