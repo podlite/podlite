@@ -18,7 +18,7 @@ const process = (src) => {
     
 }
 
-describe.skip("run parser tests", () => {
+describe("run parser tests", () => {
     loadTests('fixtures/*t').map( item => {
         test(item.file, ()=>expect(
             process(item.src)).toEqual( JSON.parse(item.dst))
