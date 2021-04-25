@@ -88,9 +88,9 @@ updateText(content)
     }
   }
 // TODO: remove save keys binds
-  Mousetrap.bindGlobal(['ctrl+s', 'command+s'], saveFileAction)
+//   Mousetrap.bindGlobal(['ctrl+s', 'command+s'], saveFileAction)
 return () => {
-    Mousetrap.unbind(['ctrl+s', 'command+s'])
+    // Mousetrap.unbind(['ctrl+s', 'command+s'])
   }
 
 })
