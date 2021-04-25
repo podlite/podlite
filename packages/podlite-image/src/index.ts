@@ -17,7 +17,8 @@ const Image:Plugin = {
                 margin:node.margin
             }
             if (link) {
-                props.src = link
+                // clear all \n or spaces
+                props.src = link.split(/\s+/)[0]
             }
             if (altText) {
                 props.alt = altText
