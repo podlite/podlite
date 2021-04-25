@@ -135,6 +135,14 @@ const mapToReact = (makeComponent):Rules => {
     ':para' : mkComponent('p'),
     'para' : mkComponent('div'),
     'comment:block': emptyContent(),
+    'defn':subUse([
+            // to avoid overlap para blocks handlers
+            // define general :para at first
+            {':para':mkComponent('dd')},
+            {'term:para' : mkComponent('dt')},
+        ],
+        nodeContent
+    ),
     'output': mkComponent(({children, key })=><pre key={key}><samp>{children}</samp></pre>),
     'input': mkComponent(({children, key })=><pre key={key}><kbd>{children}</kbd></pre>),
 
