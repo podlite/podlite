@@ -143,6 +143,7 @@ const mapToReact = (makeComponent):Rules => {
         ],
         nodeContent
     ),
+    "nested":handleNested(nodeContent, 1),
     'output': mkComponent(({children, key })=><pre key={key}><samp>{children}</samp></pre>),
     'input': mkComponent(({children, key })=><pre key={key}><kbd>{children}</kbd></pre>),
 
