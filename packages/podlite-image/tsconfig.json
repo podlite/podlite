@@ -2,13 +2,8 @@
   "extends": "../core/tsconfig.json",
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es5",
-    // "module": "es2015",
-     "module": "esnext",
-    "moduleResolution": "node",
     "outDir": "./lib",
-    "rootDir": "./src",
-    "allowSyntheticDefaultImports": true,
+    "rootDir": "./src"
   },
   "references": [
     {
