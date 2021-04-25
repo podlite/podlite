@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {UnControlled as CodeMirror} from 'react-codemirror2'
+import {Controlled as CodeMirrorControlled} from 'react-codemirror2'
 import {EditorConfiguration} from 'codemirror'
 import { useState, useEffect, useRef, useMemo } from 'react'
 
@@ -46,9 +47,10 @@ type Props={
     isDarkTheme? : boolean,
     isLineNumbers?: boolean,
     isPreviewModeEnabled? :boolean
+    isControlled?:boolean
 }
 
-export default ({content, isDarkTheme = false ,isLineNumbers=false, isPreviewModeEnabled=false, onConvertSource, onSavePressed = ()=>{}, sourceType }:Props) => {
+export default ({ onChangeSource = ()=>{}, content, isDarkTheme = false, isLineNumbers = false, isPreviewModeEnabled = false, onConvertSource, onSavePressed = () => { }, sourceType = 'pod6', isControlled=false}: Props) => {
   const [text, updateText] = useState(content)
 
   const [marks, updateMarks] = useState([])
@@ -243,17 +245,36 @@ return (
         <div className="Editorleft" onMouseEnter={()=>setPreviewScrolling(false)}
                                onMouseMove={()=>setPreviewScrolling(false)}
         >
+        {isControlled ? 
+        <CodeMirrorControlled
+        value={content}
+        editorDidMount={ editor => { instanceCM = editor } }
+        onBeforeChange={(editor, data, value) => {
+            setChanged(true); 
+            // updateText(value);
+            onChangeSource(value)
+        }}
+        // onChange={(editor, data, value) => {
+
+        // }}
+        onScroll={scrollEditorHandler}
+        options={options} 
+        className="editorApp"
+        />
+        :
         <CodeMirror 
             value={content}
             editorDidMount={ editor => { instanceCM = editor } }
             onChange = { (editor, data, value) => { 
                 setChanged(true); 
-                updateText(value)
+                updateText(value);
+                onChangeSource(value)
             } }
             onScroll={scrollEditorHandler}
             options={options} 
             className="editorApp"
          />
+         }
          </div>
          {previewHtml}
     </div>
