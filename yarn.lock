@@ -1906,6 +1906,18 @@
   dependencies:
     "@octokit/openapi-types" "^6.0.0"
 
+"@podlite/diagram@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@podlite/diagram/-/diagram-0.0.1.tgz#068b02fa5cfdcdb55ed304381155309829e913a4"
+  integrity sha512-TCyVDDo7/0rpwPVHIxQqisCGDVXHfq9g0p621vVs6/5vfwWG8YynzjBxmYkDVTkhCCprH1XMZ1ehUN84t7iaqQ==
+  dependencies:
+    "@types/node" "^14.11.2"
+    jest-watch-typeahead "^0.6.1"
+    mermaid "^8.9.2"
+    pod6 "0.0.36"
+    react-is "^16.12.0"
+    ts-jest "^26.4.1"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
@@ -3722,9 +3734,9 @@ es-to-primitive@^1.2.1:
     is-symbol "^1.0.2"
 
 esbuild@^0.11.12:
-  version "0.11.12"
-  resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.11.12.tgz#8cbe15bcb44212624c3e77c896a835f74dc71c3c"
-  integrity sha512-c8cso/1RwVj+fbDvLtUgSG4ZJQ0y9Zdrl6Ot/GAjyy4pdMCHaFnDMts5gqFnWRPLajWtEnI+3hlET4R9fVoZng==
+  version "0.11.14"
+  resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.11.14.tgz#0f4beba211d6d23e2825f61a89ccff1eef96361b"
+  integrity sha512-ejheEPkqhq5y0LM9rG9e+3yDihPtqeeE4NZmG7VQiSGJ3CjO4HvPOHmhhttSksfSztjLAGo2+0/zSIvlqj4JOQ==
 
 escalade@^3.1.1:
   version "3.1.1"
@@ -6789,6 +6801,11 @@ pod6@0.0.36:
   version "0.0.36"
   resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.36.tgz#fdf196cb01209689d8e681dc75fbed3c9a091e39"
   integrity sha512-eR7b53ipYmMhCEzmYTo/1K17pSoSrrIJVi4/dJHHsRfmkL/0CDydIST9kEt1AxZBcsq0FYuuib9Zz6hZneXoEA==
+
+pod6@0.0.37:
+  version "0.0.37"
+  resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.37.tgz#61d6072005f4fd5d7c96a9600b7e8a62a2e4945d"
+  integrity sha512-StnE8RV+HLmwK4AE0dNrVokuGWL5U/4mCDaLbqFCFubnGQ+NvIDCJ7rMFbNU7bB2M4BhdM1jAQzwjbvuHJGjyw==
 
 posix-character-classes@^0.1.0:
   version "0.1.1"
