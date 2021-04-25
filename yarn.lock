@@ -1906,18 +1906,6 @@
   dependencies:
     "@octokit/openapi-types" "^6.0.0"
 
-"@podlite/diagram@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@podlite/diagram/-/diagram-0.0.1.tgz#068b02fa5cfdcdb55ed304381155309829e913a4"
-  integrity sha512-TCyVDDo7/0rpwPVHIxQqisCGDVXHfq9g0p621vVs6/5vfwWG8YynzjBxmYkDVTkhCCprH1XMZ1ehUN84t7iaqQ==
-  dependencies:
-    "@types/node" "^14.11.2"
-    jest-watch-typeahead "^0.6.1"
-    mermaid "^8.9.2"
-    pod6 "0.0.36"
-    react-is "^16.12.0"
-    ts-jest "^26.4.1"
-
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.3.tgz#3802ddd21a50a949b6721ddd72da36e67e7f1b2d"
