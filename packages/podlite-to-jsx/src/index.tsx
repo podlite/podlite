@@ -76,9 +76,9 @@ const Podlite: React.FC<{
   }
 const mapToReact = (makeComponent):Rules => {
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
-            // check if node.content defined
-            return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [] )
-        }
+        // check if node.content defined
+        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [] )
+    }
     return {
     'pod': mkComponent('div'),
     'root': nodeContent,
