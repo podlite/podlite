@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Adaptation of pod6 markup language",
   "main": "index.js",
   "types": "./built/index.d.ts",
@@ -21,9 +21,9 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
-    "@podlite/diagram": "*",
-    "@podlite/image": "*",
-    "@podlite/schema": "*",
+    "@podlite/diagram": "^0.0.3",
+    "@podlite/image": "^0.0.3",
+    "@podlite/schema": "^0.0.2",
     "pod6": "0.0.37",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"

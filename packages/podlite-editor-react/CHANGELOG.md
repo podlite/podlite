@@ -2,6 +2,9 @@
 
 ## Upcoming
 
+## 0.0.5
+- update deps
+
 ## 0.0.4
 - fix parameters
 - move out from editor key bindings

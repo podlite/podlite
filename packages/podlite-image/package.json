@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "image",
   "main": "index.js",
   "types": "./lib/index.d.ts",
@@ -14,11 +14,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@podlite/schema": "*"
+    "@podlite/schema": "^0.0.2"
   },
   "devDependencies": {
     "@podlite/schema": "*",
-    "podlite": "*",
+    "podlite": "^0.0.7",
     "typescript": "4.2.3"
   }
 }
