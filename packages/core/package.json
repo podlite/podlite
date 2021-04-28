@@ -23,8 +23,8 @@
   "dependencies": {
     "@podlite/diagram": "*",
     "@podlite/image": "*",
-    "@podlite/schema":"*",
-    "pod6": "0.0.36",
+    "@podlite/schema": "*",
+    "pod6": "0.0.37",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
@@ -38,8 +38,9 @@
     "typescript": "4.2.3"
   },
   "peerDependencies": {
-    "@podlite/schema": "*",
     "@podlite/diagram": "*",
-    "@podlite/image": "*"
+    "@podlite/image": "*",
+    "@podlite/schema": "*",
+    "pod6": "*"
   }
 }

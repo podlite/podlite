@@ -14,7 +14,7 @@
     "access": "public"
   },
   "dependencies": {
-    "pod6": "0.0.36"
+    "@podlite/schema": "*"
   },
   "devDependencies": {
     "@podlite/schema": "*",

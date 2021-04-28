@@ -17,7 +17,6 @@
     "@types/node": "^14.11.2",
     "jest-watch-typeahead": "^0.6.1",
     "mermaid": "^8.9.2",
-    "pod6": "0.0.36",
     "react-is": "^16.12.0",
     "ts-jest": "^26.4.1"
   },

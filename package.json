@@ -14,7 +14,7 @@
     "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
-    "update:version": "lerna version --no-push",
+    "update:version": "lerna version --no-push --exact --no-git-tag-version",
     "github:publish": "yarn lerna publish from-package",
     "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed"

@@ -25,7 +25,7 @@
   "dependencies": {
     "ajv": "^7.2.3",
     "json-pointer": "^0.6.1",
-    "pod6": "0.0.36"
+    "pod6": "0.0.37"
   },
   "devDependencies": {
     "pod6": "*",
