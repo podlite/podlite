@@ -1,6 +1,10 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+
+=head1 0.0.7
+=item update deps
+
 =head1 0.0.5
 =item convert to monorepo
 
