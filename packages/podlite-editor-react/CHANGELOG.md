@@ -2,6 +2,9 @@
 
 ## Upcoming
 
+## 0.0.7
+- add additional build format
+
 ## 0.0.6
 - update css
 - update deps
