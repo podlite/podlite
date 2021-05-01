@@ -1,6 +1,6 @@
 {
   "name": "podlite-monolit",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": {
@@ -15,6 +15,7 @@
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
+    "update:version-patch":"lerna version --no-push --no-git-tag-version patch --yes",
     "github:publish": "yarn lerna publish from-package",
     "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed"

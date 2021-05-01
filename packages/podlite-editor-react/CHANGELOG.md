@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.6
+- update css
+- update deps
+
 ## 0.0.5
 - update deps
 
