@@ -6795,6 +6795,11 @@ pod6@0.0.37:
   resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.37.tgz#61d6072005f4fd5d7c96a9600b7e8a62a2e4945d"
   integrity sha512-StnE8RV+HLmwK4AE0dNrVokuGWL5U/4mCDaLbqFCFubnGQ+NvIDCJ7rMFbNU7bB2M4BhdM1jAQzwjbvuHJGjyw==
 
+pod6@0.0.38:
+  version "0.0.38"
+  resolved "https://registry.yarnpkg.com/pod6/-/pod6-0.0.38.tgz#85a803a69066e4ce71493d98f73746d6277e7153"
+  integrity sha512-Li0Fhyj++mazJLVt+yuWajljicWsKxaasKtLEEVggeV9DdAOgzbOQOOFaeFL2iKMmdK56eM8ookVVCN57tMEdQ==
+
 posix-character-classes@^0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
