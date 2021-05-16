@@ -1,9 +1,9 @@
 import  unified  from 'unified'
 import markdown  from 'remark-parse'
 import toAny  from 'pod6/built/exportAny'
-import { BlockImage, Location, mkBlock, mkFomattingCode, mkFomattingCodeL, mkVerbatim } from '@podlite/schema'
+import { AstTree, BlockImage, Location, mkBlock, mkFomattingCode, mkFomattingCodeL, mkVerbatim } from '@podlite/schema'
 
-export const  md2ast = ( src, extraRules? )=> {
+export const  md2ast = ( src, extraRules? ) :AstTree => {
     // first convert mardown to ast 
     const md_tree = unified().use(markdown).parse(src)
     // first pass : collect linkRefs
@@ -104,15 +104,15 @@ export const  md2ast = ( src, extraRules? )=> {
         //table section
         ':table' :  ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkBlock({type:'table', location:position}, interator(children, { ...ctx}))
+            return mkBlock({name:'table', location:position}, interator(children, { ...ctx}))
         },
         ':tableRow' :  ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkBlock({type:'table_row', location:position}, interator(children, { ...ctx}))
+            return mkBlock({name:'table_row', location:position}, interator(children, { ...ctx}))
         },
         ':tableCell' :  ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkBlock({type:'table_cell', location:position}, interator(children, { ...ctx}))
+            return mkBlock({name:'table_cell', location:position}, interator(children, { ...ctx}))
         },
         ':delete': ( writer, processor )=>( node, ctx, interator )=>{
             return null
