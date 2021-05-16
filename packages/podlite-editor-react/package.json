@@ -1,9 +1,10 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Podlite React component",
   "main": "index.js",
   "types": "lib/index.d.ts",
+  "module": "esm/index.js",
   "license": "MIT",
   "jest": {
     "preset": "ts-jest",
