@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+## 0.0.9
+- fix md transforms
 ## 0.0.8
 - update deps
 
