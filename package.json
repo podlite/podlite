@@ -1,6 +1,6 @@
 {
   "name": "podlite-monolit",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": {
@@ -11,7 +11,8 @@
   "scripts": {
     "test": "jest",
     "buildTSC": "tsc -b ./tsconfig.monorepo.json",
-    "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
+    "build": "tsc -v && yarn workspace @podlite/schema run build && lerna exec -- yarn build",
+    "buildSerial": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
     "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
     "clean:packages": "yarn workspaces run clean",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
