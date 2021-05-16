@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+## 0.0.8
+- fix package
 ## 0.0.7
 - add additional build format
 
