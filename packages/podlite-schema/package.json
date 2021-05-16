@@ -1,12 +1,13 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "podlite schema",
   "main": "index.js",
   "types": "./lib/index.d.ts",
   "license": "MIT",
   "files": [
     "lib/**/*.js",
+    "lib/**/*.d.ts",
     "schema/*",
     "README.md",
     "CHANGELOG.md"
