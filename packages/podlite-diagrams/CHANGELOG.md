@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.5
+- update mermaid to latest version
+- fix error while diagrams renders
+
 ## 0.0.4
 - update deps
 

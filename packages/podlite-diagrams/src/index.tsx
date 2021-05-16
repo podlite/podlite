@@ -9,10 +9,6 @@ const Diagram = ({ chart , isError }: {chart:string, isError:any})=>{
         securityLevel: "loose",
         startOnLoad: false 
     }
-    if ( inputEl ) {
-    mermaid.initialize(config)
-    mermaid.init( inputEl)
-    }
 
     useEffect(()=>{
         var insertSvg = function(svgCode:any){
@@ -23,13 +19,15 @@ const Diagram = ({ chart , isError }: {chart:string, isError:any})=>{
             return
         }
         try {
+            mermaid.initialize(config)
+            mermaid.init(undefined,  inputEl.current)
             mermaid.render('graph-div' + i++, chart, insertSvg)
         }  catch (e) {
             console.log({e});
           }
     }, [chart])
 
-    return <div className={ `mermaid${ isError ? ' error' : ''}` }ref={inputEl}/>
+    return <div className={ `mermaid${ isError ? ' error' : ''}` } ref={inputEl}/>
 }
 
 export const plugin:Plugin = {
