@@ -1,3 +1,4 @@
+import { inlineRef } from "ajv/dist/compile/resolve"
 
 export interface RuleHandler<T = any> {
     (  writer?:any, processor?:any ) :  ( node:T, ctx?:any, interator?:any ) => void | AstTree | PodNode
@@ -18,18 +19,78 @@ interface checkFn<T> {
 interface SetFn<T> {
     (check:checkFn<T>): RuleHandler<T>;
 }
-export interface Rules {
-    [name: string]: RuleHandler;
+export interface RulesStrict {
+
     'A<>': RuleHandler<FormattingCodeA>;
+    'B<>': RuleHandler<FormattingCodeB>;
+    'C<>': RuleHandler<FormattingCodeC>;
     'E<>': RuleHandler<FormattingCodeE>,
     'D<>': RuleHandler<FormattingCodeD>,
+    'I<>': RuleHandler<FormattingCodeI>,
+    'K<>': RuleHandler<FormattingCodeAny>,
+    'R<>': RuleHandler<FormattingCodeAny>,
+    'T<>': RuleHandler<FormattingCodeAny>,
+    'V<>': RuleHandler<FormattingCodeAny>,
     'N<>': RuleHandler<FormattingCodeN>,
     'X<>': RuleHandler<FormattingCodeX>,
     'S<>': RuleHandler<FormattingCodeS>,
     'L<>': RuleHandler<FormattingCodeL>,
-    'table:block': RuleHandler<FormattingCodeD>,
+    'U<>': RuleHandler<FormattingCodeAny>,
+    'Z<>': RuleHandler<FormattingCodeAny>,
+
+    'pod': RuleHandler<Para>,
+    'root': RuleHandler<RootBlock>,
+
+    ':para': RuleHandler<Para>,
+    ':text': RuleHandler<Text>,
+    ':blankline': RuleHandler<BlankLine>,
+    ':ambient': RuleHandler<Ambient>,
+    ':code':RuleHandler<Code>,
+    ':verbatim': RuleHandler<Verbatim>
+    ':list': RuleHandler<List>
+
+    // Directives
+    ':config': RuleHandler<BlockConfig>,
+    ':alias': RuleHandler<Alias>,
+
+    'data': RuleHandler<BlockData>,
+    'code': RuleHandler<BlockCode>,
+    'para': RuleHandler<BlockPara>,
+    'defn': RuleHandler<BlockDefn>,
+    'nested': RuleHandler<BlockNested>,
+    'output': RuleHandler<BlockOutput>,
+    'input' : RuleHandler<BlockInput>,
+    'image': RuleHandler<BlockImage>,
+    ':image': RuleHandler<Image>,
+
+    'item:block' :  RuleHandler<BlockItem>,
+    'item': RuleHandler<BlockItem>,
+
+    'comment:block': RuleHandler<BlockComment>,
+    'comment': RuleHandler<BlockComment>,
+
+    'head:block':RuleHandler<BlockHead>,
+    'head':RuleHandler<BlockHead>,
+
+    //group type
+    ':fcode': RuleHandler<FormattingCodes>,
+
+    'table:block': RuleHandler<BlockTable>,
+    'table': RuleHandler<BlockTable>,
+    ':separator': RuleHandler<Separator>,
+    'table_row': RuleHandler<TableRow>,
+    'table_cell': RuleHandler<TableCell>,
+    'table_head': RuleHandler<TableHead>,
+
+
+    // User-defined
+    'Diagram': RuleHandler<BlockDiagram>,
+    'Image': RuleHandler<BlockNamed>,
 }
 
+export interface Rules extends RulesStrict {
+    [name: string]: RuleHandler;
+}
 export interface Position {
     line: number;
     column: number;
@@ -127,16 +188,27 @@ export interface FormattingCodeD {
 export interface FormattingCodeL {
     type:"fcode",
     name: "L",
-    meta: string,
+    meta: string | null,
     content: string | Text,
 }
 
+export interface FormattingCodeI {
+    type:"fcode",
+    name: "I",
+    meta: string,
+    content: string | Text,
+}
 export interface FormattingCodeAny {
     type:"fcode",
     name: string,
     content?: Array<FormattingCodes|string>
 }
 
+export interface Ambient {
+    type: "ambient",
+    text: string, // TODO: change type name to 'value'
+    location:Location
+ }
 
 export interface Verbatim {
    type: "verbatim",
@@ -172,7 +244,7 @@ export interface BlankLine {
 export interface List {
     type: "list"; 
     level: string|number, // TODO: eliminate string
-    content: Array<Node>;
+    content: Array<BlockItem|BlankLine|List>;
     list:"itemized"
 }
 
@@ -189,6 +261,7 @@ export interface ConfigItem {
     type: string,
 }
 
+//TODO: rename it to Config like Alias ?
 export interface BlockConfig {
     name: string,
     type: "config",
@@ -203,6 +276,10 @@ export interface Alias {
     margin: string,
 }
 
+export interface Separator {
+    type:'separator',
+    text:string
+}
 export interface Block {
     type: "block";
     location:Location;
@@ -211,18 +288,53 @@ export interface Block {
     config?:Array<ConfigItem|BrokenConfigItem>;
 }
 
+export interface BlockPod extends Block {
+    name: 'pod';
+}
 
+export interface BlockData extends Block {
+    name: 'data';
+}
+
+export interface BlockComment extends Block {
+    name: 'comment';
+}
+export interface BlockDefn extends Block {
+    //TODO: check defined list for extra fields
+    name: 'defn'
+}
 export interface BlockItem extends Block {
     name: "item",
-    level: string,
+    content: Array<Node>
+    level: string|number, // TODO: find source of string, must be number
 }
+
+export interface BlockOutput extends Block {
+    name: "output";
+}
+
+export interface BlockInput extends Block {
+    name: "input";
+}
+
 export interface BlockPara extends Block {
     name: "para";
 }
 
+export interface BlockCode extends Block {
+    name: 'code'
+}
+
+export interface BlockNested extends Block {
+    name: 'nested'
+}
+export interface BlockHead extends Block {
+    name:'head',
+    level: number|string, //TODO: mist be only number
+}
 export interface BlockTable extends Omit<Block,'content'> {
     name: "table";
-    content:Array<TableHead|TableSeparator|TableRow>,
+    content:Array<TableHead|TableSeparator|TableRow|BlankLine>,
     // why text not always presents here
     text?: string, 
 }
@@ -247,15 +359,27 @@ export interface TableSeparator {
     "text": string,
 }
 
-export interface BlockAny extends Block {
+export type BlockAny = BlockNamed
+
+
+export interface BlockNamed extends Omit<Block, 'content'> {
     name: Capitalize<string>;
+    content: [(Verbatim|Para|Code)?] // TODO: use one of Verbatim or Code types
 }
+
+export interface BlockDiagram extends Omit<BlockNamed,'content'> {
+    name: 'Diagram',
+    content: [Verbatim],
+    custom?: { location: Location }
+}
+
 export type FormattingCodes = 
     | FormattingCodeA
     | FormattingCodeC
     | FormattingCodeB
     | FormattingCodeD
     | FormattingCodeE
+    | FormattingCodeI
     | FormattingCodeL
     | FormattingCodeN
     | FormattingCodeX
@@ -265,12 +389,23 @@ export type FormattingCodes =
     | FormattingCodeAny
 
 export type PodNode = 
-    | BlockPara
+    | Ambient //TODO: Needs move to outside of 'pod' block ?
+    | BlockPod
+    | BlockData
+    | BlockCode
     | BlankLine
+    | BlockNested
+    | BlockOutput
+    | BlockInput
+    | BlockPara
+    | BlockHead
+    | BlockComment
+    | BlockDefn
     | string
     | Para
     | Text
     | Code
+    | BlockNamed
     | BlockAny
     | Verbatim
     | BlockTable
@@ -282,6 +417,7 @@ export type PodNode =
     | BlockImage
     | Image
     | RootBlock
+    | Separator
     // Fomatting codes
     | FormattingCodes
 export type Node = PodNode
