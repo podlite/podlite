@@ -1,5 +1,10 @@
 # @podlite/schema
 
+## 0.0.4
+- fix npm package
+- add sometypes of blocks
+- update schema
+ 
 ## 0.0.3
 - update deps
 ## 0.0.2
