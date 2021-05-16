@@ -9,7 +9,7 @@ import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
 import { podlite as podlite_core, PodliteExport } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
-import {Verbatim, PodNode, Text, Rules} from '@podlite/schema'
+import {Verbatim, PodNode, Text, Rules, RulesStrict} from '@podlite/schema'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -58,10 +58,11 @@ export interface  WrapElement {
     }
 const Podlite: React.FC<{
     [key: string]: any
-    children: string
+    children?: string
     file?:string,
     plugins?:any,
-    wrapElement?:WrapElement
+    wrapElement?:WrapElement,
+    tree?:PodliteExport
   }>  = ({ children, ...options }) => {
           // console.log({podlite:podlite(children, options)})
     // return React.cloneElement(
@@ -74,7 +75,7 @@ const Podlite: React.FC<{
     // //   props as React.Props<any>
     // )
   }
-const mapToReact = (makeComponent):Rules => {
+const mapToReact = (makeComponent):Partial<RulesStrict> => {
 
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
         // check if node.content defined
@@ -302,7 +303,7 @@ const mapToReact = (makeComponent):Rules => {
          return interator(node.content, ctx)
      },
     // table section
-    'table:block' : 
+    'table' : 
         ( writer, processor ) => 
                 ( node, ctx, interator ) => 
                     {
@@ -398,7 +399,6 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
     .use(rules)
     .run(ast, writer)
 // union main react elements and post processed via onEnd event
-//@ts-ignore
 return new Array().concat( res.interator, writer.postInterator )
 }
 export default Podlite
