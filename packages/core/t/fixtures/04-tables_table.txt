@@ -8,19 +8,23 @@ Content in the first column | Content in the second column
   "name": "pod",
   "content": [
     {
-      "type": "table",
+      "name": "table",
+      "type": "block",
       "content": [
         {
-          "type": "table_row",
+          "name": "table_row",
+          "type": "block",
           "content": [
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "First Header"
               ]
             },
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "Second Header"
               ]
@@ -28,16 +32,19 @@ Content in the first column | Content in the second column
           ]
         },
         {
-          "type": "table_row",
+          "name": "table_row",
+          "type": "block",
           "content": [
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "Content from cell 1"
               ]
             },
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "Content from cell 2"
               ]
@@ -45,16 +52,19 @@ Content in the first column | Content in the second column
           ]
         },
         {
-          "type": "table_row",
+          "name": "table_row",
+          "type": "block",
           "content": [
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "Content in the first column"
               ]
             },
             {
-              "type": "table_cell",
+              "name": "table_cell",
+              "type": "block",
               "content": [
                 "Content in the second column"
               ]
