@@ -1,5 +1,5 @@
 import { toTree } from "pod6"
-import { validateAst } from "../src"
+import { isValidateError, validateAst } from "../src"
 
 const fs = require('fs')
 const path = require('path')
@@ -17,15 +17,13 @@ describe("run parser tests", () => {
         allFixtures.map(i => test(i.file, ()=>{
         const tree = toTree().parse(i.text)
         const r = validateAst(tree)
+        const errorDescribe = isValidateError(r, tree)
+        if (errorDescribe) {
+            // console.log(JSON.stringify({tree}, null, 2 ))
+            console.warn(JSON.stringify( errorDescribe, null, 2 ))
+            console.warn(i.file)
+        }
         expect(r).toEqual([])
     }
     ))
-})
-
-describe("run fixtures saved tree", () => {
-    allFixtures.map(i => test(i.file, ()=>{
-    const r = validateAst(i.tree)
-    expect(r).toEqual([])
-}
-))
 })
