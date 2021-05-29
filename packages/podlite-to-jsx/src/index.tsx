@@ -376,8 +376,11 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
         ...mapToReact(makeComponent),
         ...plugins(makeComponent)
     }
+    interface WriterPostinterator extends Writer {
+        postInterator? : any
+    }
     const writer = new Writer((s)=>{ 
-    })
+    }) as WriterPostinterator
     const  res = 
     toAny({processor:parse})
     .use({'*:*':( writer, processor )=>( node, ctx, interator )=>{
