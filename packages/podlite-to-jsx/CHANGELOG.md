@@ -2,9 +2,12 @@
 
 ## Upcoming
 
+## 0.0.6
+- fix process empty L<>
+
 ## 0.0.5
 - update deps
-- desclare tree arg
+- declare tree arg
 ## 0.0.4
 - update deps
 ## 0.0.3
