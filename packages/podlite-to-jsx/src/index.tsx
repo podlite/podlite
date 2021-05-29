@@ -269,7 +269,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         if ( Array.isArray(meta)) {
             meta = meta[0]
         }
-        if (typeof meta !== 'string' && 'value' in meta ) {
+        if ( meta && typeof meta !== 'string' && 'value' in meta ) {
             meta = meta.value
         }
         return mkComponent(({children, key })=><a href={meta} key={key}>{children}</a>)
