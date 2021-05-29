@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=head1 0.0.10
+=item update deps
+
 =head1 0.0.9
 =item parallel build
 
