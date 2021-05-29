@@ -1,6 +1,6 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "The lightweight, customizable React podlite component.",
   "main": "index.js",
   "types": "lib/index.d.ts",
@@ -11,8 +11,8 @@
     "test": "jest  --verbose"
   },
   "dependencies": {
-    "@podlite/diagram": "^0.0.5",
-    "pod6": "0.0.38",
+    "@podlite/diagram": "^0.0.6",
+    "pod6": "^0.0.39",
     "react-is": "^17.0.2"
   },
   "publishConfig": {
