@@ -164,42 +164,42 @@ useEffect(() => {
 },[text,isPreviewScroll])
 
 useEffect(() => {
- //@ts-ignore
- let cm = instanceCM
- if (!cm) {return}
- //@ts-ignore
-marks.forEach(marker => marker.clear())
-//@ts-ignore
-let cmMrks:Array<never> = []
-//@ts-ignore
-if (result && result.errors ) {
+    //@ts-ignore
+    let cm = instanceCM
+    if (!cm) {return}
+    //@ts-ignore
+    marks.forEach(marker => marker.clear())
+    //@ts-ignore
+    let cmMrks:Array<never> = []
+    //@ts-ignore
+    if (result && result.errors ) {
 
-  //@ts-ignore
-result.errors.map((loc:any)=>{
-  // @ts-ignore
-  let from = {line: loc.start.line-1, ch: loc.start.column-1 - (loc.start.offset === loc.end.offset)};
-  let to = {line: loc.end.line-1, ch: loc.end.column-1};
+        //@ts-ignore
+        result.errors.map((loc:any)=>{
+            // @ts-ignore
+            let from = {line: loc.start.line-1, ch: loc.start.column-1 - (loc.start.offset === loc.end.offset)};
+            let to = {line: loc.end.line-1, ch: loc.end.column-1};
 
-  cmMrks.push(
-              //@ts-ignore
-              cm.markText(
-                  from,
+            cmMrks.push(
+                        //@ts-ignore
+                        cm.markText(
+                            from,
+                            to, 
                   to, 
-                  {
-                    className: 'syntax-error',
-                    title: ';data.error.message',
-                    css: "color : red"
-                  }
-              )
-                  
-  )
-})
-}
-updateMarks(cmMrks)
+                            to, 
+                            {
+                                className: 'syntax-error',
+                                title: ';data.error.message',
+                                css: "color : red"
+                            }
+                        )
+                            
+            )
+        })
+    }
+    updateMarks(cmMrks)
 
 },[text,result])
-
-
 
 const previewHtml = <div className={ "Editorright " + (isDarkTheme ? 'dark' : '' )}
                         onMouseEnter={()=>setPreviewScrolling(true)} 
