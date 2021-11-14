@@ -336,3 +336,8 @@
   ::-webkit-scrollbar-corner {
     background: transparent;
   }
+
+  .CodeMirror-hints {
+    z-index: 1000;
+    border: none;
+  }
