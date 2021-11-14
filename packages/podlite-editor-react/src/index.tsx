@@ -40,11 +40,23 @@ type Props={
     onSavePressed?: Function,
     isDarkTheme? : boolean,
     isLineNumbers?: boolean,
+    isAutoComplete?: boolean,
     isPreviewModeEnabled? :boolean
     isControlled?:boolean
 }
 
-export default ({ onChangeSource = ()=>{}, content, isDarkTheme = false, isLineNumbers = false, isPreviewModeEnabled = false, onConvertSource, onSavePressed = () => { }, sourceType = 'pod6', isControlled=false}: Props) => {
+export default ({ 
+        onChangeSource = ()=>{}, 
+        content, 
+        isDarkTheme = false, 
+        isLineNumbers = false, 
+        isPreviewModeEnabled = false, 
+        onConvertSource, 
+        onSavePressed = () => { },
+        sourceType = 'pod6',
+        isControlled=false,
+        isAutoComplete = true,
+    }: Props) => {
   const [text, updateText] = useState(content)
 
   const [marks, updateMarks] = useState([])
