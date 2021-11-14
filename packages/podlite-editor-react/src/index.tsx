@@ -186,8 +186,6 @@ useEffect(() => {
                         cm.markText(
                             from,
                             to, 
-                  to, 
-                            to, 
                             {
                                 className: 'syntax-error',
                                 title: ';data.error.message',
@@ -288,34 +286,31 @@ return (
                                onMouseMove={()=>setPreviewScrolling(false)}
         >
         {isControlled ? 
-        <CodeMirrorControlled
-        value={content}
-        editorDidMount={ editor => { instanceCM = editor } }
-        onBeforeChange={(editor, data, value) => {
-            setChanged(true); 
-            // updateText(value);
-            onChangeSource(value)
-        }}
-        // onChange={(editor, data, value) => {
-
-        // }}
-        onScroll={scrollEditorHandler}
-        options={options} 
-        className="editorApp"
-        />
-        :
-        <CodeMirror 
+            <CodeMirrorControlled
             value={content}
-            editorDidMount={ editor => { instanceCM = editor } }
-            onChange = { (editor, data, value) => { 
+            editorDidMount={ editor => { instanceCM = editor; updateInstanceCM(editor) } }
+            onBeforeChange={(editor, data, value) => {
                 setChanged(true); 
-                updateText(value);
+                // updateText(value);
                 onChangeSource(value)
-            } }
+            }}
             onScroll={scrollEditorHandler}
             options={options} 
             className="editorApp"
-         />
+            />
+        :
+            <CodeMirror 
+                value={content}
+                editorDidMount={ editor => { instanceCM = editor;  updateInstanceCM(editor) } }
+                onChange = { (editor, data, value) => { 
+                    setChanged(true); 
+                    updateText(value);
+                    onChangeSource(value)
+                } }
+                onScroll={scrollEditorHandler}
+                options={options} 
+                className="editorApp"
+            />
          }
          </div>
          {previewHtml}
