@@ -241,9 +241,46 @@ const scrollEditorHandler = (editor) => {
 }
 const [instanceCMLocal, updateInstanceCM] = useState<any>()
 
-  
-}
-}
+useEffect(()=>{
+    if (!instanceCMLocal) return
+    if (!isAutoComplete) return
+    var onChange = function(instance, object)
+        {
+            // Check if the last inserted character is `=`.
+            if (object.text[0] === '=' &&
+                // start directive
+                instance.getRange({ch:0,line: object.to.line}, object.to).match(/^\s*$/))
+            {
+                CMirror.showHint(instanceCMLocal, CMirror.hint.dictionaryHint);
+            }
+        }
+    instanceCMLocal.on('change', onChange);
+
+    CMirror.registerHelper('hint', 'dictionaryHint', function(editor) {
+        var cur = editor.getCursor();
+        var curLine = editor.getLine(cur.line);
+        var start = cur.ch;
+        var end = start;
+        while (end < curLine.length && /[\w$]/.test(curLine.charAt(end))) ++end;
+        while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
+        var curWord = start !== end && curLine.slice(start, end);
+        var regex = new RegExp('^' + curWord, 'i');
+        return {
+            list: (!curWord ? dictionary : dictionary.filter(function(item) {
+                //@ts-ignore
+                return (typeof item === 'object' && !Array.isArray(item) && item !== null ) ?  item.displayText.match(regex): item.match(regex);
+            })).sort(),
+            from: CMirror.Pos(cur.line, start-1),
+            to: CMirror.Pos(cur.line, end)
+        }
+    });
+    instanceCMLocal.refresh()
+    return () => {
+        //@ts-ignore
+        instanceCMLocal.off('change', onChange)
+    }
+},[instanceCMLocal, isAutoComplete])
+
 return (
   <div className="EditorApp">
     <div className={ isPreviewModeEnabled ? "layoutPreview": "layout"}>
