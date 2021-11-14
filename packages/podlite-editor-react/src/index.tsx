@@ -239,6 +239,8 @@ const scrollEditorHandler = (editor) => {
         }
     }
 }
+const [instanceCMLocal, updateInstanceCM] = useState<any>()
+
   
 }
 }
