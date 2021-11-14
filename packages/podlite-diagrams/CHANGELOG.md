@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+## 0.0.7
+- update deps
 ## 0.0.6
 - update deps
 ## 0.0.5

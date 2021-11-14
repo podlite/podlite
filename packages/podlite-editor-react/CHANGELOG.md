@@ -2,6 +2,9 @@
 
 ## Upcoming
 
+## 0.0.10
+- implement autocomplete for directives
+- update dep
 ## 0.0.9
 - update deps
 ## 0.0.8

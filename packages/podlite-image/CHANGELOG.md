@@ -1,5 +1,7 @@
 # @podlite/image
 
+## 0.0.7
+- handle empty content
 ## 0.0.6
 - update deps
 ## 0.0.5

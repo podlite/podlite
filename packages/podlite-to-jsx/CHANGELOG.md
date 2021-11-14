@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+## 0.0.7
+- fix deps
 ## 0.0.6
 - fix process empty L<>
 
