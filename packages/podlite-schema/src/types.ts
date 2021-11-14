@@ -330,7 +330,7 @@ export interface BlockNested extends Block {
 }
 export interface BlockHead extends Block {
     name:'head',
-    level: number|string, //TODO: mist be only number
+    level: number|string, //TODO: must be only number
 }
 export interface BlockTable extends Omit<Block,'content'> {
     name: "table";
