@@ -10,8 +10,8 @@ import { validateAst } from '../src';
 // }
 
 describe('Check validateAst', () => {
-  it('should ok vor Test.Json', () => {
-    const r = validateAst({ters:"1"}, 'Test.json')
+  it('should ok for Test', () => {
+    const r = validateAst({ters:"1"}, 'Test')
     expect(r).toEqual([])
   });
   it('should ok for simple PodNode', () => {

@@ -34,10 +34,14 @@ export const getFromTree = (tree:PodliteDocument, ...queries: string[]) => {
     return results
 }
 
-export function  validatePodliteAst(data:unknown ):SchemaValidationError[] { return  validateAst(data,'PodliteDocument.json') }
+export function  validatePodliteAst(data:unknown ):SchemaValidationError[] { return  validateAst(data,'PodliteDocument') }
 
-export function validateAst( data:unknown, Name:string = 'AstTree.json'):SchemaValidationError[] {
-    const AstTreeSchema: JSONSchemaType<AstTree> = require( `../schema/${Name}`)
+export function validateAst( data:unknown, Name:string = 'AstTree'):SchemaValidationError[] {
+    const AstTreeSchema: JSONSchemaType<AstTree> =  jsonShemes[Name] 
+    if (!AstTreeSchema) {
+        console.warn(`[validateAst] Can't exists ${Name} scheme.`)
+    }
+    
 	const validate = ajv.compile<AstTree>(AstTreeSchema)
 	if (validate(data)) {
 		return []
