@@ -1,10 +1,7 @@
 import * as React from 'react'
-import {UnControlled as CodeMirror} from 'react-codemirror2'
-import {Controlled as CodeMirrorControlled} from 'react-codemirror2'
-import {EditorConfiguration} from 'codemirror'
+import CMirror from 'codemirror'
+import dictionary from './dict'
 import { useState, useEffect, useRef, useMemo } from 'react'
-
-//@ts-ignore
 import {isValidElementType, isElement} from  'react-is'
 
 // import Mousetrap from 'mousetrap'
