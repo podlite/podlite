@@ -7,8 +7,9 @@ import {isValidElementType, isElement} from  'react-is'
 // TODO: use bundler to add into package
 // import '../../../node_modules/codemirror/lib/codemirror.css';
 import 'codemirror/mode/gfm/gfm';
-
-import path from 'path'
+import "codemirror/addon/hint/show-hint";
+import 'codemirror/addon/hint/show-hint.css';
+import './Editor.css';
 
 
 //@ts-ignore
