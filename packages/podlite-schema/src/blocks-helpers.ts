@@ -16,7 +16,9 @@ export const mkBlock = ( attrs, content ) => {
      var result = mkNode({type,...attributres, content:filterNulls(content) })
      return result
  }
- 
+
+ export const mkBlankline = ()=>{ return mkNode({type:'blankline'}) }
+
 export  const mkFomattingCode = (attrs, content ) => {
     return mkNode({ type:'fcode', ...attrs, content})
 }
