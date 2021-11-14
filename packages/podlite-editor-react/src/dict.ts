@@ -142,11 +142,6 @@ Everything else     57
 
 `
 },
-{
-    "displayText": "table 3x 🏷",
-    "text": `
-`
-},
 
 ]
 export default dict;

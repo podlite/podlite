@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=head1 0.0.13
+=item small bug fixes
+
 =head1 0.0.12
 =item update deps
 
