@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Controlled as CodeMirrorControlled, UnControlled as CodeMirror} from 'react-codemirror2'
 import CMirror from 'codemirror'
 import dictionary from './dict'
 import { useState, useEffect, useRef, useMemo } from 'react'
@@ -101,7 +102,7 @@ updateText(content)
 useEffect(() => {
     refValue.current = isPreviewScroll;
 });
-var options: EditorConfiguration = {
+var options: CMirror.EditorConfiguration = {
   lineNumbers: isLineNumbers,
   inputStyle: "contenteditable",
   //@ts-ignore
