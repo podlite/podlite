@@ -1,5 +1,9 @@
 # @podlite/schema
 
+## 0.0.6
+- list of supported schemas is explicit now
+- add support for create "blankline" blocks (mkBlankline)
+- enhance debug
 ## 0.0.5
 - update deps
 ## 0.0.4
