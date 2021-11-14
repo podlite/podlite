@@ -8,7 +8,8 @@ export const filterNulls = ( content )=>{
      if( Array.isArray(content) ) {
          return content.filter(i=>i)
      }
- }
+     console.warn('[podlite-schema] filterNulls got not array as content')
+}
 export const mkBlock = ( attrs, content ) => {
      const type="block"
      const name = attrs.name
