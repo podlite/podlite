@@ -1,6 +1,6 @@
 {
   "name": "podlite-monolit",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": {
@@ -29,9 +29,10 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
+    "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
-    "pod6": "^0.0.39",
+    "pod6": "0.0.40",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
