@@ -219,24 +219,26 @@ const previewHtml = <div className={ "Editorright " + (isDarkTheme ? 'dark' : ''
                      </div>
 //@ts-ignore
 const scrollEditorHandler = (editor) => {
-if (refValue.current) { return }
-let scrollInfo = editor.getScrollInfo();
-// get line number of the top line in the page
-let lineNumber = editor.lineAtHeight(scrollInfo.top, 'local') + 1;
-if (previewEl) {
-  const el = previewEl.current
-  const elementId = `#line-${lineNumber}`
-  const scrollToElement = document.querySelector(elementId)
-  if (scrollToElement) {
-    //@ts-ignore
-    const scrollTo = scrollToElement.offsetTop
-    //@ts-ignore
-    el.scrollTo({
-      top: scrollTo,
-      left: 0,
-      behavior: 'smooth'
-    })
- }
+    if (refValue.current) { return }
+    let scrollInfo = editor.getScrollInfo();
+    // get line number of the top line in the page
+    let lineNumber = editor.lineAtHeight(scrollInfo.top, 'local') + 1;
+    if (previewEl) {
+        const el = previewEl.current
+        const elementId = `#line-${lineNumber}`
+        const scrollToElement = document.querySelector(elementId)
+        if (scrollToElement) {
+            //@ts-ignore
+            const scrollTo = scrollToElement.offsetTop
+            //@ts-ignore
+            el.scrollTo({
+            top: scrollTo,
+            left: 0,
+            behavior: 'smooth'
+            })
+        }
+    }
+}
   
 }
 }
