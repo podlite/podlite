@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+## 0.0.11
+- minor fix
 ## 0.0.10
 - implement autocomplete for directives
 - update dep
