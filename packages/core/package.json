@@ -24,7 +24,7 @@
     "@podlite/diagram": "^0.0.7",
     "@podlite/image": "^0.0.7",
     "@podlite/schema": "^0.0.6",
-    "pod6": "^0.0.39",
+    "pod6": "0.0.41",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
