@@ -18,12 +18,11 @@
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react*' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
-    "build:esm": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react*' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
+    "build:cjs": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react' --external:'react-dom' --external:'react-codemirror2' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
+    "build:esm": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react' --external:'react-dom'  --external:'react-codemirror2' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
     "test": "jest  --verbose --passWithNoTests"
   },
   "dependencies": {
-    "codemirror": "^5.60.0",
     "mousetrap": "^1.6.5",
     "mousetrap-global-bind": "^1.1.0",
     "react-codemirror2": "^7.2.1"
@@ -34,11 +33,13 @@
     "jest-serializer-html": "^7.0.0",
     "prettier": "^2.2.1",
     "react": "^16.12.0",
+    "codemirror": "5.x",
     "react-dom": "^17.0.2",
     "ts-jest": "^26.5.4",
     "typescript": "4.2.3"
   },
   "peerDependencies": {
-    "react": "^16.12.0"
+    "react": ">=15.5 <=16.x",
+    "react-dom": "^16.12.0"
   }
 }
