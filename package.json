@@ -9,7 +9,6 @@
     ]
   },
   "scripts": {
-    "test": "jest",
     "buildTSC": "tsc -b ./tsconfig.monorepo.json",
     "build": "tsc -v && yarn workspace @podlite/schema run build && lerna exec -- yarn build",
     "buildSerial": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
