@@ -6,7 +6,7 @@
   "types": "./built/index.d.ts",
   "scripts": {
     "clean": "rm -rf built tsconfig.tsbuildinfo",
-    "test": "yarn build && jest",
+    "test": "yarn g:jest --verbose --passWithNoTests",
     "build": "run-s build:ts",
     "build:ts": "tsc",
     "watch": "run-p -r watch:*",
