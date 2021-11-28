@@ -21,7 +21,7 @@
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
     "build:ts": "tsc",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
-    "test": "jest"
+    "test": "yarn g:jest --verbose --passWithNoTests"
   },
   "dependencies": {
     "ajv": "^7.2.3",

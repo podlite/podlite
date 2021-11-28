@@ -20,7 +20,7 @@
     "build": "yarn build:cjs && yarn build:esm",
     "build:cjs": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react' --external:'react-dom' --external:'react-codemirror2' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
     "build:esm": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react' --external:'react-dom'  --external:'react-codemirror2' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
-    "test": "jest  --verbose --passWithNoTests"
+    "test": "yarn g:jest --verbose --passWithNoTests"
   },
   "dependencies": {
     "mousetrap": "^1.6.5",

@@ -8,7 +8,7 @@
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "tsc",
-    "test": "jest --passWithNoTests"
+    "test": "yarn g:jest --verbose --passWithNoTests"
   },
   "publishConfig": {
     "access": "public"
