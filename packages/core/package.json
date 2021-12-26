@@ -21,15 +21,14 @@
   "author": "Alexandr Zahatski",
   "license": "MIT",
   "dependencies": {
-    "@podlite/diagram": "^0.0.7",
-    "@podlite/image": "^0.0.7",
-    "@podlite/schema": "^0.0.6",
+    "@podlite/diagram": "workspace:^",
+    "@podlite/image": "workspace:^",
+    "@podlite/schema": "workspace:^",
     "pod6": "0.0.41",
     "remark-parse": "8.0.3",
     "unified": "9.2.0"
   },
   "devDependencies": {
-    "@podlite/schema": "*",
     "@types/jest": "^26.0.21",
     "@types/node": "^14.11.2",
     "npm-run-all": "^4.1.5",
