@@ -10,17 +10,16 @@
   },
   "scripts": {
     "buildTSC": "tsc -b ./tsconfig.monorepo.json",
-    "build": "tsc -v && yarn workspace @podlite/schema run build && lerna exec -- yarn build",
-    "buildSerial": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces run build",
-    "clean": "lerna exec -- yarn clean ; lerna exec -- rm -rf ./node_modules; rm -rf ./node_modules",
-    "clean:packages": "yarn workspaces run clean",
+    "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema run build",
+    "clean": "yarn workspaces foreach -pt --all -v --no-private run clean && rimraf './packages/*/{dist,node_modules}' './node_modules'",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
     "update:version-patch": "lerna version --no-push --no-git-tag-version patch --yes",
     "github:publish": "yarn lerna publish from-package",
-    "watch:changed": " yarn workspace @podlite/schema run build && yarn build && yarn test",
+    "watch:changed": " yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed",
     "test": "jest",
-    "g:jest": "cd $INIT_CWD && jest"
+    "g:jest": "cd $INIT_CWD && jest",
+    "g:tsc": "yarn tsc"
   },
   "keywords": [
     "markdown",
@@ -44,6 +43,7 @@
     "@types/node": "^14.11.2",
     "jest": "^26.5.2",
     "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
     "ts-jest": "^26.4.1",
     "typescript": "4.2.3"
   },
