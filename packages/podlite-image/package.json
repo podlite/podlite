@@ -14,10 +14,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@podlite/schema": "^0.0.6"
+    "@podlite/schema": "workspace:^"
   },
   "devDependencies": {
-    "@podlite/schema": "*",
     "typescript": "4.2.3"
   }
 }

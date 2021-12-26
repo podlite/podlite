@@ -11,7 +11,7 @@
     "test": "yarn g:jest --verbose --passWithNoTests"
   },
   "dependencies": {
-    "@podlite/diagram": "^0.0.7",
+    "@podlite/diagram": "workspace:^",
     "pod6": "0.0.41",
     "react-is": "^17.0.2"
   },
