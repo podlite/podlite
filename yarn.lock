@@ -2709,7 +2709,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@podlite/diagram@^0.0.7, @podlite/diagram@workspace:packages/podlite-diagrams":
+"@podlite/diagram@workspace:^, @podlite/diagram@workspace:packages/podlite-diagrams":
   version: 0.0.0-use.local
   resolution: "@podlite/diagram@workspace:packages/podlite-diagrams"
   dependencies:
@@ -2745,22 +2745,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@podlite/image@^0.0.7, @podlite/image@workspace:packages/podlite-image":
+"@podlite/image@workspace:^, @podlite/image@workspace:packages/podlite-image":
   version: 0.0.0-use.local
   resolution: "@podlite/image@workspace:packages/podlite-image"
   dependencies:
-    "@podlite/schema": "*"
+    "@podlite/schema": "workspace:^"
     typescript: 4.2.3
   languageName: unknown
   linkType: soft
 
-"@podlite/schema@*, @podlite/schema@workspace:packages/podlite-schema":
+"@podlite/schema@workspace:^, @podlite/schema@workspace:packages/podlite-schema":
   version: 0.0.0-use.local
   resolution: "@podlite/schema@workspace:packages/podlite-schema"
   dependencies:
     ajv: ^7.2.3
     json-pointer: ^0.6.1
-    pod6: "*"
+    pod6: 0.0.41
     ts-node: ^9.1.1
     typescript: 4.2.3
     typescript-json-schema: ^0.50.0
@@ -2773,7 +2773,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@podlite/to-jsx@workspace:packages/podlite-to-jsx"
   dependencies:
-    "@podlite/diagram": ^0.0.7
+    "@podlite/diagram": "workspace:^"
     "@types/react": ^17.0.3
     jest-serializer-html: ^7.0.0
     pod6: 0.0.41
@@ -9303,7 +9303,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"pod6@npm:*, pod6@npm:0.0.41":
+"pod6@npm:0.0.41":
   version: 0.0.41
   resolution: "pod6@npm:0.0.41"
   bin:
@@ -9327,6 +9327,7 @@ fsevents@^2.1.2:
     npm-run-all: ^4.1.5
     pod6: 0.0.41
     remark-parse: 8.0.3
+    rimraf: ^3.0.2
     ts-jest: ^26.4.1
     typescript: 4.2.3
     unified: 9.2.0
@@ -9337,9 +9338,9 @@ fsevents@^2.1.2:
   version: 0.0.0-use.local
   resolution: "podlite@workspace:packages/core"
   dependencies:
-    "@podlite/diagram": ^0.0.7
-    "@podlite/image": ^0.0.7
-    "@podlite/schema": "*"
+    "@podlite/diagram": "workspace:^"
+    "@podlite/image": "workspace:^"
+    "@podlite/schema": "workspace:^"
     "@types/jest": ^26.0.21
     "@types/node": ^14.11.2
     npm-run-all: ^4.1.5
