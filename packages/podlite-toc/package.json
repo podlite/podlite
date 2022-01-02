@@ -1,0 +1,26 @@
+{
+  "name": "@podlite/toc",
+  "version": "0.0.1",
+  "description": "Table of contents",
+  "main": "index.js",
+  "types": "./lib/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
+    "build": "tsc",
+    "test": "yarn g:jest --verbose --passWithNoTests"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@podlite/schema": "workspace:*",
+    "@types/react-dom": "^17.0.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "4.2.3"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}
