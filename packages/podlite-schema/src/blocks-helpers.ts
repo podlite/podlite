@@ -47,3 +47,12 @@ export const mkBlockImage = ({ src, alt, location, margin }: mkBlockImageParams)
 export const mkRootBlock =  ({ margin }, content): RootBlock => {
     return mkBlock({ name: 'root',  margin },content)
 }
+export interface mkBlockItemParams {
+    level: number,
+    location:Location,
+    margin:string
+}
+
+export const mkItemBlock = ({ level, location, margin }: mkBlockItemParams, content:AstTree):BlockItem => {
+    return mkBlock({ name: 'item',  level, margin, location }, content)
+}
