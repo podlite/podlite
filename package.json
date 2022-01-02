@@ -17,6 +17,7 @@
     "github:publish": "yarn lerna publish from-package",
     "watch:changed": " yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed",
+    "g:watch": "cd $INIT_CWD && npx nodemon -e js,ts --exec 'yarn' watch:update",
     "test": "jest",
     "g:jest": "cd $INIT_CWD && jest",
     "g:tsc": "yarn tsc"
