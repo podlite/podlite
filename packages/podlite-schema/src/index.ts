@@ -1,11 +1,12 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import * as pointer from 'json-pointer'
 import makeTransformer from 'pod6/built/helpers/makeTransformer'
-import { AstTree, PodliteDocument } from './types'
+import { AstTree, PodNode } from './types'
 import * as  jsonShemes  from '../schema'
 export { AstTree } from './types'
 export * from './types'
 export * from './blocks-helpers'
+export * from './query-helpers'
 
 export function toAst () {
     return {}
