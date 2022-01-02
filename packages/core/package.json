@@ -3,7 +3,6 @@
   "version": "0.0.11",
   "description": "Adaptation of pod6 markup language",
   "main": "index.js",
-  "types": "./built/index.d.ts",
   "scripts": {
     "clean": "rm -rf built tsconfig.tsbuildinfo",
     "test": "yarn g:jest --verbose --passWithNoTests",
@@ -39,5 +38,11 @@
     "@podlite/image": "*",
     "@podlite/schema": "*",
     "pod6": "*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "./built/index.d.ts"
   }
 }
