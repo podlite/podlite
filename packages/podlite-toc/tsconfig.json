@@ -1,0 +1,17 @@
+{
+  "extends": "../core/tsconfig.json",
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "jsx": "react",
+  },
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+       "path": "../podlite-schema/tsconfig.json" 
+    },
+  ]
+}
