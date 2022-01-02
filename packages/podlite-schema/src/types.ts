@@ -416,7 +416,7 @@ export type PodNode =
     | Alias
     // extra types
     | BlockImage
-    | Image
+    | Image // :TODO: if it inline element, it should be in Para
     | RootBlock
     | Separator
     // Fomatting codes
