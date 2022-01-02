@@ -46,7 +46,8 @@ export const toAnyRules =(method, allplugins:Plugins[])=>{
     let result = {}
     // prepare plugins for export <method>
     for ( const plugin of Object.entries(resultMap) ) { 
-        const [ key, val ] = plugin
+        const [ key, val = {} ] = plugin
+        //@ts-ignore
         if ( method in val ) {
             result[key] = val[method]
         }
@@ -78,17 +79,7 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
     }
 
     instance.toAst = (ast) =>{
-       // get plugins  for Ast
-       const toAstPlugins= toAnyRules('toAst', instance.getPlugins())
-       const result = toAny().use({
-           '*':( )=>( node, ctx, interator )=>{ 
-            if ( 'content' in node ) {
-                node.content = interator(node.content, ctx)
-            }
-            return node
-            }
-       }).use(toAstPlugins).run(ast)
-       return <PodliteDocument>result.interator
+       return <PodliteDocument>instance.toAstResult(ast).interator
     }
 
     instance.toAstResult = (ast) =>{
@@ -96,12 +87,30 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
         const toAstPlugins= toAnyRules('toAst', instance.getPlugins())
         const result:PodliteExport = toAny().use({
             '*':( )=>( node, ctx, interator )=>{ 
+           '*':( )=>( node, ctx, interator )=>{ 
+            '*':( )=>( node, ctx, interator )=>{ 
              if ( 'content' in node ) {
                  node.content = interator(node.content, ctx)
              }
              return node
              }
         }).use(toAstPlugins).run(ast)
+        // add second pass
+        const toAstAfterPlugins= toAnyRules('toAstAfter', instance.getPlugins())
+        if (Object.keys(toAstAfterPlugins).length) {
+            const resultAfter:PodliteExport = toAny().use({
+                '*':( )=>( node, ctx, interator )=>{ 
+            '*':( )=>( node, ctx, interator )=>{ 
+                '*':( )=>( node, ctx, interator )=>{ 
+                if ( 'content' in node ) {
+                    node.content = interator(node.content, ctx)
+                }
+                return node
+                }
+            }).use(toAstAfterPlugins).run(ast)
+            return resultAfter
+        }
+
         return result
     }
 
