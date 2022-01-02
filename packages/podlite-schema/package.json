@@ -3,7 +3,6 @@
   "version": "0.0.6",
   "description": "podlite schema",
   "main": "index.js",
-  "types": "./lib/index.d.ts",
   "license": "MIT",
   "files": [
     "lib/**/*.js",
@@ -13,7 +12,10 @@
     "CHANGELOG.md"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "./lib/index.d.ts"
   },
   "scripts": {
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
