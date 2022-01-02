@@ -42,7 +42,7 @@ const dict = [
 `},
 {
     "displayText": "Image 🏷",
-    "text": `=Image [caption] https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
+    "text": `=Image https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
 `,
 },
 {
