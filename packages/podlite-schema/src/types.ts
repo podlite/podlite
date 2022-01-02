@@ -5,6 +5,7 @@ export interface RuleHandler<T = any> {
 }
 export interface Plugin {
     toAst?: RuleHandler,
+    toAstAfter?: RuleHandler, // second pass
     toHtml?: RuleHandler,
 }
 
