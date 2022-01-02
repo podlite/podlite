@@ -87,8 +87,6 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
         const toAstPlugins= toAnyRules('toAst', instance.getPlugins())
         const result:PodliteExport = toAny().use({
             '*':( )=>( node, ctx, interator )=>{ 
-           '*':( )=>( node, ctx, interator )=>{ 
-            '*':( )=>( node, ctx, interator )=>{ 
              if ( 'content' in node ) {
                  node.content = interator(node.content, ctx)
              }
@@ -99,8 +97,6 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
         const toAstAfterPlugins= toAnyRules('toAstAfter', instance.getPlugins())
         if (Object.keys(toAstAfterPlugins).length) {
             const resultAfter:PodliteExport = toAny().use({
-                '*':( )=>( node, ctx, interator )=>{ 
-            '*':( )=>( node, ctx, interator )=>{ 
                 '*':( )=>( node, ctx, interator )=>{ 
                 if ( 'content' in node ) {
                     node.content = interator(node.content, ctx)
