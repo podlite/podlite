@@ -1,4 +1,4 @@
-import { BlockImage, Location,  RootBlock } from "./types"
+import { AstTree, BlockImage, BlockItem, Location,  RootBlock } from "./types"
 
 export const mkNode = (attr) => {
     return {...attr}
