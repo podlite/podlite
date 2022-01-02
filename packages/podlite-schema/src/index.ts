@@ -13,26 +13,20 @@ export function toAst () {
 
 export type SchemaValidationError = ErrorObject<string, Record<string, any>>
 const ajv = new Ajv({strict: true, allowUnionTypes: true})
-/**
- * Get nodes by queries
- * @param tree 
- * @param queries 
- * @returns array of matched nodes
- */
-export const getFromTree = (tree:PodliteDocument, ...queries: string[]) => { 
-    let results = []
-    let rules = {}
-    for ( let rule of queries ) {
-        rules[rule] = (n, ctx, visiter) => { 
-            results.push(n);
-            if ( 'content' in n ) {
-                return { n, content: transformer(n.content, { ...ctx } ) }
-            }
-        }
+
+export function getTextContentFromNode(node: PodNode) {
+    let text = ''
+    const rules = {
+        ":text": (node)=>{
+            text +=node.value
+        },
+        ":verbatim": (node)=>{
+            text +=node.value
+        },
     }
     const transformer = makeTransformer(rules)
-    transformer(tree, {})
-    return results
+    const res = transformer(node, {})
+    return text
 }
 
 export function  validatePodliteAst(data:unknown ):SchemaValidationError[] { return  validateAst(data,'PodliteDocument') }
