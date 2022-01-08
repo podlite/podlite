@@ -4,8 +4,11 @@ import * as fs  from 'fs'
 import cleanplug from 'pod6/built/plugin-clean-location'
 import {loadSrcFixtures} from './test-api'
 import { md2ast }  from '../src/'
+import {cleanIds} from '../src/ids'
 const log = (t)=> JSON.stringify(t, null,2)
-const cleanTree = (test)=>{ return cleanplug()(test) }
+const cleanTree = (test)=>{ 
+    return cleanIds({skipChain: 0, podMode: 1})( cleanplug()(test) )
+ }
 const  allSrcFixtures  = loadSrcFixtures('t/fixtures-md/*.t', 't/fixtures')
 
 
