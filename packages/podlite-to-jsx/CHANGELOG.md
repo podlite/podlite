@@ -1,7 +1,7 @@
 # @podlite/to-jsx
 
 ## Upcoming
-
+- add support for id html attribute
 ## 0.0.7
 - fix deps
 ## 0.0.6

@@ -1,6 +1,8 @@
 import Podlite from "../src/index";
 import React from "react";
 import ReactDOM from "react-dom";
+import { podlite as podlite_core, PodliteExport } from "podlite";
+import { cleanIds, frozenIds } from "podlite/built/ids";
 
 const root = document.body.appendChild(document.createElement("div"));
 
@@ -9,9 +11,20 @@ function render(jsx) {
 }
 
 afterEach(() => ReactDOM.unmountComponentAtNode(root));
+const CPodlite = ({ children, ...options }) => {
+  let podlite = podlite_core({ importPlugins: true });
 
+  let treeAfterParsed = frozenIds()(podlite.parse(children));
+
+  const tree = podlite.toAst(treeAfterParsed);
+  return (
+    <Podlite
+      {...{ children, ...options, tree: { interator: tree } as PodliteExport }}
+    />
+  );
+};
 it("para content", () => {
-  render(<Podlite>Hello!</Podlite>);
+  render(<CPodlite>Hello!</CPodlite>);
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
        <p>
@@ -22,7 +35,7 @@ it("para content", () => {
 
 it("table", () => {
   render(
-    <Podlite>
+    <CPodlite>
       {`
 =begin pod
 =para test
@@ -45,7 +58,7 @@ sdsdsd
 =end table
 =end pod
 `}
-    </Podlite>
+    </CPodlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div>
@@ -55,7 +68,7 @@ sdsdsd
     sdsdsd
         </p>
       </div>
-      <h1>
+      <h1 id="id">
         Test
       </h1>
       <table>

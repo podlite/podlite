@@ -8,27 +8,29 @@
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "tsc",
-    "test": "yarn g:jest --verbose --passWithNoTests"
+    "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
     "@podlite/diagram": "workspace:^",
+    "@podlite/schema": "workspace:*",
     "pod6": "0.0.41",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "react-is": "^17.0.2"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@types/react": "^17.0.3",
-    "jest-serializer-html": "^7.0.0",
-    "prettier": "^2.2.1",
-    "react": "^16.12.0",
-    "react-dom": "^17.0.2",
-    "typescript": "4.2.3"
+    "@types/react": "^16.x",
+    "@types/react-dom": "^16.x",
+    "glob": "^7.2.0",
+    "podlite": "workspace:*"
   },
   "peerDependencies": {
     "@podlite/diagram": "*",
     "pod6": "*",
-    "react": "*"
+    "react": "*",
+    "react-dom": "*"
   }
 }
