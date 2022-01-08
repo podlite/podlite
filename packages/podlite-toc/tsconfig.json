@@ -4,7 +4,7 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
-    "jsx": "react",
+    "jsx": "react"
   },
   "references": [
     {
@@ -12,6 +12,6 @@
     },
     {
        "path": "../podlite-schema/tsconfig.json" 
-    },
+    }
   ]
 }
