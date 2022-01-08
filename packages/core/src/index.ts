@@ -1,10 +1,11 @@
 import {  toTree, toHtml } from 'pod6';
 import  toAny  from 'pod6/built/exportAny'
 import { AstTree, Plugins, mkRootBlock, PodliteDocument } from '@podlite/schema';
-export * from './mdtopod6';
-export  * from './tools'
+// export * from './mdtopod6';
+// export  * from './tools'
 import core from './plugins';
 import externalPlugins  from './plugins/extrnal'
+import idMiddleware from "./ids"
 
 
 export interface PodliteOpt {
@@ -73,7 +74,7 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
     }
 
     instance.parse = ( text, opt?) => { 
-        const rawTree = toTree().parse(text, opt={skipChain: 0, podMode: 1})
+        const rawTree = toTree().use(idMiddleware).parse(text, opt={skipChain: 0, podMode: 1})
         const root = mkRootBlock({margin:""}, rawTree)
         return root; 
     }
