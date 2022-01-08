@@ -8,5 +8,13 @@
       "downlevelIteration": true,
       "allowJs": true,
       "allowSyntheticDefaultImports": true
+    },
+    "references": [
+    {
+        "path": "./packages/podlite-to-jsx"
+    },
+    {
+        "path": "./packages/core"
     }
+    ]
   }

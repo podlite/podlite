@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "jsx": "react",
+    }
+}
+{
+//   "extends": "packages/core/tsconfig.json",
+//   "files": [],
+  "references": [
+    {
+        "path": "./packages/podlite-schema"
+    },
+    {
+      "path": "./packages/core"
+    },
+    {
+        "path": "./packages/core"
+    },
+    {
+        "path": "./packages/podlite-to-jsx"
+    },
+  
+  ]
+}
