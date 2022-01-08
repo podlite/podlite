@@ -1,4 +1,5 @@
 import { AstTree, BlockImage, BlockItem, Location,  RootBlock } from "./types"
+import { nanoid } from 'nanoid'
 
 export const mkNode = (attr) => {
     return {...attr}
@@ -13,8 +14,8 @@ export const filterNulls = ( content )=>{
 export const mkBlock = ( attrs, content ) => {
      const type="block"
      const name = attrs.name
-     const attributres = {...attrs}
-     var result = mkNode({type,...attributres, content:filterNulls(content) })
+     const attributes = {id: nanoid(), ...attrs}
+     var result = mkNode({type, ...attributes, content:filterNulls(content) })
      return result
  }
 
