@@ -287,6 +287,7 @@ export interface Block {
     content: Array<Node>;
     margin:string;
     config?:Array<ConfigItem|BrokenConfigItem>;
+    id?:string;
 }
 
 export interface BlockPod extends Block {
