@@ -2,10 +2,11 @@
   "name": "podlite",
   "version": "0.0.11",
   "description": "Adaptation of pod6 markup language",
+  "main_": "./src/index.ts",
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf built tsconfig.tsbuildinfo",
-    "test": "yarn g:jest --verbose --passWithNoTests",
+    "test": "yarn g:jest --passWithNoTests",
     "build": "run-s build:ts",
     "build:ts": "tsc",
     "watch": "run-p -r watch:*",
@@ -23,9 +24,8 @@
     "@podlite/diagram": "workspace:^",
     "@podlite/image": "workspace:^",
     "@podlite/schema": "workspace:^",
-    "pod6": "0.0.41",
-    "remark-parse": "8.0.3",
-    "unified": "9.2.0"
+    "nanoid": "^3.1.30",
+    "pod6": "0.0.41"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
@@ -34,9 +34,6 @@
     "typescript": "4.2.3"
   },
   "peerDependencies": {
-    "@podlite/diagram": "*",
-    "@podlite/image": "*",
-    "@podlite/schema": "*",
     "pod6": "*"
   },
   "publishConfig": {
