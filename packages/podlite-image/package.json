@@ -8,7 +8,7 @@
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "tsc",
-    "test": "yarn g:jest --verbose --passWithNoTests",
+    "test": "yarn g:jest  --passWithNoTests",
     "watch:update": " yarn build && yarn test",
     "watch": "yarn g:watch"
   },
@@ -19,6 +19,6 @@
     "@podlite/schema": "workspace:^"
   },
   "devDependencies": {
-    "typescript": "4.2.3"
+    "podlite": "workspace:*"
   }
 }
