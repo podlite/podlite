@@ -3,9 +3,10 @@
       "outDir": "./built",
       "rootDir": "./src",
       "allowJs": true,
-      "target": "es5",
+      "target": "es2019",
+      "module": "commonjs",
       "esModuleInterop": true,
-      // "allowSyntheticDefaultImports":false,
+    //   "allowSyntheticDefaultImports":false,
       "moduleResolution": "node",
        // Generate d.ts files
         "declaration": true,
@@ -13,5 +14,10 @@
     },
 
     "include": ["./src/**/*", "./package.json"],
-    "exclude": ["definitions"]
+    "exclude": ["definitions"],
+    "references": [
+        {
+            "path": "../podlite-schema"
+        },
+    ]
 }
