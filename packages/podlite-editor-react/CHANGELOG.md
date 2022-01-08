@@ -1,7 +1,8 @@
 # @podlite/editor-react
 
 ## Upcoming
-
+- fix snippets
+- update build system
 ## 0.0.11
 - minor fix
 ## 0.0.10

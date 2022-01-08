@@ -18,26 +18,30 @@
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
     "build": "yarn build:cjs && yarn build:esm",
-    "build:cjs": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react' --external:'react-dom' --external:'react-codemirror2' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
-    "build:esm": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react' --external:'react-dom'  --external:'react-codemirror2' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
-    "test": "yarn g:jest --verbose --passWithNoTests"
+    "build:cjs": "ts-node ./scripts/build.ts && tsc  --declaration --emitDeclarationOnly",
+    "build:esm": "ts-node ./scripts/build_esm.ts &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
+    "build:cjs_": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react' --external:'react-dom' --external:'react-codemirror2' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
+    "build:esm_": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react' --external:'react-dom'  --external:'react-codemirror2' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
+    "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
-    "mousetrap": "^1.6.5",
-    "mousetrap-global-bind": "^1.1.0",
-    "react-codemirror2": "^7.2.1"
+    "codemirror": "5.x",
+    "react-codemirror2": "^7.2.1",
+    "react-is": "^17.0.2"
   },
   "devDependencies": {
-    "@types/react": "^17.0.3",
-    "codemirror": "5.x",
+    "@types/node": "^17.0.7",
+    "@types/react": "^16.x",
+    "@yarnpkg/esbuild-plugin-pnp": "^2.0.0",
     "esbuild": "^0.11.12",
     "prettier": "^2.2.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "ts-node": "^9.1.1",
     "typescript": "4.2.3"
   },
   "peerDependencies": {
-    "react": ">=17.x",
-    "react-dom": "^17.0.2"
+    "react": "*",
+    "react-dom": "*"
   }
 }
