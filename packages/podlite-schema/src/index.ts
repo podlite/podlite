@@ -7,6 +7,7 @@ export { AstTree } from './types'
 export * from './types'
 export * from './blocks-helpers'
 export * from './query-helpers'
+export * from './ast-helpers'
 
 export function toAst () {
     return {}

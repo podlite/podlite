@@ -1,5 +1,8 @@
 # @podlite/schema
 
+## Upcoming
+- add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
+- add id prop to Node type
 ## 0.0.6
 - list of supported schemas is explicit now
 - add support for create "blankline" blocks (mkBlankline)
