@@ -1,4 +1,4 @@
-import { getFromTree, getTextContentFromNode } from "@podlite/schema"
+import { getFromTree, getNodeId, getTextContentFromNode } from "@podlite/schema"
 import makeTransformer from 'pod6/built/helpers/makeTransformer'
 
 export const prepareDataForToc = (data: any[]) => {
@@ -108,8 +108,9 @@ export const prepareDataForToc = (data: any[]) => {
          blocks.push(`=head1 ${tocTitle}`)
          visiter(node.content)
         },
-        ":head": (node,_, visiter)=>{
-             blocks.push(`=item${node.level} L<${getTextContentFromNode(node.node).trim()}|#${node.node.id}>`)
+        ":head": (node,ctx, visiter)=>{
+             const id = getNodeId(node.node, ctx)
+             blocks.push(`=item${node.level} L<${getTextContentFromNode(node.node).trim()} ${id ? `|#${id}`:''}>`)
              visiter(node.content)
         },
         ":item": (node,_, visiter)=>{
