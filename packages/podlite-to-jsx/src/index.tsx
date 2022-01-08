@@ -9,7 +9,7 @@ import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
 import { podlite as podlite_core, PodliteExport } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
-import {Verbatim, PodNode, Text, Rules, RulesStrict} from '@podlite/schema'
+import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId} from '@podlite/schema'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -127,8 +127,9 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
              ':para' : nodeContent,
          },
          setFn(( node, ctx ) => {
-             const {level} = node
-             return mkComponent(({level,children, key })=>React.createElement(`h${level}`,{key}, children))
+             const {level } = node
+             const id = getNodeId(node, ctx)
+             return mkComponent(({level,children, key })=>React.createElement(`h${level}`,{key, id}, children))
          })
      ),
 
