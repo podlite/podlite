@@ -1,7 +1,7 @@
 # @podlite/diagram
 
 ## Upcoming
-
+- update deps
 ## 0.0.7
 - update deps
 ## 0.0.6
