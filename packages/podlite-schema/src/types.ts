@@ -83,6 +83,7 @@ export interface RulesStrict {
     'table_cell': RuleHandler<TableCell>,
     'table_head': RuleHandler<TableHead>,
 
+    //toc
 
     // User-defined
     'Diagram': RuleHandler<BlockDiagram>,
@@ -107,6 +108,24 @@ export interface Image {
         src:string,
         alt?: string
 }
+// Table of contents
+export interface Toc {
+    type:'toc',
+    title?:string,
+    content:TocItem[]
+}
+export interface TocItem {
+    type:'toc-item',
+    level:number,
+    title: string,
+    node: PodNode,
+    content:TocItem[]
+}
+
+
+
+
+
 // extra definitions
 export interface BlockImage extends Omit<Block, 'content'>{
     name: 'image'
@@ -422,6 +441,7 @@ export type PodNode =
     | Separator
     // Fomatting codes
     | FormattingCodes
+    | Toc 
 export type Node = PodNode
 export type AstTree = Array<PodNode>
 export type PodliteDocument = RootBlock

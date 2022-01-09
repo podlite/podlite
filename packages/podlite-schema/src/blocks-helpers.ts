@@ -1,4 +1,4 @@
-import { AstTree, BlockImage, BlockItem, Location,  RootBlock } from "./types"
+import { AstTree, BlockImage, BlockItem, Location,  RootBlock, Toc, TocItem } from "./types"
 import { nanoid } from 'nanoid'
 
 export const mkNode = (attr) => {
@@ -34,7 +34,10 @@ export const mkVerbatim = (text) => {
     return mkNode({ "type": "verbatim", "value": text})
 }
 
-export interface mkBlockImageParams {
+export const mkToc = (content:TocItem[], title?:string):Toc => {
+    return mkNode({type:'toc', title, content}) }
+
+    export interface mkBlockImageParams {
     src: string,
     alt? : string,
     location:Location,

@@ -22,6 +22,190 @@
                 "type"
             ]
         },
+        "Toc": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "toc"
+                    ]
+                },
+                "title": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TocItem"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "type"
+            ]
+        },
+        "TocItem": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "toc-item"
+                    ]
+                },
+                "level": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "node": {
+                    "$ref": "#/definitions/PodNode"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TocItem"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "level",
+                "node",
+                "title",
+                "type"
+            ]
+        },
+        "PodNode": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/Image"
+                },
+                {
+                    "$ref": "#/definitions/Toc"
+                },
+                {
+                    "$ref": "#/definitions/BlockImage"
+                },
+                {
+                    "$ref": "#/definitions/RootBlock"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeB"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeC"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeE"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeN"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeX"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeZ"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeV"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeS"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeA"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeD"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeL"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeI"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeAny"
+                },
+                {
+                    "$ref": "#/definitions/Ambient"
+                },
+                {
+                    "$ref": "#/definitions/Verbatim"
+                },
+                {
+                    "$ref": "#/definitions/Text"
+                },
+                {
+                    "$ref": "#/definitions/Para"
+                },
+                {
+                    "$ref": "#/definitions/Code"
+                },
+                {
+                    "$ref": "#/definitions/BlankLine"
+                },
+                {
+                    "$ref": "#/definitions/List"
+                },
+                {
+                    "$ref": "#/definitions/BlockConfig"
+                },
+                {
+                    "$ref": "#/definitions/Alias"
+                },
+                {
+                    "$ref": "#/definitions/Separator"
+                },
+                {
+                    "$ref": "#/definitions/BlockPod"
+                },
+                {
+                    "$ref": "#/definitions/BlockData"
+                },
+                {
+                    "$ref": "#/definitions/BlockComment"
+                },
+                {
+                    "$ref": "#/definitions/BlockDefn"
+                },
+                {
+                    "$ref": "#/definitions/BlockItem"
+                },
+                {
+                    "$ref": "#/definitions/BlockOutput"
+                },
+                {
+                    "$ref": "#/definitions/BlockInput"
+                },
+                {
+                    "$ref": "#/definitions/BlockPara"
+                },
+                {
+                    "$ref": "#/definitions/BlockCode"
+                },
+                {
+                    "$ref": "#/definitions/BlockNested"
+                },
+                {
+                    "$ref": "#/definitions/BlockHead"
+                },
+                {
+                    "$ref": "#/definitions/BlockTable"
+                },
+                {
+                    "$ref": "#/definitions/BlockNamed"
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
         "BlockImage": {
             "type": "object",
             "properties": {
@@ -248,130 +432,6 @@
             "items": {
                 "$ref": "#/definitions/PodNode"
             }
-        },
-        "PodNode": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/Image"
-                },
-                {
-                    "$ref": "#/definitions/BlockImage"
-                },
-                {
-                    "$ref": "#/definitions/RootBlock"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeB"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeC"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeE"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeN"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeX"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeZ"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeV"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeS"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeA"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeD"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeL"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeI"
-                },
-                {
-                    "$ref": "#/definitions/FormattingCodeAny"
-                },
-                {
-                    "$ref": "#/definitions/Ambient"
-                },
-                {
-                    "$ref": "#/definitions/Verbatim"
-                },
-                {
-                    "$ref": "#/definitions/Text"
-                },
-                {
-                    "$ref": "#/definitions/Para"
-                },
-                {
-                    "$ref": "#/definitions/Code"
-                },
-                {
-                    "$ref": "#/definitions/BlankLine"
-                },
-                {
-                    "$ref": "#/definitions/List"
-                },
-                {
-                    "$ref": "#/definitions/BlockConfig"
-                },
-                {
-                    "$ref": "#/definitions/Alias"
-                },
-                {
-                    "$ref": "#/definitions/Separator"
-                },
-                {
-                    "$ref": "#/definitions/BlockPod"
-                },
-                {
-                    "$ref": "#/definitions/BlockData"
-                },
-                {
-                    "$ref": "#/definitions/BlockComment"
-                },
-                {
-                    "$ref": "#/definitions/BlockDefn"
-                },
-                {
-                    "$ref": "#/definitions/BlockItem"
-                },
-                {
-                    "$ref": "#/definitions/BlockOutput"
-                },
-                {
-                    "$ref": "#/definitions/BlockInput"
-                },
-                {
-                    "$ref": "#/definitions/BlockPara"
-                },
-                {
-                    "$ref": "#/definitions/BlockCode"
-                },
-                {
-                    "$ref": "#/definitions/BlockNested"
-                },
-                {
-                    "$ref": "#/definitions/BlockHead"
-                },
-                {
-                    "$ref": "#/definitions/BlockTable"
-                },
-                {
-                    "$ref": "#/definitions/BlockNamed"
-                },
-                {
-                    "type": "string"
-                }
-            ]
         },
         "FormattingCodeB": {
             "type": "object",
@@ -1034,6 +1094,9 @@
                         "anyOf": [
                             {
                                 "$ref": "#/definitions/Image"
+                            },
+                            {
+                                "$ref": "#/definitions/Toc"
                             },
                             {
                                 "$ref": "#/definitions/BlockImage"

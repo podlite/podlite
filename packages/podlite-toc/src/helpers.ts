@@ -32,7 +32,7 @@ export const prepareDataForToc = (data: any[]) => {
     }
     const levelsMap = normalizeLevels(data)
     const tocTree = [
-        [ -1, { item: 'toc', level:0 , node:{}} ]
+        [ -1, { item: 'toc', level:0 ,  node:{} } ]
     ];
     /**
       // find nearest by level
@@ -48,12 +48,12 @@ export const prepareDataForToc = (data: any[]) => {
     const getRootIndexByLevel = (tocTree, level) => {
       return tocTree.length - tocTree.slice().reverse().findIndex(e => e[1].level < level) -1
    }
-  
     let currentLevel = 1
     // prepare normilized data
     for (let i = 0; i < data.length; i++) {
       const item = data[i]
-      const normalizedLevel:number = levelsMap[item.name].findIndex(l => l === parseInt(item.level)) + 1
+      // deafult level is 1 for all items
+      const normalizedLevel:number = levelsMap[item.name].findIndex(l => l === parseInt(item.level || 1)) +1
       switch (item.name) {
           case 'head': {
             const parent = getRootIndexByLevel(tocTree, normalizedLevel)
@@ -63,16 +63,10 @@ export const prepareDataForToc = (data: any[]) => {
             }
           }
           break;
-        //   case 'item': {
-        //       const newlevel = currentLevel + normalizedLevel +1
-        //       const parent = getRootIndexByLevel(tocTree, newlevel)
-        //       tocTree.push([parent, {item:item.name, level:newlevel}])
-        //   }
-        //   break;
           default: {
-            const newlevel = currentLevel + normalizedLevel + 1
+            const newlevel = currentLevel + normalizedLevel
             const parent = getRootIndexByLevel(tocTree, newlevel)
-            tocTree.push([parent, {item:item.name, level:newlevel, node:item}])
+            tocTree.push([parent, {item:item.name, level:newlevel, node:item }])
           }
           break;
       }
