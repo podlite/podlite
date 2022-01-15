@@ -1,6 +1,7 @@
 import makeTransformer, {isNamedBlock} from 'pod6/built/helpers/makeTransformer'
 import { Plugin, Node, nPara , AST, nText, nVerbatim } from 'pod6/built/'
 import { nanoid } from 'nanoid'
+import { BlockPod, PodNode } from '@podlite/schema'
 
 /**
  * Clean ids from tree 
@@ -23,10 +24,10 @@ export const cleanIds = (src = {skipChain: 0, podMode: 1}) =>( tree )=>{
     return transformerBlocks(tree,{})
   }
 
-  /**
+/**
  * Add set id to 'id' to each blocks
  */
-   export const frozenIds = (src = {skipChain: 0, podMode: 1}) =>( tree )=>{
+export const frozenIds = (src = {skipChain: 0, podMode: 1}) =>( tree )=>{
     const transformerBlocks = makeTransformer({
       '*': (node, ctx, visiter) => {
           if ('id' in node) {
@@ -40,21 +41,27 @@ export const cleanIds = (src = {skipChain: 0, podMode: 1}) =>( tree )=>{
       }
     })
     return transformerBlocks(tree,{})
-  }
+}
    
 
 const middleware:Plugin = () =>( tree )=>{
   
   const transformerBlocks = makeTransformer({
     '*': (node, ctx, visiter) => {
-        if ('type' in node && node.type === 'block') {
-            if ( 'content' in node ) {
-                node.content = visiter(node.content, ctx)
+            const addIdField = (node:PodNode):PodNode => {
+                if (typeof node === 'object' && 'type' in node && node.type =='block') {
+                    return { ...node, id: nanoid() }
+                }
+                return node
             }
-        return { ...node, id: nanoid() }
+            const processContent = (node:PodNode):PodNode => {
+                if (typeof node === 'object' && 'content' in node ) {
+                    return { ...node, content: visiter(node.content, ctx) }
+                }
+                return node
+            }
+            return processContent( addIdField(node) )
         }
-        return node
-    }
   })
   return transformerBlocks(tree,{})
 }

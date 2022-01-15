@@ -25,3 +25,8 @@ export const parse = (text:string, opt?): PodliteDocument => {
     expect(id).toEqual("test");
   });
   
+  it("[ID] validate =item", () => {
+    const p = parse(`=item1 test`);
+    const r = validatePodliteAst(p);
+    expect(r).toEqual([]);
+  });

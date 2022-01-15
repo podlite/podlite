@@ -2,6 +2,7 @@
 
 ## Upcoming
 - add id prop to AST Schema
+- add =Toc plugin
 ## 0.0.10
 - update deps
 ## 0.0.9
