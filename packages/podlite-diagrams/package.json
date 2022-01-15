@@ -2,7 +2,7 @@
   "name": "@podlite/diagram",
   "version": "0.0.7",
   "description": "Diagram",
-  "main": "index.js",
+  "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
   "license": "MIT",
   "scripts": {
@@ -15,9 +15,6 @@
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "mermaid": "8.12.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
     "react-is": "^17.0.2"
   },
   "devDependencies": {
@@ -25,8 +22,10 @@
     "@types/node": "^16.11.9",
     "@types/react": "^16.x",
     "@types/react-dom": "^16.x",
+    "mermaid": "8.12.1",
     "podlite": "workspace:*",
-    "typescript": "4.2.3"
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
   },
   "peerDependencies": {
     "mermaid": "*",

@@ -1,7 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
-- update deps
+
+- upgrade mermaid to 8.12.1
 ## 0.0.7
 - update deps
 ## 0.0.6

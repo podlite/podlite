@@ -2,9 +2,10 @@
   "extends": "../core/tsconfig.json",
   "include": ["src/**/*"],
   "compilerOptions": {
+    "jsx": "react",
     "outDir": "./lib",
     "rootDir": "./src",
-    "jsx": "react",
+    "baseUrl": "."
   },
   "references": [
     {
