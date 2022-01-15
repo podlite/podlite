@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "outDir": "./built",
+      "outDir": "./lib",
       "rootDir": "./src",
       "allowJs": true,
       "target": "es2019",
@@ -10,14 +10,10 @@
       "moduleResolution": "node",
        // Generate d.ts files
         "declaration": true,
-        "composite": true
+        "composite": true,
+        "jsx": "react",
     },
 
     "include": ["./src/**/*", "./package.json"],
     "exclude": ["definitions"],
-    "references": [
-        {
-            "path": "../podlite-schema"
-        },
-    ]
 }

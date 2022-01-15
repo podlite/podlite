@@ -6,7 +6,8 @@ import { AstTree, Plugins, mkRootBlock, PodliteDocument } from '@podlite/schema'
 import core from './plugins';
 import externalPlugins  from './plugins/extrnal'
 import idMiddleware from "./ids"
-
+import  { cleanIds, frozenIds  } from './ids'
+export {cleanIds, frozenIds}
 
 export interface PodliteOpt {
     importPlugins: boolean
