@@ -7,9 +7,10 @@
     "packages/*"
   ],
   "scripts": {
-    "buildTSC": "tsc -b ./tsconfig.monorepo.json",
+    "ci": "yarn clean && yarn",
     "build": "tsc -v && yarn workspace @podlite/schema run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema run build",
-    "clean": "yarn workspaces foreach -pt --all -v --no-private run clean && rimraf './packages/*/{dist,node_modules}' './node_modules'",
+    "_clean": "yarn workspaces foreach -pt --all -v --no-private run clean && rimraf './packages/*/{dist,node_modules}' './node_modules'",
+    "clean": "rimraf './packages/*/{dist,lib,built,node_modules,tsconfig.tsbuildinfo}' './node_modules' || echo ok",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
     "update:version-patch": "lerna version --no-push --no-git-tag-version patch --yes",
     "github:publish": "yarn lerna publish from-package",
@@ -31,22 +32,25 @@
     "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
-    "pod6": "0.0.41"
+    "pod6": "0.0.41",
+    "podlite": "^0.0.11"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@babel/plugin-transform-modules-commonjs": "^7.13.8",
     "@babel/preset-env": "^7.13.15",
+    "@podlite/schema": "workspace:*",
     "@podlite/to-jsx": "workspace:*",
     "@types/jest": "^27.4.0",
     "@types/node": "^14.11.2",
     "jest": "^26.5.2",
     "jest-serializer-html": "^7.1.0",
     "npm-run-all": "^4.1.5",
-    "podlite": "workspace:*",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "ts-jest": "^26.4.1",
-    "typescript": "4.2.3"
+    "tsconfig-paths": "^3.12.0",
+    "typescript": "4.5.4"
   },
-  "packageManager": "yarn@3.1.0"
+  "packageManager": "yarn@3.1.1"
 }
