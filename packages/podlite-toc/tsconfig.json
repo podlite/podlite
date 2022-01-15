@@ -4,14 +4,12 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
+    "baseUrl": ".",
     "jsx": "react"
   },
   "references": [
     {
       "path": "../core"
     },
-    {
-       "path": "../podlite-schema" 
-    }
   ]
 }
