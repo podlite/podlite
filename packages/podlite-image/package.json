@@ -2,7 +2,7 @@
   "name": "@podlite/image",
   "version": "0.0.7",
   "description": "image",
-  "main": "index.js",
+  "main": "src/index.ts",
   "types": "./lib/index.d.ts",
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,8 @@
     "watch": "yarn g:watch"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "index.js"
   },
   "dependencies": {
     "@podlite/schema": "workspace:^"

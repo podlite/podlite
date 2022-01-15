@@ -17,11 +17,9 @@
   },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "yarn build:cjs && yarn build:esm",
+    "build": "run-p build:cjs  build:esm",
     "build:cjs": "ts-node ./scripts/build.ts && tsc  --declaration --emitDeclarationOnly",
     "build:esm": "ts-node ./scripts/build_esm.ts &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
-    "build:cjs_": "esbuild --bundle src/index.tsx   --outfile=lib/index.js --external:'react' --external:'react-dom' --external:'react-codemirror2' --format=cjs &&  tsc  --declaration --emitDeclarationOnly",
-    "build:esm_": "esbuild --bundle src/index.tsx   --outfile=esm/index.js --external:'react' --external:'react-dom'  --external:'react-codemirror2' --format=esm &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
@@ -38,7 +36,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "ts-node": "^9.1.1",
-    "typescript": "4.2.3"
+    "typescript": "4.5.4"
   },
   "peerDependencies": {
     "react": "*",
