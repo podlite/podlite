@@ -84,7 +84,10 @@ export interface RulesStrict {
     'table_head': RuleHandler<TableHead>,
 
     //toc
-
+    ':toc': RuleHandler<Toc>,
+    ':toc-list': RuleHandler<TocList>,
+    ':toc-item': RuleHandler<TocItem>,
+    
     // User-defined
     'Diagram': RuleHandler<BlockDiagram>,
     'Image': RuleHandler<BlockNamed>,
@@ -112,14 +115,18 @@ export interface Image {
 export interface Toc {
     type:'toc',
     title?:string,
-    content:TocItem[]
+    content:TocList
 }
+export interface TocList {
+    type:'toc-list',
+    level:number,
+    content:Array<TocItem|TocList>
+}
+
 export interface TocItem {
     type:'toc-item',
-    level:number,
-    title: string,
     node: PodNode,
-    content:TocItem[]
+    content: Array<Node>
 }
 
 
@@ -306,7 +313,7 @@ export interface Block {
     content: Array<Node>;
     margin:string;
     config?:Array<ConfigItem|BrokenConfigItem>;
-    id?:string;
+    id?:string; // TODO: should it be non-optional?
 }
 
 export interface BlockPod extends Block {

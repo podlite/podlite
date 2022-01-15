@@ -35,14 +35,43 @@
                     "type": "string"
                 },
                 "content": {
+                    "$ref": "#/definitions/TocList"
+                }
+            },
+            "required": [
+                "content",
+                "type"
+            ]
+        },
+        "TocList": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "toc-list"
+                    ]
+                },
+                "level": {
+                    "type": "number"
+                },
+                "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/TocItem"
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/TocList"
+                            },
+                            {
+                                "$ref": "#/definitions/TocItem"
+                            }
+                        ]
                     }
                 }
             },
             "required": [
                 "content",
+                "level",
                 "type"
             ]
         },
@@ -55,27 +84,19 @@
                         "toc-item"
                     ]
                 },
-                "level": {
-                    "type": "number"
-                },
-                "title": {
-                    "type": "string"
-                },
                 "node": {
                     "$ref": "#/definitions/PodNode"
                 },
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/TocItem"
+                        "$ref": "#/definitions/PodNode"
                     }
                 }
             },
             "required": [
                 "content",
-                "level",
                 "node",
-                "title",
                 "type"
             ]
         },

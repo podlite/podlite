@@ -3,6 +3,7 @@
 ## Upcoming
 - add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
 - add id prop to Node type
+- toc elements support
 ## 0.0.6
 - list of supported schemas is explicit now
 - add support for create "blankline" blocks (mkBlankline)
