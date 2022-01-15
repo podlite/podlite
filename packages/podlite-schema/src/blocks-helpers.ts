@@ -1,7 +1,7 @@
-import { AstTree, BlockImage, BlockItem, Location,  RootBlock, Toc, TocItem } from "./types"
+import { AstTree, BlockImage, BlockItem, Location,  PodNode,  RootBlock, Toc, TocItem, TocList } from "./types"
 import { nanoid } from 'nanoid'
 
-export const mkNode = (attr) => {
+export const mkNode = <P extends  Record<string, any>>(attr:P):P => {
     return {...attr}
  }
  
@@ -33,11 +33,18 @@ export  const mkFomattingCodeL = (attrs, content ) => {
 export const mkVerbatim = (text) => {
     return mkNode({ "type": "verbatim", "value": text})
 }
-
-export const mkToc = (content:TocItem[], title?:string):Toc => {
-    return mkNode({type:'toc', title, content}) }
-
-    export interface mkBlockImageParams {
+// Table of contents helpers
+export const mkToc = (content:TocList, title?:string):Toc => {
+    return mkNode({type:'toc', title, content}) 
+}
+export const mkTocList = (content:Array<TocItem|TocList>, level:number):TocList => {
+    return mkNode({type:'toc-list', level, content}) 
+}
+export const mkTocItem = (content:PodNode):TocItem => {
+    return mkNode({type:'toc-item', node:content, content:[content]}) 
+}
+    
+export interface mkBlockImageParams {
     src: string,
     alt? : string,
     location:Location,
