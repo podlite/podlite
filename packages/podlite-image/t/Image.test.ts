@@ -34,7 +34,7 @@ const FIXTURES = [
     '=Image url'
     ],
 
-    [`=Image [alt text] test`,
+    [`=Image alt text test`,
         "<img src=\"test\" alt=\"alt text\"/>",
     '=Image [alt] url'
     ],

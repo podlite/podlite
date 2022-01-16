@@ -109,6 +109,7 @@ export interface Location {
 export interface Image {
         type:'image',
         src:string,
+        caption?:string,
         alt?: string
 }
 // Table of contents

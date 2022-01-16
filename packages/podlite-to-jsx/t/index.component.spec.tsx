@@ -438,7 +438,7 @@ it("accepts =Image", () => {
     <Podlite>
       {`
   =begin pod
-  =Image [alternative] https://www.ru
+  =Image alternative https://www.ru
   =end pod
 `}
     </Podlite>
