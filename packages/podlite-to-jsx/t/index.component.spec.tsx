@@ -2,7 +2,7 @@ import Podlite from "../src/index";
 import React from "react";
 import ReactDOM from "react-dom";
 import { podlite as podlite_core, PodliteExport } from "podlite";
-import { cleanIds, frozenIds } from "podlite/built/ids";
+import { cleanIds, frozenIds } from "podlite";
 
 const root = document.body.appendChild(document.createElement("div"));
 
