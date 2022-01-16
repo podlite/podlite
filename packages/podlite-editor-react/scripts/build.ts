@@ -5,7 +5,7 @@ build({
   plugins: [pnpPlugin()],
   bundle: true,
   entryPoints: ['src/index.tsx'],
-  external: ['react', 'react-dom', 'react-codemirror2'],
+  external: ['react', 'react-dom', 'codemirror', 'react-codemirror2'],
   minify: true,
   format: 'cjs',
   target: 'node12.0',
