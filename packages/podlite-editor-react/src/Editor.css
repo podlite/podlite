@@ -211,6 +211,10 @@
     margin: auto;
   }
   
+  .toc-list {
+    list-style: none;
+    font-size: .8rem;
+  }
   /* End of pod6 */ 
   
   
