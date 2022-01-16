@@ -13,6 +13,9 @@
                 "src": {
                     "type": "string"
                 },
+                "caption": {
+                    "type": "string"
+                },
                 "alt": {
                     "type": "string"
                 }

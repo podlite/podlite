@@ -46,13 +46,15 @@ export const mkTocItem = (content:PodNode):TocItem => {
     
 export interface mkBlockImageParams {
     src: string,
+    id?: string,
     alt? : string,
+    caption? : string,
     location:Location,
     margin:string
 }
 
-export const mkBlockImage = ({ src, alt, location, margin }: mkBlockImageParams): BlockImage => {
-    return mkBlock({ name: 'image', location, margin }, [{ type: 'image', src, alt }])
+export const mkBlockImage = ({ src, alt, location, margin, caption, id }: mkBlockImageParams): BlockImage => {
+    return mkBlock({ name: 'image', location, margin, caption, id }, [{ type: 'image', src, alt }])
 }
 
 export const mkRootBlock =  ({ margin }, content): RootBlock => {

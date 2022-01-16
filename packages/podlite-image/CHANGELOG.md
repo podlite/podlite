@@ -1,7 +1,8 @@
 # @podlite/image
 
 ## Upcoming
-
+- change =Image format
+- add :caption support
 - udpdate package
 ## 0.0.7
 - handle empty content

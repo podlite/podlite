@@ -1,10 +1,11 @@
 import {
+  getFromTree,
   PodliteDocument,
   validatePodliteAst,
 } from "@podlite/schema";
 import { podlite as podlite_core } from "podlite";
 import { plugin } from "../src/index";
-import ReactDOM from "react-dom";
+import Image from "@podlite/image";
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlite_core({ importPlugins: false }).use({
@@ -15,27 +16,25 @@ export const parse = (str: string): PodliteDocument => {
   return asAst.interator;
 };
 
+export const parseImage = (str: string): PodliteDocument => {
+  let podlite = podlite_core({ importPlugins: false }).use({
+    Toc: plugin,
+    Image,
+  });
+  let tree = podlite.parse(str);
+  const asAst = podlite.toAstResult(tree);
+  return asAst.interator;
+};
+
 const parseToHtml = (str: string): string => {
   let podlite = podlite_core({ importPlugins: false }).use({
     Toc: plugin,
+    Image,
   });
   let tree = podlite.parse(str);
   const asAst = podlite.toAst(tree);
-//   console.log(JSON.stringify(asAst, null, 2));
   return podlite.toHtml(asAst).toString();
 };
-
-const cleanHTML = (html: string) => {
-  return html.replace(/\n+/g, "");
-};
-
-const root = document.body.appendChild(document.createElement("div"));
-
-function render(jsx) {
-  return ReactDOM.render(jsx, root);
-}
-
-// afterEach(() => ReactDOM.unmountComponentAtNode(root));
 
 const pod = `
 =begin pod
@@ -47,32 +46,26 @@ const pod = `
 it("=Toc: toAst", () => {
   const p = parse(pod);
   // try to validate Formal AST
-    // console.log(JSON.stringify(p,null,2))
   const r = validatePodliteAst(p);
   expect(r).toEqual([]);
 });
 
-// it("=Diagram: Error handle", () => {
-//   const p = parse(
-//     `=Diagram
-// graph EROROROOROR
-// A --- B
-// B-->C[fa:fa-ban forbidden]
-// B-->D(fa:fa-spinner aaaaa);
-// `
-//   );
-
-//   const diagram = getFromTree(p, "Diagram")[0];
-//   //  console.log(JSON.stringify(diagram, null,2))
-//   expect("custom" in diagram).toBeTruthy();
-// });
+it("=para: parse to html", () => {
+  const pod = `=para head1 head3 item item2`;
+  expect(parseToHtml(pod)).toMatchInlineSnapshot(`
+    <p>
+      head1 head3 item item2
+    </p>
+  `);
+});
 
 it("=Toc: parse to html", () => {
   const pod = `=Toc head1 head3 item item2`;
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
-    <h1>
-      Table of contents
-    </h1>
+    <div classname="toc">
+      <ul class="toc-list listlevel1">
+      </ul>
+    </div>
   `);
 });
 
@@ -81,24 +74,66 @@ it("=Toc: head1 head2", () => {
 =for head1 :id<123>
 Test head1
 `;
-// console.log(JSON.stringify(parse(pod), null, 2));
-// console.log(parseToHtml(pod));
-//   expect(parseToHtml(pod)).toMatchInlineSnapshot();
+  expect(parseToHtml(pod)).toMatchInlineSnapshot(`
+    <div classname="toc">
+      <ul class="toc-list listlevel1">
+        <li class="toc-item">
+          <p>
+            <a href="#123">
+              Test head1
+            </a>
+          </p>
+        </li>
+      </ul>
+    </div>
+    <h1 id="123">
+      Test head1
+    </h1>
+  `);
 });
-it("=Toc: head1 head2 item", () => {
-    const pod = `=Toc head1 head2 head3 item item2 
-  =for head1 :id<123>
-  head1
-  =head2 head2
-  =item1 test
-  =item2 test2
-  =item1 item1
-  =head3 head3
-  =item1 item1
-  
+it.skip("=Toc Image Diagram1", () => {
+  const pod = `=for Toc :title<Table of Media>
+  Image Diagram 
+    =for Image :caption<Image caption> :id(1)
+    https://example.com.image.png
+    =Image https://example.com.image.png
+    
+    =for Diagram :caption<Diagram caption> :id(2)
+    User content
+    `;
+  const nodes = getFromTree(parseImage(pod), "image");
+  console.log(JSON.stringify(nodes, null, 2));
+  // console.log(parseToHtml(pod))
+  // expect(parseToHtml(pod)).toMatchInlineSnapshot()
+});
+
+it("=Toc Image Diagram", () => {
+  const pod = `=for Toc :title<Table of Media>
+Image Diagram 
+  =for Image :caption<Image caption> :id(1)
+  https://example.com.image.png
+  =for Diagram :caption<Diagram caption> :id(2)
+  User content
   `;
-  // console.log(JSON.stringify(parse(pod), null, 2));
-//   console.log(parseToHtml(pod));
-  //   expect(parseToHtml(pod)).toMatchInlineSnapshot();
-  });
-  
+  expect(parseToHtml(pod)).toMatchInlineSnapshot(`
+    <div classname="toc">
+      <ul class="toc-list listlevel1">
+        <li class="toc-item">
+          <p>
+            <a href="#1">
+              Image caption
+            </a>
+          </p>
+        </li>
+        <li class="toc-item">
+          <p>
+            <a href="#2">
+              Diagram caption
+            </a>
+          </p>
+        </li>
+      </ul>
+    </div>
+    <img src="https://example.com.image.png">
+  `);
+});
