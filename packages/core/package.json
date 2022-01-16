@@ -24,7 +24,7 @@
     "@podlite/schema": "workspace:^",
     "@podlite/toc": "workspace:*",
     "nanoid": "^3.1.30",
-    "pod6": "^0.0.41"
+    "pod6": "0.0.42"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
