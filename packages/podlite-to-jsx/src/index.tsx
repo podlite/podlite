@@ -24,7 +24,7 @@ const helperMakeReact = ({wrapElement})=>{
         ++mapByType[type_idx]
         return `${type_idx}_${mapByType[type_idx]}`
     }
-    return function(src:string|Function, node:PodNode, children )  {
+    return function(src:string|Function, node:PodNode, children, extraProps = {} )  {
         // for string return it
         if (typeof node == 'string') {
             return node
@@ -32,11 +32,10 @@ const helperMakeReact = ({wrapElement})=>{
         const { ...attr} = node
 
         const key = 'type' in node  &&  node.type ? getIdForNode(node) : ++i_key_i
-
         const result = 
             typeof src === 'function'
                             ? src({ ...attr, key , children}, children)
-                            : React.createElement(src,{ key }, children  )
+                            : React.createElement(src,{ ...extraProps, key }, children  )
 
         // // create react element and pass key
         // if (!isValidElementType(src)) {
@@ -79,7 +78,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
 
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
         // check if node.content defined
-        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [] )
+        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [])
     }
     // Handle nested block and :nested block attribute
     const handleNested = ( defaultHandler, implicitLevel?:number ) => {
