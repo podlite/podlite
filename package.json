@@ -32,7 +32,7 @@
     "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
-    "pod6": "0.0.41",
+    "pod6": "0.0.42",
     "podlite": "^0.0.11"
   },
   "devDependencies": {

@@ -11,5 +11,8 @@
     {
       "path": "../core"
     },
+    {
+        "path": "../podlite-schema"
+    }
   ]
 }

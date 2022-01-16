@@ -34,7 +34,7 @@
     "ajv": "^7.2.3",
     "json-pointer": "^0.6.1",
     "nanoid": "^3.1.30",
-    "pod6": "0.0.41"
+    "pod6": "0.0.42"
   },
   "devDependencies": {
     "@types/node": "^17.0.7",
