@@ -10,6 +10,7 @@ import Writer from 'pod6/built/writer'
 import { podlite as podlite_core, PodliteExport } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
 import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId} from '@podlite/schema'
+import { Toc } from '@podlite/schema'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -353,8 +354,25 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         if (! (node.content instanceof Array)) {
             console.error(node)
         }
-        return makeComponent('li', node, interator(node.content, { ...ctx}) )
+        const id = getNodeId(node,ctx)
+        return makeComponent('li', node, interator(node.content, { ...ctx}), {id} )
     },
+    // table of content
+    ':toc': setFn(( node:Toc, ctx ) => {
+        const tocTitle = node.title
+        return mkComponent(({children, key })=><div className="toc" key={key}>{ tocTitle ? <div className="toctitle">{tocTitle}</div> : '' }{children}</div>)
+    }),
+    ':toc-list': setFn(( node, ctx ) => {
+        const { level } = node
+        return mkComponent(({children, key })=><ul className={`toc-list listlevel${level}`} key={key}>{children}</ul>)
+    }),
+    ':toc-item': subUse({
+        // inside head don't wrap into <p>
+             ':para' : nodeContent,
+         },
+         setFn(( node, ctx ) => {
+        return mkComponent(({children, key })=><li className="toc-item" key={key}>{children}</li>)
+    })),
 
     }
 }
