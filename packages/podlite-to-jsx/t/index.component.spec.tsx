@@ -553,6 +553,54 @@ but some of us are looking at the stars!
   `);
 });
 
+it("accepts =Toc", () => {
+  render(
+    <Podlite>
+      {`
+    =begin pod
+    =Toc head1 item
+    =for head1 :id<Test>
+    head1
+    =for item1 :id<item>
+    item1
+    =end pod
+        `}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <div class="toc">
+        <ul class="toc-list listlevel1">
+          <li class="toc-item">
+            <a href="#Test">
+              head1
+            </a>
+          </li>
+          <ul class="toc-list listlevel2">
+            <li class="toc-item">
+              <a href="#item">
+                item1
+              </a>
+            </li>
+          </ul>
+        </ul>
+      </div>
+      <h1 id="Test">
+        head1
+      </h1>
+      <ul>
+        <li id="item">
+          <p>
+            item1
+          </p>
+        </li>
+      </ul>
+    </div>
+    <p>
+    </p>
+  `);
+});
+
 it.skip("accepts =Diagram", () => {
   render(
     <Podlite>
