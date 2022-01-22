@@ -30,6 +30,10 @@ export const getContentForToc = (node: PodNode): string => {
                 const caption = getTextContentFromNode(conf.getFirstValue('caption'))
                 return caption || 'image not have caption'
             }
+            if (node.name == 'table') {
+                const caption = getTextContentFromNode(conf.getFirstValue('caption'))
+                return caption || 'table not have :caption'
+            }
             return getTextContentFromNode(node);
         }
       }
