@@ -8,6 +8,7 @@ import Diagram, { plugin as DiagramPlugin } from "../src/index";
 import Podlite from "@podlite/to-jsx";
 import React from "react";
 import ReactDOM from "react-dom";
+import makeAttrs from "pod6/built/helpers/config";
 
 const parse = (str: string): PodliteDocument => {
   let podlite = podlite_core({ importPlugins: false }).use({
@@ -29,6 +30,31 @@ const parseToHtml = (str: string): string => {
 
 const cleanHTML = (html: string) => {
   return html.replace(/\n+/g, "");
+};
+
+const plugins = (makeComponent) => {
+  return {
+    Diagram: () => (node, ctx, interator) => {
+      const conf = makeAttrs(node, ctx);
+      const caption = conf.exists("caption")
+        ? conf.getFirstValue("caption")
+        : null;
+      return makeComponent(
+        ({ children, key }) => {
+          return (
+            <Diagram
+              isError={node.custom}
+              key={key}
+              caption={caption}
+              chart={node.content[0].value}
+            />
+          );
+        },
+        node,
+        interator(node.content, { ...ctx })
+      );
+    },
+  };
 };
 
 const root = document.body.appendChild(document.createElement("div"));
@@ -73,25 +99,35 @@ B-->D(fa:fa-spinner aaaaa);
 it("=Diagrams: parse to html", () => {
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`""`);
 });
+it("=Diagrams: caption", () => {
+  const pod = `
+=begin Diagram :caption('Caption test')
+    graph LR
+            A-->B
+            B-->C
+            C-->A
+            D-->C
+=end Diagram
+`;
+  render(<Podlite plugins={plugins}>{pod}</Podlite>);
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div class="diagram">
+      <div class="mermaid">
+      </div>
+      <div class="caption">
+        Caption test
+      </div>
+    </div>
+  `);
+});
 
 it("accepts =Diagram", () => {
-  const plugins = (makeComponent) => {
-    return {
-      Diagram: () => (node, ctx, interator) => {
-        return makeComponent(
-          ({ children, key }) => {
-            return <Diagram isError= {node.custom} key={key} chart={node.content[0].value} />;
-          },
-          node,
-          interator(node.content, { ...ctx })
-        );
-      },
-    };
-  };
   render(<Podlite plugins={plugins}>{pod}</Podlite>);
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div>
-      <div class="mermaid">
+      <div class="diagram">
+        <div class="mermaid">
+        </div>
       </div>
     </div>
   `);
