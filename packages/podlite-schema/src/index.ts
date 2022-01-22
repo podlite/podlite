@@ -8,6 +8,7 @@ export * from './types'
 export * from './blocks-helpers'
 export * from './query-helpers'
 export * from './ast-helpers'
+export {makeInterator} from './ast-inerator'
 
 export function toAst () {
     return {}
@@ -26,7 +27,7 @@ export function getTextContentFromNode(node: PodNode) {
             text +=node.value
         },
     }
-    const transformer = makeTransformer(rules)
+    const transformer = makeInterator(rules)
     const res = transformer(node, {})
     return text
 }
