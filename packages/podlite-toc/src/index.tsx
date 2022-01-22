@@ -7,30 +7,30 @@ import { PodNode } from '@podlite/schema';
 export const getContentForToc = (node: PodNode): string => {
     if (typeof node !== "string" && "type" in node) {
         if ( node.type === 'block') {
+            const conf = makeAttrs(node, {})
             if (isNamedBlock(node.name)) {
-                const conf = makeAttrs(node, {})
                 const caption = ((conf, nodeName)=>{
                     if ( conf.exists('caption') ) {
                         return conf.getFirstValue('caption')
-                    } else
+                    } else 
                     if ( conf.exists('title') ) {
                         return conf.getFirstValue('title')
-                    } 
+                    } else {
+                        // try to find content child node
+                        const [captionNode] = getFromTree(node, 'caption')
+                        if (captionNode) {
+                            return getTextContentFromNode(captionNode)
+                        }
+                    }
                     return `${nodeName} not have :caption`
                 })(conf, node.name)
                 return caption
             }
             if (node.name == 'image') {
-                if ('caption' in node ) {
-                    // @ts-ignore
-                    return node.caption || 'image not have caption'
-                }
-                
+                const caption = getTextContentFromNode(conf.getFirstValue('caption'))
+                return caption || 'image not have caption'
             }
             return getTextContentFromNode(node);
-        }
-        if (node.type === 'image') {
-            return node.caption || 'image not have caption'
         }
       }
     return 'Not supported toc element';
@@ -57,12 +57,7 @@ export const plugin:Plugin =({
             const content = getTextContentFromNode(node)
             const blocks = content.trim().split(/(?:\s*,\s*|\s+)/)
                                     .filter(Boolean)
-                                    .map(blockName=>{
-                                        if (blockName.toLowerCase() == 'image') {
-                                            return 'image'
-                                        }
-                                        return blockName
-                                    })
+
             const nodes = getFromTree(fulltree, ...blocks)
             const tocTree = prepareDataForToc(nodes)
             const createList = (items:any[], level):TocList=>{
@@ -72,7 +67,7 @@ export const plugin:Plugin =({
                     // create new node for each item
                     const text = getContentForToc(node)
                     //TODO: getNodeId should use ctx of node, but using {} instead
-                    const para = `L<${text}|#${getNodeId(node,{})}>`  
+                    const para = `L<${text}|#${getNodeId(node,{})}>` 
                     const tocNode = processor(para)[0];
                     resultList.push(mkTocItem(tocNode))
                     if ( Array.isArray(content) && content.length > 0) {
