@@ -6,6 +6,7 @@ import {
 import { podlite as podlite_core } from "podlite";
 import { plugin } from "../src/index";
 import Image from "@podlite/image";
+import { frozenIds } from "podlite/src";
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlite_core({ importPlugins: false }).use({
@@ -32,7 +33,7 @@ const parseToHtml = (str: string): string => {
     Image,
   });
   let tree = podlite.parse(str);
-  const asAst = podlite.toAst(tree);
+  const asAst = podlite.toAst(frozenIds()(tree));
   return podlite.toHtml(asAst).toString();
 };
 
@@ -91,6 +92,93 @@ Test head1
     </h1>
   `);
 });
+
+it("[check default list]=Toc", () => {
+  const pod = `=Toc
+=head1 head
+=head2 head
+=head3 head
+=head4 head
+=head5 head
+=head6 head
+    `;
+  expect(parseToHtml(pod)).toMatchInlineSnapshot(`
+    <div classname="toc">
+      <ul class="toc-list listlevel1">
+        <li class="toc-item">
+          <p>
+            <a href="#id">
+              head
+            </a>
+          </p>
+        </li>
+        <ul class="toc-list listlevel2">
+          <li class="toc-item">
+            <p>
+              <a href="#id">
+                head
+              </a>
+            </p>
+          </li>
+          <ul class="toc-list listlevel3">
+            <li class="toc-item">
+              <p>
+                <a href="#id">
+                  head
+                </a>
+              </p>
+            </li>
+            <ul class="toc-list listlevel4">
+              <li class="toc-item">
+                <p>
+                  <a href="#id">
+                    head
+                  </a>
+                </p>
+              </li>
+              <ul class="toc-list listlevel5">
+                <li class="toc-item">
+                  <p>
+                    <a href="#id">
+                      head
+                    </a>
+                  </p>
+                </li>
+                <ul class="toc-list listlevel6">
+                  <li class="toc-item">
+                    <p>
+                      <a href="#id">
+                        head
+                      </a>
+                    </p>
+                  </li>
+                </ul>
+              </ul>
+            </ul>
+          </ul>
+        </ul>
+      </ul>
+    </div>
+    <h1 id="id">
+      head
+    </h1>
+    <h2 id="id">
+      head
+    </h2>
+    <h3 id="id">
+      head
+    </h3>
+    <h4 id="id">
+      head
+    </h4>
+    <h5 id="id">
+      head
+    </h5>
+    <h6 id="id">
+      head
+    </h6>
+  `);
+});
 it.skip("=Toc Image Diagram1", () => {
   const pod = `=for Toc :title<Table of Media>
   Image Diagram 
@@ -103,7 +191,7 @@ it.skip("=Toc Image Diagram1", () => {
     `;
   const nodes = getFromTree(parseImage(pod), ":image");
   console.log(JSON.stringify(nodes, null, 2));
-  console.log(parseToHtml(nodes))
+  console.log(parseToHtml(nodes));
   // expect(parseToHtml(pod)).toMatchInlineSnapshot()
 });
 
@@ -134,6 +222,17 @@ Image Diagram
         </li>
       </ul>
     </div>
-    <img src="https://example.com.image.png">
+    <div class="image_block"
+         id="1"
+    >
+      <img src="https://example.com.image.png"
+           alt="undefined"
+      >
+      <div class="caption">
+        <p>
+          Image caption
+        </p>
+      </div>
+    </div>
   `);
 });
