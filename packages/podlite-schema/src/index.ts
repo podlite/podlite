@@ -33,6 +33,7 @@ export function getTextContentFromNode(node: PodNode) {
 }
 
 export function  validatePodliteAst(data:unknown ):SchemaValidationError[] { return  validateAst(data,'PodliteDocument') }
+export function  validateAstTree(data:unknown ):SchemaValidationError[] { return  validateAst(data,'AstTree') }
 
 export function validateAst( data:unknown, Name:string = 'AstTree'):SchemaValidationError[] {
     const AstTreeSchema: JSONSchemaType<AstTree> =  jsonShemes[Name] 
