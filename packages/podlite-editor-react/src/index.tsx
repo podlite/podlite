@@ -260,14 +260,23 @@ useEffect(()=>{
         var start = cur.ch;
         var end = start;
         while (end < curLine.length && /[\w$]/.test(curLine.charAt(end))) ++end;
-        while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
+        while (start && /[^=]/.test(curLine.charAt(start - 1))) --start;
         var curWord = start !== end && curLine.slice(start, end);
-        var regex = new RegExp('^' + curWord, 'i');
+        var regex = new RegExp('' + curWord, 'i');
+        // filter dict by regex and sort by mostly nearness
+        const filterDictByRegex = (arr, regex)=>{
+            const dict = arr.reduce((acc, item)=>{
+                if (item === null) { return acc; }
+                const result = (typeof item === 'object' && !Array.isArray(item)) ?  item.displayText.match(regex): item.match(regex);
+                if ( result ) {
+                    acc.push({item, index:result.index})
+                }
+                return acc;
+            }, []);
+            return dict.sort((a, b) => a.index - b.index).map(i=>i.item)
+        }
         return {
-            list: (!curWord ? dictionary : dictionary.filter(function(item) {
-                //@ts-ignore
-                return (typeof item === 'object' && !Array.isArray(item) && item !== null ) ?  item.displayText.match(regex): item.match(regex);
-            })).sort(),
+            list: (!curWord ? dictionary : filterDictByRegex(dictionary,regex )),
             from: CMirror.Pos(cur.line, start-1),
             to: CMirror.Pos(cur.line, end)
         }
