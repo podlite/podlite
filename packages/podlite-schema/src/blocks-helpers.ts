@@ -1,4 +1,4 @@
-import { AstTree, BlockImage, BlockItem, Location,  PodNode,  RootBlock, Toc, TocItem, TocList } from "./types"
+import { AstTree, BlockCaption, BlockItem, Location,  PodNode,  RootBlock, Toc, TocItem, TocList, Node, Image } from "./types"
 import { nanoid } from 'nanoid'
 
 export const mkNode = <P extends  Record<string, any>>(attr:P):P => {
@@ -44,15 +44,6 @@ export const mkTocItem = (content:PodNode):TocItem => {
     return mkNode({type:'toc-item', node:content, content:[content]}) 
 }
     
-export interface mkBlockImageParams {
-    src: string,
-    id?: string,
-    alt? : string,
-    caption? : string,
-    location:Location,
-    margin:string
-}
-
 export const mkCaption = (content:Array<Node>):BlockCaption => {
     return {
     type: 'block',
