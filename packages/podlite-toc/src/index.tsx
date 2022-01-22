@@ -40,28 +40,14 @@ export const getContentForToc = (node: PodNode): string => {
     return 'Not supported toc element';
   }
 export const plugin:Plugin =({
-        toAst: (writer) => (node) => {
-            if (typeof node !== "string" && 'type' in node && 'content' in node && node.type === 'block') {
-                const content = node.content[0] || {}
-                if (typeof content !== "string" && 'location' in node && 'value' in content) {
-                    // get link and alt text
-                    const data = content.value
-                    return node
-                }
-            }
-        },
-        //@ts-ignore
         toAstAfter:(writer, processor, fulltree) => {
-            // let fulltree
-            // writer.on('start', (tree:PodliteDocument) => {
-            //     // TODO: tree should pass as third argument in pod6 release
-            //     fulltree = tree
-            // })
             return (node,ctx) => {
             const content = getTextContentFromNode(node)
-            const blocks = content.trim().split(/(?:\s*,\s*|\s+)/)
+            const blocks:Array<any> = content.trim().split(/(?:\s*,\s*|\s+)/)
                                     .filter(Boolean)
-
+            if ( blocks.length == 0 ) {
+                blocks.push({name:'head'})
+            }
             const nodes = getFromTree(fulltree, ...blocks)
             const tocTree = prepareDataForToc(nodes)
             const createList = (items:any[], level):TocList=>{
@@ -69,7 +55,7 @@ export const plugin:Plugin =({
                 items.map(item => {
                     const {level, node, content} = item
                     // create new node for each item
-                    const text = getContentForToc(node)
+                    const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
                     //TODO: getNodeId should use ctx of node, but using {} instead
                     const para = `L<${text}|#${getNodeId(node,{})}>` 
                     const tocNode = processor(para)[0];
