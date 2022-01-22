@@ -210,6 +210,10 @@
     display: block;
     margin: auto;
   }
+
+  .toc {
+    padding: 1rem;
+  }
   
   .toc-list {
     list-style: none;
