@@ -11,7 +11,7 @@
       "path": "../core"
     },
     {
-        "path": "../podlite-schema"
+      "path": "../podlite-schema"
     }
   ]
 }

@@ -38,7 +38,34 @@ const Image:Plugin = {
         }
 
      },
-   
+   toHtml: subUse({
+            // inside head don't wrap into <p>
+                ':image' : setFn(( node, ctx ) => {
+                        return (writer) => (node)=>{
+                            const linkTo = ctx.link
+                            if (linkTo) { 
+                                writer.writeRaw('<a href="')
+                                writer.write(linkTo)
+                                writer.writeRaw('">')
+                            }
+                            writer.writeRaw(`<img src="${node.src}" alt="${node.alt}"/>`)
+                            if (linkTo) { 
+                                writer.writeRaw('</a>')
+                            }
+                        }
+                    }),
+                'caption': wrapContent('<div class="caption">', '</div>'),
+            },
+            setFn(( node, ctx ) => {
+                const {level} = node
+                const id = getNodeId(node, ctx)
+                const conf = makeAttrs(node, ctx)
+                if ( conf.exists('link') ) {
+                    ctx.link = conf.getFirstValue('link')
+                }
+                return wrapContent( `<div class="image_block" ${ id ? ` id="${id}"` : ''}>`, `</div>` )
+            })
+     ),
 }
 export default Image
 
