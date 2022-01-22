@@ -100,9 +100,11 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     'Image': subUse({
         // inside head don't wrap into <p>
             ':image' : setFn(( node:Image, ctx ) => {
-                const Img = <img src={node.src} alt={node.alt}/>
                 const linkTo = ctx.link
-                return mkComponent(({children, key })=>{ return linkTo ?<a  key = {key} href={linkTo}>{Img}</a> : Img})
+                return mkComponent(({children, key })=>{ 
+                    const Img = <img key={key} src={node.src} alt={node.alt}/>
+                    return linkTo ?<a  key={key} href={linkTo}>{Img}</a> : Img
+                })
                 }),
             'caption': mkComponent(({ children, key })=><div className="caption" key={key}>{children}</div>)
             }, 
@@ -123,8 +125,12 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     }),
 
     'Diagram':  () => (node, ctx, interator) => {
+        const conf = makeAttrs(node, ctx);
+        const caption = conf.exists("caption")
+          ? conf.getFirstValue("caption")
+          : null;
         return makeComponent(({children, key} )=>{ 
-            return <Diagram  isError={node.custom} chart={node.content[0].value}/>
+            return <Diagram  isError={node.custom} caption={caption} chart={node.content[0].value}/>
             },node,interator(node.content, { ...ctx}) )
       },
     ':text':( writer, processor )=>( node:Text, ctx, interator )=>{
