@@ -1,7 +1,7 @@
 import { inlineRef } from "ajv/dist/compile/resolve"
 
 export interface RuleHandler<T = any> {
-    (  writer?:any, processor?:any ) :  ( node:T, ctx?:any, interator?:any ) => void | AstTree | PodNode
+    (  writer:any, processor:any, tree:PodliteDocument ) :  ( node:T, ctx:any, interator:any ) => void | AstTree | PodNode
 }
 export interface Plugin {
     toAst?: RuleHandler,
