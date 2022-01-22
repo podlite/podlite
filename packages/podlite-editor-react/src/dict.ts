@@ -15,13 +15,13 @@ const dict = [
         "text": `=head3 `
     },
     {
+        "displayText": "item1 *",
+        "text": `=item1 `
+    }, 
+    {
     "displayText": "item1 1.)",
     "text": `=item1 # `
 },
-{
-    "displayText": "item1 *",
-    "text": `=item1 `
-}, 
 {
     "displayText": "item (1., 2.) 🏷",
     "text": `=item1 # item 
@@ -139,6 +139,33 @@ Everything else     57
           -validate()
           +outputAsLabel()  
     }
+
+`
+},
+{
+    "displayText": "code block with formatting 🏷",
+    "text": `=begin code :allow<IBZ> 
+
+=end code
+`
+},
+{
+    "displayText": "Toc head1, head2, head3",
+    "text": `=Toc head1, head2, head2
+`},
+{
+    "displayText": "Toc (with :title) 🏷",
+    "text": `=for Toc :title('Table of content')
+head1, head2, head2 
+
+`
+},
+{
+    "displayText": "Toc ( Images, Diagrams )  + tables 🏷",
+    "text": `=for Toc :title('List of media')
+Image, Diagram
+=for Toc :title('List of tables')
+table
 
 `
 },
