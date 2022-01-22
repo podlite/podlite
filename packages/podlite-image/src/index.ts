@@ -1,7 +1,7 @@
 
-import {getNodeId, mkBlockImage, mkBlockImageParams, mkCaption, mkImage, Plugin, PodNode} from '@podlite/schema'
+import {getNodeId, mkCaption, mkImage, Plugin, PodNode} from '@podlite/schema'
 import makeAttrs from 'pod6/built/helpers/config'
-import { content, setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
+import { setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
 const Image1:Plugin = {}
 const Image:Plugin = {
     toAst: (_, processor) => (node, ctx) => {
@@ -15,37 +15,7 @@ const Image:Plugin = {
                 const captionText = caption.join('\n')
                 const altRegexp = /\s*((?<altText>.+)\s+)?(?<src>[^\s]+)/
                 const { altText, src } = (data.match(altRegexp) || {groups:{ altText: undefined, src: undefined }} ).groups 
-
-                const props:mkBlockImageParams = {
-                    src:'',
-                    location:node.location,
-                    margin:node.margin
-                }
                 const conf = makeAttrs(node, ctx)
-                if (conf.exists('caption')) {
-                    props.caption = processor(conf.getFirstValue('caption'))
-                } else if (captionText) {
-                    props.caption = processor(captionText)
-                }
-                if (conf.exists('id')) {
-                    props.id = conf.getFirstValue('id')
-                }
-                if (src) {
-                    // clear all \n or spaces
-                    props.src = src.split(/\s+/)[0]
-                }
-                if (altText) {
-                    props.alt = altText
-                }
-                if (conf.exists('alt')) {
-                    props.alt = conf.getFirstValue('alt')
-                }
-                if (conf.exists('src')) {
-                    props.src = conf.getFirstValue('src')
-                }
-                if (conf.exists('link')) {
-                    props.link = conf.getFirstValue('link')
-                }
                 // make  inline image
                 const imageSrc = conf.exists('src') ? conf.getFirstValue('src') : src
                 const imageAlt = conf.exists('alt') ? conf.getFirstValue('alt') : altText
