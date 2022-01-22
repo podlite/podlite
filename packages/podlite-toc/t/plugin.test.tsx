@@ -101,9 +101,9 @@ it.skip("=Toc Image Diagram1", () => {
     =for Diagram :caption<Diagram caption> :id(2)
     User content
     `;
-  const nodes = getFromTree(parseImage(pod), "image");
+  const nodes = getFromTree(parseImage(pod), ":image");
   console.log(JSON.stringify(nodes, null, 2));
-  // console.log(parseToHtml(pod))
+  console.log(parseToHtml(nodes))
   // expect(parseToHtml(pod)).toMatchInlineSnapshot()
 });
 
