@@ -9,13 +9,12 @@ import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
 import { podlite as podlite_core, PodliteExport } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
-import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId} from '@podlite/schema'
+import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, BlockImage, BlockNamed, getFromTree, Image} from '@podlite/schema'
 import { Toc } from '@podlite/schema'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
 export type CreateElement = typeof React.createElement
-// const createElement = React.createElement
 const helperMakeReact = ({wrapElement})=>{
     let i_key_i = 0;
     let mapByType= {};
@@ -64,16 +63,8 @@ const Podlite: React.FC<{
     wrapElement?:WrapElement,
     tree?:PodliteExport
   }>  = ({ children, ...options }) => {
-          // console.log({podlite:podlite(children, options)})
-    // return React.cloneElement(
             const result:any = podlite(children, options)
             return result
-        //      props as React.Props<any>
-            // )
-    // return React.cloneElement(
-    //     podlite(children, options),
-    // //   props as React.Props<any>
-    // )
   }
 const mapToReact = (makeComponent):Partial<RulesStrict> => {
 
@@ -106,7 +97,27 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     ':ambient': emptyContent(),
     ':code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
     'code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
-    'image': nodeContent,
+    'Image': subUse({
+        // inside head don't wrap into <p>
+            ':image' : setFn(( node:Image, ctx ) => {
+                const Img = <img src={node.src} alt={node.alt}/>
+                const linkTo = ctx.link
+                return mkComponent(({children, key })=>{ return linkTo ?<a  key = {key} href={linkTo}>{Img}</a> : Img})
+                }),
+            'caption': mkComponent(({ children, key })=><div className="caption" key={key}>{children}</div>)
+            }, 
+            setFn(( node, ctx ) => {
+            const {level} = node
+            const id = getNodeId(node, ctx)
+            const conf = makeAttrs(node, ctx)
+            if ( conf.exists('link') ) {
+                ctx.link = conf.getFirstValue('link')
+            }
+            return mkComponent(({children, key })=>
+            <div className="image_block" key={key} id={id}>{children}</div>)
+        })
+ ),
+     'image':nodeContent,
     ':image': setFn(( node, ctx ) => {
         return mkComponent(({ children, key })=><img key={key} src={node.src} alt={node.alt}/>)
     }),
@@ -323,7 +334,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
                         }
                         return makeComponent(({key, children})=>{
                                 return <table key={key}>
-                                    <caption>{attr.caption}</caption>
+                                    <caption className="caption">{attr.caption}</caption>
                                     <tbody>{children}</tbody></table>
                             }, node,  interator(node.content, { ...ctx}) )
                     }

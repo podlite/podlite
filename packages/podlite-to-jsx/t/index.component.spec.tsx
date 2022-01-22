@@ -72,7 +72,7 @@ sdsdsd
         Test
       </h1>
       <table>
-        <caption>
+        <caption class="caption">
           Super table!
         </caption>
         <tbody>
@@ -433,25 +433,102 @@ it("accepts U<>, X<>, S<>", () => {
   `);
 });
 
-it("accepts =Image", () => {
+it("accepts =Image base", () => {
   render(
     <Podlite>
       {`
   =begin pod
-  =Image alternative https://www.ru
+  =for Image :id<1> :caption<A picture of a cat> :link<https://example.com/cat.jpg>
+  alternative https://www.example.org
   =end pod
 `}
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div>
-      <img src="https://www.ru"
-           alt="alternative"
+      <div class="image_block"
+           id="1"
       >
+        <a href="https://example.com/cat.jpg">
+          <img src="https://www.example.org"
+               alt="alternative"
+          >
+        </a>
+        <div class="caption">
+          <p>
+            A picture of a cat
+          </p>
+        </div>
+      </div>
     </div>
   `);
 });
 
+it("accepts =Image empty caption", () => {
+  render(
+    <Podlite>
+      {`
+    =begin pod
+    =for Image :id<1> :link<https://example.com/cat.jpg>
+    alternative https://www.example.org
+    =end pod
+  `}
+    </Podlite>
+  );
+  // console.log(root.innerHTML);return;
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <div class="image_block"
+           id="1"
+      >
+        <a href="https://example.com/cat.jpg">
+          <img src="https://www.example.org"
+               alt="alternative"
+          >
+        </a>
+      </div>
+    </div>
+    <p>
+    </p>
+  `);
+});
+
+it("accepts =Image with fullset of attributes", () => {
+  render(
+    <Podlite>
+      {`
+=begin pod
+=for Image :alt<alternative> 
+= :link<'https://www.example.org'>
+= :src<'https://www.example.org'>
+= :caption<'caption'>
+= :id<'id'>
+content ignored
+=end pod
+  `}
+    </Podlite>
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div>
+      <div class="image_block"
+           id="id"
+      >
+        <a href="https://www.example.org">
+          <img src="https://www.example.org"
+               alt="alternative"
+          >
+        </a>
+        <div class="caption">
+          <p>
+            caption
+          </p>
+        </div>
+      </div>
+    </div>
+    <p>
+    </p>
+  `);
+});
 it("accepts =TITLE", () => {
   render(
     <Podlite>
