@@ -1,17 +1,20 @@
 
-import {mkBlockImage, mkBlockImageParams, Plugin} from '@podlite/schema'
+import {getNodeId, mkBlockImage, mkBlockImageParams, mkCaption, mkImage, Plugin, PodNode} from '@podlite/schema'
 import makeAttrs from 'pod6/built/helpers/config'
-
+import { content, setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
+const Image1:Plugin = {}
 const Image:Plugin = {
-    toAst: () => (node, ctx) => {
+    toAst: (_, processor) => (node, ctx) => {
         if (typeof node !== "string" && 'type' in node && 'content' in node && node.type === 'block') {
             
             const content = node.content[0]
             if (content && typeof content !== "string" && 'location' in node && 'value' in content) {
-                // get link and alt text
-                const data = content.value
-                const altRegexp =  /\s*((?<altText>.+)\s+)?(?<link>[^\s]+)/
-                const { altText, link } = (data.match(altRegexp) || {groups:{ alt: undefined, link: undefined }} ).groups 
+                // get src and alt text
+                const lines = content.value.split('\n')
+                const [data, ...caption ] = lines
+                const captionText = caption.join('\n')
+                const altRegexp = /\s*((?<altText>.+)\s+)?(?<src>[^\s]+)/
+                const { altText, src } = (data.match(altRegexp) || {groups:{ altText: undefined, src: undefined }} ).groups 
 
                 const props:mkBlockImageParams = {
                     src:'',
@@ -20,19 +23,40 @@ const Image:Plugin = {
                 }
                 const conf = makeAttrs(node, ctx)
                 if (conf.exists('caption')) {
-                    props.caption = conf.getFirstValue('caption')
+                    props.caption = processor(conf.getFirstValue('caption'))
+                } else if (captionText) {
+                    props.caption = processor(captionText)
                 }
                 if (conf.exists('id')) {
                     props.id = conf.getFirstValue('id')
                 }
-                if (link) {
+                if (src) {
                     // clear all \n or spaces
-                    props.src = link.split(/\s+/)[0]
+                    props.src = src.split(/\s+/)[0]
                 }
                 if (altText) {
                     props.alt = altText
                 }
-                return mkBlockImage(props)
+                if (conf.exists('alt')) {
+                    props.alt = conf.getFirstValue('alt')
+                }
+                if (conf.exists('src')) {
+                    props.src = conf.getFirstValue('src')
+                }
+                if (conf.exists('link')) {
+                    props.link = conf.getFirstValue('link')
+                }
+                // make  inline image
+                const imageSrc = conf.exists('src') ? conf.getFirstValue('src') : src
+                const imageAlt = conf.exists('alt') ? conf.getFirstValue('alt') : altText
+                const resultContent: Array<PodNode>= [ mkImage(imageSrc, imageAlt)]
+                // make caption
+                const captionContent = conf.exists('caption') ? conf.getFirstValue('caption') : captionText
+                if ( captionContent ) {
+                    resultContent.push( mkCaption(processor(captionContent)) )
+                }
+
+                return { ...node, content:resultContent ,/* content_: node.content */}
             }
             return node
         }
