@@ -401,7 +401,7 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
     }) as WriterPostinterator
     const  res = 
     toAny({processor:parse})
-    .use({'*:*':( writer, processor )=>( node, ctx, interator )=>{
+    .use({'*:*':() => ( node, ctx, interator ) => {
 
         // skip named blocks
         if (isNamedBlock(node.name)) {
