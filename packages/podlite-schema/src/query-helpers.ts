@@ -90,6 +90,7 @@ const compileAtomQuery = ( obj:Query ): (any)=>any => {
  * @returns array of matched nodes
  */
 export const getFromTree = (tree, ...queries: string[] | any) => { 
+    if (! tree) { return []}
     let results = []
     let rules = {}
     const transformer = makeTransformer({'*:*': (node,ctx)=>{
