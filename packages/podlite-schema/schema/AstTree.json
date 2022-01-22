@@ -13,9 +13,6 @@
                 "src": {
                     "type": "string"
                 },
-                "caption": {
-                    "type": "string"
-                },
                 "alt": {
                     "type": "string"
                 }
@@ -113,6 +110,9 @@
                 },
                 {
                     "$ref": "#/definitions/BlockImage"
+                },
+                {
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 {
                     "$ref": "#/definitions/RootBlock"
@@ -239,15 +239,24 @@
                         "image"
                     ]
                 },
+                "caption": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "array",
                     "items": [
                         {
                             "$ref": "#/definitions/Image"
+                        },
+                        {
+                            "$ref": "#/definitions/BlockCaption"
                         }
                     ],
-                    "minItems": 1,
-                    "maxItems": 1
+                    "minItems": 2,
+                    "maxItems": 2
                 },
                 "type": {
                     "type": "string",
@@ -282,6 +291,34 @@
                 "content",
                 "location",
                 "margin",
+                "name",
+                "type"
+            ]
+        },
+        "BlockCaption": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "caption"
+                    ]
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                }
+            },
+            "required": [
+                "content",
                 "name",
                 "type"
             ]
@@ -1124,6 +1161,9 @@
                             },
                             {
                                 "$ref": "#/definitions/BlockImage"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockCaption"
                             },
                             {
                                 "$ref": "#/definitions/RootBlock"
@@ -2189,24 +2229,41 @@
                     "type": "string"
                 },
                 "content": {
-                    "type": "array",
-                    "items": [
+                    "anyOf": [
                         {
-                            "anyOf": [
+                            "type": "array",
+                            "items": [
                                 {
-                                    "$ref": "#/definitions/Verbatim"
-                                },
-                                {
-                                    "$ref": "#/definitions/Para"
-                                },
-                                {
-                                    "$ref": "#/definitions/Code"
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/definitions/Verbatim"
+                                        },
+                                        {
+                                            "$ref": "#/definitions/Para"
+                                        },
+                                        {
+                                            "$ref": "#/definitions/Code"
+                                        }
+                                    ]
                                 }
-                            ]
+                            ],
+                            "minItems": 0,
+                            "maxItems": 1
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/Image"
+                                    },
+                                    {
+                                        "$ref": "#/definitions/BlockCaption"
+                                    }
+                                ]
+                            }
                         }
-                    ],
-                    "minItems": 0,
-                    "maxItems": 1
+                    ]
                 },
                 "type": {
                     "type": "string",

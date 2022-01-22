@@ -53,8 +53,19 @@ export interface mkBlockImageParams {
     margin:string
 }
 
-export const mkBlockImage = ({ src, alt, location, margin, caption, id }: mkBlockImageParams): BlockImage => {
-    return mkBlock({ name: 'image', location, margin, caption, id }, [{ type: 'image', src, alt }])
+export const mkCaption = (content:Array<Node>):BlockCaption => {
+    return {
+    type: 'block',
+    name:'caption',
+    content
+    }
+}
+export const mkImage = (src:string, alt?:string):Image => {
+    return {
+    type: 'image',
+    src,
+    alt
+    }
 }
 
 export const mkRootBlock =  ({ margin }, content): RootBlock => {

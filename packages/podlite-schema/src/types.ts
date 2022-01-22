@@ -109,9 +109,9 @@ export interface Location {
 export interface Image {
         type:'image',
         src:string,
-        caption?:string,
         alt?: string
 }
+
 // Table of contents
 export interface Toc {
     type:'toc',
@@ -132,14 +132,17 @@ export interface TocItem {
 
 
 
-
-
 // extra definitions
 export interface BlockImage extends Omit<Block, 'content'>{
     name: 'image'
-    content:[Image] 
+    caption?: string, //TODO: move caption into content and make it optional and may contain multiple nodes
+    link?: string,
+    content:[Image, BlockCaption] 
 }
-
+export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id'>{
+    name:'caption',
+    content:Array<Node> 
+}
 export interface RootBlock extends  Omit<Block, 'location'>{
     name: 'root'
     content:AstTree
@@ -236,7 +239,7 @@ export interface Ambient {
     type: "ambient",
     text: string, // TODO: change type name to 'value'
     location:Location
- }
+}
 
 export interface Verbatim {
    type: "verbatim",
@@ -393,7 +396,7 @@ export type BlockAny = BlockNamed
 
 export interface BlockNamed extends Omit<Block, 'content'> {
     name: Capitalize<string>;
-    content: [(Verbatim|Para|Code)?] // TODO: use one of Verbatim or Code types
+    content: [(Verbatim|Para|Code)?] | Array<Image|BlockCaption> //AstTree// TODO: use one of Verbatim or Code types
 }
 
 export interface BlockDiagram extends Omit<BlockNamed,'content'> {
@@ -447,6 +450,7 @@ export type PodNode =
     | Image // :TODO: if it inline element, it should be in Para
     | RootBlock
     | Separator
+    | BlockCaption
     // Fomatting codes
     | FormattingCodes
     | Toc 
