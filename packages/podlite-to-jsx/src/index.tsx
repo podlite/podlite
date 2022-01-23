@@ -129,8 +129,9 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         const caption = conf.exists("caption")
           ? conf.getFirstValue("caption")
           : null;
+        const id = getNodeId(node, ctx)
         return makeComponent(({children, key} )=>{ 
-            return <Diagram  isError={node.custom} caption={caption} chart={node.content[0].value}/>
+            return <Diagram id={id} isError={node.custom} caption={caption} chart={node.content[0].value}/>
             },node,interator(node.content, { ...ctx}) )
       },
     ':text':( writer, processor )=>( node:Text, ctx, interator )=>{
