@@ -33,3 +33,4 @@ jobs:
           yarn install && yarn build && yarn release-packages
         env:
           NODE_AUTH_TOKEN: ${{secrets.PUBLISH_NPM_TOKEN}}
+          YARN_NPM_AUTH_TOKEN: ${{secrets.YARN_NPM_AUTH_TOKEN}}

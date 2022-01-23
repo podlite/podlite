@@ -1,4 +1,4 @@
-# @podlite/diagram
+# @podlite/toc
 
 ## Upcoming
 
