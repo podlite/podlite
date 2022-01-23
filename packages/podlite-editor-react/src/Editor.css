@@ -219,6 +219,11 @@
     list-style: none;
     font-size: .8rem;
   }
+
+  .caption {
+    text-align: center;
+    font-size: 0.9rem;
+}
   /* End of pod6 */ 
   
   
