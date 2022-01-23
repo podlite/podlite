@@ -3,7 +3,7 @@ import {useEffect, useRef} from 'react'
 import {Plugin, Location} from '@podlite/schema'
 import mermaid from 'mermaid';
 let i = 0;
-const Diagram = ({ chart , isError, caption }: {chart:string, isError:any, caption?:string})=>{
+const Diagram = ({ chart , isError, caption, id }: {chart:string, isError:any, caption?:string, id?:string})=>{
     const inputEl = useRef(null);
     const config = {
         securityLevel: "loose",
@@ -27,7 +27,7 @@ const Diagram = ({ chart , isError, caption }: {chart:string, isError:any, capti
           }
     }, [chart])
 
-    return <div className="diagram">
+    return <div className="diagram" id={id}>
             <div className={ `mermaid${ isError ? ' error' : ''}` } ref={inputEl}/>
             { caption ? <div className="caption">{caption}</div> : null }
             </div>
