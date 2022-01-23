@@ -1,7 +1,9 @@
 # @podlite/image
 
 ## Upcoming
-- change =Image format
+## 0.0.8
+- add :link attribute support
+- change =Image format ( use text after image link as caption)
 - add :caption support
 - udpdate package
 ## 0.0.7

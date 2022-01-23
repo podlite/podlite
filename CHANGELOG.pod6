@@ -1,6 +1,42 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.14
+
+- update pod6 to v0.0.43
+
+# @podlite@0.0.12
+- add id prop to AST Schema
+- add =Toc plugin
+# @podlite/diagram@0.0.8
+- add :caption, :id support
+- upgrade mermaid to 8.12.1
+# @podlite/editor-react@0.0.12
+- add caption, toc styles support
+- change search suggestions sorting
+- add =Toc related suggestions
+- add suggestions: code block with formatting
+- fix snippets
+- update build system
+# @podlite/image@0.0.8
+- add :link attribute support
+- change =Image format ( use text after image link as caption)
+- add :caption support
+- udpdate package
+# @podlite/schema@ 0.0.7
+- add ast interator module (ast-inerator) 
+- add AST nodes for image and caption objects, add mkImage and mkCaption helpers 
+- add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
+- add id prop to Node type
+- toc elements support
+# @podlite/to-jsx@0.0.8
+- add support for =Image
+- add caption for =Diagram
+- add support for id html attribute
+# @podlite/diagram@0.0.1
+- initial release
+- implement Table of conents =Toc block
+- add support :caption for =table
 
 =head1 0.0.13
 =item small bug fixes

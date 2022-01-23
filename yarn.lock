@@ -2799,7 +2799,7 @@ __metadata:
     glob: ^7.2.0
     json-pointer: ^0.6.1
     nanoid: ^3.1.30
-    pod6: 0.0.42
+    pod6: 0.0.43
     ts-node: ^9.1.1
     typescript: 4.5.4
     typescript-json-schema: 0.53.0
@@ -2815,7 +2815,7 @@ __metadata:
     "@types/react": ^16.x
     "@types/react-dom": ^16.x
     glob: ^7.2.0
-    pod6: 0.0.42
+    pod6: 0.0.43
     podlite: "workspace:*"
     react: ^16.12.0
     react-dom: ^16.12.0
@@ -2838,7 +2838,7 @@ __metadata:
     "@types/node": ^16.11.9
     "@types/react": ^16.x
     "@types/react-dom": ^16.x
-    pod6: 0.0.42
+    pod6: 0.0.43
     podlite: "workspace:*"
     react: ^16.12.0
     react-dom: ^16.12.0
@@ -9271,12 +9271,12 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"pod6@npm:0.0.42":
-  version: 0.0.42
-  resolution: "pod6@npm:0.0.42"
+"pod6@npm:0.0.43":
+  version: 0.0.43
+  resolution: "pod6@npm:0.0.43"
   bin:
     pod6html: bin/pod6html
-  checksum: a3f9b794dae06f7239f887815054ab185a08c0ff71440e51a993833ceccd6b9418d2909f68a3307704dc2acf7b80095e359add13377882e8fd035df822f6a0eb
+  checksum: c2879a0d2e84937c883bb6ae8b03be5927110a50e30e6a0c98db4453cbaa4377deb08405361155cd68ae07a0740f6b34a547d01852bb2a988ff8f32a2bad3a96
   languageName: node
   linkType: hard
 
@@ -9297,7 +9297,7 @@ fsevents@^2.1.2:
     jest-watch-typeahead: ^0.6.1
     lerna: ^4.0.0
     npm-run-all: ^4.1.5
-    pod6: 0.0.42
+    pod6: 0.0.43
     podlite: ^0.0.11
     prettier: ^2.5.1
     rimraf: ^3.0.2
@@ -9319,7 +9319,7 @@ fsevents@^2.1.2:
     "@types/node": ^14.11.2
     nanoid: ^3.1.30
     npm-run-all: ^4.1.5
-    pod6: 0.0.42
+    pod6: 0.0.43
     typescript: 4.5.4
   peerDependencies:
     pod6: "*"

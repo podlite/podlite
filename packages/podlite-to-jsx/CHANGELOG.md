@@ -1,6 +1,9 @@
 # @podlite/to-jsx
 
 ## Upcoming
+## 0.0.8
+- add support for =Image
+- add caption for =Diagram
 - add support for id html attribute
 ## 0.0.7
 - fix deps

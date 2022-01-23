@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Adaptation of pod6 markup language",
   "main": "./src/index.ts",
   "types": "./lib/index.d.ts",
@@ -24,7 +24,7 @@
     "@podlite/schema": "workspace:^",
     "@podlite/toc": "workspace:*",
     "nanoid": "^3.1.30",
-    "pod6": "0.0.42"
+    "pod6": "0.0.43"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",

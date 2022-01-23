@@ -30,6 +30,6 @@ jobs:
           node-version: 15.x
           registry-url: https://registry.npmjs.org/
       - run: |
-          yarn install && yarn build && yarn github:publish --yes
+          yarn install && yarn build && yarn release-packages
         env:
           NODE_AUTH_TOKEN: ${{secrets.PUBLISH_NPM_TOKEN}}
