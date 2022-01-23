@@ -151,7 +151,7 @@ Everything else     57
 },
 {
     "displayText": "Toc head1, head2, head3",
-    "text": `=Toc head1, head2, head2
+    "text": `=Toc head1, head2, head3
 `},
 {
     "displayText": "Toc (with :title) 🏷",
