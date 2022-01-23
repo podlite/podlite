@@ -1,7 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
-
+## 0.0.8
+- add :caption, :id support
 - upgrade mermaid to 8.12.1
 ## 0.0.7
 - update deps

@@ -1,6 +1,9 @@
 # @podlite/schema
 
 ## Upcoming
+## 0.0.7
+- add ast interator module (ast-inerator) 
+- add AST nodes for image and caption objects, add mkImage and mkCaption helpers 
 - add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
 - add id prop to Node type
 - toc elements support

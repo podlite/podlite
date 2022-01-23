@@ -1,6 +1,7 @@
 # @podlite
 
 ## Upcoming
+## 0.0.12
 - add id prop to AST Schema
 - add =Toc plugin
 ## 0.0.10
