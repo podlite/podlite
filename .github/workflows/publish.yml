@@ -29,6 +29,12 @@ jobs:
         with:
           node-version: 15.x
           registry-url: https://registry.npmjs.org/
+      - name: Configure Github Packages authentication
+        run: |
+          yarn config set npmAlwaysAuth true
+          yarn config set npmRegistryServer https://npm.pkg.github.com
+          yarn config set npmPublishRegistry https://npm.pkg.github.com
+          yarn config set npmAuthToken ${{ secrets.YARN_NPM_AUTH_TOKEN }}
       - run: |
           yarn install && yarn build && yarn release-packages
         env:
