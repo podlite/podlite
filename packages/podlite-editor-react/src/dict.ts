@@ -73,8 +73,19 @@ Everything else     57
 `
 },
 {
+    "displayText": "Diagram simple 🏷",
+    "text": `=begin Diagram  :caption('Caption of diagram')
+    graph LR
+            A-->B
+            B-->C
+            C-->A
+            D-->C
+=end Diagram
+`
+},
+{
     "displayText": "Diagram Sequence 🏷",
-    "text": `=Diagram
+    "text": `=for Diagram :caption('Caption of diagram')
     sequenceDiagram
         autonumber
         Student->>Admin: Can I enrol this semester?
@@ -89,19 +100,8 @@ Everything else     57
 `
 },
 {
-    "displayText": "Diagram simple 🏷",
-    "text": `=begin Diagram 
-    graph LR
-            A-->B
-            B-->C
-            C-->A
-            D-->C
-=end Diagram
-`
-},
-{
     "displayText": "Diagram flowchart 🏷",
-    "text": `=Diagram
+    "text": `=for Diagram :caption('Caption of diagram')
     graph LR
         A[Square Rect] -- Link text --> B((Circle))
         A --> C(Round Rect)
@@ -112,7 +112,7 @@ Everything else     57
 },
 {
     "displayText": "Diagram class 🏷",
-    "text": `=Diagram
+    "text": `=for Diagram :caption('Caption of diagram')
     classDiagram
        Person <|-- Student
        Person <|-- Professor
