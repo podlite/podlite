@@ -133,7 +133,7 @@
     word-break: normal;
     min-width: 70%;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 1em auto;
     border-spacing: 0;
     border-collapse: collapse;
     text-align: center;
