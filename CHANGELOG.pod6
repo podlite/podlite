@@ -1,6 +1,9 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.16
+# @podlite/diagram@0.0.9
+- fix npm
 =head1 0.0.15
 # @podlite@0.0.13
 - fix npm

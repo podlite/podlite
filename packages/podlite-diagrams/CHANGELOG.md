@@ -1,6 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
+## 0.0.9
+- fix npm
 ## 0.0.8
 - add :caption, :id support
 - upgrade mermaid to 8.12.1
