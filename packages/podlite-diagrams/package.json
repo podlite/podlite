@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
@@ -11,7 +11,8 @@
     "test": "yarn g:jest  --passWithNoTests"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "index.js"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
