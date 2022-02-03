@@ -1,2 +1,2 @@
 'use strict'
-module.exports = require('./built')
+module.exports = require('./lib')
