@@ -1,6 +1,8 @@
 # @podlite/to-jsx
 
 ## Upcoming
+## 0.0.9
+- fix npm
 ## 0.0.8
 - add support for =Image
 - add caption for =Diagram

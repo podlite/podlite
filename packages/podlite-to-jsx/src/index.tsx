@@ -55,7 +55,7 @@ export interface  WrapElement {
     ...children: React.ReactChild[]
   ) : JSX.Element
     }
-const Podlite: React.FC<{
+export const Podlite: React.FC<{
     [key: string]: any
     children?: string
     file?:string,

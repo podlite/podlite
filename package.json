@@ -1,6 +1,6 @@
 {
   "name": "podlite-monolit",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": [
