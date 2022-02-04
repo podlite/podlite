@@ -1,6 +1,8 @@
 # @podlite
 
 ## Upcoming
+## 0.0.14
+- update depends
 ## 0.0.13
 - fix npm
 ## 0.0.12
