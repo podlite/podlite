@@ -1,6 +1,14 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.19
+# @podlite@0.0.16
+- update depends
+# @podlite/editor-react@0.0.13
+- fix Toc suggestion
+# @podlite/to-jsx@0.0.10
+- fix id for =table
+
 =head1 0.0.18
 # @podlite@0.0.15
 - update depends

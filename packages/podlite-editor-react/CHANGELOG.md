@@ -1,6 +1,8 @@
 # @podlite/editor-react
 
 ## Upcoming
+## 0.0.13
+- fix Toc suggestion
 ## 0.0.12
 - add caption, toc styles support
 - change search suggestions sorting
