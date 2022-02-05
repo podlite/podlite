@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "react-is": "^17.0.2",
-    "mermaid": "8.12.1"
+    "mermaid": "8.12.1",
+    "react-is": "^17.0.2"
   },
   "devDependencies": {
     "@podlite/to-jsx": "workspace:*",

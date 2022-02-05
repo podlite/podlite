@@ -1,6 +1,8 @@
 # @podlite/to-jsx
 
 ## Upcoming
+## 0.0.10
+- fix id for =table
 ## 0.0.9
 - fix npm
 ## 0.0.8
