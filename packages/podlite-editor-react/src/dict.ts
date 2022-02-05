@@ -156,7 +156,7 @@ Everything else     57
 {
     "displayText": "Toc (with :title) 🏷",
     "text": `=for Toc :title('Table of content')
-head1, head2, head2 
+head1, head2, head3 
 
 `
 },
