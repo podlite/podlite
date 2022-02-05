@@ -1,6 +1,9 @@
 # @podlite/editor-react
 
 ## Upcoming
+
+## 0.0.14
+- fix Toc suggestion
 ## 0.0.13
 - fix Toc suggestion
 ## 0.0.12
