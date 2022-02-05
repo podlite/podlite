@@ -339,8 +339,9 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
                             console.warn('[jsx] no content in node')
                             return ''
                         }
+                        const id = getNodeId(node, ctx)
                         return makeComponent(({key, children})=>{
-                                return <table key={key}>
+                                return <table key={key} id={id}>
                                     <caption className="caption">{attr.caption}</caption>
                                     <tbody>{children}</tbody></table>
                             }, node,  interator(node.content, { ...ctx}) )
