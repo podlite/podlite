@@ -71,7 +71,7 @@ sdsdsd
       <h1 id="id">
         Test
       </h1>
-      <table>
+      <table id="id">
         <caption class="caption">
           Super table!
         </caption>
