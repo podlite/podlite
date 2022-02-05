@@ -1,6 +1,12 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.18
+# @podlite@0.0.15
+- update depends
+# @podlite/diagram@0.0.10
+- fix depends
+
 =head1 0.0.17
 # @podlite@0.0.14
 - update depends
