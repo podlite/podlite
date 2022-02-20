@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import {createElement} from 'react'
 import toAny  from 'pod6/built/exportAny'
 import { subUse, wrapContent, emptyContent, content as nodeContent, setFn, handleNested } from 'pod6/built/helpers/handlers'
@@ -35,7 +35,7 @@ const helperMakeReact = ({wrapElement})=>{
         const result = 
             typeof src === 'function'
                             ? src({ ...attr, key , children}, children)
-                            : React.createElement(src,{ ...extraProps, key }, children  )
+                            : createElement(src,{ ...extraProps, key }, children  )
 
         // // create react element and pass key
         // if (!isValidElementType(src)) {
@@ -150,7 +150,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
          setFn(( node, ctx ) => {
              const {level } = node
              const id = getNodeId(node, ctx)
-             return mkComponent(({level,children, key })=>React.createElement(`h${level}`,{key, id}, children))
+             return mkComponent(({level,children, key })=>createElement(`h${level}`,{key, id}, children))
          })
      ),
 
@@ -437,7 +437,7 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
             }, node, interator(node.content, { ...ctx}) )
         }
         console.warn('[podlite] Not supported: ' + JSON.stringify(node,null,2))
-        return React.createElement('code',{key:++i_key_i},`not supported node:${JSON.stringify(node,null,2)}`)
+        return createElement('code',{key:++i_key_i},`not supported node:${JSON.stringify(node,null,2)}`)
     }})
     .use(rules)
     .run(ast, writer)
