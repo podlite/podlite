@@ -193,13 +193,13 @@
     border-radius: 5px;
   }
   
-  .video {
-    max-width: 90%;
+  .image_block video {
+    max-width: 100%;
     /* margin: 0 auto; */
     margin-bottom: 1em;
   }
   
-  div.video video{
+  .image_block video{
     width: 100%;
     outline: none;
     border: none;
