@@ -1,6 +1,6 @@
 {
-  "name": "podlite-monolit",
-  "version": "0.0.20",
+  "name": "podlite-monorep",
+  "version": "0.0.21",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": [
@@ -34,7 +34,7 @@
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
     "pod6": "0.0.43",
-    "podlite": "^0.0.11"
+    "podlite": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
@@ -43,7 +43,10 @@
     "@podlite/schema": "workspace:*",
     "@podlite/to-jsx": "workspace:*",
     "@types/jest": "^27.4.0",
-    "@types/node": "^14.11.2",
+    "@types/node": "^17.0.7",
+    "@types/react": "^17.x",
+    "@types/react-dom": "^17.x",
+    "glob": "^7.2.0",
     "jest": "^26.5.2",
     "jest-serializer-html": "^7.1.0",
     "npm-run-all": "^4.1.5",

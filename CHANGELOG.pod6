@@ -1,6 +1,13 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.21
+@podlite/editor-react@0.0.15
+- fix css for video
+@podlite/schema@ 0.0.8
+- fix null elements in AST
+# @podlite/to-jsx@0.0.11
+- use <video> tags for mov/mp4 media
 
 =head1 0.0.20
 # @podlite/editor-react@0.0.14

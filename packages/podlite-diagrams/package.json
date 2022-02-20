@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
@@ -19,18 +19,10 @@
     "mermaid": "8.12.1",
     "react-is": "^17.0.2"
   },
-  "devDependencies": {
-    "@podlite/to-jsx": "workspace:*",
-    "@types/node": "^16.11.9",
-    "@types/react": "^16.x",
-    "@types/react-dom": "^16.x",
-    "podlite": "workspace:*",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0"
-  },
   "peerDependencies": {
     "mermaid": "*",
     "react": "*",
+    "react-dom": "*",
     "react-is": "*"
   }
 }

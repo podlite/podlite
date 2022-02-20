@@ -12,9 +12,15 @@
     //     "path": "../core"
     //     }
     // ]
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "lib",
+        "t"
+    ],
 
-
-  "include": ["src/**/*"],
+//   "include": ["src/**/*"],
   "jsx": "react",
   
   "compilerOptions": {
