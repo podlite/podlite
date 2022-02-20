@@ -26,7 +26,7 @@ export const makeInterator  = ( rule ) => {
     let rules = []
     function use( key, fn?:any )  {
         if ( key instanceof Array ) {
-           console.warn(`[pod] Unsupported param for ${key}`)
+           console.warn(`[podlite-interator] Unsupported param for ${key}`)
         }
       
         if ( key instanceof Object ) {
@@ -42,7 +42,7 @@ export const makeInterator  = ( rule ) => {
 
     function visiter (node, context:any = {} )  {
         if (node instanceof Array) {
-            return flattenDeep(node.map( item => visiter(item, context) ))
+            return flattenDeep(node.map( item => visiter(item, context) )).filter(Boolean)
         }
         if ( 'string' === typeof node ) {
             // convert string to lex node with type 
