@@ -1,7 +1,9 @@
 # @podlite/editor-react
 
 ## Upcoming
-
+## 0.0.15
+- update deps
+- fix css for video
 ## 0.0.14
 - fix Toc suggestion
 ## 0.0.13

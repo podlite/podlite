@@ -1,6 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
+## 0.0.11
+- update deps
 ## 0.0.10
 -fix depends
 ## 0.0.9
