@@ -102,7 +102,9 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
             ':image' : setFn(( node:Image, ctx ) => {
                 const linkTo = ctx.link
                 return mkComponent(({children, key })=>{ 
-                    const Img = <img key={key} src={node.src} alt={node.alt}/>
+                    const Img = node.src.match(/(mp4|mov)$/) 
+                            ? <video controls key={key}> <source src={node.src} type="video/mp4" /> </video>
+                            : <img key={key} src={node.src} alt={node.alt}/>
                     return linkTo ?<a  key={key} href={linkTo}>{Img}</a> : Img
                 })
                 }),
@@ -117,6 +119,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
             }
             return mkComponent(({children, key })=>
             <div className="image_block" key={key} id={id}>{children}</div>)
+            
         })
  ),
      'image':nodeContent,
