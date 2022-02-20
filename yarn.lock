@@ -2787,9 +2787,9 @@ __metadata:
     glob: ^7.2.0
     json-pointer: ^0.6.1
     nanoid: ^3.1.30
-    pod6: 0.0.43
+    pod6: ^0.0.44
     ts-node: ^9.1.1
-    typescript: 4.5.4
+    typescript: 4.5.5
     typescript-json-schema: 0.53.0
   languageName: unknown
   linkType: soft
@@ -2800,7 +2800,7 @@ __metadata:
   dependencies:
     "@podlite/diagram": "workspace:^"
     "@podlite/schema": "workspace:*"
-    pod6: 0.0.43
+    pod6: ^0.0.44
     react-is: ^17.0.2
   peerDependencies:
     "@podlite/diagram": "*"
@@ -2816,7 +2816,7 @@ __metadata:
   resolution: "@podlite/toc@workspace:packages/podlite-toc"
   dependencies:
     "@podlite/schema": "workspace:*"
-    pod6: 0.0.43
+    pod6: ^0.0.44
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
     react-is: ^17.0.2
@@ -9241,12 +9241,12 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"pod6@npm:0.0.43":
-  version: 0.0.43
-  resolution: "pod6@npm:0.0.43"
+"pod6@npm:^0.0.44":
+  version: 0.0.44
+  resolution: "pod6@npm:0.0.44"
   bin:
     pod6html: bin/pod6html
-  checksum: c2879a0d2e84937c883bb6ae8b03be5927110a50e30e6a0c98db4453cbaa4377deb08405361155cd68ae07a0740f6b34a547d01852bb2a988ff8f32a2bad3a96
+  checksum: 257ff277bb077a15beb90ca8836265feed61dea8ad32b94e39b7f1f2fc598349bcbb18c02c81174c570b2933ae2632d8f5ddc3f90c69f37afc63248de3312a5e
   languageName: node
   linkType: hard
 
@@ -9270,14 +9270,14 @@ fsevents@^2.1.2:
     jest-watch-typeahead: ^0.6.1
     lerna: ^4.0.0
     npm-run-all: ^4.1.5
-    pod6: 0.0.43
+    pod6: ^0.0.44
     podlite: "workspace:*"
     prettier: ^2.5.1
     rimraf: ^3.0.2
     ts-jest: ^26.4.1
     ts-node: ^9.1.1
     tsconfig-paths: ^3.12.0
-    typescript: 4.5.4
+    typescript: 4.5.5
   languageName: unknown
   linkType: soft
 
@@ -9293,8 +9293,8 @@ fsevents@^2.1.2:
     "@types/node": ^17.0.7
     nanoid: ^3.1.30
     npm-run-all: ^4.1.5
-    pod6: 0.0.43
-    typescript: 4.5.4
+    pod6: ^0.0.44
+    typescript: 4.5.5
   peerDependencies:
     pod6: "*"
   languageName: unknown
@@ -11247,7 +11247,17 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.5.4, typescript@npm:~4.5.0":
+"typescript@npm:4.5.5":
+  version: 4.5.5
+  resolution: "typescript@npm:4.5.5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 506f4c919dc8aeaafa92068c997f1d213b9df4d9756d0fae1a1e7ab66b585ab3498050e236113a1c9e57ee08c21ec6814ca7a7f61378c058d79af50a4b1f5a5e
+  languageName: node
+  linkType: hard
+
+"typescript@npm:~4.5.0":
   version: 4.5.4
   resolution: "typescript@npm:4.5.4"
   bin:
@@ -11257,7 +11267,17 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.5.4#~builtin<compat/typescript>, typescript@patch:typescript@~4.5.0#~builtin<compat/typescript>":
+"typescript@patch:typescript@4.5.5#~builtin<compat/typescript>":
+  version: 4.5.5
+  resolution: "typescript@patch:typescript@npm%3A4.5.5#~builtin<compat/typescript>::version=4.5.5&hash=493e53"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: c05c318d79c690f101d7ffb34cd6c7d6bbd884d3af9cefe7749ad0cd6be43c7082f098280982ca945dcba23fde34a08fed9602bb26540936baf8c0520727d3ba
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@~4.5.0#~builtin<compat/typescript>":
   version: 4.5.4
   resolution: "typescript@patch:typescript@npm%3A4.5.4#~builtin<compat/typescript>::version=4.5.4&hash=493e53"
   bin:

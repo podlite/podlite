@@ -1,6 +1,9 @@
 # @podlite/to-jsx
 
 ## Upcoming
+## 0.0.12
+- fix imports
+- update deps
 ## 0.0.11
 - use <video> tags for mov/mp4 media
 - update deps

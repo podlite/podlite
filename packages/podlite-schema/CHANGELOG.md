@@ -1,6 +1,8 @@
 # @podlite/schema
 
 ## Upcoming
+## 0.0.9
+- fix null elements in 
 ## 0.0.8
 - fix null elements in AST
 ## 0.0.7

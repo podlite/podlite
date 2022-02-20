@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": [
@@ -33,7 +33,7 @@
     "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
-    "pod6": "0.0.43",
+    "pod6": "^0.0.44",
     "podlite": "workspace:*"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "ts-jest": "^26.4.1",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.12.0",
-    "typescript": "4.5.4"
+    "typescript": "4.5.5"
   },
   "packageManager": "yarn@3.1.1"
 }
