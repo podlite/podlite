@@ -29,7 +29,8 @@
   },
   "devDependencies": {
     "@yarnpkg/esbuild-plugin-pnp": "^2.0.0",
-    "esbuild": "^0.11.12"
+    "esbuild": "^0.11.12",
+    "ts-node": "^9.1.1"
   },
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0",

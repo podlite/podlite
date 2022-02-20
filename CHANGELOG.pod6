@@ -1,6 +1,10 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+
+=head1 0.0.22
+-fix build time deps
+
 =head1 0.0.21
 @podlite/editor-react@0.0.15
 - fix css for video
