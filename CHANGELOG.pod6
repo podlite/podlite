@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=head1 0.0.24
+# @podlite/diagram@0.0.12
+- error handling improved 
+
 =head1 0.0.23
 - fix npm 
 

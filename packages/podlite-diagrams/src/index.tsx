@@ -58,7 +58,7 @@ export const plugin:Plugin = {
                       }
                     }
                 }
-
+                if (!err['hash']) { err['hash'] = {'line': 0} }
                 node.custom = { ...err, location: convert_line_to_absolute( err['hash']['line'], node.location) }
                 writer.emit("errors", node.location )
             }

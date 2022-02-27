@@ -1,6 +1,8 @@
 # @podlite
 
 ## Upcoming
+## 0.0.19
+- update depends
 ## 0.0.18
 - update depends
 ## 0.0.17

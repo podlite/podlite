@@ -1,10 +1,13 @@
 # @podlite/diagram
 
 ## Upcoming
+
+## 0.0.12
+- error handling improved 
 ## 0.0.11
 - update deps
 ## 0.0.10
--fix depends
+- fix depends
 ## 0.0.9
 - fix npm
 ## 0.0.8
