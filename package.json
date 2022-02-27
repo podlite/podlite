@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": [
