@@ -1,7 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
-
+## 0.0.13
+- handle run under node
 ## 0.0.12
 - error handling improved 
 ## 0.0.11
