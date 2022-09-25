@@ -69,8 +69,12 @@ export const Podlite: React.FC<{
 const mapToReact = (makeComponent):Partial<RulesStrict> => {
 
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
+        // prepare extraProps for createElement
+        // add id attribute if exists
+        const id = getNodeId(node, ctx)
+
         // check if node.content defined
-        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [])
+        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id})
     }
     // Handle nested block and :nested block attribute
     const handleNested = ( defaultHandler, implicitLevel?:number ) => {
