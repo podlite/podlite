@@ -1,6 +1,7 @@
 # @podlite/schema
 
 ## Upcoming
+- fix helper for mkBlock
 ## 0.0.9
 - fix null elements in 
 ## 0.0.8

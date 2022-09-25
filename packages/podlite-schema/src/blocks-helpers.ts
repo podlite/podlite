@@ -14,7 +14,7 @@ export const filterNulls = ( content )=>{
 export const mkBlock = ( attrs, content ) => {
      const type="block"
      const name = attrs.name
-     const attributes = {id: nanoid(), ...attrs}
+     const attributes = {id: nanoid(), margin: "", ...attrs}
      var result = mkNode({type, ...attributes, content:filterNulls(content) })
      return result
  }
@@ -59,7 +59,7 @@ export const mkImage = (src:string, alt?:string):Image => {
     }
 }
 
-export const mkRootBlock =  ({ margin }, content): RootBlock => {
+export const mkRootBlock =  ({ margin = "" }, content): RootBlock => {
     return mkBlock({ name: 'root',  margin },content)
 }
 export interface mkBlockItemParams {
