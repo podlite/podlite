@@ -105,7 +105,7 @@ export const getFromTree = (tree, ...queries: string[] | any) => {
     const queryAtoms = []
     queries.forEach(q => {
         if (typeof q === 'string') {
-            const getNameLevel = q.match(/^(?<name>(item|head|.*))(?<level>(\d+)?)$/)
+            const getNameLevel = q.match(/^(?<name>(item|head))(?<level>(\d+)?)$/)
             if (getNameLevel) {
                 let { name, level } = getNameLevel.groups
                 if (name === 'item' && !level) {
@@ -113,6 +113,8 @@ export const getFromTree = (tree, ...queries: string[] | any) => {
                 }
                 const levelNum =  level ? parseInt(level,10) : undefined
                 queryAtoms.push({ name, ...(levelNum ? {level: levelNum} : {} )})
+            } else {
+                queryAtoms.push({ name:q})
             }
         } else {
             queryAtoms.push(q)
