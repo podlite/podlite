@@ -5,7 +5,7 @@ import {
 } from "@podlite/schema";
 import { podlite as podlite_core } from "podlite";
 import Diagram, { plugin as DiagramPlugin } from "../src/index";
-import Podlite from "@podlite/to-jsx";
+import { TestPodlite as Podlite } from "@podlite/to-jsx";
 import React from "react";
 import ReactDOM from "react-dom";
 import makeAttrs from "pod6/built/helpers/config";
@@ -92,7 +92,6 @@ B-->D(fa:fa-spinner aaaaa);
   );
 
   const diagram = getFromTree(p, "Diagram")[0];
-  //  console.log(JSON.stringify(diagram, null,2))
   expect("custom" in diagram).toBeTruthy();
 });
 
@@ -124,7 +123,7 @@ it("=Diagrams: caption", () => {
 it("accepts =Diagram", () => {
   render(<Podlite plugins={plugins}>{pod}</Podlite>);
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div class="diagram">
         <div class="mermaid">
         </div>

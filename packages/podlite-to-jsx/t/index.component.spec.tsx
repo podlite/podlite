@@ -1,8 +1,6 @@
-import Podlite from "../src/index";
+import { TestPodlite as Podlite } from "../src/index";
 import React from "react";
 import ReactDOM from "react-dom";
-import { podlite as podlite_core, PodliteExport } from "podlite";
-import { cleanIds, frozenIds } from "podlite";
 
 const root = document.body.appendChild(document.createElement("div"));
 
@@ -11,20 +9,9 @@ function render(jsx) {
 }
 
 afterEach(() => ReactDOM.unmountComponentAtNode(root));
-const CPodlite = ({ children, ...options }) => {
-  let podlite = podlite_core({ importPlugins: true });
 
-  let treeAfterParsed = frozenIds()(podlite.parse(children));
-
-  const tree = podlite.toAst(treeAfterParsed);
-  return (
-    <Podlite
-      {...{ children, ...options, tree: { interator: tree } as PodliteExport }}
-    />
-  );
-};
 it("para content", () => {
-  render(<CPodlite>Hello!</CPodlite>);
+  render(<Podlite>Hello!</Podlite>);
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
        <p>
@@ -35,7 +22,7 @@ it("para content", () => {
 
 it("table", () => {
   render(
-    <CPodlite>
+    <Podlite>
       {`
 =begin pod
 =para test
@@ -58,11 +45,11 @@ sdsdsd
 =end table
 =end pod
 `}
-    </CPodlite>
+    </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
-      <div>
+    <div id="id">
+      <div id="id">
         <p>
           test
     sdsdsd
@@ -76,61 +63,61 @@ sdsdsd
           Super table!
         </caption>
         <tbody>
-          <tr>
-            <th>
+          <tr id="id">
+            <th id="id">
               Superhero
             </th>
-            <th>
+            <th id="id">
               Secret Identity
             </th>
-            <th>
+            <th id="id">
               Superpower
             </th>
           </tr>
-          <tr>
-            <td>
+          <tr id="id">
+            <td id="id">
               The Shoveller
             </td>
-            <td>
+            <td id="id">
               Eddie Stevens
             </td>
-            <td>
+            <td id="id">
               King Arthur's singing shovel
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr id="id">
+            <td id="id">
               Blue Raja
             </td>
-            <td>
+            <td id="id">
               Geoffrey Smith
             </td>
-            <td>
+            <td id="id">
               Master of cutlery
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr id="id">
+            <td id="id">
               Mr Furious
             </td>
-            <td>
+            <td id="id">
               Roy Orson
             </td>
-            <td>
+            <td id="id">
               Ticking time bomb of fury
             </td>
           </tr>
-          <tr>
-            <td>
+          <tr id="id">
+            <td id="id">
               The
               <i>
                 Bowler
               </i>
             </td>
-            <td>
+            <td id="id">
               Carol Pinnsler
             </td>
-            <td>
+            <td id="id">
               Haunted bowling ball
             </td>
           </tr>
@@ -152,7 +139,7 @@ A<TEST>
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <p>
         4D Kingdoms
       </p>
@@ -210,7 +197,7 @@ it("accepts D<>", () => {
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <p>
         A
         <dfn>
@@ -260,7 +247,7 @@ Z<comment>
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <p>
       </p>
     </div>
@@ -281,7 +268,7 @@ V<C<boo> B<bar> asd>
   );
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <p>
         The basic
         <code>
@@ -364,8 +351,8 @@ it("accepts N<>", () => {
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
-      <div>
+    <div id="id">
+      <div id="id">
         <p>
           Use a
           <code>
@@ -419,7 +406,7 @@ it("accepts U<>, X<>, S<>", () => {
   );
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <p>
         An array is an ordered list.
         <u>
@@ -445,7 +432,7 @@ it("accepts =Image base", () => {
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div class="image_block"
            id="1"
       >
@@ -477,7 +464,7 @@ it("accepts =Image empty caption", () => {
   );
   // console.log(root.innerHTML);return;
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div class="image_block"
            id="1"
       >
@@ -509,7 +496,7 @@ content ignored
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div class="image_block"
            id="id"
       >
@@ -540,7 +527,7 @@ it("accepts =TITLE", () => {
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div>
         <h1 class="TITLE">
           TITLE
@@ -549,7 +536,7 @@ it("accepts =TITLE", () => {
           test
         </p>
       </div>
-      <div>
+      <div id="id">
         <p>
           1
         </p>
@@ -645,7 +632,7 @@ it("accepts =Toc", () => {
     </Podlite>
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <div>
+    <div id="id">
       <div class="toc">
         <ul class="toc-list listlevel1">
           <li class="toc-item">

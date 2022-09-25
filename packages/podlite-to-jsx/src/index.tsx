@@ -7,7 +7,7 @@ import makeAttrs from 'pod6/built/helpers/config'
 import { isNamedBlock, isSemanticBlock } from 'pod6/built/helpers/makeTransformer'
 import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
-import { podlite as podlite_core, PodliteExport } from 'podlite'
+import { frozenIds, podlite as podlite_core, PodliteExport } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
 import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, BlockImage, BlockNamed, getFromTree, Image} from '@podlite/schema'
 import { Toc } from '@podlite/schema'
@@ -448,6 +448,22 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
 // union main react elements and post processed via onEnd event
 return new Array().concat( res.interator, writer.postInterator )
 }
+
+// this is a helper function for using in unit test
+export const TestPodlite = ({ children, ...options }) => {
+    let podlite = podlite_core({ importPlugins: true });
+  
+    // its replace all ids with "id"
+    let treeAfterParsed = frozenIds()(podlite.parse(children));
+  
+    const tree = podlite.toAst(treeAfterParsed);
+    return (
+      <Podlite
+        {...{ children, ...options, tree: { interator: tree } as PodliteExport }}
+      />
+    );
+  };
+
 export default Podlite
 
 
