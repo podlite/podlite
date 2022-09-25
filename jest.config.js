@@ -1,3 +1,18 @@
+const transformIgnores = [
+    ".*remark-parse",
+    ".*mdast.*",
+    ".*micromark.*",
+    ".*decode-named-character-reference",
+    ".*character-entities",
+    ".*unist",
+    ".*unified",
+    ".*bail",
+    ".*is-plain-obj",
+    ".*trough",
+    ".*vfile",
+    'entity-decode',
+  ].join("|");
+
 module.exports = {
     moduleDirectories: [
       'node_modules'
@@ -15,6 +30,6 @@ module.exports = {
       }
     },
     transformIgnorePatterns: [
-        "[/\\\\]node_modules[/\\\\](?!entity-decode/).+\\.js$"
+        `node_modules/(?!${transformIgnores})`
       ],
   }
