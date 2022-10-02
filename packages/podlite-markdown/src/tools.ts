@@ -1,5 +1,6 @@
 import  {unified}  from 'unified'
 import markdown  from 'remark-parse'
+import remarkGfm from 'remark-gfm'
 import toAny  from 'pod6/built/exportAny'
 import { AstTree, BlockImage, Location, mkBlock, mkFomattingCode, mkFomattingCodeL, mkVerbatim } from '@podlite/schema'
 import { mkRootBlock } from '@podlite/schema'
@@ -9,7 +10,7 @@ import { mkCaption } from '@podlite/schema'
 
 export const  md2ast = ( src, extraRules? ) :AstTree => {
     // first convert mardown to ast 
-    const md_tree = unified().use(markdown).parse(src)
+    const md_tree = unified().use(markdown).use(remarkGfm).parse(src)
     // first pass : collect linkRefs
     let definitionMap = {}
     toAny({processor:1})
@@ -67,28 +68,29 @@ export const  md2ast = ( src, extraRules? ) :AstTree => {
         },
         ':inlineCode' : ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkFomattingCode({name:"C", location:position}, [node.value])
+            return mkFomattingCode({name:"C"}, [node.value])
         },
         ':strong' : ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkFomattingCode({name:"B", location:position}, interator(children, { ...ctx}))
+            return mkFomattingCode({name:"B"}, interator(children, { ...ctx}))
         },
         ':emphasis' : ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkFomattingCode({name:"I", location:position}, interator(children, { ...ctx}))
+            return mkFomattingCode({name:"I"}, interator(children, { ...ctx}))
         },
         ':link': ( writer, processor )=>( node, ctx, interator )=>{ 
             const { children, position, ...attr} = node
-            return mkFomattingCodeL({ meta:node.url,location:position}, interator(children, { ...ctx}))
+            return mkFomattingCodeL({ meta:node.url}, interator(children, { ...ctx}))
         },
         ':html': ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node 
             return mkBlock({type:'block', name:'Html', location:position},[mkVerbatim(node.value)]);
         },
         ':code' : ( writer, processor )=>( node, ctx, interator )=>{
-            const { children, position, lang, ...attr} = node
-            let config = {}
-            if (lang) { config = { name: 'lang', value:"lang"}}
+            const { children, position, lang, meta, ...attr} = node
+            let config = []
+            if (lang) { config.push({ name: 'lang', value:lang, type:"string"})}
+            if (meta) { config.push({ name: 'meta', value:meta, type:"string"})} //  filled as is from markdown
             return mkBlock({type:'block', name:'code', config, location:position},[mkVerbatim(node.value)]);
         },
         ':image':  ( writer, processor )=>( node, ctx, interator ):BlockImage=>{
@@ -97,11 +99,11 @@ export const  md2ast = ( src, extraRules? ) :AstTree => {
             return mkBlock({type:'block', name:'Image', config, location:position},[mkImage(url,alt),mkCaption([title])]);
         },
         ':thematicBreak': ( writer, processor )=>( node, ctx, interator )=>{
-            return null
+            return null // TODO: add support for "thematic break"
         },
         ':blockquote' :  ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, ...attr} = node
-            return mkBlock({type:'nested'}, interator(children, { ...ctx}))
+            return mkBlock({name:'nested', location:position}, interator(children, { ...ctx}))
         },
         //table section
         ':table' :  ( writer, processor )=>( node, ctx, interator )=>{
@@ -117,6 +119,7 @@ export const  md2ast = ( src, extraRules? ) :AstTree => {
             return mkBlock({name:'table_cell', location:position}, interator(children, { ...ctx}))
         },
         ':delete': ( writer, processor )=>( node, ctx, interator )=>{
+            //TODO: add support for strikethrough
             return null
         },
         ':break': ( writer, processor )=>( node, ctx, interator )=>{
