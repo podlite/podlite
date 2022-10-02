@@ -1,11 +1,13 @@
 import {Plugins} from '@podlite/schema'
-import Image from '@podlite/image'
-import { plugin as Diagram } from '@podlite/diagram';
-import Toc from '@podlite/toc';
+import {PluginRegister} from '@podlite/image'
+import { PluginRegister as DiagramRegister } from '@podlite/diagram';
+import { PluginRegister as MarkdownRegister } from '@podlite/markdown';
+import { PluginRegister as TocRegister } from '@podlite/toc';
 const external:Plugins = {
-    "Image":Image,
-    Diagram,
-    Toc
+    ...DiagramRegister,
+    ...MarkdownRegister,
+    ...PluginRegister,
+    ...TocRegister,
 }
 
 export default external
