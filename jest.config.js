@@ -11,6 +11,10 @@ const transformIgnores = [
     ".*trough",
     ".*vfile",
     'entity-decode',
+    '.*remark-gfm',
+    '.*ccount',
+    '.*escape-string-regexp',
+    '.*markdown-table',
   ].join("|");
 
 module.exports = {
