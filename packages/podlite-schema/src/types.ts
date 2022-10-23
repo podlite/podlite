@@ -399,7 +399,8 @@ export type BlockAny = BlockNamed
 
 export interface BlockNamed extends Omit<Block, 'content'> {
     name: Capitalize<string>;
-    content: [(Verbatim|Para|Code)?] | Array<Image|BlockCaption> //AstTree// TODO: use one of Verbatim or Code types
+    // using RootBlock for MD chunks or Include for documents
+    content: [(Verbatim|Para|Code)?] | Array<Image|BlockCaption> | RootBlock // TODO: use one of Verbatim or Code types
 }
 
 export interface BlockDiagram extends Omit<BlockNamed,'content'> {
