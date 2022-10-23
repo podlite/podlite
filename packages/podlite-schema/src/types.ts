@@ -25,8 +25,8 @@ export interface RulesStrict {
     'A<>': RuleHandler<FormattingCodeA>;
     'B<>': RuleHandler<FormattingCodeB>;
     'C<>': RuleHandler<FormattingCodeC>;
-    'E<>': RuleHandler<FormattingCodeE>,
     'D<>': RuleHandler<FormattingCodeD>,
+    'E<>': RuleHandler<FormattingCodeE>,
     'I<>': RuleHandler<FormattingCodeI>,
     'K<>': RuleHandler<FormattingCodeAny>,
     'R<>': RuleHandler<FormattingCodeAny>,
