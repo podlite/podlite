@@ -1,6 +1,10 @@
 // this file contains the dictionary ot the messages used in the podlite editor
-
-const dict = [
+interface Dict {
+    displayText : string,
+    text: string,
+    lang?: 'pod6'|'md'
+}
+const dict:Dict[] = [
     {
         "displayText": "head1",
         "text": `=head1 `
