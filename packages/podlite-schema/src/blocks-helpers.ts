@@ -29,10 +29,16 @@ export  const mkFomattingCodeL = (attrs, content ) => {
      let res = mkNode({...attrs, type:'fcode', name:"L", content:filterNulls(content)})
      return res
  }
- 
+
+export  const mkFomattingCodeDelete = ( content ) => {
+    let res = mkNode({type:'fcode', name:"Delete", content:filterNulls(content)})
+    return res
+}
+
 export const mkVerbatim = (text) => {
     return mkNode({ "type": "verbatim", "value": text})
 }
+
 // Table of contents helpers
 export const mkToc = (content:TocList, title?:string):Toc => {
     return mkNode({type:'toc', title, content}) 

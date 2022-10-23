@@ -9,14 +9,9 @@ import { PodliteDocument } from "@podlite/schema";
 const process = (src) => {
   return frozenIds()(md2ast(src));
 };
-const process1 = (src) => {
-  return frozenIds()(md2ast(src));
-};
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
-    //   Toc: plugin,
-  });
+  let podlite = podlite_core({ importPlugins: false }).use({});
   let tree = podlite.parse(str);
   const asAst = podlite.toAstResult(tree);
   return asAst.interator;
@@ -1116,7 +1111,15 @@ it("[markdown]: parse strikethrough", () => {
     Object {
       "content": Array [
         Object {
-          "content": Array [],
+          "content": Array [
+            Object {
+              "content": Array [
+                "this",
+              ],
+              "name": "Delete",
+              "type": "fcode",
+            },
+          ],
           "id": "id",
           "location": Object {
             "end": Object {
