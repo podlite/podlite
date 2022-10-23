@@ -7,6 +7,7 @@ import { mkRootBlock } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
 import { mkNode } from '@podlite/schema'
 import { mkCaption } from '@podlite/schema'
+import { mkFomattingCodeDelete } from '@podlite/schema'
 
 export const  md2ast = ( src, extraRules? ) :AstTree => {
     // first convert mardown to ast 
