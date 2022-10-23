@@ -119,8 +119,8 @@ export const  md2ast = ( src, extraRules? ) :AstTree => {
             return mkBlock({name:'table_cell', location:position}, interator(children, { ...ctx}))
         },
         ':delete': ( writer, processor )=>( node, ctx, interator )=>{
-            //TODO: add support for strikethrough
-            return null
+            const { children, position, ...attr} = node
+            return mkFomattingCodeDelete( interator(children, { ...ctx}))
         },
         ':break': ( writer, processor )=>( node, ctx, interator )=>{
             return null

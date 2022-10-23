@@ -328,6 +328,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
          })
          return interator(node.content, ctx)
      },
+    'Delete<>': mkComponent('del'),
     // table section
     'table' : 
         ( writer, processor ) => 

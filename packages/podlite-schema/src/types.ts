@@ -38,6 +38,9 @@ export interface RulesStrict {
     'L<>': RuleHandler<FormattingCodeL>,
     'U<>': RuleHandler<FormattingCodeAny>,
     'Z<>': RuleHandler<FormattingCodeAny>,
+    // "Delete" inline element ( aka strikethrough )
+    // from Markdown ast
+    'Delete<>': RuleHandler<FormattingCodeAny>,
 
     'pod': RuleHandler<Para>,
     'root': RuleHandler<RootBlock>,
