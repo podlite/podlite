@@ -14,6 +14,10 @@ export const plugin:Plugin =({
         }
 
      },
+     toJSX: (helper) => {
+        return nodeContent
+     }
+
     })
 export const PluginRegister:Plugins = {
     Markdown: plugin

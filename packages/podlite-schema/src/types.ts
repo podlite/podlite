@@ -7,6 +7,7 @@ export interface Plugin {
     toAst?: RuleHandler,
     toAstAfter?: RuleHandler, // second pass
     toHtml?: RuleHandler,
+    toJSX?: (helper)=>RuleHandler,
 }
 
 
