@@ -1,6 +1,6 @@
 import React from 'react'
 import {useEffect, useRef} from 'react'
-import {Plugin, Location} from '@podlite/schema'
+import {Plugin, Location, Plugins} from '@podlite/schema'
 import mermaid from 'mermaid';
 let i = 0;
 const Diagram = ({ chart , isError, caption, id }: {chart:string, isError:any, caption?:string, id?:string})=>{
@@ -69,6 +69,9 @@ export const plugin:Plugin = {
         }
 
      },
+}
+export const PluginRegister:Plugins = {
+    Diagram: plugin
 }
 export default Diagram
 

@@ -1,8 +1,7 @@
 
-import {getNodeId, mkCaption, mkImage, Plugin, PodNode} from '@podlite/schema'
+import {getNodeId, mkCaption, mkImage, Plugin, Plugins, PodNode} from '@podlite/schema'
 import makeAttrs from 'pod6/built/helpers/config'
 import { setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
-const Image1:Plugin = {}
 const Image:Plugin = {
     toAst: (_, processor) => (node, ctx) => {
         if (typeof node !== "string" && 'type' in node && 'content' in node && node.type === 'block') {
@@ -60,6 +59,9 @@ const Image:Plugin = {
                 return wrapContent( `<div class="image_block" ${ id ? ` id="${id}"` : ''}>`, `</div>` )
             })
      ),
+}
+export const PluginRegister:Plugins = {
+    Image: Image
 }
 export default Image
 
