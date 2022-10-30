@@ -1,95 +1,98 @@
 // this file contains the dictionary ot the messages used in the podlite editor
 interface Dict {
-    displayText : string,
-    text: string,
-    lang?: 'pod6'|'md'
+  displayText: string;
+  text: string;
+  lang?: 'pod6' | 'md';
 }
-const dict:Dict[] = [
-    {
-        "displayText": "head1",
-        "text": `=head1 `
-    },
-    {
-        "displayText": "head2",
-        "text": `=head2 `
-    },
-    
-    {
-        "displayText": "head3",
-        "text": `=head3 `
-    },
-    {
-        "displayText": "item1 *",
-        "text": `=item1 `
-    }, 
-    {
-    "displayText": "item1 1.)",
-    "text": `=item1 # `
-},
-{
-    "displayText": "item (1., 2.) 🏷",
-    "text": `=item1 # item 
+const dict: Dict[] = [
+  {
+    displayText: 'head1',
+    text: `=head1 `,
+  },
+  {
+    displayText: 'head2',
+    text: `=head2 `,
+  },
+
+  {
+    displayText: 'head3',
+    text: `=head3 `,
+  },
+  {
+    displayText: 'item1 *',
+    text: `=item1 `,
+  },
+  {
+    displayText: 'item1 1.)',
+    text: `=item1 # `,
+  },
+  {
+    displayText: 'item (1., 2.) 🏷',
+    text: `=item1 # item 
     =item2 # item level 2
     =item2 # item level 2
 =item1 # item
     =item2 # item
     =item2 # item level 2
-`},
-{
-    "displayText": "item (*, *) 🏷",
-    "text": `=item1  item 
+`,
+  },
+  {
+    displayText: 'item (*, *) 🏷',
+    text: `=item1  item 
     =item2 item level 2
     =item2 item level 2
 =item1  item
     =item2 item
     =item3  item level 2
-`},
-{
-    "displayText": "Image 🏷",
-    "text": `=Image https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
 `,
-},
-{
-    "displayText": "table simple 🏷",
-    "text":`=for table
+  },
+  {
+    displayText: 'Image 🏷',
+    text: `=Image https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
+`,
+  },
+  {
+    displayText: 'table simple 🏷',
+    text: `=for table
     mouse    | mice
     horse    | horses
     elephant | elephants
-`
-},
-{
-    "displayText": "table 2x 🏷",
-    "text": `=begin table :caption('Caption of table')
+`,
+  },
+  {
+    displayText: 'table 2x 🏷',
+    text: `=begin table :caption('Caption of table')
 Constants           1
 Variables           10
 Subroutines         33
 Everything else     57
 =end table
-`},
-{
-    "displayText": "table 3x 🏷",
-    "text": `=for table :caption('Caption of table')
+`,
+  },
+  {
+    displayText: 'table 3x 🏷',
+    text: `=for table :caption('Caption of table')
     Animal | Legs |    Eats
     =======================
     Zebra  +   4  + Cookies
     Human  +   2  +   Pizza
     Shark  +   0  +    Fish
-`
-},
-{
-    "displayText": "Diagram simple 🏷",
-    "text": `=begin Diagram  :caption('Caption of diagram')
+`,
+  },
+  {
+    displayText: 'Diagram simple 🏷',
+    text: `=begin Diagram  :caption('Caption of diagram')
     graph LR
             A-->B
             B-->C
             C-->A
             D-->C
 =end Diagram
-`
-},
-{
-    "displayText": "Diagram Sequence 🏷",
-    "text": `=for Diagram :caption('Caption of diagram')
+`,
+  },
+  {
+    displayText: 'Diagram Sequence 🏷',
+    text: `=for Diagram :caption('Caption of diagram')
     sequenceDiagram
         autonumber
         Student->>Admin: Can I enrol this semester?
@@ -101,22 +104,22 @@ Everything else     57
         Admin->>Professor: Assign student to tutor
         Professor-->>Admin: Student is assigned
 
-`
-},
-{
-    "displayText": "Diagram flowchart 🏷",
-    "text": `=for Diagram :caption('Caption of diagram')
+`,
+  },
+  {
+    displayText: 'Diagram flowchart 🏷',
+    text: `=for Diagram :caption('Caption of diagram')
     graph LR
         A[Square Rect] -- Link text --> B((Circle))
         A --> C(Round Rect)
         B --> D{Rhombus}
         C --> D
 
-`
-},
-{
-    "displayText": "Diagram class 🏷",
-    "text": `=for Diagram :caption('Caption of diagram')
+`,
+  },
+  {
+    displayText: 'Diagram class 🏷',
+    text: `=for Diagram :caption('Caption of diagram')
     classDiagram
        Person <|-- Student
        Person <|-- Professor
@@ -144,67 +147,66 @@ Everything else     57
           +outputAsLabel()  
     }
 
-`
-},
-{
-    "displayText": "code block with formatting 🏷",
-    "text": `=begin code :allow<I B Z> 
+`,
+  },
+  {
+    displayText: 'code block with formatting 🏷',
+    text: `=begin code :allow<I B Z> 
 
 =end code
-`
-},
-{
-    "displayText": "Toc head1, head2, head3",
-    "text": `=Toc head1, head2, head3
-`},
-{
-    "displayText": "Toc (with :title) 🏷",
-    "text": `=for Toc :title('Table of contents')
+`,
+  },
+  {
+    displayText: 'Toc head1, head2, head3',
+    text: `=Toc head1, head2, head3
+`,
+  },
+  {
+    displayText: 'Toc (with :title) 🏷',
+    text: `=for Toc :title('Table of contents')
 head1, head2, head3 
 
-`
-},
-{
-    "displayText": "Toc ( Images, Diagrams )  + tables 🏷",
-    "text": `=for Toc :title('List of media')
+`,
+  },
+  {
+    displayText: 'Toc ( Images, Diagrams )  + tables 🏷',
+    text: `=for Toc :title('List of media')
 Image, Diagram
 =for Toc :title('List of tables')
 table
 
-`
-},
+`,
+  },
 
-{
-    "displayText": "Markdown",
-    "text": `=begin Markdown
+  {
+    displayText: 'Markdown',
+    text: `=begin Markdown
 
   {}
 
 =end Markdown
-`
-},
+`,
+  },
 
-{
-    "displayText": "Table",
-    "text": 
-`| {}Syntax      | Description |
+  {
+    displayText: 'Table',
+    text: `| {}Syntax      | Description |
 | ----------- | ----------- |
 | Header      | Title       |
 | Paragraph   | Text        |
 `,
-"lang":"md"
-},
-{
-    "displayText": "Diagram simple 🏷",
-    "text": 
-`\`\`\`diagram 
+    lang: 'md',
+  },
+  {
+    displayText: 'Diagram simple 🏷',
+    text: `\`\`\`diagram 
 graph LR
         A-->B
         B-->C
         C-->A
         D-->C
 \`\`\``,
-"lang":"md"
-},
-]
+    lang: 'md',
+  },
+];
 export default dict;
