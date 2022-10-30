@@ -174,5 +174,37 @@ table
 `
 },
 
+{
+    "displayText": "Markdown",
+    "text": `=begin Markdown
+
+  {}
+
+=end Markdown
+`
+},
+
+{
+    "displayText": "Table",
+    "text": 
+`| {}Syntax      | Description |
+| ----------- | ----------- |
+| Header      | Title       |
+| Paragraph   | Text        |
+`,
+"lang":"md"
+},
+{
+    "displayText": "Diagram simple 🏷",
+    "text": 
+`\`\`\`diagram 
+graph LR
+        A-->B
+        B-->C
+        C-->A
+        D-->C
+\`\`\``,
+"lang":"md"
+},
 ]
 export default dict;
