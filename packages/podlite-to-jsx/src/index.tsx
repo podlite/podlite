@@ -464,6 +464,20 @@ export const TestPodlite = ({ children, ...options }) => {
       />
     );
   };
+ 
+export const makeTestPodlite = (podlite = podlite_core({ importPlugins: true })) => ({ children, ...options }) => {
+
+let treeAfterParsed = podlite.parse(children);
+
+// its replace all ids with "id"
+const tree = frozenIds()(podlite.toAst(treeAfterParsed));
+return (
+    <Podlite
+    {...{ children, ...options, tree: { interator: tree } as PodliteExport }}
+    />
+);
+};
+ 
 
 export default Podlite
 
