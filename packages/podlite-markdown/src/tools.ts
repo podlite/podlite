@@ -102,6 +102,9 @@ export const  md2ast = ( src:string, {lineOffset }:Md2astArgs = {lineOffset:0} )
         },
         ':code' : ( writer, processor )=>( node, ctx, interator )=>{
             const { children, position, lang, meta, ...attr} = node
+            if (lang === 'mermaid' || lang === 'diagram') {
+                return mkBlock({type:'block', name:'Diagram', config:[], location:applyLineOffset(position)},[mkVerbatim(node.value)]);
+            }
             let config = []
             if (lang) { config.push({ name: 'lang', value:lang, type:"string"})}
             if (meta) { config.push({ name: 'meta', value:meta, type:"string"})} //  filled as is from markdown
