@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
