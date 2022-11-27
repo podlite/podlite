@@ -187,13 +187,49 @@ table
 =end Markdown
 `,
   },
+  // Markdown
+
+  {
+    displayText: 'head1',
+    text: `# `,
+    lang: 'md',
+  },
+  {
+    displayText: 'head2',
+    text: `## `,
+    lang: 'md',
+  },
+
+  {
+    displayText: 'head3',
+    text: `### `,
+    lang: 'md',
+  },
+  {
+    displayText: 'item1 *',
+    text: `* `,
+    lang: 'md',
+  },
+  {
+    displayText: 'item1 1.)',
+    text: `1. `,
+    lang: 'md',
+  },
+  {
+    displayText: 'Image 🏷',
+    text: `![Podlite](https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true "Podlite logo")
+
+`,
+    lang: 'md',
+  },
 
   {
     displayText: 'Table',
-    text: `| {}Syntax      | Description |
+    text: `| Syntax      | Description |
 | ----------- | ----------- |
 | Header      | Title       |
 | Paragraph   | Text        |
+
 `,
     lang: 'md',
   },
