@@ -11,6 +11,7 @@ import 'codemirror/mode/gfm/gfm';
 import "codemirror/addon/hint/show-hint";
 import 'codemirror/addon/hint/show-hint.css';
 import './Editor.css';
+import { addVMargin, getSuggestionContextForLine, templateGetSelectionPos } from './helpers'
 
 
 //@ts-ignore
@@ -253,7 +254,7 @@ useEffect(()=>{
             }
         }
     instanceCMLocal.on('change', onChange);
-
+ 
     CMirror.registerHelper('hint', 'dictionaryHint', function(editor) {
         var cur = editor.getCursor();
         var curLine = editor.getLine(cur.line);
@@ -275,8 +276,29 @@ useEffect(()=>{
             }, []);
             return dict.sort((a, b) => a.index - b.index).map(i=>i.item)
         }
+        const langMode = sourceType === 'md' ? 'md' : getSuggestionContextForLine(editor.getValue() ,cur.line+1)
+        const langDict = dictionary.filter( ({lang='pod6'})=>lang === langMode)
+        // apply hint 
+        const resultDict = (!curWord ? langDict : filterDictByRegex(langDict,regex )).map((item)=>{
+            return {...item, hint: function(cm,data, completion){
+                const from = completion.from || data.from
+                const to = completion.to || data.to
+                // add vMargin
+                const text  = addVMargin(from.ch, typeof completion == "string" ? completion : completion.text)
+                const selFromTemplate = templateGetSelectionPos(text)
+                console.log({from ,to , text})
+                if (selFromTemplate) {
+                    const {text,start, end} = selFromTemplate
+                    cm.replaceRange(text, from, to, "complete");
+                    cm.setSelection({line: start.line + from.line, ch: start.offset + from.ch}, {line: end.line + to.line, ch: end.offset + to.ch -1}); 
+                } else {
+                cm.replaceRange(text, from, to, "complete");
+                }
+
+            }}
+        })
         return {
-            list: (!curWord ? dictionary : filterDictByRegex(dictionary,regex )),
+            list: resultDict, 
             from: CMirror.Pos(cur.line, start-1),
             to: CMirror.Pos(cur.line, end)
         }
