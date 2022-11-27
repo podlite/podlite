@@ -7,10 +7,10 @@ import makeAttrs from 'pod6/built/helpers/config'
 import { isNamedBlock, isSemanticBlock } from 'pod6/built/helpers/makeTransformer'
 import {parse} from 'pod6'
 import Writer from 'pod6/built/writer'
-import { frozenIds, podlite as podlite_core, PodliteExport } from 'podlite'
+import { frozenIds, podlite as podlite_core, PodliteExport, toAnyRules } from 'podlite'
 import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
 import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, BlockImage, BlockNamed, getFromTree, Image} from '@podlite/schema'
-import { Toc } from '@podlite/schema'
+import { Toc, Plugin } from '@podlite/schema'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -415,11 +415,16 @@ function  podlite (children:string, { file,plugins=()=>{}, wrapElement, tree}:{f
     // const   ast = parse( children || content )
     let i_key_i = 10000
     const makeComponent = helperMakeReact({wrapElement})
-    // TODO: move toJSX to podlite/core
-    // const toJSXPlugins= toAnyRules('toJSX', instance.getPlugins())
+
+    const jsxPlugins:{[name :string]:Plugin['toJSX']} = toAnyRules('toJSX', podlite_core({ importPlugins: true }).getPlugins())
+    // initialize each plugin
+    const jsxPluginInited = 
+    Object.fromEntries(Object.entries(jsxPlugins).map(([key, value])=>[key, value(makeComponent)]))
+
     const rules:Rules = {
         ...mapToReact(makeComponent),
-        ...plugins(makeComponent)
+        ...plugins(makeComponent),
+        ...jsxPluginInited,
     }
     interface WriterPostinterator extends Writer {
         postInterator? : any
