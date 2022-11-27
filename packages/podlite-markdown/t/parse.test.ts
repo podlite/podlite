@@ -1145,3 +1145,16 @@ it("[markdown]: parse strikethrough", () => {
     }
   `);
 });
+it("[markdown]: parse diagrams", () => {
+    const pod = `
+\`\`\`mermaids caption="1"
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+\`\`\`
+  `;
+    const tree = process(pod);
+    console.log(JSON.stringify(tree, null,2 ))
+})
