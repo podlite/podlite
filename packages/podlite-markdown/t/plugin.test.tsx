@@ -1,10 +1,5 @@
-import {
-  isValidateError,
-  PodliteDocument,
-  validateAstTree,
-} from "@podlite/schema";
-import { md2ast } from "../src/tools";
-import { frozenIds, podlite as podlite_core, PodliteExport } from "podlite";
+import { PodliteDocument, validateAstTree } from "@podlite/schema";
+import { frozenIds, podlite as podlite_core } from "podlite";
 import { PluginRegister } from "../src";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -24,10 +19,6 @@ function render(jsx) {
 
 afterEach(() => ReactDOM.unmountComponentAtNode(root));
 
-import { toTree, toHtml } from "pod6";
-const process = (src) => {
-  return md2ast(src);
-};
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlite_core({ importPlugins: false }).use({
     ...PluginRegister,
@@ -47,7 +38,6 @@ header1
   //   console.log(JSON.stringify(tree, null, 2));
   const r = validateAstTree([tree]);
   expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
   expect(parse(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -199,6 +189,53 @@ asd ~~asdsd~~
         asdsd
       </del>
     </p>
+    <p>
+    </p>
+  `);
+});
+
+it("=Markdown: table render", () => {
+  const pod = `
+  =begin Markdown
+  | Syntax      | Description |
+  | ----------- | ----------- |
+  | Header      | Title       |
+  | Paragraph   | Text        |
+  =end Markdown
+    `;
+
+  render(<Podlite>{pod}</Podlite>);
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <table id="id">
+      <caption class="caption">
+      </caption>
+      <tbody>
+        <tr id="id">
+          <td id="id">
+            Syntax
+          </td>
+          <td id="id">
+            Description
+          </td>
+        </tr>
+        <tr id="id">
+          <td id="id">
+            Header
+          </td>
+          <td id="id">
+            Title
+          </td>
+        </tr>
+        <tr id="id">
+          <td id="id">
+            Paragraph
+          </td>
+          <td id="id">
+            Text
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <p>
     </p>
   `);
