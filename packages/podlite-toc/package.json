@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Table of contents",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",

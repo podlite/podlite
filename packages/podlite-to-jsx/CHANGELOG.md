@@ -1,6 +1,9 @@
 # @podlite/to-jsx
 
 ## Upcoming
+## 0.0.14
+- add Strikethrough inline element support
+- add toJSX support
 ## 0.0.13
 - update deps
 ## 0.0.12

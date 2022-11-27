@@ -1,6 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
+## 0.0.14
+- update register plugin api
 ## 0.0.13
 - handle run under node
 ## 0.0.12

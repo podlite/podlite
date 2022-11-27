@@ -1,7 +1,10 @@
 # @podlite/schema
 
 ## Upcoming
+## 0.0.10
 - fix helper for mkBlock
+- add Strikethrough inline element support
+- add JSX handler for plugins
 ## 0.0.9
 - fix null elements in 
 ## 0.0.8

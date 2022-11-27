@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Adaptation of pod6 markup language",
   "private": true,
   "workspaces": [
@@ -32,7 +32,7 @@
     "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
     "lerna": "^4.0.0",
-    "pod6": "^0.0.44",
+    "pod6": "^0.0.48",
     "podlite": "workspace:*"
   },
   "devDependencies": {

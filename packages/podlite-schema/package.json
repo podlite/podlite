@@ -1,6 +1,6 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "podlite schema",
   "main": "src/index.ts",
   "types": "./lib/index.d.ts",
@@ -33,8 +33,8 @@
   "dependencies": {
     "ajv": "^7.2.3",
     "json-pointer": "^0.6.1",
-    "nanoid": "^3.1.30",
-    "pod6": "^0.0.44"
+    "nanoid": "3.1.30",
+    "pod6": "^0.0.48"
   },
   "devDependencies": {
     "@types/node": "^17.0.7",

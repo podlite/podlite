@@ -2,6 +2,17 @@
 
 =head1 Upcoming
 
+=head1 0.0.26
+# @podlite@0.0.21
+- add =Markdown plugin
+- update API for plugins
+# @podlite/editor-react@0.0.16
+- add Markdown block suggestion
+- save virtual margin for suggestions
+# @podlite/schema@0.0.10
+- add Strikethrough inline element support
+- add JSX handler for plugins
+
 =head1 0.0.25
 # @podlite@0.0.16
 - update depends

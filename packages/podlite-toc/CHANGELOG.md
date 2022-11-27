@@ -1,6 +1,8 @@
 # @podlite/toc
 
 ## Upcoming
+## 0.0.3
+- adjust plugin API
 ## 0.0.2
 - update deps
 ## 0.0.1
