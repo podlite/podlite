@@ -1,6 +1,9 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.27
+# @podlite/markdown@0.0.2
+- update build
 
 =head1 0.0.26
 # @podlite@0.0.21
