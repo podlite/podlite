@@ -1,6 +1,8 @@
 # @podlite
 
 ## Upcoming
+## 0.0.22
+- update deps
 ## 0.0.21
 - add =Markdown plugin
 ## 0.0.20
