@@ -132,16 +132,6 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         return mkComponent(({ children, key })=><img key={key} src={node.src} alt={node.alt}/>)
     }),
 
-    'Diagram':  () => (node, ctx, interator) => {
-        const conf = makeAttrs(node, ctx);
-        const caption = conf.exists("caption")
-          ? conf.getFirstValue("caption")
-          : null;
-        const id = getNodeId(node, ctx)
-        return makeComponent(({children, key} )=>{ 
-            return <Diagram id={id} isError={node.custom} caption={caption} chart={node.content[0].value}/>
-            },node,interator(node.content, { ...ctx}) )
-      },
     ':text':( writer, processor )=>( node:Text, ctx, interator )=>{
         return node.value
     },
