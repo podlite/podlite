@@ -1,6 +1,8 @@
 # @podlite/image
 
 ## Upcoming
+## 0.0.10
+- refactor
 ## 0.0.9
 - update register plugin api
 ## 0.0.8

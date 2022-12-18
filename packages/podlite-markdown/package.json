@@ -1,6 +1,6 @@
 {
   "name": "@podlite/markdown",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "=Markdown - markdown text block",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",

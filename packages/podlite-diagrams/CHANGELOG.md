@@ -1,6 +1,8 @@
 # @podlite/diagram
 
 ## Upcoming
+## 0.0.15
+- support toJSX schema
 ## 0.0.14
 - update register plugin api
 ## 0.0.13
