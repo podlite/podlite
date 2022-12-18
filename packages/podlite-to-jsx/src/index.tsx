@@ -102,32 +102,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     ':ambient': emptyContent(),
     ':code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
     'code': mkComponent(({ children, key })=><code key={key}><pre>{children}</pre></code>),
-    'Image': subUse({
-        // inside head don't wrap into <p>
-            ':image' : setFn(( node:Image, ctx ) => {
-                const linkTo = ctx.link
-                return mkComponent(({children, key })=>{ 
-                    const Img = node.src.match(/(mp4|mov)$/) 
-                            ? <video controls key={key}> <source src={node.src} type="video/mp4" /> </video>
-                            : <img key={key} src={node.src} alt={node.alt}/>
-                    return linkTo ?<a  key={key} href={linkTo}>{Img}</a> : Img
-                })
-                }),
-            'caption': mkComponent(({ children, key })=><div className="caption" key={key}>{children}</div>)
-            }, 
-            setFn(( node, ctx ) => {
-            const {level} = node
-            const id = getNodeId(node, ctx)
-            const conf = makeAttrs(node, ctx)
-            if ( conf.exists('link') ) {
-                ctx.link = conf.getFirstValue('link')
-            }
-            return mkComponent(({children, key })=>
-            <div className="image_block" key={key} id={id}>{children}</div>)
-            
-        })
- ),
-     'image':nodeContent,
+    'image':nodeContent,
     ':image': setFn(( node, ctx ) => {
         return mkComponent(({ children, key })=><img key={key} src={node.src} alt={node.alt}/>)
     }),
