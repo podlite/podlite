@@ -15,7 +15,7 @@ import { Toc, Plugin } from '@podlite/schema'
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
 export type CreateElement = typeof React.createElement
-const helperMakeReact = ({wrapElement})=>{
+const helperMakeReact = ({wrapElement}:{wrapElement?:WrapElement})=>{
     let i_key_i = 0;
     let mapByType= {};
     const getIdForNode = ({type="notype",name="noname"}) =>{
@@ -24,7 +24,7 @@ const helperMakeReact = ({wrapElement})=>{
         ++mapByType[type_idx]
         return `${type_idx}_${mapByType[type_idx]}`
     }
-    return function(src:string|Function, node:PodNode, children, extraProps = {} )  {
+    return function(src:string|Function, node:PodNode, children, extraProps = {}, ctx = {} )  {
         // for string return it
         if (typeof node == 'string') {
             return node
@@ -43,7 +43,7 @@ const helperMakeReact = ({wrapElement})=>{
         // }
 
         if (typeof wrapElement === 'function') {
-            return wrapElement( node, result)
+            return wrapElement( node, result, ctx )
         }
         return result
     }
@@ -52,7 +52,8 @@ const helperMakeReact = ({wrapElement})=>{
 export interface  WrapElement {
     (
     node: PodNode,
-    ...children: React.ReactChild[]
+    children: React.ReactChild,
+    ctx: any
   ) : JSX.Element
     }
 export const Podlite: React.FC<{
@@ -74,7 +75,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         const id = getNodeId(node, ctx)
 
         // check if node.content defined
-        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id})
+        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id}, ctx)
     }
     // Handle nested block and :nested block attribute
     const handleNested = ( defaultHandler, implicitLevel?:number ) => {
