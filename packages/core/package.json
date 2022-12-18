@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Adaptation of pod6 markup language",
   "main": "./src/index.ts",
   "types": "./lib/index.d.ts",

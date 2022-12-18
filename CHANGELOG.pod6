@@ -1,6 +1,15 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.29
+# @podlite/diagram@0.0.15
+- support toJSX schema
+# @podlite/image@0.0.10
+- refactor
+# @podlite/schema@0.0.11
+- extend API by context for react component wrap function
+# @podlite/to-jsx@0.0.15
+- refactor logic for plugins
 =head1 0.0.28
 # @podlite/0.0.22
 - update build

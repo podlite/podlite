@@ -1,6 +1,8 @@
 # @podlite/schema
 
 ## Upcoming
+## 0.0.11
+- extend API by context for react component wrap function
 ## 0.0.10
 - fix helper for mkBlock
 - add Strikethrough inline element support

@@ -1,6 +1,8 @@
 # @podlite/editor-react
 
 ## Upcoming
+## 0.0.17
+- update dep
 ## 0.0.16
 - add Markdown block suggestion
 - save virtual margin for suggestions
