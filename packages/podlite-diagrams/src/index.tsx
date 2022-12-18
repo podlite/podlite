@@ -1,6 +1,6 @@
 import React from 'react'
 import {useEffect, useRef} from 'react'
-import {Plugin, Location, Plugins} from '@podlite/schema'
+import {Plugin, Location, Plugins, getNodeId, makeAttrs} from '@podlite/schema'
 import mermaid from 'mermaid';
 let i = 0;
 const Diagram = ({ chart , isError, caption, id }: {chart:string, isError:any, caption?:string, id?:string})=>{
@@ -69,6 +69,16 @@ export const plugin:Plugin = {
         }
 
      },
+    toJSX: (helper) => () => (node, ctx, interator) => {
+        const conf = makeAttrs(node, ctx);
+        const caption = conf.exists("caption")
+          ? conf.getFirstValue("caption")
+          : null;
+        const id = getNodeId(node, ctx)
+        return helper(({children, key} )=>{ 
+            return <Diagram id={id} isError={node.custom} caption={caption} chart={node.content[0].value}/>
+            },node,interator(node.content, { ...ctx}) )
+      },
 }
 export const PluginRegister:Plugins = {
     Diagram: plugin
