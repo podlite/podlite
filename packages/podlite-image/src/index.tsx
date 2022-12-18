@@ -1,5 +1,5 @@
-
-import {getNodeId, mkCaption, mkImage, Plugin, Plugins, PodNode} from '@podlite/schema'
+import React from 'react'
+import {getNodeId, mkCaption, mkImage, Plugin, Plugins, PodNode, Image} from '@podlite/schema'
 import makeAttrs from 'pod6/built/helpers/config'
 import { setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
 const Image:Plugin = {
@@ -30,8 +30,8 @@ const Image:Plugin = {
             return node
         }
 
-     },
-   toHtml: subUse({
+    },
+    toHtml: subUse({
             // inside head don't wrap into <p>
                 ':image' : setFn(( node, ctx ) => {
                         return (writer) => (node)=>{
@@ -58,7 +58,43 @@ const Image:Plugin = {
                 }
                 return wrapContent( `<div class="image_block" ${ id ? ` id="${id}"` : ''}>`, `</div>` )
             })
-     ),
+    ),
+    toJSX: (helper) => { 
+        const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
+            // prepare extraProps for createElement
+            // add id attribute if exists
+            const id = getNodeId(node, ctx)
+    
+            // check if node.content defined
+            return helper(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id}, ctx)
+        }
+        return subUse({
+        // inside head don't wrap into <p>
+            ':image' : setFn(( node:Image, ctx ) => {
+                const linkTo = ctx.link
+                return mkComponent(({children, key })=>{ 
+                    const Img = node.src.match(/(mp4|mov)$/) 
+                            ? <video controls key={key}> <source src={node.src} type="video/mp4" /> </video>
+                            : <img key={key} src={node.src} alt={node.alt}/>
+                    return linkTo ?<a  key={key} href={linkTo}>{Img}</a> : Img
+                })
+                }),
+            'caption': mkComponent(({ children, key })=>(<div className="caption" key={key}>{children}</div>))
+            }, 
+            setFn(( node, ctx ) => {
+            const {level} = node
+            const id = getNodeId(node, ctx)
+            const conf = makeAttrs(node, ctx)
+            if ( conf.exists('link') ) {
+                ctx.link = conf.getFirstValue('link')
+            }
+            return mkComponent(({children, key })=>
+            <div className="image_block" key={key} id={id}>{children}</div>)
+            
+        })
+        );
+    }
+   
 }
 export const PluginRegister:Plugins = {
     Image: Image
