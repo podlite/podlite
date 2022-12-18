@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "ci": "yarn clean && yarn",
-    "build": "tsc -v && yarn workspace @podlite/schema run build &&  yarn workspace @podlite/markdown run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema --exclude @podlite/markdown run build",
+    "build": "tsc -v && yarn workspace @podlite/schema run build &&  yarn workspace @podlite/markdown run build &&  yarn workspace @podlite/image run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema --exclude @podlite/markdown --exclude @podlite/image run build",
     "clean": "rimraf './packages/*/{dist,lib,built,node_modules,tsconfig.tsbuildinfo,esm}' './node_modules' || echo ok",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
     "update:version-patch": "lerna version --no-push --no-git-tag-version patch --yes",
