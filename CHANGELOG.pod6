@@ -1,6 +1,10 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.30
+# @podlite/markdown@0.0.4
+- fix export
+
 =head1 0.0.29
 # @podlite/diagram@0.0.15
 - support toJSX schema
