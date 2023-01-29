@@ -23,6 +23,8 @@ export const plugin:Plugin =({
 export const PluginRegister:Plugins = {
     Markdown: plugin
 }
+
+export { md2ast as parseMd } from './tools'
 export default plugin
 
 
