@@ -4,7 +4,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import  makeAttrs  from './helpers/config'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import {getNodeId} from './helpers/config'
+import { getNodeId } from './ast-helpers'
 const rules = {
     ':text': ( writer, processor )=>( node, ctx, interator )=>{
         // handle text with content
