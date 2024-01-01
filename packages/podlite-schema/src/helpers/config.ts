@@ -8,13 +8,6 @@ export interface Attr  {
     (): {},
     exists(name:string): boolean,
 }
-export const getNodeId = (node, ctx )=>{
-    const conf = makeAttrs(node, ctx)
-    if ( conf.exists('id') ) {
-        return  conf.getFirstValue('id')
-    }
-    return node.id
-}
 
 export const makeAttrs  = ( node, ctx:Context = {} ):Attr => {
     const config = node.config instanceof Array ? node.config : []
