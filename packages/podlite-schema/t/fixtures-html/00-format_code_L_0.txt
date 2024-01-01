@@ -1,0 +1,5 @@
+=pod
+L<C<b>|a>
+L<C<b>|a>
+~~~~~~~
+"<p><a href=\"a\"><code>b</code></a>\n<a href=\"a\"><code>b</code></a>\n</p>"

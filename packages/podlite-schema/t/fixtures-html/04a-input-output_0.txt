@@ -1,0 +1,14 @@
+=begin pod
+    =begin output
+        Name:    Baracus, B.A.
+        Age:     49
+        Print? B<K<n>>
+    =end output
+    =begin output
+        Name:    Baracus, B.A.
+        Age:     49
+        Print? B<K<n>>
+    =end output
+=end pod
+~~~~~~~
+"<blockquote><pre><samp>    Name:    Baracus, B.A.\n    Age:     49\n    Print? <strong><kbd>n</kbd></strong>\n</samp></pre></blockquote><blockquote><pre><samp>    Name:    Baracus, B.A.\n    Age:     49\n    Print? <strong><kbd>n</kbd></strong>\n</samp></pre></blockquote>"

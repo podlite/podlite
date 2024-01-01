@@ -1,0 +1,9 @@
+=begin table :caption<foo> :bar(0)
+=            :baz(2.3)
+
+foo
+bar
+
+=end table
+~~~~~~~
+"<table><caption>foo</caption><tr><td> foo</td></tr><tr><td> bar</td></tr></table>"

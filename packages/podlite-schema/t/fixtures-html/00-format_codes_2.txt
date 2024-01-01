@@ -1,0 +1,5 @@
+=pod
+S<sd>
+test C<S<...>>text
+~~~~~~~
+"<p>sd\ntest <code>S&lt;...&gt;</code>text\n</p>"

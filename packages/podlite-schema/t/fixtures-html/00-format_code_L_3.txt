@@ -1,0 +1,4 @@
+=for pod
+=item L<https://www.python.org/dev/peps/pep-0001/#what-is-a-pep>
+~~~~~~~
+"<ul><li><p><a href=\"https://www.python.org/dev/peps/pep-0001/#what-is-a-pep\">https:&#x2F;&#x2F;www.python.org&#x2F;dev&#x2F;peps&#x2F;pep-0001&#x2F;#what-is-a-pep</a>\n</p></li></ul>"
