@@ -1,0 +1,5 @@
+=para
+  A D<formatting code|formatting codes;formatters> provides a way
+    to add inline mark-up to a D<piece> of text.
+~~~~~~~
+"<p>  A <dfn>formatting code</dfn> provides a way\n    to add inline mark-up to a <dfn>piece</dfn> of text.\n</p>"

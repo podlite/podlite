@@ -1,5 +1,4 @@
-import { toTree } from "pod6"
-import { isValidateError, validateAst } from "../src"
+import { isValidateError, toTree, validateAst } from "../src"
 
 const fs = require('fs')
 const path = require('path')

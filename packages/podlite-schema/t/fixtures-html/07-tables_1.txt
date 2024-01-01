@@ -1,0 +1,7 @@
+=table
+    Constants           1
+    Variables           10
+    Subroutines         33
+    Everything else     57
+~~~~~~~
+"<table><tr><td> Constants      </td><td> 1</td></tr><tr><td> Variables      </td><td> 10</td></tr><tr><td> Subroutines    </td><td> 33</td></tr><tr><td> Everything else</td><td> 57</td></tr></table>"

@@ -1,0 +1,14 @@
+=begin pod
+    =alias PROGNAME    Earl Irradiatem Evermore
+    =alias VENDOR      4D Kingdoms
+    =alias TERMS_URLS  =item L<http://www.4dk.com/eie>
+    =                  =item L<http://www.4dk.co.uk/eie.io/>
+    =                  =item L<http://www.fordecay.ch/canttouchthis>
+The use of A<PROGNAME> is subject to the terms and conditions
+laid out by A<VENDOR>, as specified at:
+
+A<TERMS_URLS>
+
+=end pod
+~~~~~~~
+"<p>The use of Earl Irradiatem Evermore is subject to the terms and conditions\nlaid out by 4D Kingdoms, as specified at:\n</p><p><ul><li><p><a href=\"http://www.4dk.com/eie\">http:&#x2F;&#x2F;www.4dk.com&#x2F;eie</a>\n</p></li><li><p><a href=\"http://www.4dk.co.uk/eie.io/\">http:&#x2F;&#x2F;www.4dk.co.uk&#x2F;eie.io&#x2F;</a>\n</p></li><li><p><a href=\"http://www.fordecay.ch/canttouchthis\">http:&#x2F;&#x2F;www.fordecay.ch&#x2F;canttouchthis</a></p></li></ul>\n</p>"

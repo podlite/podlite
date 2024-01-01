@@ -1,0 +1,6 @@
+=para
+A X<hash|hashes, definition of; associative arrays>
+is an unordered X<collection> of X<scalar|scalars> values indexed by their
+associated string X<|puns, deliberate> key. X<> empty
+~~~~~~~
+"<p>A hash\nis an unordered collection of scalar values indexed by their\nassociated string  key.  empty\n</p>"
