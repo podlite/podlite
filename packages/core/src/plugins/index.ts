@@ -1,4 +1,5 @@
-import { content } from 'pod6/built/helpers/handlers';
+import { content } from "@podlite/schema";
+
 export const core = {
     ':image':{
         toHtml:(writer)=>(node)=>{
