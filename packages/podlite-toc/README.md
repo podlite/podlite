@@ -8,7 +8,7 @@ In order to keep the match between this documentation and the last release, plea
 
 ## AUTHOR
 
-Copyright (c) 2022 Alexandr Zahatski
+Copyright (c) 2022-2024 Aliaksandr Zahatski
 
 ## License
 

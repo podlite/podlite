@@ -12,9 +12,14 @@
   "dependencies": {
     "@podlite/diagram": "workspace:^",
     "@podlite/schema": "workspace:*",
-    "pod6": "^0.0.48",
     "react-is": "^17.0.2"
   },
+  "keywords": [
+    "markdown",
+    "podlite",
+    "markup",
+    "markup-language"
+  ],
   "publishConfig": {
     "access": "public",
     "main": "lib/index.js"
@@ -22,7 +27,6 @@
   "peerDependencies": {
     "@podlite/diagram": "*",
     "@podlite/schema": "*",
-    "pod6": "*",
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0"
   }

@@ -1,16 +1,9 @@
 import * as React from 'react'
 import {createElement} from 'react'
-import toAny  from 'pod6/built/exportAny'
-import { subUse, wrapContent, emptyContent, content as nodeContent, setFn, handleNested } from 'pod6/built/helpers/handlers'
-import clean_plugin from 'pod6/built/plugin-clean-location'
-import makeAttrs from 'pod6/built/helpers/config'
-import { isNamedBlock, isSemanticBlock } from 'pod6/built/helpers/makeTransformer'
-import {parse} from 'pod6'
-import Writer from 'pod6/built/writer'
 import { frozenIds, podlite as podlite_core, PodliteExport, toAnyRules } from 'podlite'
-import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
-import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, BlockImage, BlockNamed, getFromTree, Image} from '@podlite/schema'
-import { Toc, Plugin } from '@podlite/schema'
+import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, parse, makeAttrs, emptyContent, content as nodeContent, setFn, subUse, toAny, isNamedBlock, isSemanticBlock, Writer} from '@podlite/schema'
+import { Toc, Plugin, pluginCleanLocation as  clean_plugin } from '@podlite/schema'
+
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }

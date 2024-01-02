@@ -1,5 +1,4 @@
-import { getFromTree, getNodeId, getTextContentFromNode } from "@podlite/schema"
-import makeTransformer from 'pod6/built/helpers/makeTransformer'
+import { makeTransformer, getNodeId, getTextContentFromNode } from "@podlite/schema"
 
 export const prepareDataForToc = (data: any[]) => {
 

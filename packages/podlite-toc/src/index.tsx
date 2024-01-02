@@ -1,8 +1,5 @@
-import React from 'react'
-import {Plugin, Location, mkBlock, PodliteDocument, getFromTree, getTextContentFromNode, mkItemBlock, mkTocItem, mkTocList, mkToc, TocList, Toc, getNodeId, BlockImage, Plugins} from '@podlite/schema'
-import { getTocPod, prepareDataForToc } from './helpers';
-import makeAttrs from 'pod6/built/helpers/config'
-import { isNamedBlock } from 'pod6/built/helpers/makeTransformer';
+import {Plugin, getFromTree, getTextContentFromNode, mkTocItem, mkTocList, mkToc, TocList, Toc, getNodeId, Plugins, makeAttrs, isNamedBlock} from '@podlite/schema'
+import { prepareDataForToc } from './helpers';
 import { PodNode } from '@podlite/schema';
 export const getContentForToc = (node: PodNode): string => {
     if (typeof node !== "string" && "type" in node) {

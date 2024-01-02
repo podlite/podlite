@@ -1,8 +1,8 @@
-import { TestPodlite as Podlite } from "../src/index";
-import React from "react";
-import ReactDOM from "react-dom";
+import { TestPodlite as Podlite, Podlite as PodliteRaw } from '../src/index';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-const root = document.body.appendChild(document.createElement("div"));
+const root = document.body.appendChild(document.createElement('div'));
 
 function render(jsx) {
   return ReactDOM.render(jsx, root);
@@ -10,7 +10,7 @@ function render(jsx) {
 
 afterEach(() => ReactDOM.unmountComponentAtNode(root));
 
-it("para content", () => {
+it('para content', () => {
   render(<Podlite>Hello!</Podlite>);
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
@@ -20,7 +20,7 @@ it("para content", () => {
     `);
 });
 
-it("table", () => {
+it('table', () => {
   render(
     <Podlite>
       {`
@@ -45,7 +45,7 @@ sdsdsd
 =end table
 =end pod
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -127,7 +127,7 @@ sdsdsd
   `);
 });
 
-it("accepts =alias", () => {
+it('accepts =alias', () => {
   render(
     <Podlite>
       {`
@@ -136,7 +136,7 @@ it("accepts =alias", () => {
 A<TEST>
 =end pod
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -147,7 +147,7 @@ A<TEST>
   `);
 });
 
-it("accepts =code", () => {
+it('accepts =code', () => {
   render(
     <Podlite>
       {`
@@ -162,7 +162,7 @@ it("accepts =code", () => {
   asdasdasdasdsad
 =end code
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <code>
@@ -186,7 +186,7 @@ it("accepts =code", () => {
   `);
 });
 
-it("accepts D<>", () => {
+it('accepts D<>', () => {
   render(
     <Podlite>
       {`
@@ -194,7 +194,7 @@ it("accepts D<>", () => {
   A D<formatting code|formatting codes;formatters> provides a way
     to add inline mark-up to a D<piece> of text.
   `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -214,14 +214,14 @@ it("accepts D<>", () => {
   `);
 });
 
-it("accepts L<>", () => {
+it('accepts L<>', () => {
   render(
     <Podlite>
       {`
 L<https://www.python.org/dev/peps/pep-0001/#what-is-a-pep>
 L<Test|https://example.com>
   `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <p>
@@ -235,7 +235,7 @@ L<Test|https://example.com>
   `);
 });
 
-it("accepts =comment, Z<>, ", () => {
+it('accepts =comment, Z<>, ', () => {
   render(
     <Podlite>
       {`
@@ -244,7 +244,7 @@ Z<comment>
 =comment Test
 =end pod
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -254,7 +254,7 @@ Z<comment>
   `);
 });
 
-it("accepts E<>, R<>, V<>", () => {
+it('accepts E<>, R<>, V<>', () => {
   render(
     <Podlite>
       {`
@@ -264,7 +264,7 @@ E<0d171; 0o253; 0b10101011; 0xAB>
 V<C<boo> B<bar> asd>
 =end pod
 `}
-    </Podlite>
+    </Podlite>,
   );
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
@@ -293,7 +293,7 @@ V<C<boo> B<bar> asd>
   `);
 });
 
-it("accepts =output", () => {
+it('accepts =output', () => {
   render(
     <Podlite>
       {`
@@ -305,7 +305,7 @@ Print? B<K<n>>
 =for input
     Name: R<your surname>
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <code>
@@ -336,7 +336,7 @@ Print? B<K<n>>
   `);
 });
 
-it("accepts N<>", () => {
+it('accepts N<>', () => {
   render(
     <Podlite>
       {`
@@ -348,7 +348,7 @@ it("accepts N<>", () => {
   
   =end pod
       `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -393,7 +393,7 @@ it("accepts N<>", () => {
   `);
 });
 
-it("accepts U<>, X<>, S<>", () => {
+it('accepts U<>, X<>, S<>', () => {
   render(
     <Podlite>
       {`
@@ -402,7 +402,7 @@ it("accepts U<>, X<>, S<>", () => {
   U<a>. S<
    >
       `}
-    </Podlite>
+    </Podlite>,
   );
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
@@ -420,7 +420,7 @@ it("accepts U<>, X<>, S<>", () => {
   `);
 });
 
-it("accepts =Image base", () => {
+it('accepts =Image base', () => {
   render(
     <Podlite>
       {`
@@ -429,7 +429,7 @@ it("accepts =Image base", () => {
   alternative https://www.example.org
   =end pod
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -451,7 +451,7 @@ it("accepts =Image base", () => {
   `);
 });
 
-it("accepts =Image empty caption", () => {
+it('accepts =Image empty caption', () => {
   render(
     <Podlite>
       {`
@@ -460,7 +460,7 @@ it("accepts =Image empty caption", () => {
     alternative https://www.example.org
     =end pod
   `}
-    </Podlite>
+    </Podlite>,
   );
   // console.log(root.innerHTML);return;
   expect(root.innerHTML).toMatchInlineSnapshot(`
@@ -480,7 +480,7 @@ it("accepts =Image empty caption", () => {
   `);
 });
 
-it("accepts =Image with fullset of attributes", () => {
+it('accepts =Image with fullset of attributes', () => {
   render(
     <Podlite>
       {`
@@ -493,7 +493,7 @@ it("accepts =Image with fullset of attributes", () => {
 content ignored
 =end pod
   `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -516,7 +516,7 @@ content ignored
     </p>
   `);
 });
-it("accepts =TITLE", () => {
+it('accepts =TITLE', () => {
   render(
     <Podlite>
       {`
@@ -524,7 +524,7 @@ it("accepts =TITLE", () => {
     =TITLE test
     =para 1
 =end pod`}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -545,7 +545,7 @@ it("accepts =TITLE", () => {
   `);
 });
 
-it("accepts =defn", () => {
+it('accepts =defn', () => {
   render(
     <Podlite>
       {`
@@ -558,7 +558,7 @@ MORAL
 Conforming to a local and mutable standard of right.
 Having the quality of general expediency.
     `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <dl>
@@ -585,7 +585,7 @@ Having the quality of general expediency.
   `);
 });
 
-it("accepts =nested", () => {
+it('accepts =nested', () => {
   render(
     <Podlite>
       {`
@@ -597,7 +597,7 @@ but some of us are looking at the stars!
     =end nested
 =end nested
 `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <blockquote>
@@ -617,7 +617,7 @@ but some of us are looking at the stars!
   `);
 });
 
-it("accepts =Toc", () => {
+it('accepts =Toc', () => {
   render(
     <Podlite>
       {`
@@ -629,7 +629,7 @@ it("accepts =Toc", () => {
     item1
     =end pod
         `}
-    </Podlite>
+    </Podlite>,
   );
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -665,7 +665,20 @@ it("accepts =Toc", () => {
   `);
 });
 
-it.skip("accepts =Diagram", () => {
+it('id for headers', () => {
+  render(
+    <PodliteRaw>{`
+    =head1 Test 
+    `}</PodliteRaw>,
+  );
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <h1 id="Test">
+      Test
+    </h1>
+  `);
+});
+
+it.skip('accepts =Diagram', () => {
   render(
     <Podlite>
       {`
@@ -677,13 +690,13 @@ B-->C[fa:fa-ban forbidden]
 B-->D(fa:fa-spinner aaaaa);
   =end pod
       `}
-    </Podlite>
+    </Podlite>,
   );
   console.log(root.innerHTML);
   // expect(root.innerHTML).toMatchInlineSnapshot();
 });
 
-it.skip("accepts =alias", () => {
+it.skip('accepts =alias', () => {
   render(
     <Podlite>
       {`
@@ -700,7 +713,7 @@ A<TERMS_URLS>
 
 =end pod
     `}
-    </Podlite>
+    </Podlite>,
   );
   console.log(root.innerHTML);
   // expect(root.innerHTML).toMatchInlineSnapshot();

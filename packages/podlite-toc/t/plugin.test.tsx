@@ -191,7 +191,7 @@ it.skip("=Toc Image Diagram1", () => {
     `;
   const nodes = getFromTree(parseImage(pod), ":image");
   console.log(JSON.stringify(nodes, null, 2));
-  console.log(parseToHtml(nodes));
+//   console.log(parseToHtml(nodes));
   // expect(parseToHtml(pod)).toMatchInlineSnapshot()
 });
 
