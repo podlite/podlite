@@ -1,7 +1,6 @@
-import { Plugins } from '@podlite/schema';
+import { content as nodeContent, Plugins } from '@podlite/schema';
 import {Plugin} from '@podlite/schema'
 import { md2ast } from './tools';
-import { content as nodeContent } from 'pod6/built/helpers/handlers'
   
 export const plugin:Plugin =({
     toAst: (_, processor) => (node, ctx) => {
