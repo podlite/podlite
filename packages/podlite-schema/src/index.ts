@@ -15,6 +15,7 @@ export {makeTransformer, isNamedBlock , isSemanticBlock } from './helpers/makeTr
 export {toAny} from './exportAny'
 export {makeAttrs} from './helpers/config'
 export {pluginCleanLocation} from './plugin-clean-location'
+
 // @ts-ignore
 import * as parser from './grammar'
 import vmargin_plug from './plugin-vmargin'
@@ -172,6 +173,7 @@ export {makeTree as toTree}
 const parse: Function = makeTree().parse
 export { parse as parse } 
 export { default as toHtml } from './exportHtml'
+export { default as Writer } from './writer'
 // Cannot be `import` as it's not under TS root dir
 // https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
 

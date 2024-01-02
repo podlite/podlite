@@ -1,3 +1,4 @@
+import { getTextContentFromNode } from '.'
 import makeAttrsPod from './helpers/config'
 
 export const getNodeId = (node, ctx )=>{
