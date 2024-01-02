@@ -14,9 +14,11 @@
   "keywords": [
     "markdown",
     "pod6",
-    "rakudoc"
+    "podlite",
+    "markup",
+    "markup-language"
   ],
-  "author": "Alexandr Zahatski",
+  "author": "Aliaksandr Zahatski",
   "license": "MIT",
   "dependencies": {
     "@podlite/diagram": "workspace:^",
@@ -24,17 +26,13 @@
     "@podlite/markdown": "workspace:*",
     "@podlite/schema": "workspace:^",
     "@podlite/toc": "workspace:*",
-    "nanoid": "3.1.30",
-    "pod6": "^0.0.48"
+    "nanoid": "3.1.30"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
     "@types/node": "^17.0.7",
     "npm-run-all": "^4.1.5",
     "typescript": "4.5.5"
-  },
-  "peerDependencies": {
-    "pod6": "*"
   },
   "publishConfig": {
     "access": "public",

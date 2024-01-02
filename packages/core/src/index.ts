@@ -1,6 +1,4 @@
-import {  toTree, toHtml } from 'pod6';
-import  toAny  from 'pod6/built/exportAny'
-import { AstTree, Plugins, mkRootBlock, PodliteDocument } from '@podlite/schema';
+import { toTree, toHtml, toAny, AstTree, Plugins, mkRootBlock, PodliteDocument } from '@podlite/schema';
 import core from './plugins';
 import externalPlugins  from './plugins/extrnal'
 import idMiddleware from "./ids"
@@ -126,3 +124,9 @@ export const podlite = ({ importPlugins = true }:PodliteOpt):Podlite => {
     return instance
 
 }
+
+// Cannot be `import` as it's not under TS root dir
+// https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
+
+const {version: VERSION} = require('../package.json');
+export { VERSION as version} 

@@ -107,7 +107,7 @@ In order to keep the match between this documentation and the last release, plea
 
 ## AUTHOR
 
-Copyright (c) 2021 Alexandr Zahatski
+Copyright (c) 2021-2024 Aliaksandr Zahatski
 
 ## License
 

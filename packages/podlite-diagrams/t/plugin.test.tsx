@@ -2,13 +2,13 @@ import {
   PodliteDocument,
   validatePodliteAst,
   getFromTree,
+  makeAttrs
 } from '@podlite/schema';
 import { podlite as podlite_core } from 'podlite';
 import Diagram, { plugin as DiagramPlugin } from '../src/index';
 import { TestPodlite as Podlite } from '@podlite/to-jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import makeAttrs from 'pod6/built/helpers/config';
 
 const parse = (str: string): PodliteDocument => {
   let podlite = podlite_core({ importPlugins: false }).use({
@@ -91,7 +91,7 @@ B-->D(fa:fa-spinner aaaaa);
 `,
   );
 
-  const diagram = getFromTree(p, 'Diagram')[0];
+  const diagram = getFromTree(p, 'Diagram')[0] as Object;
   expect('custom' in diagram).toBeTruthy();
 });
 

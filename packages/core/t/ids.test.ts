@@ -1,5 +1,4 @@
-import { getFromTree, getNodeId, mkRootBlock, PodliteDocument, validatePodliteAst } from "@podlite/schema";
-import { toTree } from "pod6";
+import { getFromTree, getNodeId, mkRootBlock, PodliteDocument, toTree, validatePodliteAst } from "@podlite/schema";
 import middleware from "../src/ids"
 
 export const parse = (text:string, opt?): PodliteDocument => {
