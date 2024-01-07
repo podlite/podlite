@@ -1,6 +1,6 @@
 {
   "name": "@podlite/markdown",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "=Markdown - markdown text block",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
@@ -22,9 +22,14 @@
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0"
   },
+  "keywords": [
+    "markdown",
+    "podlite",
+    "markup",
+    "markup-language"
+  ],
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "pod6": "^0.0.48",
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0",
     "react-is": "^17.0.2",
@@ -33,6 +38,7 @@
     "unified": "^10.1.2"
   },
   "devDependencies": {
-    "esbuild": "^0.15.16"
+    "esbuild": "^0.15.16",
+    "npm-run-all": "^4.1.5"
   }
 }

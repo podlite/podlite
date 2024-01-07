@@ -2774,6 +2774,7 @@ __metadata:
     "@yarnpkg/esbuild-plugin-pnp": ^2.0.0
     codemirror: 5.x
     esbuild: ^0.11.12
+    npm-run-all: ^4.1.5
     react-codemirror2: ^7.2.1
     react-is: ^17.0.2
     ts-node: ^9.1.1
@@ -2798,7 +2799,7 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:*"
     esbuild: ^0.15.16
-    pod6: ^0.0.48
+    npm-run-all: ^4.1.5
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
     react-is: ^17.0.2
@@ -2817,10 +2818,12 @@ __metadata:
   dependencies:
     "@types/node": ^17.0.7
     ajv: ^7.2.3
+    events: ^3.1.0
     glob: ^7.2.0
     json-pointer: ^0.6.1
     nanoid: 3.1.30
-    pod6: ^0.0.48
+    npm-run-all: ^4.1.5
+    pegjs: ^0.10.0
     ts-node: ^9.1.1
     typescript: 4.5.5
     typescript-json-schema: 0.53.0
@@ -2833,12 +2836,10 @@ __metadata:
   dependencies:
     "@podlite/diagram": "workspace:^"
     "@podlite/schema": "workspace:*"
-    pod6: ^0.0.48
     react-is: ^17.0.2
   peerDependencies:
     "@podlite/diagram": "*"
     "@podlite/schema": "*"
-    pod6: "*"
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
@@ -2849,7 +2850,6 @@ __metadata:
   resolution: "@podlite/toc@workspace:packages/podlite-toc"
   dependencies:
     "@podlite/schema": "workspace:*"
-    pod6: ^0.0.48
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
     react-is: ^17.0.2
@@ -9997,6 +9997,15 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"pegjs@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "pegjs@npm:0.10.0"
+  bin:
+    pegjs: bin/pegjs
+  checksum: 65d184ca0e1823ec0a3e7f384d7fd771bcbbc7abf460c82c9704022c1fa325425dc9007c92982b951879c3c9d4c39bf5cd6d99690e0540ff5016c04ca1ecd17e
+  languageName: node
+  linkType: hard
+
 "performance-now@npm:^2.1.0":
   version: 2.1.0
   resolution: "performance-now@npm:2.1.0"
@@ -10089,17 +10098,6 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"pod6@npm:^0.0.48":
-  version: 0.0.48
-  resolution: "pod6@npm:0.0.48"
-  dependencies:
-    events: ^3.1.0
-  bin:
-    pod6html: bin/pod6html
-  checksum: 737ba5322bfc2190edd70c60dbe718a886b0e5afd575e2205d067e1ed1b146bcb99eb53f12ee604eb288ea7cc6c6f6d442a589f506f67419405916194d9f66a8
-  languageName: node
-  linkType: hard
-
 "podlite-monorep@workspace:.":
   version: 0.0.0-use.local
   resolution: "podlite-monorep@workspace:."
@@ -10120,7 +10118,6 @@ fsevents@^2.1.2:
     jest-watch-typeahead: ^0.6.1
     lerna: ^4.0.0
     npm-run-all: ^4.1.5
-    pod6: ^0.0.48
     podlite: "workspace:*"
     prettier: ^2.5.1
     rimraf: ^3.0.2
@@ -10144,10 +10141,7 @@ fsevents@^2.1.2:
     "@types/node": ^17.0.7
     nanoid: 3.1.30
     npm-run-all: ^4.1.5
-    pod6: ^0.0.48
     typescript: 4.5.5
-  peerDependencies:
-    pod6: "*"
   languageName: unknown
   linkType: soft
 

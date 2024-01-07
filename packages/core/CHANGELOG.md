@@ -1,6 +1,8 @@
 # @podlite
 
 ## Upcoming
+## 0.0.25
+- improve blocks linking
 ## 0.0.24
 - clean source
 ## 0.0.23
