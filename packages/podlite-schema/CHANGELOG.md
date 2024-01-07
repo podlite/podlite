@@ -1,6 +1,11 @@
 # @podlite/schema
 
 ## Upcoming
+## 0.0.12
+- add helpers,
+- fix parser's grammars
+- add tests
+- update deps
 ## 0.0.11
 - extend API by context for react component wrap function
 ## 0.0.10
