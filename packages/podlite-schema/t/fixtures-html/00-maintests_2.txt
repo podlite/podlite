@@ -1,0 +1,13 @@
+=begin pod
+=for Named
+  text
+=begin Named
+sdsdsdsd ssd s
+  asdasdasdasd
+
+dd
+=end Named
+
+=end pod
+~~~~~~~
+""

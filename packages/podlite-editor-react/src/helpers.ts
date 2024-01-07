@@ -11,7 +11,7 @@ export const getSuggestionContextForLine = (
   line: number,
 ): 'pod6' | 'md' => {
   const tree = parse(pod);
-  const markdownBlocks = getFromTree(tree, 'Markdown');
+  const markdownBlocks = getFromTree(tree, 'Markdown') as any; // TODO: remove `any`
   const isMd =
     markdownBlocks.findIndex(
       ({

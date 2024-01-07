@@ -1,0 +1,5 @@
+=para
+Such content would typically be rendered in a K<fixed-width font>
+Such content would typically be rendered in a T<fixed-width font>
+#---~~~~~~~
+"<p>Such content would typically be rendered in a <kbd>fixed-width font</kbd>\nSuch content would typically be rendered in a <samp>fixed-width font</samp>\n#---</p>"

@@ -1,0 +1,8 @@
+=begin pod
+
+L<File test operators|/type/IO::Path#File_test_operators>
+L<C<P5-X>|https://modules.raku.org/dist/P5-X>
+
+=end pod
+~~~~~~~
+"<p><a href=\"/type/IO::Path#File_test_operators\">File test operators</a>\n<a href=\"https://modules.raku.org/dist/P5-X\"><code>P5-X</code></a>\n</p>"

@@ -1,0 +1,7 @@
+=table
+        Superhero     | Secret          |
+                      | Identity        | Superpower
+        ==============|=================|================================
+        The Shoveller | Eddie Stevens   | King Arthur's singing shovel
+~~~~~~~
+"<table><tr><th> Superhero                  </th><th> Secret        Identity     </th><th>  Superpower</th></tr><tr><td> The Shoveller</td><td> Eddie Stevens</td><td> King Arthur&#x27;s singing shovel</td></tr></table>"

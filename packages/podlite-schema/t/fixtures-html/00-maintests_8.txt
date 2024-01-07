@@ -1,0 +1,7 @@
+=begin pod
+=config item :numbered
+=config code :allow<B U>
+=code 1
+=end pod
+~~~~~~~
+"<pre><code>1\n</code></pre>"

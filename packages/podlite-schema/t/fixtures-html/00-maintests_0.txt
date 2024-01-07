@@ -1,0 +1,11 @@
+=begin pod
+  =begin para
+  sdsd
+   sdasd
+ 
+        ddsds
+  d
+  =end para
+=end pod
+~~~~~~~
+"<p>sdsd\n   sdasd\n</p><p>ddsds\n  d\n</p>"

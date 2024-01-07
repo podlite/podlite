@@ -1,7 +1,5 @@
 import React from 'react'
-import {getNodeId, mkCaption, mkImage, Plugin, Plugins, PodNode, Image} from '@podlite/schema'
-import makeAttrs from 'pod6/built/helpers/config'
-import { setFn, subUse, wrapContent } from 'pod6/built/helpers/handlers'
+import {getNodeId, mkCaption, mkImage, Plugin, Plugins, PodNode, Image, makeAttrs, subUse, setFn, wrapContent} from '@podlite/schema'
 const Image:Plugin = {
     toAst: (_, processor) => (node, ctx) => {
         if (typeof node !== "string" && 'type' in node && 'content' in node && node.type === 'block') {

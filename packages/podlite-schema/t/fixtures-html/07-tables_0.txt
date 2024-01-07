@@ -1,0 +1,8 @@
+=begin table
+        The Shoveller   Eddie Stevens     King Arthur's singing shovel
+        Blue Raja       Geoffrey Smith    Master of cutlery
+        Mr Furious      Roy Orson         Ticking time bomb of fury
+        The Bowler      Carol Pinnsler    Haunted bowling ball
+=end table
+~~~~~~~
+"<table><tr><td> The Shoveller</td><td> Eddie Stevens </td><td> King Arthur&#x27;s singing shovel</td></tr><tr><td> Blue Raja    </td><td> Geoffrey Smith</td><td> Master of cutlery</td></tr><tr><td> Mr Furious   </td><td> Roy Orson     </td><td> Ticking time bomb of fury</td></tr><tr><td> The Bowler   </td><td> Carol Pinnsler</td><td> Haunted bowling ball</td></tr></table>"

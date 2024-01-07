@@ -1,0 +1,8 @@
+=para
+Use a C<for> loop instead.N<The Perl 6 C<for> loop is far more
+powerful than its Perl 5 predecessor.> Preferably with an explicit
+iterator variable.
+=para
+Text.N<> TExt2.N<Yep>
+#---~~~~~~~
+"<p>Use a <code>for</code> loop instead.<sup id=\"fnref:1\" class=\"footnote\"><a href=\"#fn:1\">[1]</a></sup> Preferably with an explicit\niterator variable.\n</p><p>Text. TExt2.<sup id=\"fnref:2\" class=\"footnote\"><a href=\"#fn:2\">[2]</a></sup>\n#---</p><div class=\"footnotes\"><p><sup id=\"fn:1\" class=\"footnote\"><a href=\"#fnref:1\">[1]</a></sup> The Perl 6 <code>for</code> loop is far more\npowerful than its Perl 5 predecessor.</p><p><sup id=\"fn:2\" class=\"footnote\"><a href=\"#fnref:2\">[2]</a></sup> Yep</p></div>"

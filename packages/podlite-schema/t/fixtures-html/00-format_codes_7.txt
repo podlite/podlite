@@ -1,0 +1,5 @@
+=para
+The C<U<>> formatting code specifies that the contained text is
+U<unusual> or distinctive;
+~~~~~~~
+"<p>The <code>U&lt;&gt;</code> formatting code specifies that the contained text is\n<u>unusual</u> or distinctive;\n</p>"

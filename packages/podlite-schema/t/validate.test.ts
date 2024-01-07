@@ -1,5 +1,3 @@
-import  * as Image  from '../src';
-import * as pod6 from 'pod6'
 import { validateAst } from '../src';
 // const describe = ( _ , f)=> f()
 // const it = (_,  f) => f()

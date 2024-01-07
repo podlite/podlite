@@ -1,0 +1,5 @@
+=begin SYNOPSIS
+Para inside SYNOPSIS
+=end SYNOPSIS
+~~~~~~~
+"<h1 class=\"SYNOPSIS\">SYNOPSIS</h1><p>Para inside SYNOPSIS\n</p>"
