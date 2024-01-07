@@ -1,0 +1,6 @@
+=para
+        Name: B<R<your surname>>
+          ID: B<R<your employee number>>
+        Pass: B<R<your 36-letter password>>
+~~~~~~~
+"<p>        Name: <strong><var>your surname</var></strong>\n          ID: <strong><var>your employee number</var></strong>\n        Pass: <strong><var>your 36-letter password</var></strong>\n</p>"

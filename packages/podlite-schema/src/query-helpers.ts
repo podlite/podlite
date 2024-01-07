@@ -1,4 +1,5 @@
-import makeTransformer from 'pod6/built/helpers/makeTransformer'
+import {makeTransformer} from "./"
+import { PodNode } from './types';
 
 type Query = ((par:Object)=>Boolean)|any;
 /**
@@ -89,7 +90,7 @@ const compileAtomQuery = ( obj:Query ): (any)=>any => {
  * @param queries 
  * @returns array of matched nodes
  */
-export const getFromTree = (tree, ...queries: string[] | any) => { 
+export const getFromTree = (tree, ...queries: string[] | any):PodNode[] => { 
     if (! tree) { return []}
     let results = []
     let rules = {}

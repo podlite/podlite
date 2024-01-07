@@ -1,4 +1,5 @@
-import makeAttrsPod from 'pod6/built/helpers/config'
+import { getTextContentFromNode } from '.'
+import makeAttrsPod from './helpers/config'
 
 export const getNodeId = (node, ctx )=>{
     const conf = makeAttrsPod(node, ctx)

@@ -1,6 +1,9 @@
 # @podlite/diagram
 
 ## Upcoming
+## 0.0.16
+- update deps
+- refactor
 ## 0.0.15
 - support toJSX schema
 ## 0.0.14

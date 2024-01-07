@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Table of contents",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
@@ -15,13 +15,19 @@
     "main": "index.js",
     "types": "./lib/index.d.ts"
   },
+  "keywords": [
+    "markdown",
+    "pod6",
+    "podlite",
+    "markup",
+    "markup-language"
+  ],
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "pod6": "^0.0.48",
     "react": "^16.0.0 || ^17.0.0",
     "react-dom": "^16.0.0 || ^17.0.0",
     "react-is": "^17.0.2"

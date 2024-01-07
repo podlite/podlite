@@ -1,0 +1,7 @@
+=comment Tesxt
+=begin code 
+Some code
+=end code
+
+~~~~~~~
+"<pre><code>Some code\n</code></pre>"

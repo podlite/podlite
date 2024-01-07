@@ -1,0 +1,7 @@
+=begin pod
+=begin nested
+blockquote
+=end nested
+=end pod
+~~~~~~~
+"<blockquote><p>blockquote\n</p></blockquote>"

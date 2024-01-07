@@ -1,16 +1,9 @@
 import * as React from 'react'
 import {createElement} from 'react'
-import toAny  from 'pod6/built/exportAny'
-import { subUse, wrapContent, emptyContent, content as nodeContent, setFn, handleNested } from 'pod6/built/helpers/handlers'
-import clean_plugin from 'pod6/built/plugin-clean-location'
-import makeAttrs from 'pod6/built/helpers/config'
-import { isNamedBlock, isSemanticBlock } from 'pod6/built/helpers/makeTransformer'
-import {parse} from 'pod6'
-import Writer from 'pod6/built/writer'
 import { frozenIds, podlite as podlite_core, PodliteExport, toAnyRules } from 'podlite'
-import Diagram, { plugin as DiagramPlugin } from '@podlite/diagram';
-import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, BlockImage, BlockNamed, getFromTree, Image} from '@podlite/schema'
-import { Toc, Plugin } from '@podlite/schema'
+import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, parse, makeAttrs, emptyContent, content as nodeContent, setFn, subUse, toAny, isNamedBlock, isSemanticBlock, Writer} from '@podlite/schema'
+import { Toc, Plugin, pluginCleanLocation as  clean_plugin } from '@podlite/schema'
+
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -72,8 +65,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
         // prepare extraProps for createElement
         // add id attribute if exists
-        const id = getNodeId(node, ctx)
-
+        const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id}, ctx)
     }
@@ -119,7 +111,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
          },
          setFn(( node, ctx ) => {
              const {level } = node
-             const id = getNodeId(node, ctx)
+             const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
              return mkComponent(({level,children, key })=>createElement(`h${level}`,{key, id}, children))
          })
      ),
@@ -313,7 +305,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
                             console.warn('[jsx] no content in node')
                             return ''
                         }
-                        const id = getNodeId(node, ctx)
+                        const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
                         return makeComponent(({key, children})=>{
                                 return <table key={key} id={id}>
                                     <caption className="caption">{attr.caption}</caption>
@@ -347,7 +339,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         if (! (node.content instanceof Array)) {
             console.error(node)
         }
-        const id = getNodeId(node,ctx)
+        const id = getNodeId(node,ctx)?.replace(/\s/g,'-');
         return makeComponent('li', node, interator(node.content, { ...ctx}), {id} )
     },
     // table of content

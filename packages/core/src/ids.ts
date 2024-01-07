@@ -1,5 +1,5 @@
-import makeTransformer, {isNamedBlock} from 'pod6/built/helpers/makeTransformer'
-import { Plugin, Node, nPara , AST, nText, nVerbatim } from 'pod6/built/'
+import {BlockHead, getTextContentFromNode, makeTransformer} from "@podlite/schema"
+import { ParserPlugin, Node, nPara , AST, nText, nVerbatim } from "@podlite/schema"
 import { nanoid } from 'nanoid'
 import { BlockPod, PodNode } from '@podlite/schema'
 
@@ -44,13 +44,19 @@ export const frozenIds = (src = {skipChain: 0, podMode: 1}) =>( tree )=>{
 }
    
 
-const middleware:Plugin = () =>( tree )=>{
+const middleware:ParserPlugin = () =>( tree )=>{
   
   const transformerBlocks = makeTransformer({
     '*': (node, ctx, visiter) => {
             const addIdField = (node:PodNode):PodNode => {
                 if (typeof node === 'object' && 'type' in node && node.type =='block') {
-                    return { ...node, id: nanoid() }
+                    if (node.name == 'caption') {
+                        return node
+                    } else if ( node.name == 'head') {
+                        return { ...node, id: getTextContentFromNode(node).trim() } as BlockHead
+                    } else {
+                        return { ...node, id: nanoid() } as PodNode
+                    }
                 }
                 return node
             }
