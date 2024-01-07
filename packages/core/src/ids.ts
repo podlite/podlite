@@ -50,7 +50,13 @@ const middleware:ParserPlugin = () =>( tree )=>{
     '*': (node, ctx, visiter) => {
             const addIdField = (node:PodNode):PodNode => {
                 if (typeof node === 'object' && 'type' in node && node.type =='block') {
-                    return { ...node, id: nanoid() }
+                    if (node.name == 'caption') {
+                        return node
+                    } else if ( node.name == 'head') {
+                        return { ...node, id: getTextContentFromNode(node).trim() } as BlockHead
+                    } else {
+                        return { ...node, id: nanoid() } as PodNode
+                    }
                 }
                 return node
             }
