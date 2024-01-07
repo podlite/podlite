@@ -65,8 +65,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
     const mkComponent = (src) => ( writer, processor )=>( node, ctx, interator )=>{
         // prepare extraProps for createElement
         // add id attribute if exists
-        const id = getNodeId(node, ctx)
-
+        const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx}) : [], {id}, ctx)
     }
@@ -112,7 +111,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
          },
          setFn(( node, ctx ) => {
              const {level } = node
-             const id = getNodeId(node, ctx)
+             const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
              return mkComponent(({level,children, key })=>createElement(`h${level}`,{key, id}, children))
          })
      ),
@@ -306,7 +305,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
                             console.warn('[jsx] no content in node')
                             return ''
                         }
-                        const id = getNodeId(node, ctx)
+                        const id = getNodeId(node, ctx)?.replace(/\s/g,'-');
                         return makeComponent(({key, children})=>{
                                 return <table key={key} id={id}>
                                     <caption className="caption">{attr.caption}</caption>
@@ -340,7 +339,7 @@ const mapToReact = (makeComponent):Partial<RulesStrict> => {
         if (! (node.content instanceof Array)) {
             console.error(node)
         }
-        const id = getNodeId(node,ctx)
+        const id = getNodeId(node,ctx)?.replace(/\s/g,'-');
         return makeComponent('li', node, interator(node.content, { ...ctx}), {id} )
     },
     // table of content
