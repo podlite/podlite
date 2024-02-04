@@ -2,16 +2,16 @@ import {
   PodliteDocument,
   validatePodliteAst,
   getFromTree,
-  makeAttrs
+  makeAttrs,
+  podlitePluggable
 } from '@podlite/schema';
-import { podlite as podlite_core } from 'podlite';
 import Diagram, { plugin as DiagramPlugin } from '../src/index';
 import { TestPodlite as Podlite } from '@podlite/to-jsx';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
   });
   let tree = podlite.parse(str);
@@ -20,7 +20,7 @@ const parse = (str: string): PodliteDocument => {
 };
 
 const parseToHtml = (str: string): string => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
   });
   let tree = podlite.parse(str);
@@ -57,10 +57,16 @@ const plugins = (makeComponent) => {
   };
 };
 
-const root = document.body.appendChild(document.createElement('div'));
+// const root = document.body.appendChild(document.createElement('div'));
 
+// function render(jsx) {
+//   return ReactDOM.render(jsx, root);
+// }
+
+const root = { innerHTML: '' };
 function render(jsx) {
-  return ReactDOM.render(jsx, root);
+  root.innerHTML = renderToStaticMarkup(jsx);
+  return root.innerHTML;
 }
 
 // afterEach(() => ReactDOM.unmountComponentAtNode(root));
