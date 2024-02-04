@@ -1,25 +1,22 @@
 // import  * as Image  from '../src';
 import {
-  AstTree,
+  frozenIds,
   getFromTree,
-  isValidateError,
   PodliteDocument,
-  validateAst,
+  podlitePluggable,
   validateAstTree,
-  validatePodliteAst,
 } from "@podlite/schema";
-import { frozenIds, podlite as podlite_core } from "podlite";
 import Image from "../src/index";
 
 const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({ Image });
+  let podlite = podlitePluggable().use({ Image });
   let tree = podlite.parse(str);
   const asAst = podlite.toAst(tree);
   return asAst;
 };
 
 const parseToHtml = (str: string): string => {
-  let podlite = podlite_core({ importPlugins: false }).use({ Image });
+  let podlite = podlitePluggable().use({ Image });
   let tree = podlite.parse(str);
   const asAst = podlite.toAst(tree);
   return podlite.toHtml(frozenIds()(asAst)).toString();
