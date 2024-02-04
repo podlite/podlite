@@ -1,6 +1,6 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "podlite schema",
   "main": "src/index.ts",
   "types": "./lib/index.d.ts",

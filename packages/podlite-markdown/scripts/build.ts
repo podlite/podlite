@@ -1,4 +1,4 @@
-import { build } from 'esbuild';
+import { build } from 'esbuild'
 
 build({
   bundle: true,
@@ -10,7 +10,7 @@ build({
   platform: 'node',
   sourcemap: true,
   outfile: 'lib/index.cjs',
-}).catch((e) => {
-  console.log('Build not successful', e.message);
-  process.exit(1);
-});
+}).catch(e => {
+  console.log('Build not successful', e.message)
+  process.exit(1)
+})

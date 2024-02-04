@@ -1,6 +1,6 @@
-import { build, BuildOptions } from 'esbuild';
+import { build, BuildOptions } from 'esbuild'
 const opt: BuildOptions = {
-    tsconfig: 'tsconfig-esm.json',
+  tsconfig: 'tsconfig-esm.json',
 }
 build({
   bundle: true,
@@ -11,8 +11,8 @@ build({
   target: 'es2019',
   sourcemap: true,
   outfile: 'lib/index.esm.js',
-  ...opt
-}).catch((e) => {
-  console.log('Build not successful', e.message);
-  process.exit(1);
-});
+  ...opt,
+}).catch(e => {
+  console.log('Build not successful', e.message)
+  process.exit(1)
+})

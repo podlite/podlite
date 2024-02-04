@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 07-tables 0", () => {
+it('spec: 07-tables 0', () => {
   const pod = `
 =begin table
         The Shoveller   Eddie Stevens     King Arthur's singing shovel
@@ -9,8 +9,8 @@ it("spec: 07-tables 0", () => {
         The Bowler      Carol Pinnsler    Haunted bowling ball
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -155,10 +155,10 @@ it("spec: 07-tables 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 1", () => {
+it('spec: 07-tables 1', () => {
   const pod = `
 =table
     Constants           1
@@ -166,8 +166,8 @@ it("spec: 07-tables 1", () => {
     Subroutines         33
     Everything else     57
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -277,18 +277,18 @@ it("spec: 07-tables 1", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 2", () => {
+it('spec: 07-tables 2', () => {
   const pod = `
 =for table
     mouse    | mice
     horse    | horses
     elephant | elephants
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -378,10 +378,10 @@ it("spec: 07-tables 2", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 3", () => {
+it('spec: 07-tables 3', () => {
   const pod = `
 =table
     Animal | Legs |    Eats
@@ -390,8 +390,8 @@ it("spec: 07-tables 3", () => {
     Human  +   2  +   Pizza
     Shark  +   0  +    Fish
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -534,10 +534,10 @@ it("spec: 07-tables 3", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 4", () => {
+it('spec: 07-tables 4', () => {
   const pod = `
 =table
         Superhero     | Secret          |
@@ -545,8 +545,8 @@ it("spec: 07-tables 4", () => {
         ==============|=================|================================
         The Shoveller | Eddie Stevens   | King Arthur's singing shovel
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -635,10 +635,10 @@ it("spec: 07-tables 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 5", () => {
+it('spec: 07-tables 5', () => {
   const pod = `
 =begin table
 
@@ -657,8 +657,8 @@ it("spec: 07-tables 5", () => {
 
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -865,10 +865,10 @@ it("spec: 07-tables 5", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 6", () => {
+it('spec: 07-tables 6', () => {
   const pod = `
 =table
     X | O |
@@ -877,8 +877,8 @@ it("spec: 07-tables 6", () => {
    ---+---+---
       |   | X
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -999,10 +999,10 @@ it("spec: 07-tables 6", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 07-tables 7", () => {
+it('spec: 07-tables 7', () => {
   const pod = `
 =begin table :caption<foo> :bar(0)
 =            :baz(2.3)
@@ -1012,8 +1012,8 @@ bar
 
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1098,10 +1098,10 @@ bar
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: extra", () => {
+it('spec: extra', () => {
   const pod = `
     =begin table :nested
 
@@ -1114,8 +1114,8 @@ it("spec: extra", () => {
 
 =end table
   
-  `;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+  `
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1292,5 +1292,5 @@ it("spec: extra", () => {
         "type": "para",
       },
     ]
-  `);
-});
+  `)
+})

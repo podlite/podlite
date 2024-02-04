@@ -1,11 +1,11 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 02-paragraph 0", () => {
+it('spec: 02-paragraph 0', () => {
   const pod = `
 =for Foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -34,16 +34,16 @@ it("spec: 02-paragraph 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 02-paragraph 1", () => {
+it('spec: 02-paragraph 1', () => {
   const pod = `
 =for Foo
 some text
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -78,17 +78,17 @@ some text
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 02-paragraph 2", () => {
+it('spec: 02-paragraph 2', () => {
   const pod = `
 =for Foo
 some
 spaced   text
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -124,10 +124,10 @@ spaced   text
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 02-paragraph 3", () => {
+it('spec: 02-paragraph 3', () => {
   const pod = `
 =begin pod
 
@@ -140,8 +140,8 @@ Inside Got
 Outside blocks
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -252,10 +252,10 @@ Outside blocks
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 02-paragraph 4", () => {
+it('spec: 02-paragraph 4', () => {
   const pod = `
 =begin pod
 =begin One
@@ -271,8 +271,8 @@ Four, another delimited one
 =end Four
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -413,10 +413,10 @@ Four, another delimited one
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 02-paragraph 5", () => {
+it('spec: 02-paragraph 5', () => {
   const pod = `
 =begin Foo
 and so,  all  of  the  villages chased
@@ -435,8 +435,8 @@ Which, as we all know...
     Turn into Jelly Beans!
 =end Foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -501,5 +501,5 @@ Which, as we all know...
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

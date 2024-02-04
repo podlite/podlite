@@ -1,8 +1,8 @@
 // this file contains the dictionary ot the messages used in the podlite editor
 interface Dict {
-  displayText: string;
-  text: string;
-  lang?: 'pod6' | 'md';
+  displayText: string
+  text: string
+  lang?: 'pod6' | 'md'
 }
 const dict: Dict[] = [
   {
@@ -244,5 +244,5 @@ graph LR
 \`\`\``,
     lang: 'md',
   },
-];
-export default dict;
+]
+export default dict

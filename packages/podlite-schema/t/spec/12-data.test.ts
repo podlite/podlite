@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 12-data 0", () => {
+it('spec: 12-data 0', () => {
   const pod = `
 =begin pod
 =begin data :key<Virtues>
@@ -17,8 +17,8 @@ say 'The three virtues are:';
 say $=data<Virtues>;
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -191,5 +191,5 @@ say $=data<Virtues>;
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
