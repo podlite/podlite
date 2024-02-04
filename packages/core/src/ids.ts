@@ -1,7 +1,7 @@
 import {BlockHead, getTextContentFromNode, makeTransformer} from "@podlite/schema"
-import { ParserPlugin, Node, nPara , AST, nText, nVerbatim } from "@podlite/schema"
+import { ParserPlugin } from "@podlite/schema"
 import { nanoid } from 'nanoid'
-import { BlockPod, PodNode } from '@podlite/schema'
+import { PodNode } from '@podlite/schema'
 
 /**
  * Clean ids from tree 
