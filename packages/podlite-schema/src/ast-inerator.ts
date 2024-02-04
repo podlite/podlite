@@ -1,17 +1,5 @@
 
 import { makePlug, makeRule } from "./helpers/makeQuery";
-
-// the following names: MyBlock, myBlock are use for extending pod6
-export function isNamedBlock(name) {
-        return (
-            name 
-                &&
-            name !== name.toLowerCase() 
-                && 
-            name !== name.toUpperCase() 
-          )
-      }
-
 // skip warnings for semantic blocks
 export function isSemanticBlock ( node ) { 
     const name = node.name || ''

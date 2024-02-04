@@ -5,5 +5,9 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
-  }
+    "target": "ESNext",
+    "module": "commonjs",
+    // "module": "ESNext",
+    "resolveJsonModule": true,
+  },
 }

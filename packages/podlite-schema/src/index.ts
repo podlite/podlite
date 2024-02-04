@@ -1,6 +1,7 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import * as pointer from 'json-pointer'
-import { AstTree, PodNode } from './types'
+import { AstTree, PodNode, PodliteDocument  } from './types'
+export {PodliteDocument} from './types'
 import * as  jsonShemes  from '../schema'
 import { makeInterator } from './ast-inerator'
 export { AstTree } from './types'
@@ -15,8 +16,10 @@ export {makeTransformer, isNamedBlock , isSemanticBlock } from './helpers/makeTr
 export {toAny} from './exportAny'
 export {makeAttrs} from './helpers/config'
 export {pluginCleanLocation} from './plugin-clean-location'
+export {toAnyRules} from './helpers/plugins'
 
-// @ts-ignore
+export {podlitePluggable, Podlite, PodliteExport, cleanIds, frozenIds } from './pluggableParser'
+
 import * as parser from './grammar'
 import vmargin_plug from './plugin-vmargin'
 import formattingCodes_plug  from  './plugin-formatting-codes'
@@ -178,6 +181,7 @@ export { default as Writer } from './writer'
 // https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
 
 const {version: VERSION} = require('../package.json');
+// const {version: VERSION} = {version:'0.1.0'};
 export { VERSION as version} 
 
 
