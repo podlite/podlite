@@ -1,7 +1,6 @@
-import { getFromTree, PodliteDocument } from '@podlite/schema';
-import { frozenIds, podlite as podlite_core } from 'podlite';
+import { getFromTree, PodliteDocument, podlitePluggable } from '@podlite/schema';
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false });
+  let podlite =  podlitePluggable();
   let tree = podlite.parse(str);
   const asAst = podlite.toAstResult(tree);
   return asAst.interator;

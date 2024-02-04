@@ -2,31 +2,50 @@
   "name": "@podlite/editor-react",
   "version": "0.0.18",
   "description": "Podlite React component",
-  "main": "index.js",
+  "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "module": "esm/index.js",
+  "typings": "./lib/index.d.ts",
+  "module": "lib/index.esm.js",
   "license": "MIT",
+  "sideEffects": true,
+  "files": [
+    "lib"
+  ],
   "jest": {
     "preset": "ts-jest",
     "snapshotSerializers": [
       "jest-serializer-html"
     ]
   },
+  "exports1": {
+    ".": {
+      "import": "./lib/index.esm.js",
+      "require": "./lib/index.cjs"
+    },
+    "./types": {
+      "import": "./lib/index.d.ts",
+      "require": "./dist/index.d.cts"
+    },
+    "./import": "./lib/index.js",
+    "./require": "./lib/index.cjs",
+    "./lib/Editor.css": "./lib/index.esm.css",
+    "./lib/index.css": "./lib/index.css"
+  },
   "publishConfig": {
-    "access": "public",
-    "main": "index.js"
+    "access": "public"
   },
   "scripts": {
-    "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "run-p build:cjs  build:esm",
-    "build:cjs": "ts-node ./scripts/build.ts && tsc  --declaration --emitDeclarationOnly",
-    "build:esm": "ts-node ./scripts/build_esm.ts &&  tsc  --declaration --emitDeclarationOnly --outDir esm",
+    "clean": "rm -rf dist lib tsconfig.tsbuildinfo esm",
+    "build": "run-p build:cjs build:esm build:types",
+    "build:cjs": "ts-node ./scripts/build.ts",
+    "build:esm": "ts-node ./scripts/build_esm.ts",
+    "build:types": "tsc  --declaration --emitDeclarationOnly",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
     "codemirror": "5.x",
-    "react-codemirror2": "^7.2.1",
-    "react-is": "^17.0.2"
+    "react-codemirror2": "7.3.0",
+    "react-is": "^17.0.0"
   },
   "devDependencies": {
     "@yarnpkg/esbuild-plugin-pnp": "^2.0.0",
@@ -35,7 +54,7 @@
     "ts-node": "^9.1.1"
   },
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0"
   }
 }
