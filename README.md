@@ -31,3 +31,10 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 🖥️ *Desktop editor/viewer*: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
 
 📚 *Podlite for web* - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)
+## AUTHOR
+
+Copyright (c) 2021-2024 Aliaksandr Zahatski
+
+## License
+
+Released under a MIT License.
