@@ -13,6 +13,7 @@ node_modules
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+*.tsbuildinfo
 lib
 built
 esm
