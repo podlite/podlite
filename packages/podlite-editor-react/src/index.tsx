@@ -1,9 +1,9 @@
-import * as React from 'react'
+import React from 'react'
 import { Controlled as CodeMirrorControlled, UnControlled as CodeMirror} from 'react-codemirror2'
 import CMirror from 'codemirror'
 import dictionary from './dict'
-import { useState, useEffect, useRef, useMemo } from 'react'
-import {isValidElementType, isElement} from  'react-is'
+import { useState, useEffect, useRef } from 'react'
+import {isElement} from  'react-is'
 
 // TODO: use bundler to add into package
 // import '../../../node_modules/codemirror/lib/codemirror.css';
@@ -47,7 +47,7 @@ type Props={
     isControlled?:boolean
 }
 
-export default ({ 
+export const Editor = ({ 
         onChangeSource = ()=>{}, 
         content, 
         isDarkTheme = false, 
@@ -59,8 +59,9 @@ export default ({
         isControlled=false,
         isAutoComplete = true,
     }: Props) => {
-  const [text, updateText] = useState(content)
 
+  const [text, updateText] = useState(content)
+  
   const [marks, updateMarks] = useState([])
   const [, updateScrollMap] = useState([])
   
@@ -349,3 +350,5 @@ return (
   </div>
 );
 }
+
+export default Editor
