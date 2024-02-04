@@ -18,15 +18,15 @@
   "engineStrict": true,
   "publishConfig": {
     "access": "public",
-    "main": "index.js",
-    "module": "index.js",
+    "main": "lib/index.js",
     "types": "./lib/index.d.ts"
   },
   "scripts": {
-    "clean": "rm -rf lib tsconfig.tsbuildinfo",
-    "build": "run-s build:ts build:ast build:pegjs",
+    "clean": "rm -rf lib esm tsconfig.tsbuildinfo",
+    "build": "run-s build:pegjs build:ts build:ast ",
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
     "build:ts": "yarn g:tsc --build $INIT_CWD",
+    "build:esm": "yarn g:tsctest -p tsconfig.esm.json",
     "build:pegjs": "pegjs -o src/grammar.js src/grammar.pegjs && pegjs -o src/grammarfc.js src/grammarfc.pegjs",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
     "test": "yarn g:jest  --passWithNoTests"
