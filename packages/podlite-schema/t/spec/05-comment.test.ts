@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 05-comment 0", () => {
+it('spec: 05-comment 0', () => {
   const pod = `
 =begin pod
 =for comment
@@ -10,8 +10,8 @@ bla bla    bla
 This isn't a comment
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -89,16 +89,16 @@ This isn't a comment
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 05-comment 1", () => {
+it('spec: 05-comment 1', () => {
   const pod = `
 =comment
 This file is deliberately specified in Raku Pod format
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -130,10 +130,10 @@ This file is deliberately specified in Raku Pod format
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 05-comment 2", () => {
+it('spec: 05-comment 2', () => {
   const pod = `
 =begin comment
 foo foo
@@ -142,8 +142,8 @@ foo foo
 ===yay!
 =end comment
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -185,5 +185,5 @@ foo foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

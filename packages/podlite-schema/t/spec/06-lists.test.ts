@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 06-lists 0", () => {
+it('spec: 06-lists 0', () => {
   const pod = `
 =begin pod
 The seven suspects are:
@@ -14,8 +14,8 @@ The seven suspects are:
 =item  Keyser Soze
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -371,10 +371,10 @@ The seven suspects are:
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 06-lists 1", () => {
+it('spec: 06-lists 1', () => {
   const pod = `
 =begin pod
 =item1  Animal
@@ -388,8 +388,8 @@ it("spec: 06-lists 1", () => {
 =item2     Chocolate
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -779,10 +779,10 @@ it("spec: 06-lists 1", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 06-lists 2", () => {
+it('spec: 06-lists 2', () => {
   const pod = `
 =begin pod
 =comment CORRECT...
@@ -794,8 +794,8 @@ The choices are:
 =item2 Beer
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1030,10 +1030,10 @@ The choices are:
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 06-lists 3", () => {
+it('spec: 06-lists 3', () => {
   const pod = `
 =begin pod
 Let's consider two common proverbs:
@@ -1056,8 +1056,8 @@ for breakfast.
 As you can see, folk wisdom is often of dubious value.
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1303,5 +1303,5 @@ As you can see, folk wisdom is often of dubious value.
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

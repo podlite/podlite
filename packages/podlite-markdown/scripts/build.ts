@@ -1,4 +1,4 @@
-import { build } from 'esbuild';
+import { build } from 'esbuild'
 
 build({
   bundle: true,
@@ -9,8 +9,8 @@ build({
   target: 'node14',
   platform: 'node',
   sourcemap: true,
-  outfile: 'lib/index.js',
-}).catch((e) => {
-  console.log('Build not successful', e.message);
-  process.exit(1);
-});
+  outfile: 'lib/index.cjs',
+}).catch(e => {
+  console.log('Build not successful', e.message)
+  process.exit(1)
+})

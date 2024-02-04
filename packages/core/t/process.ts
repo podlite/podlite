@@ -1,4 +1,3 @@
-
 // import  unified  from 'unified'
 // import markdown  from 'remark-parse'
 // import { Interface } from 'readline'
@@ -35,13 +34,13 @@
 //     return mkNode({ type:'fcode', ...attrs, content})
 // }
 // const mkBlock = ( attrs, content ) => {
-    
+
 //     const type="block"
 //     const name = attrs.name
 //     const contents = content
 //     const attributres = {...attrs}
 //     var result = mkNode({type,...attributres })
-   
+
 //     result.toJSON = ()=>{
 //         return { type, ...attributres,  content: contents.filter(i=>i).map(i=> {  return ('function' === typeof i ) ? i.toJSON() : i })}
 //     }
@@ -50,13 +49,13 @@
 
 // //markdown specific
 // const mkReference = ( attrs, content, writer ) => {
-    
+
 //     const type="block"
 //     const name = attrs.name
 //     const contents = content
 //     const attributres = {...attrs}
 //     var result = mkNode({type,...attributres })
-   
+
 //     result.toJSON = ()=>{
 //         const definition = writer.linkmap[attributres.identifier]
 //         const meta = definition.url
@@ -66,20 +65,18 @@
 
 // }
 
-
-
 // const rules = {
 //     '*' : ( writer, processor )=>( node, ctx, interator )=>{
-//         const { children, position, ...attr} = node 
+//         const { children, position, ...attr} = node
 //         console.error(attr)
 //         return null
 //     },
 //     ':root' : ( writer, processor )=>( node, ctx, interator )=>{
-//         const { children, position, ...attr} = node 
+//         const { children, position, ...attr} = node
 //         return mkBlock({name:"pod", location:position}, interator(children, ctx))
 //     },
 //     ':html': ( writer, processor )=>( node, ctx, interator )=>{
-//         const { children, position, ...attr} = node 
+//         const { children, position, ...attr} = node
 //         return mkBlock({type:'block', name:'Html', location:position},[mkVerbatim(node.value)]);
 //     },
 //     ':heading' :  ( writer, processor )=>( node, ctx, interator )=>{
@@ -138,7 +135,7 @@
 //         const { children, position, ...attr} = node
 //         return mkBlock({type:'block', name:'code', location:position},[mkVerbatim(node.value)]);
 //     },
-// }    
+// }
 // // console.log(toAny)
 //  const toF = toAny({processor:1})
 //  .use(  rules )
@@ -152,20 +149,19 @@
 // //    sds **sd**
 // // `)
 
-
 // const log = (t)=> JSON.stringify(t, null,2)
 // // console.log(toF.run(tree).interator)
 // const  t = JSON.parse(JSON.stringify(toF.run(tree).interator.toJSON()))
 // const t2 = toF.run(tree).interator.toJSON()
 // // console.log(t.content[2].content[0].content[0].content)
-// // console.log(log(t.interator.toJSON())) 
+// // console.log(log(t.interator.toJSON()))
 // // fs.writeFileSync("out.json", log(t.interator.toJSON()))
 // const  r = toHtml().run(t).toString()
 // r
 // // fs.writeFileSync("out.html", r.toString())
 // // console.log(r.toString())
 // // const process = (node, content )=>{
-// //     // convert position 
+// //     // convert position
 // //     const {position} =  node
 // //     switch (node.type) {
 // //         case 'root':
@@ -212,5 +208,3 @@
 // // const  new_tree = visit(tree)
 // // console.log(log(new_tree.toJSON()))
 // //  console.log(log(tree))
-
-

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
@@ -12,7 +12,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "index.js"
+    "main": "./lib/index.js"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
@@ -21,8 +21,8 @@
   },
   "peerDependencies": {
     "mermaid": "*",
-    "react": "*",
-    "react-dom": "*",
+    "react": "^16.0.0 || ^17.0.0 ",
+    "react-dom": "^16.0.0 || ^17.0.0",
     "react-is": "*"
   }
 }

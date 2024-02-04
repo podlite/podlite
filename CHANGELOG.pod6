@@ -2,6 +2,11 @@
 
 =head1 Upcoming
 
+=head1 0.0.33
+- refactor tests
+- update deps
+- overal project updates
+
 =head1 0.0.32
 
 # @podlite/0.0.25

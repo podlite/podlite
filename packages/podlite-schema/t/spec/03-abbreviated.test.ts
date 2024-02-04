@@ -1,11 +1,11 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 03-abbreviated 0", () => {
+it('spec: 03-abbreviated 0', () => {
   const pod = `
 =foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -37,15 +37,15 @@ it("spec: 03-abbreviated 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 1", () => {
+it('spec: 03-abbreviated 1', () => {
   const pod = `
 =foo some text
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -77,16 +77,16 @@ it("spec: 03-abbreviated 1", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 2", () => {
+it('spec: 03-abbreviated 2', () => {
   const pod = `
 =foo some text
 and some more
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -120,10 +120,10 @@ and some more
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 3", () => {
+it('spec: 03-abbreviated 3', () => {
   const pod = `
 =begin pod
 
@@ -136,8 +136,8 @@ bidden
 Outside blocks
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -246,10 +246,10 @@ Outside blocks
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 4", () => {
+it('spec: 03-abbreviated 4', () => {
   const pod = `
 =begin pod
     =begin one
@@ -266,8 +266,8 @@ it("spec: 03-abbreviated 4", () => {
     =head1 And just for the sake of having a working =head1 :)
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -408,10 +408,10 @@ it("spec: 03-abbreviated 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 5", () => {
+it('spec: 03-abbreviated 5', () => {
   const pod = `
 =begin foo
 and so,  all  of  the  villages chased
@@ -431,8 +431,8 @@ Which, as we all know...
           Beans!
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -580,10 +580,10 @@ Which, as we all know...
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 6", () => {
+it('spec: 03-abbreviated 6', () => {
   const pod = `
 =table_not
     Constants 1
@@ -591,8 +591,8 @@ it("spec: 03-abbreviated 6", () => {
     Subroutines 33
     Everything else 57
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -632,16 +632,16 @@ it("spec: 03-abbreviated 6", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 03-abbreviated 7", () => {
+it('spec: 03-abbreviated 7', () => {
   const pod = `
 =head3
 Heading level 3
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -693,5 +693,5 @@ Heading level 3
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

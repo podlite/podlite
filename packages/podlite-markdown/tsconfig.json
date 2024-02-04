@@ -6,7 +6,8 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "jsx": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "module": "commonjs",
   },
   "references": [
     {

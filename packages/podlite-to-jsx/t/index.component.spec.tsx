@@ -1,29 +1,28 @@
-import { TestPodlite as Podlite, Podlite as PodliteRaw } from '../src/index';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { TestPodlite as Podlite, Podlite as PodliteRaw } from '../src/index'
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
-const root = document.body.appendChild(document.createElement('div'));
-
+const root = { innerHTML: '' }
 function render(jsx) {
-  return ReactDOM.render(jsx, root);
+  root.innerHTML = renderToStaticMarkup(jsx)
+  return root.innerHTML
 }
 
-afterEach(() => ReactDOM.unmountComponentAtNode(root));
-
 it('para content', () => {
-  render(<Podlite>Hello!</Podlite>);
+  render(<Podlite>Hello!</Podlite>)
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
        <p>
          Hello!
        </p>
-    `);
-});
+    `)
+})
 
 it('table', () => {
-  render(
-    <Podlite>
-      {`
+  expect(
+    render(
+      <Podlite>
+        {`
 =begin pod
 =para test
 sdsdsd
@@ -45,9 +44,9 @@ sdsdsd
 =end table
 =end pod
 `}
-    </Podlite>,
-  );
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+      </Podlite>,
+    ),
+  ).toMatchInlineSnapshot(`
     <div id="id">
       <div id="id">
         <p>
@@ -82,7 +81,7 @@ sdsdsd
               Eddie Stevens
             </td>
             <td id="id">
-              King Arthur's singing shovel
+              King Arthur&#x27;s singing shovel
             </td>
           </tr>
           <tr id="id">
@@ -124,28 +123,29 @@ sdsdsd
         </tbody>
       </table>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =alias', () => {
-  render(
-    <Podlite>
-      {`
+  expect(
+    render(
+      <Podlite>
+        {`
 =begin pod
 =alias TEST 4D Kingdoms
 A<TEST>
 =end pod
 `}
-    </Podlite>,
-  );
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+      </Podlite>,
+    ),
+  ).toMatchInlineSnapshot(`
     <div id="id">
       <p>
         4D Kingdoms
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =code', () => {
   render(
@@ -163,7 +163,7 @@ it('accepts =code', () => {
 =end code
 `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <code>
       <pre>
@@ -183,8 +183,8 @@ it('accepts =code', () => {
       asdasdasdasdsad
       </pre>
     </code>
-  `);
-});
+  `)
+})
 
 it('accepts D<>', () => {
   render(
@@ -195,7 +195,7 @@ it('accepts D<>', () => {
     to add inline mark-up to a D<piece> of text.
   `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <p>
@@ -211,8 +211,8 @@ it('accepts D<>', () => {
         of text.
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts L<>', () => {
   render(
@@ -222,7 +222,7 @@ L<https://www.python.org/dev/peps/pep-0001/#what-is-a-pep>
 L<Test|https://example.com>
   `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <p>
       <a href="https://www.python.org/dev/peps/pep-0001/#what-is-a-pep">
@@ -232,8 +232,8 @@ L<Test|https://example.com>
         Test
       </a>
     </p>
-  `);
-});
+  `)
+})
 
 it('accepts =comment, Z<>, ', () => {
   render(
@@ -245,14 +245,14 @@ Z<comment>
 =end pod
 `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <p>
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts E<>, R<>, V<>', () => {
   render(
@@ -265,7 +265,7 @@ V<C<boo> B<bar> asd>
 =end pod
 `}
     </Podlite>,
-  );
+  )
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -290,8 +290,8 @@ V<C<boo> B<bar> asd>
     C&lt;boo&gt; B&lt;bar&gt; asd
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =output', () => {
   render(
@@ -306,7 +306,7 @@ Print? B<K<n>>
     Name: R<your surname>
 `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <code>
       <pre>
@@ -333,8 +333,8 @@ Print? B<K<n>>
         </var>
       </kbd>
     </pre>
-  `);
-});
+  `)
+})
 
 it('accepts N<>', () => {
   render(
@@ -349,7 +349,7 @@ it('accepts N<>', () => {
   =end pod
       `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div id="id">
@@ -390,8 +390,8 @@ it('accepts N<>', () => {
       powerful than its Perl 5 predecessor.
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts U<>, X<>, S<>', () => {
   render(
@@ -403,7 +403,7 @@ it('accepts U<>, X<>, S<>', () => {
    >
       `}
     </Podlite>,
-  );
+  )
 
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -414,11 +414,11 @@ it('accepts U<>, X<>, S<>', () => {
         </u>
         .
         <br>
-        &nbsp;&nbsp;&nbsp;
+           
       </p>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =Image base', () => {
   render(
@@ -430,7 +430,7 @@ it('accepts =Image base', () => {
   =end pod
 `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div class="image_block"
@@ -448,8 +448,8 @@ it('accepts =Image base', () => {
         </div>
       </div>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =Image empty caption', () => {
   render(
@@ -461,7 +461,7 @@ it('accepts =Image empty caption', () => {
     =end pod
   `}
     </Podlite>,
-  );
+  )
   // console.log(root.innerHTML);return;
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
@@ -477,8 +477,8 @@ it('accepts =Image empty caption', () => {
     </div>
     <p>
     </p>
-  `);
-});
+  `)
+})
 
 it('accepts =Image with fullset of attributes', () => {
   render(
@@ -494,7 +494,7 @@ content ignored
 =end pod
   `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div class="image_block"
@@ -514,8 +514,8 @@ content ignored
     </div>
     <p>
     </p>
-  `);
-});
+  `)
+})
 it('accepts =TITLE', () => {
   render(
     <Podlite>
@@ -525,7 +525,7 @@ it('accepts =TITLE', () => {
     =para 1
 =end pod`}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div>
@@ -542,8 +542,8 @@ it('accepts =TITLE', () => {
         </p>
       </div>
     </div>
-  `);
-});
+  `)
+})
 
 it('accepts =defn', () => {
   render(
@@ -559,7 +559,7 @@ Conforming to a local and mutable standard of right.
 Having the quality of general expediency.
     `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <dl>
       <dt>
@@ -582,8 +582,8 @@ Having the quality of general expediency.
     Having the quality of general expediency.
       </dd>
     </dl>
-  `);
-});
+  `)
+})
 
 it('accepts =nested', () => {
   render(
@@ -598,7 +598,7 @@ but some of us are looking at the stars!
 =end nested
 `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <blockquote>
       <p>
@@ -614,8 +614,8 @@ but some of us are looking at the stars!
         </p>
       </blockquote>
     </blockquote>
-  `);
-});
+  `)
+})
 
 it('accepts =Toc', () => {
   render(
@@ -630,7 +630,7 @@ it('accepts =Toc', () => {
     =end pod
         `}
     </Podlite>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div class="toc">
@@ -662,21 +662,21 @@ it('accepts =Toc', () => {
     </div>
     <p>
     </p>
-  `);
-});
+  `)
+})
 
 it('id for headers', () => {
   render(
     <PodliteRaw>{`
     =head1 Test 
     `}</PodliteRaw>,
-  );
+  )
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <h1 id="Test">
       Test
     </h1>
-  `);
-});
+  `)
+})
 
 it.skip('accepts =Diagram', () => {
   render(
@@ -691,10 +691,10 @@ B-->D(fa:fa-spinner aaaaa);
   =end pod
       `}
     </Podlite>,
-  );
-  console.log(root.innerHTML);
+  )
+  console.log(root.innerHTML)
   // expect(root.innerHTML).toMatchInlineSnapshot();
-});
+})
 
 it.skip('accepts =alias', () => {
   render(
@@ -714,7 +714,7 @@ A<TERMS_URLS>
 =end pod
     `}
     </Podlite>,
-  );
-  console.log(root.innerHTML);
+  )
+  console.log(root.innerHTML)
   // expect(root.innerHTML).toMatchInlineSnapshot();
-});
+})

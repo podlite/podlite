@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree } from '../..'
 
-it("spec: 00-maintests 0", () => {
+it('spec: 00-maintests 0', () => {
   const pod = `
 =begin pod
   =begin para
@@ -12,8 +12,8 @@ it("spec: 00-maintests 0", () => {
   =end para
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -114,10 +114,10 @@ it("spec: 00-maintests 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 1", () => {
+it('spec: 00-maintests 1', () => {
   const pod = `
 =begin pod
   twest
@@ -127,8 +127,8 @@ it("spec: 00-maintests 1", () => {
   jjj
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -250,10 +250,10 @@ it("spec: 00-maintests 1", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 2", () => {
+it('spec: 00-maintests 2', () => {
   const pod = `
 =begin pod
 =for Named
@@ -267,8 +267,8 @@ dd
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -361,10 +361,10 @@ dd
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 3", () => {
+it('spec: 00-maintests 3', () => {
   const pod = `
 =head1 Test
 
@@ -376,8 +376,8 @@ continue
 test
 
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -529,17 +529,17 @@ test
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 4", () => {
+it('spec: 00-maintests 4', () => {
   const pod = `
 =begin table :k1<str> :k2('str') :k3("str") :k4["str"] :k5(Q[str])
 
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -600,15 +600,15 @@ it("spec: 00-maintests 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 5", () => {
+it('spec: 00-maintests 5', () => {
   const pod = `
 =config table :k1<very long string, comma> :k2<2 23  23 > :k3<'23', 23233, 333>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -648,10 +648,10 @@ it("spec: 00-maintests 5", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 6", () => {
+it('spec: 00-maintests 6', () => {
   const pod = `
 =code
   sdkljsalkdjlsd
@@ -664,8 +664,8 @@ it("spec: 00-maintests 6", () => {
   asdasdasdasdsad
 =end code
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -758,15 +758,15 @@ it("spec: 00-maintests 6", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 7", () => {
+it('spec: 00-maintests 7', () => {
   const pod = `
 =config C<>  :allow<B>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -790,17 +790,17 @@ it("spec: 00-maintests 7", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 8", () => {
+it('spec: 00-maintests 8', () => {
   const pod = `
 =begin SYNOPSIS
 Para inside SYNOPSIS
 =end SYNOPSIS
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -852,16 +852,16 @@ Para inside SYNOPSIS
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 9", () => {
+it('spec: 00-maintests 9', () => {
   const pod = `
 =para
 teZ<s>tZ<>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -924,18 +924,18 @@ teZ<s>tZ<>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 10", () => {
+it('spec: 00-maintests 10', () => {
   const pod = `
 =para
 Use a C<for> loop instead.N<The Perl 6 C<for> loop is far more
 powerful than its Perl 5 predecessor.> Preferably with an explicit
 iterator variable.
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1014,18 +1014,18 @@ iterator variable.
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 11", () => {
+it('spec: 00-maintests 11', () => {
   const pod = `
 =para
 A X<hash|hashes, definition of; associative arrays>
 is an unordered X<collection> of X<scalar|scalars> values indexed by their
 associated string X<|puns, deliberate> key. X<> empty
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1128,17 +1128,17 @@ associated string X<|puns, deliberate> key. X<> empty
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 12", () => {
+it('spec: 00-maintests 12', () => {
   const pod = `
 =para
 The C<U<>> formatting code specifies that the contained text is
 U<unusual> or distinctive;
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1207,17 +1207,17 @@ U<unusual> or distinctive;
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 13", () => {
+it('spec: 00-maintests 13', () => {
   const pod = `
 =para
 Such content would typically be rendered in a K<fixed-width font>
 Such content would typically be rendered in a T<fixed-width font>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1286,10 +1286,10 @@ Such content would typically be rendered in a T<fixed-width font>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 14", () => {
+it('spec: 00-maintests 14', () => {
   const pod = `
 =d
 Such content would typically be rendered in a K<fixed-width font>
@@ -1305,8 +1305,8 @@ e
 
 ambient again
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1556,10 +1556,10 @@ ambient again
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 15", () => {
+it('spec: 00-maintests 15', () => {
   const pod = `
 =begin pod
 =item
@@ -1568,8 +1568,8 @@ test
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1653,10 +1653,10 @@ test
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 00-maintests 16", () => {
+it('spec: 00-maintests 16', () => {
   const pod = `
 =begin code
 =begin item1
@@ -1664,8 +1664,8 @@ First
 =end item1
 =end code
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1708,5 +1708,5 @@ First
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

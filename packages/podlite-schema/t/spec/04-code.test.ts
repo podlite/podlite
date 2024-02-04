@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 04-code 0", () => {
+it('spec: 04-code 0', () => {
   const pod = `
 =begin pod
 This ordinary paragraph introduces a code block:
@@ -13,8 +13,8 @@ This ordinary paragraph introduces a code block:
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -130,10 +130,10 @@ This ordinary paragraph introduces a code block:
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 1", () => {
+it('spec: 04-code 1', () => {
   const pod = `
 =begin pod
 This is an ordinary paragraph
@@ -150,8 +150,8 @@ But this is just a text. Again
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -333,10 +333,10 @@ But this is just a text. Again
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 2", () => {
+it('spec: 04-code 2', () => {
   const pod = `
 =begin pod
 
@@ -346,8 +346,8 @@ Tests for the feed operators
     
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -433,10 +433,10 @@ Tests for the feed operators
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 3", () => {
+it('spec: 04-code 3', () => {
   const pod = `
 =begin pod
 Fun comes
@@ -449,8 +449,8 @@ Fun comes
   or better: maybe it'll break!
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -564,10 +564,10 @@ Fun comes
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 4", () => {
+it('spec: 04-code 4', () => {
   const pod = `
 =begin pod
 
@@ -579,8 +579,8 @@ This is Pod too. Specifically, this is a simple C<para> block
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -719,10 +719,10 @@ This is Pod too. Specifically, this is a simple C<para> block
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 5", () => {
+it('spec: 04-code 5', () => {
   const pod = `
 =begin pod
     this is code
@@ -745,8 +745,8 @@ it("spec: 04-code 5", () => {
     =end item
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -971,10 +971,10 @@ it("spec: 04-code 5", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 04-code 6", () => {
+it('spec: 04-code 6', () => {
   const pod = `
 =begin code
     foo foo
@@ -982,8 +982,8 @@ it("spec: 04-code 6", () => {
     =end code
 =end code
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
 
   expect(tree).toMatchInlineSnapshot(`
     Array [
@@ -1027,5 +1027,5 @@ it("spec: 04-code 6", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

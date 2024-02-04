@@ -1,12 +1,12 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 08-formattingcodes 0", () => {
+it('spec: 08-formattingcodes 0', () => {
   const pod = `
 =pod
 B<I am a formatting code>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -64,16 +64,16 @@ B<I am a formatting code>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 08-formattingcodes 1", () => {
+it('spec: 08-formattingcodes 1', () => {
   const pod = `
 =pod
 The basic C<ln> command is: C<ln> B<R<source_file> R<target_file>>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -162,17 +162,17 @@ The basic C<ln> command is: C<ln> B<R<source_file> R<target_file>>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 08-formattingcodes 2", () => {
+it('spec: 08-formattingcodes 2', () => {
   const pod = `
 =pod
 L<C<b>|a>
 L<C<b>|a>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -254,10 +254,10 @@ L<C<b>|a>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 08-formattingcodes 3", () => {
+it('spec: 08-formattingcodes 3', () => {
   const pod = `
 =begin pod
 
@@ -269,8 +269,8 @@ This is Pod too. Specifically, this is a simple C<para> block
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -409,15 +409,15 @@ This is Pod too. Specifically, this is a simple C<para> block
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 08-formattingcodes 4", () => {
+it('spec: 08-formattingcodes 4', () => {
   const pod = `
 =pod V<C<boo> B<bar> asd>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -473,5 +473,5 @@ it("spec: 08-formattingcodes 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
