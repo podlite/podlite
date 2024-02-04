@@ -1,4 +1,4 @@
-import { toTree, toHtml } from "../..";
+import { toTree } from "../..";
 
 it("spec: 00-maintests 0", () => {
   const pod = `

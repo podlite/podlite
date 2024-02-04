@@ -1,5 +1,5 @@
 
-const { makeRule, makePlug } = require('./makeQuery')
+import { makeRule, makePlug } from './makeQuery'
 // the following names: MyBlock, myBlock are use for extending pod6
 export function isNamedBlock(name) {
         return (
