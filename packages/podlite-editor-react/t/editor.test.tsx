@@ -1,5 +1,4 @@
-import { frozenIds, podlite as podlite_core } from 'podlite';
-import { PodliteDocument } from '@podlite/schema';
+import {  PodliteDocument, frozenIds, podlitePluggable } from '@podlite/schema';
 import {
   addVMargin,
   getSuggestionContextForLine,
@@ -7,7 +6,7 @@ import {
 } from '../src/helpers';
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false });
+  let podlite = podlitePluggable();
   let tree = podlite.parse(str);
   const asAst = podlite.toAstResult(tree);
   return frozenIds()(asAst.interator);
