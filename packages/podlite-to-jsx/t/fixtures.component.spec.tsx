@@ -1,27 +1,11 @@
 import Podlite from '../src/index'
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 const fs = require('fs')
 const path = require('path')
 const glob = require('glob') 
 
-
-// const describe = ( _ , f)=> f()
-// const it = (_,  f) => f()
-// const expect = (any):any=>{ 
-//     const c=(any):any=>{}
-//     c.toEqual = ()=>{}
-//     return c
-// }
-
-const root = document.body.appendChild(document.createElement('div'))
-
-function render(jsx) {
-  return ReactDOM.render(jsx, root)
-}
-
-afterEach(() => ReactDOM.unmountComponentAtNode(root))
 
 
 // load examples from fixtures src 
@@ -58,9 +42,8 @@ t
 
 describe("run parser tests", () => {
     allSrcFixtures().map(i => test(i.file, ()=>{
-        render(<Podlite>{i.text}</Podlite>)
-        // console.log(root.innerHTML)
-        expect(root.innerHTML).not.toBeNull()
+        const result = renderToStaticMarkup(<Podlite>{i.text}</Podlite>)
+        expect(result).not.toBeNull()
 }
 ))
 })

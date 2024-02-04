@@ -11,8 +11,10 @@
   "jsx": "react",
   
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
+    // "target": "es2017",
+    // "module": "commonjs",
+    "module": "esnext",
+    "target": "ESNext",
     "moduleResolution": "node",
     "sourceMap": true,
     "jsx": "react",
@@ -22,6 +24,8 @@
     "downlevelIteration": true,
     "declaration": true,
     "incremental": true,
+    "esModuleInterop":true,
+    "composite": true
   },
   "references": [
     {

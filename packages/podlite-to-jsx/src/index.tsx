@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {createElement} from 'react'
-import { frozenIds, podlite as podlite_core, PodliteExport, toAnyRules } from 'podlite'
-import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, parse, makeAttrs, emptyContent, content as nodeContent, setFn, subUse, toAny, isNamedBlock, isSemanticBlock, Writer} from '@podlite/schema'
+import {  podlite as podlite_core} from 'podlite'
+import {Verbatim, PodNode, Text, Rules, RulesStrict, getNodeId, parse, makeAttrs, emptyContent, content as nodeContent, setFn, subUse, toAny, isNamedBlock, isSemanticBlock, Writer, toAnyRules, PodliteExport, frozenIds} from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as  clean_plugin } from '@podlite/schema'
 
 

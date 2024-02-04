@@ -1,14 +1,13 @@
 import { TestPodlite as Podlite, Podlite as PodliteRaw } from '../src/index';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { renderToStaticMarkup } from 'react-dom/server';
 
-const root = document.body.appendChild(document.createElement('div'));
-
+const root = { innerHTML: '' };
 function render(jsx) {
-  return ReactDOM.render(jsx, root);
+  root.innerHTML = renderToStaticMarkup(jsx);
+  return root.innerHTML;
 }
 
-afterEach(() => ReactDOM.unmountComponentAtNode(root));
 
 it('para content', () => {
   render(<Podlite>Hello!</Podlite>);
@@ -21,9 +20,10 @@ it('para content', () => {
 });
 
 it('table', () => {
-  render(
-    <Podlite>
-      {`
+  expect(
+    render(
+      <Podlite>
+        {`
 =begin pod
 =para test
 sdsdsd
@@ -45,9 +45,9 @@ sdsdsd
 =end table
 =end pod
 `}
-    </Podlite>,
-  );
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+      </Podlite>,
+    ),
+  ).toMatchInlineSnapshot(`
     <div id="id">
       <div id="id">
         <p>
@@ -82,7 +82,7 @@ sdsdsd
               Eddie Stevens
             </td>
             <td id="id">
-              King Arthur's singing shovel
+              King Arthur&#x27;s singing shovel
             </td>
           </tr>
           <tr id="id">
@@ -128,17 +128,18 @@ sdsdsd
 });
 
 it('accepts =alias', () => {
-  render(
-    <Podlite>
-      {`
+  expect(
+    render(
+      <Podlite>
+        {`
 =begin pod
 =alias TEST 4D Kingdoms
 A<TEST>
 =end pod
 `}
-    </Podlite>,
-  );
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+      </Podlite>,
+    ),
+  ).toMatchInlineSnapshot(`
     <div id="id">
       <p>
         4D Kingdoms
@@ -414,7 +415,7 @@ it('accepts U<>, X<>, S<>', () => {
         </u>
         .
         <br>
-        &nbsp;&nbsp;&nbsp;
+           
       </p>
     </div>
   `);
