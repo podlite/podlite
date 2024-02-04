@@ -1,11 +1,11 @@
-var parse = require("..").parse;
-describe("strict block names ", () => {
+var parse = require('..').parse
+describe('strict block names ', () => {
   const t1 = `=begin one
     s dddd
 =end one
-`;
-  it("delimited podMode:0", () => {
-    const tree = parse(t1, { podMode: 0 });
+`
+  it('delimited podMode:0', () => {
+    const tree = parse(t1, { podMode: 0 })
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -28,11 +28,11 @@ describe("strict block names ", () => {
           "type": "ambient",
         },
       ]
-    `);
-  });
+    `)
+  })
 
-  it("delimited podMode:1", () => {
-    const tree = parse(t1, { podMode: 1 });
+  it('delimited podMode:1', () => {
+    const tree = parse(t1, { podMode: 1 })
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -62,14 +62,14 @@ describe("strict block names ", () => {
           "type": "para",
         },
       ]
-    `);
-  });
+    `)
+  })
 
   const t2 = `=for one
 test
-`;
-  it("paragraphBlock podMode:1", () => {
-    const tree = parse(t2, { podMode: 1 });
+`
+  it('paragraphBlock podMode:1', () => {
+    const tree = parse(t2, { podMode: 1 })
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -97,11 +97,11 @@ test
           "type": "para",
         },
       ]
-    `);
-  });
+    `)
+  })
 
-  it("paragraphBlock podMode:0", () => {
-    const tree = parse(t2, { podMode: 0 });
+  it('paragraphBlock podMode:0', () => {
+    const tree = parse(t2, { podMode: 0 })
     // console.log(toStr(tree))
     expect(tree).toMatchInlineSnapshot(`
       Array [
@@ -124,15 +124,15 @@ test
           "type": "ambient",
         },
       ]
-    `);
-  });
+    `)
+  })
 
   const t3 = `=one
 test
-`;
+`
 
-  it("abbreviatedBlock podMode:0", () => {
-    const tree = parse(t3, { podMode: 0 });
+  it('abbreviatedBlock podMode:0', () => {
+    const tree = parse(t3, { podMode: 0 })
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -154,11 +154,11 @@ test
           "type": "ambient",
         },
       ]
-    `);
-  });
+    `)
+  })
 
-  it("abbreviatedBlock podMode:1", () => {
-    const tree = parse(t3, { podMode: 1 });
+  it('abbreviatedBlock podMode:1', () => {
+    const tree = parse(t3, { podMode: 1 })
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -186,10 +186,10 @@ test
           "type": "para",
         },
       ]
-    `);
-  });
+    `)
+  })
 
-  it("Named blok + margin podMode:1", () => {
+  it('Named blok + margin podMode:1', () => {
     const tree = parse(
       `
         =begin Test
@@ -198,8 +198,8 @@ test
          d
         =end Test
 =para sss`,
-      { podMode: 1, skipChain: 1 }
-    );
+      { podMode: 1, skipChain: 1 },
+    )
     expect(tree).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -281,6 +281,6 @@ test
           "type": "block",
         },
       ]
-    `);
-  });
-});
+    `)
+  })
+})

@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 04a-input-output 0", () => {
+it('spec: 04a-input-output 0', () => {
   const pod = `
 =begin pod
     =begin output
@@ -15,8 +15,8 @@ it("spec: 04a-input-output 0", () => {
     =end output
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -134,5 +134,5 @@ it("spec: 04a-input-output 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

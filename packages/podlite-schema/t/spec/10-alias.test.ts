@@ -1,6 +1,6 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 10-alias 0", () => {
+it('spec: 10-alias 0', () => {
   const pod = `
 =begin pod
     =alias PROGNAME    Earl Irradiatem Evermore
@@ -15,8 +15,8 @@ A<TERMS_URLS>
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -141,16 +141,16 @@ A<TERMS_URLS>
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 10-alias 1", () => {
+it('spec: 10-alias 1', () => {
   const pod = `
 =para
 A<  TERER >
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -206,5 +206,5 @@ A<  TERER >
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

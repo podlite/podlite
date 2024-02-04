@@ -1,43 +1,34 @@
-import { PodliteDocument, validateAstTree } from "@podlite/schema";
-import { frozenIds, podlite as podlite_core } from "podlite";
-import { PluginRegister } from "../src";
-import React from "react";
-import ReactDOM from "react-dom";
-import { makeTestPodlite } from "@podlite/to-jsx";
+import React from 'react'
+import { PodliteDocument, frozenIds, podlitePluggable, validateAstTree } from '@podlite/schema'
+import { PluginRegister } from '../src'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { makeTestPodlite } from '@podlite/to-jsx'
 
 const Podlite = makeTestPodlite(
-  podlite_core({ importPlugins: false }).use({
+  podlitePluggable().use({
     ...PluginRegister,
-  })
-);
-
-const root = document.body.appendChild(document.createElement("div"));
-
-function render(jsx) {
-  return ReactDOM.render(jsx, root);
-}
-
-afterEach(() => ReactDOM.unmountComponentAtNode(root));
+  }),
+)
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     ...PluginRegister,
-  });
-  let tree = podlite.parse(str);
-  const asAst = podlite.toAstResult(tree);
-  return frozenIds()(asAst.interator);
-};
+  })
+  let tree = podlite.parse(str)
+  const asAst = podlite.toAstResult(tree)
+  return frozenIds()(asAst.interator)
+}
 
-it("=Markdown: check line offset", () => {
+it('=Markdown: check line offset', () => {
   const pod = `
 =para test
 =Markdown
 header1
-`;
-  const tree = parse(pod);
+`
+  const tree = parse(pod)
   //   console.log(JSON.stringify(tree, null, 2));
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
   expect(parse(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -143,10 +134,10 @@ header1
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("=Markdown: jsx", () => {
+it('=Markdown: jsx', () => {
   const pod = `
   =para test
       =begin Markdown
@@ -154,9 +145,9 @@ it("=Markdown: jsx", () => {
       =head1 **ss**
       ddd
       =end Markdown
-    `;
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+    `
+  //   render(<Podlite>{pod}</Podlite>);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <div id="id">
       <p>
         test
@@ -172,17 +163,17 @@ it("=Markdown: jsx", () => {
     </p>
     <p>
     </p>
-  `);
-});
+  `)
+})
 
 it("=Markdown: check 'delete' line element", () => {
   const pod = `
 =begin Markdown
 asd ~~asdsd~~
 =end Markdown
-  `;
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+  `
+  //   render(<Podlite>{pod}</Podlite>);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <p id="id">
       asd
       <del>
@@ -191,10 +182,10 @@ asd ~~asdsd~~
     </p>
     <p>
     </p>
-  `);
-});
+  `)
+})
 
-it("=Markdown: table render", () => {
+it('=Markdown: table render', () => {
   const pod = `
   =begin Markdown
   | Syntax      | Description |
@@ -202,10 +193,11 @@ it("=Markdown: table render", () => {
   | Header      | Title       |
   | Paragraph   | Text        |
   =end Markdown
-    `;
+    `
 
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+  //   render(<Podlite>{pod}</Podlite>);
+  //   console.log(root.innerHTML);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <table id="id">
       <caption class="caption">
       </caption>
@@ -238,5 +230,5 @@ it("=Markdown: table render", () => {
     </table>
     <p>
     </p>
-  `);
-});
+  `)
+})

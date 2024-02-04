@@ -6,6 +6,32 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "jsx": "react",
+    // "jsx": "react-jsx",
+    "module": "commonjs",
+    // "target": "ESNext",
+    "target": "es6",
+    // "types": ["react", "node"],
+
+    "lib": ["dom", "esnext", "dom.iterable"],
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+
+    // "strict": true,
+    "noUnusedLocals": false, //true,
+    "noUnusedParameters": false, //true,
+    "noImplicitReturns": false, //true,
+    "noFallthroughCasesInSwitch": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+
+    // "verbatimModuleSyntax": true
+
   },
   "references": [
     {

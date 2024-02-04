@@ -1,11 +1,11 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 11-formatting-code-E 0", () => {
+it('spec: 11-formatting-code-E 0', () => {
   const pod = `
 =para  E<171> xcxc E<0d171; 0o253; 0b10101011; 0xAB>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -89,5 +89,5 @@ it("spec: 11-formatting-code-E 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

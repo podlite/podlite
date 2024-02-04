@@ -1,28 +1,25 @@
-import { isValidateError } from "@podlite/schema";
-import { validateAstTree } from "@podlite/schema";
-import { validateAst } from "@podlite/schema";
-import { frozenIds } from "podlite/src";
-import { md2ast } from "../src/tools";
-import { podlite as podlite_core } from "podlite";
-import { PodliteDocument } from "@podlite/schema";
+import { frozenIds, isValidateError, podlitePluggable } from '@podlite/schema'
+import { validateAstTree } from '@podlite/schema'
+import { md2ast } from '../src/tools'
+import { PodliteDocument } from '@podlite/schema'
 
-const process = (src) => {
-  return frozenIds()(md2ast(src));
-};
+const process = src => {
+  return frozenIds()(md2ast(src))
+}
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({});
-  let tree = podlite.parse(str);
-  const asAst = podlite.toAstResult(tree);
-  return asAst.interator;
-};
-it("=Markdown: parse para", () => {
-  const pod = `text`;
+  let podlite = podlitePluggable().use({})
+  let tree = podlite.parse(str)
+  const asAst = podlite.toAstResult(tree)
+  return asAst.interator
+}
+it('=Markdown: parse para', () => {
+  const pod = `text`
   //   const tree1 = parse(pod);
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -53,29 +50,29 @@ it("=Markdown: parse para", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it.skip("[markdown]: parse para", () => {
-  const pod = `text`;
-  const tree = process(pod);
+it.skip('[markdown]: parse para', () => {
+  const pod = `text`
+  const tree = process(pod)
   // console.log(JSON.stringify(tree, null, 2));
   // console.log(JSON.stringify(parse(`L<https://uerl>`), null, 2));
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   //   expect(process(pod)).toMatchInlineSnapshot();
-});
+})
 
-it("[markdown]: parse headers", () => {
+it('[markdown]: parse headers', () => {
   const pod = `## build
 
 Generate JavaScript documentation as a list of parsed JSDoc
-comments, given a root file as a path`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+comments, given a root file as a path`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -129,14 +126,14 @@ comments, given a root file as a path`;
       "name": "root",
       "type": "block",
     }
-  `);
-});
-it("[markdown]: parse link", () => {
-  const pod = `[#raku IRC channel](https://raku.org/community/irc)`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+  `)
+})
+it('[markdown]: parse link', () => {
+  const pod = `[#raku IRC channel](https://raku.org/community/irc)`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -174,14 +171,14 @@ it("[markdown]: parse link", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
-it("[markdown]: parse image", () => {
-  const pod = `![foo](/url "title")`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+  `)
+})
+it('[markdown]: parse image', () => {
+  const pod = `![foo](/url "title")`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -244,10 +241,10 @@ it("[markdown]: parse image", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: parse refs", () => {
+it('[markdown]: parse refs', () => {
   const pod = `### Table of Contents
 
 -   [lint][1]
@@ -256,11 +253,11 @@ it("[markdown]: parse refs", () => {
 
 [1]: #lint
 
-[2]: #parameters`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+[2]: #parameters`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -408,19 +405,19 @@ it("[markdown]: parse refs", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: broken_refs", () => {
+it('[markdown]: broken_refs', () => {
   const pod = `### Parameters
 
 -   \`comments\` **[Array][17]&lt;[Object][19]>** parsed comments
 -   \`args\` **[Object][19]** Options that can customize the output
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -575,19 +572,19 @@ it("[markdown]: broken_refs", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: parse code", () => {
+it('[markdown]: parse code', () => {
   const pod = `
 \`\`\`javascript
 var documentation = require('documentation');
 \`\`\`
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -628,10 +625,10 @@ var documentation = require('documentation');
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: inline_code", () => {
+it('[markdown]: inline_code', () => {
   const pod = `
 *This text will be italic*
 _This will also be italic_
@@ -640,11 +637,11 @@ _This will also be italic_
 __This will also be bold__
 
 _You **can** combine them_
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -761,18 +758,18 @@ _You **can** combine them_
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: thematic_break", () => {
+it('[markdown]: thematic_break', () => {
   const pod = `
 
 ---
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [],
@@ -781,20 +778,20 @@ it("[markdown]: thematic_break", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: blockquote", () => {
+it('[markdown]: blockquote', () => {
   const pod = `
 As Kanye West said:
 
 > We're living the future so
 > the present is our past.
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -867,20 +864,20 @@ As Kanye West said:
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: parse table", () => {
+it('[markdown]: parse table', () => {
   const pod = `
 First Header | Second Header
 ------------ | -------------
 Content from cell 1 | Content from cell 2
 Content in the first column | Content in the second column
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -1096,17 +1093,17 @@ Content in the first column | Content in the second column
       "name": "root",
       "type": "block",
     }
-  `);
-});
+  `)
+})
 
-it("[markdown]: parse strikethrough", () => {
+it('[markdown]: parse strikethrough', () => {
   const pod = `
 ~~this~~
-`;
-  const tree = process(pod);
-  const r = validateAstTree([tree]);
-  expect(r).toEqual([]);
-  const errorDescribe = isValidateError(r, tree);
+`
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
@@ -1143,10 +1140,10 @@ it("[markdown]: parse strikethrough", () => {
       "name": "root",
       "type": "block",
     }
-  `);
-});
-it("[markdown]: parse diagrams", () => {
-    const pod = `
+  `)
+})
+it('[markdown]: parse diagrams', () => {
+  const pod = `
 \`\`\`mermaids caption="1"
 graph TD;
     A-->B;
@@ -1154,7 +1151,7 @@ graph TD;
     B-->D;
     C-->D;
 \`\`\`
-  `;
-    const tree = process(pod);
-    // console.log(JSON.stringify(tree, null,2 ))
+  `
+  const tree = process(pod)
+  // console.log(JSON.stringify(tree, null,2 ))
 })

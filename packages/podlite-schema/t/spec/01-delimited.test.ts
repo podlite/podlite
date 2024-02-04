@@ -1,12 +1,12 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 01-delimited 0", () => {
+it('spec: 01-delimited 0', () => {
   const pod = `
 =begin foo
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -40,17 +40,17 @@ it("spec: 01-delimited 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 1", () => {
+it('spec: 01-delimited 1', () => {
   const pod = `
 =begin foo
 some text
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -86,18 +86,18 @@ some text
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 2", () => {
+it('spec: 01-delimited 2', () => {
   const pod = `
 =begin foo
 some
 spaced   text
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -135,10 +135,10 @@ spaced   text
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 3", () => {
+it('spec: 01-delimited 3', () => {
   const pod = `
 =begin foo
 paragraph one
@@ -147,8 +147,8 @@ paragraph
 two
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -211,10 +211,10 @@ two
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 4", () => {
+it('spec: 01-delimited 4', () => {
   const pod = `
 =begin something
     =begin somethingelse
@@ -222,8 +222,8 @@ it("spec: 01-delimited 4", () => {
     =end somethingelse
 =end something
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -263,10 +263,10 @@ it("spec: 01-delimited 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 5", () => {
+it('spec: 01-delimited 5', () => {
   const pod = `
 =begin foo
 and so,  all  of  the  villages chased
@@ -288,8 +288,8 @@ Which, as we all know...
     =end bar
 =end foo
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -462,10 +462,10 @@ Which, as we all know...
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 6", () => {
+it('spec: 01-delimited 6', () => {
   const pod = `
 =begin pod
 
@@ -475,8 +475,8 @@ between these two paragraphs
 
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -559,10 +559,10 @@ between these two paragraphs
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 7", () => {
+it('spec: 01-delimited 7', () => {
   const pod = `
 =begin kwid
 
@@ -572,8 +572,8 @@ bla bla
 foo
 =end kwid
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -659,10 +659,10 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 8", () => {
+it('spec: 01-delimited 8', () => {
   const pod = `
 =begin more-discussion-needed
 
@@ -671,8 +671,8 @@ XXX: chop(%has)   should return a  hash  of chopped strings?
 
 =end more-discussion-needed
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -756,10 +756,10 @@ XXX: chop(%has)   should return a  hash  of chopped strings?
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 01-delimited 9", () => {
+it('spec: 01-delimited 9', () => {
   const pod = `
 =begin pod
     =head1 This is a heading block
@@ -780,8 +780,8 @@ it("spec: 01-delimited 9", () => {
         previous directive
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -986,5 +986,5 @@ it("spec: 01-delimited 9", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})

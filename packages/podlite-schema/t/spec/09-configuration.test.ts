@@ -1,14 +1,14 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 09-configuration 0", () => {
+it('spec: 09-configuration 0', () => {
   const pod = `
 =begin pod
     =begin code :allow<B>
     =end code
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -65,17 +65,17 @@ it("spec: 09-configuration 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 1", () => {
+it('spec: 09-configuration 1', () => {
   const pod = `
 =begin pod
     =config head2  :like<head1> :formatted<I>
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -122,17 +122,17 @@ it("spec: 09-configuration 1", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 2", () => {
+it('spec: 09-configuration 2', () => {
   const pod = `
 =begin pod
     =for pod :number(42) :zebras :!sheep :feist<1 2 3 4>
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -207,18 +207,18 @@ it("spec: 09-configuration 2", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 3", () => {
+it('spec: 09-configuration 3', () => {
   const pod = `
 =begin pod
 =for DESCRIPTION :title<presentation template>
 =                :author<John Brown> :pubdate(2011)
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -283,18 +283,18 @@ it("spec: 09-configuration 3", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 4", () => {
+it('spec: 09-configuration 4', () => {
   const pod = `
 =begin pod
 =for table :caption<Table of contents>
     foo bar
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -363,10 +363,10 @@ it("spec: 09-configuration 4", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 5", () => {
+it('spec: 09-configuration 5', () => {
   const pod = `
 =begin pod
     =begin code :allow<B>
@@ -374,8 +374,8 @@ it("spec: 09-configuration 5", () => {
     =end code
 =end pod
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -447,17 +447,17 @@ it("spec: 09-configuration 5", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 6", () => {
+it('spec: 09-configuration 6', () => {
   const pod = `
 =begin table :k1<str> :k2('str') :k3("str") :k4["str"] :k5(Q[str])
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -532,17 +532,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 7", () => {
+it('spec: 09-configuration 7', () => {
   const pod = `
 =begin table :k1<1> :k2(2) :k3[2] :k4[+2000000000] :k5[-2000000000] :k6[+99999999999999999] :k7[-99999999999999999]
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -637,17 +637,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 8", () => {
+it('spec: 09-configuration 8', () => {
   const pod = `
 =begin table :k1(2.3) :k2[-2.3] :k3[+1e4] :k4(3.1e+04) :k5[-3.1E-04]
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -726,17 +726,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 9", () => {
+it('spec: 09-configuration 9', () => {
   const pod = `
 =begin table :k1 :!k2 :k3(True) :k4[True] :k5(False) :k6[False]
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -818,17 +818,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 10", () => {
+it('spec: 09-configuration 10', () => {
   const pod = `
 =begin table :k1(1, 'b c', 2.3, True, False) :k2[1, 'b c', 2.3, True, False]
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -898,17 +898,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 11", () => {
+it('spec: 09-configuration 11', () => {
   const pod = `
 =begin table :k1{a => 1, 2 => 'b', c => True, d => 2.3, e => False}
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -966,17 +966,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 12", () => {
+it('spec: 09-configuration 12', () => {
   const pod = `
 =begin table :k1{2 => 'b => ?', c => ",", d => 2.3}
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1032,17 +1032,17 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
 
-it("spec: 09-configuration 13", () => {
+it('spec: 09-configuration 13', () => {
   const pod = `
 =begin table :k6[+999999999999999999999999999999] :k7[-999999999999999999999999999999]
 foo
 =end table
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -1104,5 +1104,5 @@ foo
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
