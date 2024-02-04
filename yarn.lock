@@ -2761,8 +2761,8 @@ __metadata:
     react-is: ^17.0.2
   peerDependencies:
     mermaid: "*"
-    react: "*"
-    react-dom: "*"
+    react: "^16.0.0 || ^17.0.0 "
+    react-dom: ^16.0.0 || ^17.0.0
     react-is: "*"
   languageName: unknown
   linkType: soft
@@ -2775,11 +2775,11 @@ __metadata:
     codemirror: 5.x
     esbuild: ^0.11.12
     npm-run-all: ^4.1.5
-    react-codemirror2: ^7.2.1
-    react-is: ^17.0.2
+    react-codemirror2: 7.3.0
+    react-is: ^17.0.0
     ts-node: ^9.1.1
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
@@ -2789,7 +2789,9 @@ __metadata:
   resolution: "@podlite/image@workspace:packages/podlite-image"
   dependencies:
     "@podlite/schema": "workspace:^"
-    podlite: "workspace:*"
+  peerDependencies:
+    react: "^16.0.0 || ^17.0.0 "
+    react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
 
@@ -2800,14 +2802,14 @@ __metadata:
     "@podlite/schema": "workspace:*"
     esbuild: ^0.15.16
     npm-run-all: ^4.1.5
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
-    react-is: ^17.0.2
+    react-is: ^17.0.0
     remark-gfm: ^3.0.1
     remark-parse: ^10.0.1
     unified: ^10.1.2
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
@@ -2836,11 +2838,12 @@ __metadata:
   dependencies:
     "@podlite/diagram": "workspace:^"
     "@podlite/schema": "workspace:*"
-    react-is: ^17.0.2
+    podlite: "workspace:*"
+    react-is: ^17.0.0
   peerDependencies:
     "@podlite/diagram": "*"
     "@podlite/schema": "*"
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
@@ -2850,11 +2853,11 @@ __metadata:
   resolution: "@podlite/toc@workspace:packages/podlite-toc"
   dependencies:
     "@podlite/schema": "workspace:*"
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
-    react-is: ^17.0.2
+    react-is: ^17.0.0
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
+    react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
@@ -3109,23 +3112,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^17.x":
-  version: 17.0.11
-  resolution: "@types/react-dom@npm:17.0.11"
+"@types/react-dom@npm:^17.0.2":
+  version: 17.0.25
+  resolution: "@types/react-dom@npm:17.0.25"
   dependencies:
-    "@types/react": "*"
-  checksum: 4d5730dffbef86c887cecad7e3cecda424ce6a64d0b5441c63b5b015d48219868660a2bb1aa15e897e565ad8867fa6b885d4358b04e1c4e589ba4c07c3fda55c
+    "@types/react": ^17
+  checksum: d1e582682478e0848c8d54ea3e89d02047bac6d916266b85ce63731b06987575919653ea7159d98fda47ade3362b8c4d5796831549564b83088e7aa9ce8b60ed
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^17.x":
-  version: 17.0.39
-  resolution: "@types/react@npm:17.0.39"
+"@types/react@npm:^17, @types/react@npm:^17.0.2":
+  version: 17.0.75
+  resolution: "@types/react@npm:17.0.75"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: bf04d3c2894559012710d595553e12b422d3b91cd8f4f7e122d8cb044ba9c2ba17f6e8a4e09581359cc5509ddc59cd8c8fabd6774f3505a40a45393f074d6e6e
+  checksum: aa503d1643049043fa491966cfc23996a56fb69c2018162ac97fb9ed89c9f26b906afd54ba2a81539f0e6c3487b4fa212d24c881a3efbfb8208a15cd45779e0a
   languageName: node
   linkType: hard
 
@@ -3778,7 +3781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"braces@npm:^3.0.1":
+"braces@npm:^3.0.1, braces@npm:^3.0.2":
   version: 3.0.2
   resolution: "braces@npm:3.0.2"
   dependencies:
@@ -5926,6 +5929,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-glob@npm:^3.3.2":
+  version: 3.3.2
+  resolution: "fast-glob@npm:3.3.2"
+  dependencies:
+    "@nodelib/fs.stat": ^2.0.2
+    "@nodelib/fs.walk": ^1.2.3
+    glob-parent: ^5.1.2
+    merge2: ^1.3.0
+    micromatch: ^4.0.4
+  checksum: 900e4979f4dbc3313840078419245621259f349950411ca2fa445a2f9a1a6d98c3b5e7e0660c5ccd563aa61abe133a21765c6c0dec8e57da1ba71d8000b05ec1
+  languageName: node
+  linkType: hard
+
 "fast-json-stable-stringify@npm:2.x, fast-json-stable-stringify@npm:^2.0.0":
   version: 2.1.0
   resolution: "fast-json-stable-stringify@npm:2.1.0"
@@ -6311,7 +6327,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"glob-parent@npm:^5.1.0, glob-parent@npm:^5.1.1":
+"glob-parent@npm:^5.1.0, glob-parent@npm:^5.1.1, glob-parent@npm:^5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
   dependencies:
@@ -8893,6 +8909,16 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"micromatch@npm:^4.0.4":
+  version: 4.0.5
+  resolution: "micromatch@npm:4.0.5"
+  dependencies:
+    braces: ^3.0.2
+    picomatch: ^2.3.1
+  checksum: 02a17b671c06e8fefeeb6ef996119c1e597c942e632a21ef589154f23898c9c6a9858526246abb14f8bca6e77734aa9dcf65476fca47cedfb80d9577d52843fc
+  languageName: node
+  linkType: hard
+
 "mime-db@npm:1.47.0":
   version: 1.47.0
   resolution: "mime-db@npm:1.47.0"
@@ -10027,6 +10053,13 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"picomatch@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "picomatch@npm:2.3.1"
+  checksum: 050c865ce81119c4822c45d3c84f1ced46f93a0126febae20737bd05ca20589c564d6e9226977df859ed5e03dc73f02584a2b0faad36e896936238238b0446cf
+  languageName: node
+  linkType: hard
+
 "pidtree@npm:^0.3.0":
   version: 0.3.1
   resolution: "pidtree@npm:0.3.1"
@@ -10109,9 +10142,10 @@ fsevents@^2.1.2:
     "@podlite/to-jsx": "workspace:*"
     "@types/jest": ^27.4.0
     "@types/node": ^17.0.7
-    "@types/react": ^17.x
-    "@types/react-dom": ^17.x
+    "@types/react": ^17.0.2
+    "@types/react-dom": ^17.0.2
     codemirror: 5.63.3
+    fast-glob: ^3.3.2
     glob: ^7.2.0
     jest: ^26.5.2
     jest-serializer-html: ^7.1.0
@@ -10120,6 +10154,8 @@ fsevents@^2.1.2:
     npm-run-all: ^4.1.5
     podlite: "workspace:*"
     prettier: ^2.5.1
+    react: ^17.0.2
+    react-dom: ^17.0.2
     rimraf: ^3.0.2
     ts-jest: ^26.4.1
     ts-node: ^9.1.1
@@ -10142,6 +10178,9 @@ fsevents@^2.1.2:
     nanoid: 3.1.30
     npm-run-all: ^4.1.5
     typescript: 4.5.5
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0
+    react-dom: ^16.0.0 || ^17.0.0
   languageName: unknown
   linkType: soft
 
@@ -10322,17 +10361,17 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"react-codemirror2@npm:^7.2.1":
-  version: 7.2.1
-  resolution: "react-codemirror2@npm:7.2.1"
+"react-codemirror2@npm:7.3.0":
+  version: 7.3.0
+  resolution: "react-codemirror2@npm:7.3.0"
   peerDependencies:
     codemirror: 5.x
-    react: ">=15.5 <=16.x"
-  checksum: 5c524a073167fbd89429a32f6ccbda83b78890231dd743219fb95335c2fd4c90fecc906fe9410a26b42c3baea62e00800d0e4e85c67965ab05234b6f7d4dd82d
+    react: ">=15.5 <=17.x"
+  checksum: f27cd949da83e203b2bc42f850eaba8c8ce698439267ae57897cb6f573aeab94eaa9b2f8d938af746c6b4f5cb7cf50f82a19e5d275d6c796aa2286bfaa4224e9
   languageName: node
   linkType: hard
 
-"react-dom@npm:^16.0.0 || ^17.0.0":
+"react-dom@npm:^16.0.0 || ^17.0.0, react-dom@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-dom@npm:17.0.2"
   dependencies:
@@ -10345,14 +10384,14 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"react-is@npm:^17.0.1, react-is@npm:^17.0.2":
+"react-is@npm:^17.0.0, react-is@npm:^17.0.1, react-is@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
   languageName: node
   linkType: hard
 
-"react@npm:^16.0.0 || ^17.0.0":
+"react@npm:^16.0.0 || ^17.0.0 , react@npm:^17.0.2":
   version: 17.0.2
   resolution: "react@npm:17.0.2"
   dependencies:
