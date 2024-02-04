@@ -15,11 +15,11 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "index.js",
+    "main": "./lib/index.js",
     "types": "./lib/index.d.ts"
   },
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0"
   },
   "keywords": [
@@ -30,9 +30,9 @@
   ],
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0",
-    "react-is": "^17.0.2",
+    "react-is": "^17.0.0",
     "remark-gfm": "^3.0.1",
     "remark-parse": "^10.0.1",
     "unified": "^10.1.2"

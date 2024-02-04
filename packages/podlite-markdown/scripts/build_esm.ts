@@ -1,14 +1,17 @@
-import { build } from 'esbuild';
-
+import { build, BuildOptions } from 'esbuild';
+const opt: BuildOptions = {
+    tsconfig: 'tsconfig-esm.json',
+}
 build({
   bundle: true,
   entryPoints: ['src/index.tsx'],
   external: ['react', 'react-dom'],
-  minify: true,
+  minify: false,
   format: 'esm',
-  target: 'node14',
+  target: 'es2019',
   sourcemap: true,
   outfile: 'esm/index.js',
+  ...opt
 }).catch((e) => {
   console.log('Build not successful', e.message);
   process.exit(1);
