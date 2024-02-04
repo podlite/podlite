@@ -1,26 +1,17 @@
-import { PodliteDocument, validateAstTree } from "@podlite/schema";
-import { frozenIds, podlite as podlite_core } from "podlite";
-import { PluginRegister } from "../src";
 import React from "react";
-import ReactDOM from "react-dom";
+import { PodliteDocument, frozenIds, podlitePluggable, validateAstTree } from "@podlite/schema";
+import { PluginRegister } from "../src";
+import { renderToStaticMarkup } from 'react-dom/server';
 import { makeTestPodlite } from "@podlite/to-jsx";
 
 const Podlite = makeTestPodlite(
-  podlite_core({ importPlugins: false }).use({
+    podlitePluggable().use({
     ...PluginRegister,
   })
 );
 
-const root = document.body.appendChild(document.createElement("div"));
-
-function render(jsx) {
-  return ReactDOM.render(jsx, root);
-}
-
-afterEach(() => ReactDOM.unmountComponentAtNode(root));
-
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     ...PluginRegister,
   });
   let tree = podlite.parse(str);
@@ -155,8 +146,8 @@ it("=Markdown: jsx", () => {
       ddd
       =end Markdown
     `;
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+//   render(<Podlite>{pod}</Podlite>);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <div id="id">
       <p>
         test
@@ -181,8 +172,8 @@ it("=Markdown: check 'delete' line element", () => {
 asd ~~asdsd~~
 =end Markdown
   `;
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+//   render(<Podlite>{pod}</Podlite>);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <p id="id">
       asd
       <del>
@@ -204,8 +195,9 @@ it("=Markdown: table render", () => {
   =end Markdown
     `;
 
-  render(<Podlite>{pod}</Podlite>);
-  expect(root.innerHTML).toMatchInlineSnapshot(`
+//   render(<Podlite>{pod}</Podlite>);
+//   console.log(root.innerHTML);
+  expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <table id="id">
       <caption class="caption">
       </caption>
@@ -240,3 +232,5 @@ it("=Markdown: table render", () => {
     </p>
   `);
 });
+
+  

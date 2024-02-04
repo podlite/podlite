@@ -1,9 +1,6 @@
-import { isValidateError } from "@podlite/schema";
+import { frozenIds, isValidateError, podlitePluggable } from "@podlite/schema";
 import { validateAstTree } from "@podlite/schema";
-import { validateAst } from "@podlite/schema";
-import { frozenIds } from "podlite/src";
 import { md2ast } from "../src/tools";
-import { podlite as podlite_core } from "podlite";
 import { PodliteDocument } from "@podlite/schema";
 
 const process = (src) => {
@@ -11,7 +8,7 @@ const process = (src) => {
 };
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({});
+  let podlite = podlitePluggable().use({});
   let tree = podlite.parse(str);
   const asAst = podlite.toAstResult(tree);
   return asAst.interator;
