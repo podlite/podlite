@@ -1,4 +1,4 @@
-var fcparser = require("./grammarfc");
+import * as fcparser  from "./grammarfc";
 import makeTransformer from './helpers/makeTransformer'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
