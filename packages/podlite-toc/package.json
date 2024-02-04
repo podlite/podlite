@@ -12,7 +12,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "index.js",
+    "main": "lib/index.js",
     "types": "./lib/index.d.ts"
   },
   "keywords": [
@@ -23,13 +23,13 @@
     "markup-language"
   ],
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0",
-    "react-is": "^17.0.2"
+    "react-is": "^17.0.0"
   }
 }
