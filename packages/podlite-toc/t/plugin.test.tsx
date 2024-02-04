@@ -1,15 +1,15 @@
 import {
+    frozenIds,
   getFromTree,
   PodliteDocument,
+  podlitePluggable,
   validatePodliteAst,
 } from "@podlite/schema";
-import { podlite as podlite_core } from "podlite";
 import { plugin } from "../src/index";
 import Image from "@podlite/image";
-import { frozenIds } from "podlite/src";
 
 export const parse = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     Toc: plugin,
   });
   let tree = podlite.parse(str);
@@ -18,7 +18,7 @@ export const parse = (str: string): PodliteDocument => {
 };
 
 export const parseImage = (str: string): PodliteDocument => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     Toc: plugin,
     Image,
   });
@@ -28,7 +28,7 @@ export const parseImage = (str: string): PodliteDocument => {
 };
 
 const parseToHtml = (str: string): string => {
-  let podlite = podlite_core({ importPlugins: false }).use({
+  let podlite = podlitePluggable().use({
     Toc: plugin,
     Image,
   });
