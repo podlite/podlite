@@ -2,8 +2,8 @@
   "name": "@podlite/to-jsx",
   "version": "0.0.16",
   "description": "The lightweight, customizable React podlite component.",
-  "types": "lib/index.d.ts",
   "main": "src/index.tsx",
+  "module": "./lib/index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -12,7 +12,8 @@
   "dependencies": {
     "@podlite/diagram": "workspace:^",
     "@podlite/schema": "workspace:*",
-    "react-is": "^17.0.2"
+    "podlite": "workspace:*",
+    "react-is": "^17.0.0"
   },
   "keywords": [
     "markdown",
@@ -22,12 +23,13 @@
   ],
   "publishConfig": {
     "access": "public",
-    "main": "lib/index.js"
+    "main": "lib/index.js",
+    "types": "./lib/index.d.ts"
   },
   "peerDependencies": {
     "@podlite/diagram": "*",
     "@podlite/schema": "*",
-    "react": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 ",
     "react-dom": "^16.0.0 || ^17.0.0"
   }
 }
