@@ -10,7 +10,7 @@ build({
   format: 'esm',
   target: 'es2019',
   sourcemap: true,
-  outfile: 'esm/index.js',
+  outfile: 'lib/index.esm.js',
   ...opt
 }).catch((e) => {
   console.log('Build not successful', e.message);

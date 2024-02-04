@@ -9,7 +9,7 @@ build({
   target: 'node14',
   platform: 'node',
   sourcemap: true,
-  outfile: 'lib/index.js',
+  outfile: 'lib/index.cjs',
 }).catch((e) => {
   console.log('Build not successful', e.message);
   process.exit(1);

@@ -4,14 +4,14 @@
   "description": "=Markdown - markdown text block",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
-  "module": "esm/index.js",
+  "module": "lib/index.esm.js",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf dist lib esm tsconfig.tsbuildinfo",
     "test": "yarn g:jest  --passWithNoTests",
     "build": "run-p build:cjs  build:esm",
     "build:cjs": "ts-node ./scripts/build.ts && tsc  --declaration --emitDeclarationOnly",
-    "build:esm": "ts-node ./scripts/build_esm.ts &&  tsc  --declaration --emitDeclarationOnly --outDir esm"
+    "build:esm": "ts-node ./scripts/build_esm.ts"
   },
   "publishConfig": {
     "access": "public",
