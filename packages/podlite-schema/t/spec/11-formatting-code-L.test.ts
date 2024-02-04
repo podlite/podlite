@@ -1,11 +1,11 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 11-formatting-code-L 0", () => {
+it('spec: 11-formatting-code-L 0', () => {
   const pod = `
 =item L<https://www.python.org/dev/peps/pep-0001/#what-is-a-pep>
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -72,5 +72,5 @@ it("spec: 11-formatting-code-L 0", () => {
         "type": "list",
       },
     ]
-  `);
-});
+  `)
+})

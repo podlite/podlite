@@ -1,10 +1,11 @@
 # =Diagram block
+
 ### `=Diagram` - use diagrams
 
 To render beautiful graphs, sequence and Gantt diagrams and flowcharts, one can use the `=Diagram` blocks.
 
 ```
-=begin Diagram 
+=begin Diagram
 graph LR
         A-->B
         B-->C
@@ -12,6 +13,7 @@ graph LR
         D-->C
 =end Diagram
 ```
+
 ![sample1](./doc/diagram-sample1.png)
 
 [Open this example in pod6.in](https://pod6.in/#p=%3Dbegin+Diagram+%0Agraph+LR%0A++++++++A--%3EB%0A++++++++B--%3EC%0A++++++++C--%3EA%0A++++++++D--%3EC%0A%3Dend+Diagram)
@@ -26,6 +28,7 @@ graph LR
     B --> D{Rhombus}
     C --> D
 ```
+
 ![Flowchart](./doc/diagram-sample2.png)
 
 [Open this example in pod6.in](https://pod6.in/#p=%3Dhead1+Graph%0A%0A%3DDiagram%0Agraph+LR%0A++A--%3EB%0A++B--%3EC%0A++C--%3EA%0A++D--%3EC%0A%0A%3DDiagram%0Agraph+LR%0A++++A%5BSquare+Rect%5D+--+Link+text+--%3E+B%28%28Circle%29%29%0A++++A+--%3E+C%28Round+Rect%29%0A++++B+--%3E+D%7BRhombus%7D%0A++++C+--%3E+D%0A%0A%0A+%0A%0A)
@@ -39,9 +42,11 @@ graph TD
    C -->|No| D{Filter warning?} -->|Yes| I(Replace or clean filter)
    D -->|No| F(Send for repair)
 ```
+
 ![Flowchart](./doc/diagram-sample6.png)
 
 [Open this example in pod6.in](https://pod6.in/#p=%3Dhead1+Flowchart%0A%3DDiagram%0Agraph+TD%0A+++A%28Coffee+machine+%3Cbr%3Enot+working%29+--%3E+B%7BMachine+has+power%3F%7D%0A+++B+--%3E%7CNo%7C+H%28Plug+in+and+turn+on%29%0A+++B+--%3E%7CYes%7C+C%7BOut+of+beans+or+water%3F%7D+--%3E%7CYes%7C+G%28Refill+beans+and+water%29%0A+++C+--%3E%7CNo%7C+D%7BFilter+warning%3F%7D+--%3E%7CYes%7C+I%28Replace+or+clean+filter%29%0A+++D+--%3E%7CNo%7C+F%28Send+for+repair%29)
+
 #### UML sequence diagram
 
 ```
@@ -57,13 +62,12 @@ sequenceDiagram
     Admin->>Professor: Assign student to tutor
     Professor-->>Admin: Student is assigned
 ```
+
 ![Flowchart](./doc/diagram-sample3.png)
 
 [Open this example in pod6.in](https://pod6.in/#p=+%3Dhead2+UML+sequence+diagram%0A%0A%3DDiagram%0AsequenceDiagram%0A++++autonumber%0A++++Student-%3E%3EAdmin%3A+Can+I+enrol+this+semester%3F%0A++++loop+enrolmentCheck%0A++++++++Admin-%3E%3EAdmin%3A+Check+previous+results%0A++++end%0A++++Note+right+of+Admin%3A+Exam+results+may+%3Cbr%3E+be+delayed%0A++++Admin--%3E%3EStudent%3A+Enrolment+success%0A++++Admin-%3E%3EProfessor%3A+Assign+student+to+tutor%0A++++Professor--%3E%3EAdmin%3A+Student+is+assigned)
 
-
 #### UML class diagram
-
 
 ```
 =Diagram
@@ -91,13 +95,13 @@ classDiagram
       +int postalCode
       +String country
       -validate()
-      +outputAsLabel()  
+      +outputAsLabel()
     }
 ```
+
 ![Flowchart](./doc/diagram-sample4.png)
 
 [Open this example in pod6.in](https://pod6.in/#p=%3Dhead1+%0AUML+class+diagram%0A%0A%3DDiagram%0AclassDiagram%0A+++Person+%3C%7C--+Student%0A+++Person+%3C%7C--+Professor%0A+++Person+%3A+%2BString+name%0A+++Person+%3A+%2BString+phoneNumber%0A+++Person+%3A+%2BString+emailAddress%0A+++Person%3A+%2BpurchaseParkingPass%28%29%0A+++Address+%221%22+%3C--+%220..1%22+Person%3Alives+at%0A+++class+Student%7B%0A++++++%2Bint+studentNumber%0A++++++%2Bint+averageMark%0A++++++%2BisEligibleToEnrol%28%29%0A++++++%2BgetSeminarsTaken%28%29%0A++++%7D%0A++++class+Professor%7B%0A++++++%2Bint+salary%0A++++%7D%0A++++class+Address%7B%0A++++++%2BString+street%0A++++++%2BString+city%0A++++++%2BString+state%0A++++++%2Bint+postalCode%0A++++++%2BString+country%0A++++++-validate%28%29%0A++++++%2BoutputAsLabel%28%29++%0A++++%7D)
-
 
 ## Contributing
 
@@ -107,15 +111,15 @@ In order to keep the match between this documentation and the last release, plea
 
 ## Useful links
 
-📖 *Project site*: [podlite.org](https://podlite.org)
+📖 _Project site_: [podlite.org](https://podlite.org)
 
-📌 *Github*: [github.com/podlite](https://github.com/podlite/)  🤩
+📌 _Github_: [github.com/podlite](https://github.com/podlite/) 🤩
 
-🖥️ *Online editor*: [pod6.in](https://pod6.in/)
+🖥️ _Online editor_: [pod6.in](https://pod6.in/)
 
-🖥️ *Desktop editor/viewer*: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
+🖥️ _Desktop editor/viewer_: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
 
-📚 *Podlite for web* - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)
+📚 _Podlite for web_ - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)
 
 ## AUTHOR
 

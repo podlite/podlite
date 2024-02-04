@@ -1,42 +1,36 @@
 // import  * as Image  from '../src';
-import {
-  frozenIds,
-  getFromTree,
-  PodliteDocument,
-  podlitePluggable,
-  validateAstTree,
-} from "@podlite/schema";
-import Image from "../src/index";
+import { frozenIds, getFromTree, PodliteDocument, podlitePluggable, validateAstTree } from '@podlite/schema'
+import Image from '../src/index'
 
 const parse = (str: string): PodliteDocument => {
-  let podlite = podlitePluggable().use({ Image });
-  let tree = podlite.parse(str);
-  const asAst = podlite.toAst(tree);
-  return asAst;
-};
+  let podlite = podlitePluggable().use({ Image })
+  let tree = podlite.parse(str)
+  const asAst = podlite.toAst(tree)
+  return asAst
+}
 
 const parseToHtml = (str: string): string => {
-  let podlite = podlitePluggable().use({ Image });
-  let tree = podlite.parse(str);
-  const asAst = podlite.toAst(tree);
-  return podlite.toHtml(frozenIds()(asAst)).toString();
-};
+  let podlite = podlitePluggable().use({ Image })
+  let tree = podlite.parse(str)
+  const asAst = podlite.toAst(tree)
+  return podlite.toHtml(frozenIds()(asAst)).toString()
+}
 
 const cleanHTML = (html: string) => {
-  return html.replace(/\n+/g, "");
-};
+  return html.replace(/\n+/g, '')
+}
 
-it("AST validate", () => {
+it('AST validate', () => {
   const p = parse(`=Image test.png
-    short caption`);
-  const Image = getFromTree(p, "Image")[0];
-  const r = validateAstTree([Image]);
-  expect(r).toEqual([]);
-});
-it("=Image minimal", () => {
+    short caption`)
+  const Image = getFromTree(p, 'Image')[0]
+  const r = validateAstTree([Image])
+  expect(r).toEqual([])
+})
+it('=Image minimal', () => {
   const pod = `=for Image 
-test`;
-  const html = parseToHtml(pod);
+test`
+  const html = parseToHtml(pod)
   expect(html).toMatchInlineSnapshot(`
     <div class="image_block"
          id="id"
@@ -45,14 +39,14 @@ test`;
            alt="undefined"
       >
     </div>
-  `);
-});
+  `)
+})
 
-it("Image", () => {
+it('Image', () => {
   const pod = `=for Image :id<111> :alt('testAlt') :caption('testCaption') :link('testLink')
 test.png
-`;
-  const html = parseToHtml(pod);
+`
+  const html = parseToHtml(pod)
   expect(html).toMatchInlineSnapshot(`
     <div class="image_block"
          id="111"
@@ -68,5 +62,5 @@ test.png
         </p>
       </div>
     </div>
-  `);
-});
+  `)
+})

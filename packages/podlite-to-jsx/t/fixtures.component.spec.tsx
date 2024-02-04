@@ -4,11 +4,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 const fs = require('fs')
 const path = require('path')
-const glob = require('glob') 
+const glob = require('glob')
 
-
-
-// load examples from fixtures src 
+// load examples from fixtures src
 /**
  * 
  * @returns 
@@ -18,32 +16,32 @@ const glob = require('glob')
     testFile: 't/fixtures/00-maintests_5.txt' }, 
  */
 const allSrcFixtures = () => {
-    const pathToTests = path.resolve(__dirname, './fixtures-src')
-    const files = glob.sync(`${pathToTests}/*.t`)
-    const loaded = files.map( file => {
-        const d = fs.readFileSync(file)
-        const  s = `${d}`.split(/#---+\n/)
-                .filter( t => t.match(/^\s*=/))
-                .map( (text,i) => {
-                    const { dir, name } =  path.parse(file)
-                    const testFile = `t/fixtures/${name}_${i}.txt`
-                    return {file,
-                    id:i,
-                    text,
-                    testFile,
-                }});
-        return s
-        }
-    ).flat()
-    return loaded
+  const pathToTests = path.resolve(__dirname, './fixtures-src')
+  const files = glob.sync(`${pathToTests}/*.t`)
+  const loaded = files
+    .map(file => {
+      const d = fs.readFileSync(file)
+      const s = `${d}`
+        .split(/#---+\n/)
+        .filter(t => t.match(/^\s*=/))
+        .map((text, i) => {
+          const { dir, name } = path.parse(file)
+          const testFile = `t/fixtures/${name}_${i}.txt`
+          return { file, id: i, text, testFile }
+        })
+      return s
+    })
+    .flat()
+  return loaded
 }
 const t = allSrcFixtures()
 t
 
-describe("run parser tests", () => {
-    allSrcFixtures().map(i => test(i.file, ()=>{
-        const result = renderToStaticMarkup(<Podlite>{i.text}</Podlite>)
-        expect(result).not.toBeNull()
-}
-))
+describe('run parser tests', () => {
+  allSrcFixtures().map(i =>
+    test(i.file, () => {
+      const result = renderToStaticMarkup(<Podlite>{i.text}</Podlite>)
+      expect(result).not.toBeNull()
+    }),
+  )
 })

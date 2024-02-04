@@ -1,6 +1,6 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "The lightweight, customizable React podlite component.",
   "main": "src/index.tsx",
   "module": "./lib/index.js",

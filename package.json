@@ -1,7 +1,7 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.32",
-  "description": "Adaptation of pod6 markup language",
+  "version": "0.0.33",
+  "description": "Podlite - a lightweight block-based markup language",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -20,7 +20,18 @@
     "test": "jest",
     "g:jest": "cd $INIT_CWD && jest",
     "g:tsc": "yarn tsc",
-    "g:tsctest": "cd $INIT_CWD && tsc"
+    "g:tsctest": "cd $INIT_CWD && tsc",
+    "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,json,md}'"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "endOfLine": "lf",
+    "tabWidth": 2,
+    "jsxBracketSameLine": false,
+    "printWidth": 120
   },
   "keywords": [
     "pod6",

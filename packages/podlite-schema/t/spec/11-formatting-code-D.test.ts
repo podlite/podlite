@@ -1,13 +1,13 @@
-import { toTree, toHtml } from "../..";
+import { toTree, toHtml } from '../..'
 
-it("spec: 11-formatting-code-D 0", () => {
+it('spec: 11-formatting-code-D 0', () => {
   const pod = `
 =para
   A D<formatting code|formatting codes;formatters> provides a way
     to add inline mark-up to a D<piece> of text.
 
-`;
-  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 });
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
   expect(tree).toMatchInlineSnapshot(`
     Array [
       Object {
@@ -81,5 +81,5 @@ it("spec: 11-formatting-code-D 0", () => {
         "type": "blankline",
       },
     ]
-  `);
-});
+  `)
+})
