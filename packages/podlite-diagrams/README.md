@@ -105,6 +105,18 @@ This is an open source program. Feel free to fork and contribute.
 
 In order to keep the match between this documentation and the last release, please contribute and pull requests on the dedicated develop branch.
 
+## Useful links
+
+📖 *Project site*: [podlite.org](https://podlite.org)
+
+📌 *Github*: [github.com/podlite](https://github.com/podlite/)  🤩
+
+🖥️ *Online editor*: [pod6.in](https://pod6.in/)
+
+🖥️ *Desktop editor/viewer*: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
+
+📚 *Podlite for web* - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)
+
 ## AUTHOR
 
 Copyright (c) 2021-2024 Aliaksandr Zahatski

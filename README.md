@@ -1,9 +1,13 @@
 
+
+<div align="center">
+
 [![Podlite](https://github.com/zag/specs/raw/podlite-specification/assets/podlite_logo_256x256.png)](https://podlite.org)
 
+</div>
 
 
-**Podlite is a block-based markup language designed for flexibility and ease of use.**
+**Podlite is a lightweight block-based markup language designed for flexibility and ease of use.**
 
 Unbound by any specific domain, programming language, or concept, Podlite stands out as a universal markup language. It's versatile enough to be successfully implemented across various development fields, from web development to scientific research.
 
@@ -16,3 +20,14 @@ One of the key features of Podlite is its extensibility. This allows for definin
 Its flexibility makes it an ideal tool for creating documentation, blogs, educational materials, and much more.
 
 Podlite aims to provide users with a means for creativity and expressing ideas in a structured form, while ensuring ease of use and high flexibility in content creation.
+## Useful links
+
+📖 *Project site*: [podlite.org](https://podlite.org)
+
+📌 *Github*: [github.com/podlite](https://github.com/podlite/)  🤩
+
+🖥️ *Online editor*: [pod6.in](https://pod6.in/)
+
+🖥️ *Desktop editor/viewer*: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
+
+📚 *Podlite for web* - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)

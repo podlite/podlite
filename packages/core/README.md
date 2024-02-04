@@ -1,4 +1,3 @@
-# @podlite/to-jsx
 
 
 <div align="center">
