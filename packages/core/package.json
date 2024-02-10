@@ -11,7 +11,7 @@
     "watch:ts": "tsc -w --pretty",
     "watch:tests": "jest --watch -t \"test\"",
     "set-linked": "yarn g:set-linked",
-    "set-unlinked": "yarn g:set-linked"
+    "set-unlinked": "yarn g:set-unlinked"
   },
   "keywords": [
     "podlite",

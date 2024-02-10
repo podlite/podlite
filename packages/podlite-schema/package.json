@@ -1,7 +1,7 @@
 {
   "name": "@podlite/schema",
   "version": "0.0.13",
-  "description": "podlite schema",
+  "description": "AST tools for Podlite markup language",
   "main": "src/index.ts",
   "types": "./lib/index.d.ts",
   "license": "MIT",

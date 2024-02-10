@@ -1,9 +1,9 @@
 {
   "name": "@podlite/to-jsx",
   "version": "0.0.17",
-  "description": "The lightweight, customizable React podlite component.",
+  "description": "JSX converter for Podlite markup language",
   "main": "src/index.tsx",
-  "module": "./lib/index.js",
+  "module": "lib/index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
