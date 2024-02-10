@@ -2,7 +2,7 @@
   "name": "podlite",
   "version": "0.0.26",
   "description": "Podlite - a lightweight block-based markup language",
-  "main": "src/index.ts",
+  "main": "./src/index.ts",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
@@ -10,7 +10,8 @@
     "watch": "run-p -r watch:*",
     "watch:ts": "tsc -w --pretty",
     "watch:tests": "jest --watch -t \"test\"",
-    "set-linked": "yarn g:set-linked"
+    "set-linked": "yarn g:set-linked",
+    "set-unlinked": "yarn g:set-linked"
   },
   "keywords": [
     "podlite",
