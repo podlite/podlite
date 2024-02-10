@@ -2,7 +2,7 @@
   "name": "@podlite/image",
   "version": "0.0.12",
   "description": "image",
-  "main": "src/index.tsx",
+  "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
   "license": "MIT",
   "scripts": {

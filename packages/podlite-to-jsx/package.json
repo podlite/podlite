@@ -2,8 +2,7 @@
   "name": "@podlite/to-jsx",
   "version": "0.0.17",
   "description": "JSX converter for Podlite markup language",
-  "main": "src/index.tsx",
-  "module": "lib/index.js",
+  "main": "./src/index.tsx",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -24,7 +23,8 @@
   "publishConfig": {
     "access": "public",
     "main": "lib/index.js",
-    "types": "./lib/index.d.ts"
+    "types": "./lib/index.d.ts",
+    "module": "lib/index.js"
   },
   "peerDependencies": {
     "@podlite/diagram": "*",
