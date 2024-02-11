@@ -29,6 +29,7 @@
     "build:esm": "yarn g:tsctest -p tsconfig.esm.json",
     "build:pegjs": "pegjs -o src/grammar.js src/grammar.pegjs && pegjs -o src/grammarfc.js src/grammarfc.pegjs",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
+    "watch:pegjs": "npx nodemon -e pegjs --exec 'yarn' build:pegjs",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "keywords": [
