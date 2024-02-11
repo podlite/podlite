@@ -1385,23 +1385,29 @@ function peg$parse(input, options) {
     s2 = peg$currPos;
     s3 = peg$parse_();
     if (s3 !== peg$FAILED) {
-      s4 = peg$currPos;
-      s5 = peg$parsemarkers();
-      if (s5 !== peg$FAILED) {
-        s6 = peg$parsestrictIdentifier();
-        if (s6 !== peg$FAILED) {
-          s5 = [s5, s6];
-          s4 = s5;
-        } else {
-          peg$currPos = s4;
-          s4 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s4;
-        s4 = peg$FAILED;
-      }
+      s4 = peg$parsemarkerConfig();
       if (s4 === peg$FAILED) {
-        s4 = peg$parsemarkerAbbreviatedBlock();
+        s4 = peg$parsemarkerAlias();
+        if (s4 === peg$FAILED) {
+          s4 = peg$currPos;
+          s5 = peg$parsemarkers();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parsestrictIdentifier();
+            if (s6 !== peg$FAILED) {
+              s5 = [s5, s6];
+              s4 = s5;
+            } else {
+              peg$currPos = s4;
+              s4 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s4;
+            s4 = peg$FAILED;
+          }
+          if (s4 === peg$FAILED) {
+            s4 = peg$parsemarkerAbbreviatedBlock();
+          }
+        }
       }
       if (s4 !== peg$FAILED) {
         s3 = [s3, s4];

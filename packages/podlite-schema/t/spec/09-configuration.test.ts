@@ -1,4 +1,4 @@
-import { toTree, toHtml } from '../..'
+import { toTree } from '../..'
 
 it('spec: 09-configuration 0', () => {
   const pod = `

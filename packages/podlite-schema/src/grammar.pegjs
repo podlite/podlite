@@ -110,7 +110,9 @@ strictIdentifier =  name:identifier &{ return isSupportedBlockName(name)} { retu
 markerAbbreviatedBlock = '='  name:strictIdentifier { return name }
 markers = markerBegin / markerEnd / markerFor / markerConfig / markerAlias
 Text "text" = $(c:char+)
-text_content =  !( _ ( markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
+// TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
+// becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'
+text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             { return { type:"para", value:text(), error:true, location:location()}}
 /** 
