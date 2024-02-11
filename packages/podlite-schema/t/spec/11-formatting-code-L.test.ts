@@ -1,4 +1,4 @@
-import { toTree, toHtml } from '../..'
+import { toTree, toHtml } from '../../src'
 
 it('spec: 11-formatting-code-L 0', () => {
   const pod = `
@@ -70,6 +70,48 @@ it('spec: 11-formatting-code-L 0', () => {
         "level": 1,
         "list": "itemized",
         "type": "list",
+      },
+    ]
+  `)
+})
+it('spec: 11-formatting-code-L 1', () => {
+  const pod = `L«tex C<tsdsd>|https://www.text»`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "content": Array [
+          Object {
+            "content": Array [
+              "tex ",
+              Object {
+                "content": Array [
+                  "tsdsd",
+                ],
+                "name": "C",
+                "type": "fcode",
+              },
+            ],
+            "meta": "https://www.text",
+            "name": "L",
+            "type": "fcode",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 33,
+            "line": 1,
+            "offset": 32,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 1,
+            "offset": 0,
+          },
+        },
+        "margin": "",
+        "text": "L«tex C<tsdsd>|https://www.text»",
+        "type": "para",
       },
     ]
   `)
