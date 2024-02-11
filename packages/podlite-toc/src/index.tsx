@@ -88,6 +88,7 @@ export const plugin: Plugin = {
   },
 }
 export const PluginRegister: Plugins = {
-  Toc: plugin,
+  Toc: plugin, //TODO: deprecate it
+  toc: plugin,
 }
 export default plugin

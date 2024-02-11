@@ -32,6 +32,7 @@
         'para', 
         'pod',
         'table',
+        'toc',
           ].includes(name) 
           || 
           isSemanticBlock(name) 
@@ -224,7 +225,7 @@ delimitedBlockRaw =
     markerBegin name:strictIdentifier _ config:pod_configuration 
     &{ 
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -443,7 +444,7 @@ abbreviatedBlockRaw =
   name:markerAbbreviatedBlock _ emptyline? 
     &{  
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -541,7 +542,7 @@ paragraphBlockRaw =
   marker:markerFor  name:strictIdentifier _ config:pod_configuration 
       &{  
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|toc|data/))
         || 
         isNamedBlock(name)
       )

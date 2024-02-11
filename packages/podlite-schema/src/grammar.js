@@ -284,7 +284,7 @@ function peg$parse(input, options) {
       peg$c117 = function(number) { return parseInt(number,10) },
       peg$c118 = function(vmargin, name, config) { 
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -441,7 +441,7 @@ function peg$parse(input, options) {
       peg$c153 = function(line) { return { text: text(), type: "ambient1"}},
       peg$c154 = function(vmargin, name) {  
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -516,7 +516,7 @@ function peg$parse(input, options) {
         },
       peg$c168 = function(vmargin, marker, name, config) {  
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -5981,6 +5981,7 @@ function peg$parse(input, options) {
           'para', 
           'pod',
           'table',
+          'toc',
             ].includes(name) 
             || 
             isSemanticBlock(name) 
