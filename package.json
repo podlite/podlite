@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "description": "Podlite - a lightweight block-based markup language",
   "private": true,
   "workspaces": [
@@ -29,7 +29,7 @@
     "g:set-upversion": "cd $INIT_CWD && yarn g:linked-command --set-upversion",
     "set-linked": "yarn workspaces foreach -pt --all --no-private -v run g:set-linked",
     "set-unlinked": "yarn workspaces foreach -pt --all --no-private -v run g:set-unlinked",
-    "set-upversion": "yarn workspaces foreach -pt --all --no-private -v run g:set-upversion"
+    "set-upversion": "yarn workspaces foreach -pt --all -v run g:set-upversion"
   },
   "keywords": [
     "pod6",
