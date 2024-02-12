@@ -26,8 +26,10 @@
     "g:linked-command": "cd $INIT_CWD && node ../../scripts/switchLink.mjs",
     "g:set-linked": "cd $INIT_CWD && yarn g:linked-command --set-linked",
     "g:set-unlinked": "cd $INIT_CWD && yarn g:linked-command --set-unlinked",
+    "g:set-upversion": "cd $INIT_CWD && yarn g:linked-command --set-upversion",
     "set-linked": "yarn workspaces foreach -pt --all --no-private -v run g:set-linked",
-    "set-unlinked": "yarn workspaces foreach -pt --all --no-private -v run g:set-unlinked"
+    "set-unlinked": "yarn workspaces foreach -pt --all --no-private -v run g:set-unlinked",
+    "set-upversion": "yarn workspaces foreach -pt --all --no-private -v run g:set-upversion"
   },
   "keywords": [
     "pod6",
