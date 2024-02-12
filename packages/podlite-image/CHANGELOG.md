@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.13
+
+- update deps
+
 ## 0.0.12
 
 - refactor tests

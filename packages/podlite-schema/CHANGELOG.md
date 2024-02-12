@@ -2,6 +2,13 @@
 
 ## Upcoming
 
+## 0.0.14
+
+- fix parse `=alias` and `=config` directives
+- improve brackets support for C<> and L<> codes
+- support for `=toc` block
+- support for `=markdown` block
+
 ## 0.0.13
 
 - refactor

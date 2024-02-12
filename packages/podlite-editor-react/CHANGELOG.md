@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.20
+
+- support for `=toc` block
+- support for `=markdown` block
+
 ## 0.0.19
 
 - fix build
