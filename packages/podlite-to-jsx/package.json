@@ -1,11 +1,11 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "JSX converter for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "yarn g:build",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
@@ -14,6 +14,13 @@
     "podlite": "workspace:*",
     "react-is": "^17.0.0"
   },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "keywords": [
     "markdown",
     "podlite",
@@ -24,7 +31,7 @@
     "access": "public",
     "main": "lib/index.js",
     "types": "./lib/index.d.ts",
-    "module": "lib/index.js"
+    "module": "./esm/index.js"
   },
   "peerDependencies": {
     "@podlite/diagram": "*",

@@ -1,4 +1,4 @@
-# @podlite/editor-react
+# @podlite/markdown
 
 <div align="center">
 

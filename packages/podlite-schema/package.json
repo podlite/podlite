@@ -1,6 +1,6 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "AST tools for Podlite markup language",
   "main": "./src/index.ts",
   "types": "./lib/index.d.ts",
@@ -8,6 +8,7 @@
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",
+    "esm",
     "schema/*",
     "README.md",
     "CHANGELOG.md"
@@ -19,14 +20,14 @@
   "publishConfig": {
     "access": "public",
     "main": "lib/index.js",
-    "types": "./lib/index.d.ts"
+    "types": "./lib/index.d.ts",
+    "module": "./esm/index.js"
   },
   "scripts": {
-    "clean": "rm -rf lib esm tsconfig.tsbuildinfo",
-    "build": "run-s build:pegjs build:ts build:ast ",
+    "clean": "rm -rf lib esm *.tsbuildinfo",
+    "build": "run-s build:pegjs build_lib build:ast ",
+    "build_lib": "yarn g:build",
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
-    "build:ts": "yarn g:tsc --build $INIT_CWD",
-    "build:esm": "yarn g:tsctest -p tsconfig.esm.json",
     "build:pegjs": "pegjs -o src/grammar.js src/grammar.pegjs && pegjs -o src/grammarfc.js src/grammarfc.pegjs",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
     "watch:pegjs": "npx nodemon -e pegjs --exec 'yarn' build:pegjs",

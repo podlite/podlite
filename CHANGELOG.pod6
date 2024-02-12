@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=head1 0.0.35
+- fix packages build
+
 =head1 0.0.34
 # @podlite/toc@0.0.7
 - `=toc` now is standard block
