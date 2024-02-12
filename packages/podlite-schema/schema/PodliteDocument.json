@@ -217,6 +217,9 @@
                     "$ref": "#/definitions/BlockToc"
                 },
                 {
+                    "$ref": "#/definitions/BlockMarkdown"
+                },
+                {
                     "$ref": "#/definitions/BlockNested"
                 },
                 {
@@ -1271,6 +1274,9 @@
                                 "$ref": "#/definitions/BlockToc"
                             },
                             {
+                                "$ref": "#/definitions/BlockMarkdown"
+                            },
+                            {
                                 "$ref": "#/definitions/BlockNested"
                             },
                             {
@@ -1954,6 +1960,58 @@
                     "type": "string",
                     "enum": [
                         "toc"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
+        "BlockMarkdown": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "markdown"
                     ]
                 },
                 "type": {

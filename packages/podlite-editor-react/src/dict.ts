@@ -179,15 +179,15 @@ table
   },
 
   {
-    displayText: 'Markdown',
-    text: `=begin Markdown
+    displayText: 'markdown',
+    text: `=begin markdown
 
   {}
 
-=end Markdown
+=end markdown
 `,
   },
-  // Markdown
+  // markdown mode
 
   {
     displayText: 'head1',
