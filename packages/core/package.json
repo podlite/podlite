@@ -6,13 +6,18 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
-    "build": "tsc",
+    "build": "yarn g:build",
     "watch": "run-p -r watch:*",
     "watch:ts": "tsc -w --pretty",
-    "watch:tests": "jest --watch -t \"test\"",
-    "set-linked": "yarn g:set-linked",
-    "set-unlinked": "yarn g:set-unlinked"
+    "watch:tests": "jest --watch -t \"test\""
   },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "keywords": [
     "podlite",
     "markup",
@@ -45,6 +50,8 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "lib/index.js"
+    "main": "lib/index.js",
+    "types": "./lib/index.d.ts",
+    "module": "./esm/index.js"
   }
 }

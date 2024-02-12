@@ -7,14 +7,23 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "tsc",
+    "build": "yarn g:build",
     "test": "yarn g:jest  --passWithNoTests",
     "watch:update": " yarn build && yarn test",
     "watch": "yarn g:watch"
   },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public",
-    "main": "lib/index.js"
+    "main": "lib/index.js",
+    "types": "./lib/index.d.ts",
+    "module": "./esm/index.js"
   },
   "dependencies": {
     "@podlite/schema": "workspace:^"

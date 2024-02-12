@@ -7,14 +7,22 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
-    "build": "tsc",
+    "build": "yarn g:build",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "publishConfig": {
     "access": "public",
     "main": "lib/index.js",
-    "types": "./lib/index.d.ts"
+    "types": "./lib/index.d.ts",
+    "module": "./esm/index.js"
   },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "keywords": [
     "markdown",
     "pod6",
