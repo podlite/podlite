@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.27
+
+- update deps
+
 ## 0.0.26
 
 - move plugins object to @podlite/schema package

@@ -284,7 +284,7 @@ function peg$parse(input, options) {
       peg$c117 = function(number) { return parseInt(number,10) },
       peg$c118 = function(vmargin, name, config) { 
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|markdown|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -441,7 +441,7 @@ function peg$parse(input, options) {
       peg$c153 = function(line) { return { text: text(), type: "ambient1"}},
       peg$c154 = function(vmargin, name) {  
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|markdown|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -516,7 +516,7 @@ function peg$parse(input, options) {
         },
       peg$c168 = function(vmargin, marker, name, config) {  
            return ( 
-             (name.match(/code|comment|output|input|data/))
+             (name.match(/code|comment|output|input|markdown|toc|data/))
               || 
               isNamedBlock(name)
             )
@@ -1385,23 +1385,29 @@ function peg$parse(input, options) {
     s2 = peg$currPos;
     s3 = peg$parse_();
     if (s3 !== peg$FAILED) {
-      s4 = peg$currPos;
-      s5 = peg$parsemarkers();
-      if (s5 !== peg$FAILED) {
-        s6 = peg$parsestrictIdentifier();
-        if (s6 !== peg$FAILED) {
-          s5 = [s5, s6];
-          s4 = s5;
-        } else {
-          peg$currPos = s4;
-          s4 = peg$FAILED;
-        }
-      } else {
-        peg$currPos = s4;
-        s4 = peg$FAILED;
-      }
+      s4 = peg$parsemarkerConfig();
       if (s4 === peg$FAILED) {
-        s4 = peg$parsemarkerAbbreviatedBlock();
+        s4 = peg$parsemarkerAlias();
+        if (s4 === peg$FAILED) {
+          s4 = peg$currPos;
+          s5 = peg$parsemarkers();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parsestrictIdentifier();
+            if (s6 !== peg$FAILED) {
+              s5 = [s5, s6];
+              s4 = s5;
+            } else {
+              peg$currPos = s4;
+              s4 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s4;
+            s4 = peg$FAILED;
+          }
+          if (s4 === peg$FAILED) {
+            s4 = peg$parsemarkerAbbreviatedBlock();
+          }
+        }
       }
       if (s4 !== peg$FAILED) {
         s3 = [s3, s4];
@@ -5969,12 +5975,14 @@ function peg$parse(input, options) {
           'defn',
           'head',
           'input',
-          'item', 
+          'item',
+          'markdown',
           'nested',
           'output',
           'para', 
           'pod',
           'table',
+          'toc',
             ].includes(name) 
             || 
             isSemanticBlock(name) 

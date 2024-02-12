@@ -4,7 +4,7 @@ import Image from '@podlite/image'
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
-    Toc: plugin,
+    toc: plugin,
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAstResult(tree)
@@ -13,7 +13,7 @@ export const parse = (str: string): PodliteDocument => {
 
 export const parseImage = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
-    Toc: plugin,
+    toc: plugin,
     Image,
   })
   let tree = podlite.parse(str)
@@ -23,7 +23,7 @@ export const parseImage = (str: string): PodliteDocument => {
 
 const parseToHtml = (str: string): string => {
   let podlite = podlitePluggable().use({
-    Toc: plugin,
+    toc: plugin,
     Image,
   })
   let tree = podlite.parse(str)
@@ -33,12 +33,12 @@ const parseToHtml = (str: string): string => {
 
 const pod = `
 =begin pod
-=Toc head1 head3 item item2
+=toc head1 head3 item item2
 =head2 test2
 =end pod`
 // =head1 test1 I<test> L<ddd | test >
 
-it('=Toc: toAst', () => {
+it('=toc: toAst', () => {
   const p = parse(pod)
   // try to validate Formal AST
   const r = validatePodliteAst(p)
@@ -54,8 +54,8 @@ it('=para: parse to html', () => {
   `)
 })
 
-it('=Toc: parse to html', () => {
-  const pod = `=Toc head1 head3 item item2`
+it('=toc: parse to html', () => {
+  const pod = `=toc head1 head3 item item2`
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
     <div classname="toc">
       <ul class="toc-list listlevel1">
@@ -64,8 +64,8 @@ it('=Toc: parse to html', () => {
   `)
 })
 
-it('=Toc: head1 head2', () => {
-  const pod = `=Toc head1 head2
+it('=toc: head1 head2', () => {
+  const pod = `=toc head1 head2
 =for head1 :id<123>
 Test head1
 `
@@ -87,8 +87,8 @@ Test head1
   `)
 })
 
-it('[check default list]=Toc', () => {
-  const pod = `=Toc
+it('[check default list]=toc', () => {
+  const pod = `=toc
 =head1 head
 =head2 head
 =head3 head
@@ -173,8 +173,8 @@ it('[check default list]=Toc', () => {
     </h6>
   `)
 })
-it.skip('=Toc Image Diagram1', () => {
-  const pod = `=for Toc :title<Table of Media>
+it.skip('=toc Image Diagram1', () => {
+  const pod = `=for toc :title<Table of Media>
   Image Diagram 
     =for Image :caption<Image caption> :id(1)
     https://example.com.image.png
@@ -189,8 +189,8 @@ it.skip('=Toc Image Diagram1', () => {
   // expect(parseToHtml(pod)).toMatchInlineSnapshot()
 })
 
-it('=Toc Image Diagram', () => {
-  const pod = `=for Toc :title<Table of Media>
+it('=toc Image Diagram', () => {
+  const pod = `=for toc :title<Table of Media>
 Image Diagram 
   =for Image :caption<Image caption> :id(1)
   https://example.com.image.png

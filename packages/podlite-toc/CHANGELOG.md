@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.7
+
+- `=toc` now is standard block
+
 ## 0.0.6
 
 - refactor

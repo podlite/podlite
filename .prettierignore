@@ -16,3 +16,9 @@ jsconfig.json
 tsconfig.json
 build
 dist
+
+packages/podlite-schema/src/grammar.js
+packages/podlite-schema/src/grammarfc.js
+
+packages/podlite-schema/schema/*.json
+packages/podlite-schema/schema/index.js

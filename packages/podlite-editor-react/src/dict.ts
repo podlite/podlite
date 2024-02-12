@@ -157,37 +157,37 @@ Everything else     57
 `,
   },
   {
-    displayText: 'Toc head1, head2, head3',
-    text: `=Toc head1, head2, head3
+    displayText: 'toc head1, head2, head3',
+    text: `=toc head1, head2, head3
 `,
   },
   {
-    displayText: 'Toc (with :title) 🏷',
-    text: `=for Toc :title('Table of contents')
+    displayText: 'toc (with :title) 🏷',
+    text: `=for toc :title('Table of contents')
 head1, head2, head3 
 
 `,
   },
   {
-    displayText: 'Toc ( Images, Diagrams )  + tables 🏷',
-    text: `=for Toc :title('List of media')
+    displayText: 'toc ( Images, Diagrams )  + tables 🏷',
+    text: `=for toc :title('List of media')
 Image, Diagram
-=for Toc :title('List of tables')
+=for toc :title('List of tables')
 table
 
 `,
   },
 
   {
-    displayText: 'Markdown',
-    text: `=begin Markdown
+    displayText: 'markdown',
+    text: `=begin markdown
 
   {}
 
-=end Markdown
+=end markdown
 `,
   },
-  // Markdown
+  // markdown mode
 
   {
     displayText: 'head1',

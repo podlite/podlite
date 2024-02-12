@@ -1,11 +1,10 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Podlite React component",
-  "main": "lib/index.js",
+  "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
   "typings": "./lib/index.d.ts",
-  "module": "lib/index.esm.js",
   "license": "MIT",
   "sideEffects": true,
   "files": [
@@ -32,7 +31,8 @@
     "./lib/index.css": "./lib/index.css"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "module": "lib/index.esm.js"
   },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo esm",

@@ -86,10 +86,12 @@ export interface RulesStrict {
   table_head: RuleHandler<TableHead>
 
   //toc
+  toc: RuleHandler<BlockToc>
   ':toc': RuleHandler<Toc>
   ':toc-list': RuleHandler<TocList>
   ':toc-item': RuleHandler<TocItem>
 
+   markdown:RuleHandler<BlockMarkdown>
   // User-defined
   Diagram: RuleHandler<BlockDiagram>
   Image: RuleHandler<BlockNamed>
@@ -355,6 +357,12 @@ export interface BlockCode extends Block {
   name: 'code'
 }
 
+export interface BlockToc extends Block {
+  name: 'toc'
+}
+export interface BlockMarkdown extends Block {
+    name: 'markdown'
+  }
 export interface BlockNested extends Block {
   name: 'nested'
 }
@@ -425,6 +433,7 @@ export type PodNode =
   | BlockCode
   | BlankLine
   | BlockNested
+  | BlockMarkdown
   | BlockOutput
   | BlockInput
   | BlockPara
@@ -443,6 +452,7 @@ export type PodNode =
   | BlockConfig
   | BlockItem
   | Alias
+  | BlockToc
   // extra types
   | BlockImage
   | Image // :TODO: if it inline element, it should be in Para

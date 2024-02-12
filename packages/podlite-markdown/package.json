@@ -1,10 +1,9 @@
 {
   "name": "@podlite/markdown",
-  "version": "0.0.6",
-  "description": "=Markdown - markdown text block",
+  "version": "0.0.7",
+  "description": "=markdown - markdown text block",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
-  "module": "lib/index.esm.js",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf dist lib esm tsconfig.tsbuildinfo",
@@ -16,7 +15,8 @@
   "publishConfig": {
     "access": "public",
     "main": "./lib/index.js",
-    "types": "./lib/index.d.ts"
+    "types": "./lib/index.d.ts",
+    "module": "lib/index.esm.js"
   },
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0 ",

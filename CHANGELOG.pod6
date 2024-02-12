@@ -2,6 +2,27 @@
 
 =head1 Upcoming
 
+=head1 0.0.34
+# @podlite/toc@0.0.7
+- `=toc` now is standard block
+
+# @podlite/editor-react@0.0.16
+- add Markdown block suggestion
+- save virtual margin for suggestions
+
+# @podlite/schema@0.0.14
+- fix parse `=alias` and `=config` directives
+- improve brackets support for C<> and L<> codes
+- support for `=toc` block
+- support for `=markdown` block
+
+# @podlite/markdown@0.0.7
+- `=markdown` now is standard block
+
+# @podlite/editor-react@0.0.20
+- support for `=toc` block
+- support for `=markdown` block
+
 =head1 0.0.33
 - refactor tests
 - update deps

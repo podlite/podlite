@@ -26,12 +26,14 @@
         'defn',
         'head',
         'input',
-        'item', 
+        'item',
+        'markdown',
         'nested',
         'output',
         'para', 
         'pod',
         'table',
+        'toc',
           ].includes(name) 
           || 
           isSemanticBlock(name) 
@@ -110,7 +112,9 @@ strictIdentifier =  name:identifier &{ return isSupportedBlockName(name)} { retu
 markerAbbreviatedBlock = '='  name:strictIdentifier { return name }
 markers = markerBegin / markerEnd / markerFor / markerConfig / markerAlias
 Text "text" = $(c:char+)
-text_content =  !( _ ( markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
+// TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
+// becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'
+text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             { return { type:"para", value:text(), error:true, location:location()}}
 /** 
@@ -222,7 +226,7 @@ delimitedBlockRaw =
     markerBegin name:strictIdentifier _ config:pod_configuration 
     &{ 
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|markdown|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -441,7 +445,7 @@ abbreviatedBlockRaw =
   name:markerAbbreviatedBlock _ emptyline? 
     &{  
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|markdown|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -539,7 +543,7 @@ paragraphBlockRaw =
   marker:markerFor  name:strictIdentifier _ config:pod_configuration 
       &{  
      return ( 
-       (name.match(/code|comment|output|input|data/))
+       (name.match(/code|comment|output|input|markdown|toc|data/))
         || 
         isNamedBlock(name)
       )

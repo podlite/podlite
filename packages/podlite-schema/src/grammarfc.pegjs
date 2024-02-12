@@ -2,10 +2,14 @@
    function flattenDeep(arr) {
    return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
   }
+  function get_pair_tag (tag) {
+    const  map = {'<':'>', '«':'»','>':'<', '»':'«'}
+    return map[tag]
+  }
 }
 
 Expression
-= ( allowed_rules / code / text / raw_text )*
+= ( allowed_rules / code_2 / text / raw_text )*
 // = ( allowed_rules / code / (text / raw_text)+ {return {type:'text', value:text()}} )*
 
 allowed_rules = code_A / code_S / code_C / code_D / code_E / code_V / code_L / code_X / code_Z 
@@ -13,7 +17,7 @@ allpossible_codes = ( 'A' / 'V' / 'R' / 'B' / 'I' / 'C' / 'D' / 'E' / 'K' / 'L' 
 identifier = $([a-zA-Z][a-zA-Z0-9_-]+)
 _ = [ \t\u000C]*
 allowed_code = 
-            char:allpossible_codes 
+            char:allpossible_codes
             &{ return   !(options.allowed || [] ).length  //allow all formatting codes by default
                            ||  
                         (options.allowed || [] ).includes(char)
@@ -63,26 +67,31 @@ code_V =
              }
     }
 allowed_code_C =('B')
-looks_like_code_C =(!allowed_code_C .) '<' not_code '>' {return text()}
-text_C = text:$( (!'<' .)? '<' text_C? '>' / looks_like_code_C / not_code )+ {return text}
+looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}  
+     /
+     (!allowed_code_C .)  '«' not_code '»'  {return text()}  
+text_C = text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / not_code )+ {return text}
 code_C = 
-    name:start_code &{return name === "C"}
+    name:start_code_2 &{ return name.code === "C" }
     content:( text_C )+
-    end_code
+    end_tag:end_code &{ return  end_tag === name.end_tag }
      {
          return  { 
                 content,
                 'type':"fcode",
-                name,
+                name:name.code,
              }
     }
 separator = '|'
-text_L = $(
-     (!'<' .) '<' text_L '>'
+text_L = text:$(
+        (!'<' !allowed_code .) '<' text_L '>'
     / 
-    !separator !end_code !start_code !looks_like_code . )+ 
+        (!'«' !allowed_code .) '«' text_L? '»' 
+    / 
+    !separator !end_code !start_code !looks_like_code . )+ { return text } 
+
 code_L = 
-    name:start_code &{return name === "L"}
+    name:start_code_2 &{return name.code === "L"}
             
     content: (
                code_C  /  text_L 
@@ -91,12 +100,12 @@ code_L =
      meta:(
             separator t:$(!end_code .)*  { return t }
            )?
-     end_code
+     end_tag:end_code &{ return  end_tag === name.end_tag}
      {
          return  { 
                 content,
                 'type':"fcode",
-                name,
+                name:name.code,
                 meta
              }
     }
@@ -200,12 +209,23 @@ code_E =
     }
 
 start_code = name:$(allowed_code) '<' { return name }
-end_code = '>'
-code =  name:start_code &{ return name !== 'C' } content:(  
-          allowed_rules / code / text 
-        )* end_code  
-{ return {content, type:'fcode', name}}
+start_code_2 = name:$(allowed_code) begin_tag:$('<' / '«') { return {code:name,begin_tag,end_tag:get_pair_tag(begin_tag)} }
+end_code = '>' / '»'
+
+code_2 = 
+        name:start_code_2 &{ return name.code !== 'C' }
+        content:(  
+                      allowed_rules / code_2 / text 
+           )* 
+        end_tag:end_code &{ return  end_tag === name.end_tag}  
+{ return {content, type:'fcode', name:name.code }}
+
+
 empty =  $(!end_code .)*
-text = text:$( '<' text '>' / looks_like_code / not_code )+ {return text}
-not_code = text:$(!end_code !start_code !looks_like_code .)+ {return text}
-looks_like_code =(!allowed_code .) '<' not_code '>' {return text()}
+//  text = text:$( '<' text '>' / looks_like_code / not_code )+ {return text}
+text = text:$( '<' text '>' / '«' text '»' / looks_like_code / not_code  )+ {return text}
+
+not_code = text:$(!end_code !start_code_2 !looks_like_code .)+ {return text}
+looks_like_code =(!allowed_code .)  '<' not_code '>'  {return text()}  
+     /
+     (!allowed_code .)  '«' not_code '»'  {return text()}  

@@ -18,7 +18,8 @@ export const plugin: Plugin = {
   },
 }
 export const PluginRegister: Plugins = {
-  Markdown: plugin,
+  Markdown: plugin, //TODO: deprecate it
+  markdown: plugin,
 }
 
 export { md2ast as parseMd } from './tools'

@@ -1,4 +1,4 @@
-import { toTree } from '../..'
+import { toTree } from '../../src'
 
 it('spec: 00-maintests 0', () => {
   const pod = `
@@ -788,6 +788,110 @@ it('spec: 00-maintests 7', () => {
       },
       Object {
         "type": "blankline",
+      },
+    ]
+  `)
+})
+
+it('spec: 00-maintests 7.1', () => {
+  const pod = `
+  =head1 Test message
+  =alias PROGNAME AI
+  =config C<>  :allow<B>
+  
+  `
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "content": Array [
+              "Test message
+    ",
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 3,
+                "offset": 23,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 2,
+                "offset": 1,
+              },
+            },
+            "margin": "",
+            "text": "Test message
+    ",
+            "type": "para",
+          },
+        ],
+        "level": "1",
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 3,
+            "offset": 23,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "  ",
+        "name": "head",
+        "type": "block",
+      },
+      Object {
+        "margin": "  ",
+        "name": "PROGNAME",
+        "replacement": Array [
+          "AI",
+        ],
+        "type": "alias",
+      },
+      Object {
+        "config": Array [
+          Object {
+            "name": "allow",
+            "type": "array",
+            "value": Array [
+              "B",
+            ],
+          },
+        ],
+        "margin": "  ",
+        "name": "C<>",
+        "type": "config",
+      },
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "content": Array [
+          "  ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 3,
+            "line": 6,
+            "offset": 74,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 6,
+            "offset": 72,
+          },
+        },
+        "margin": "",
+        "text": "  ",
+        "type": "para",
       },
     ]
   `)

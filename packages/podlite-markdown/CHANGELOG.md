@@ -1,5 +1,9 @@
 # @podlite/markdown
 
+## 0.0.7
+
+- `=markdown` now is standard block
+
 ## 0.0.6
 
 - refactor tests

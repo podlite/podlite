@@ -13,7 +13,7 @@ export const parse = (str: string): PodliteDocument => {
   const asAst = podlite.toAstResult(tree)
   return asAst.interator
 }
-it('=Markdown: parse para', () => {
+it('=markdown: parse para', () => {
   const pod = `text`
   //   const tree1 = parse(pod);
   const tree = process(pod)

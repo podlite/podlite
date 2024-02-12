@@ -1,25 +1,30 @@
 {
   "name": "podlite",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Podlite - a lightweight block-based markup language",
   "main": "./src/index.ts",
-  "types": "./lib/index.d.ts",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
     "build": "tsc",
     "watch": "run-p -r watch:*",
     "watch:ts": "tsc -w --pretty",
-    "watch:tests": "jest --watch -t \"test\""
+    "watch:tests": "jest --watch -t \"test\"",
+    "set-linked": "yarn g:set-linked",
+    "set-unlinked": "yarn g:set-unlinked"
   },
   "keywords": [
-    "markdown",
-    "pod6",
     "podlite",
     "markup",
-    "markup-language"
+    "markup-language",
+    "markdown",
+    "pod6"
   ],
   "author": "Aliaksandr Zahatski",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
   "dependencies": {
     "@podlite/diagram": "workspace:^",
     "@podlite/image": "workspace:^",
@@ -40,6 +45,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "main": "./lib/index.js"
+    "main": "lib/index.js"
   }
 }

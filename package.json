@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "Podlite - a lightweight block-based markup language",
   "private": true,
   "workspaces": [
@@ -21,17 +21,12 @@
     "g:jest": "cd $INIT_CWD && jest",
     "g:tsc": "yarn tsc",
     "g:tsctest": "cd $INIT_CWD && tsc",
-    "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,json,md}'"
-  },
-  "prettier": {
-    "arrowParens": "avoid",
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "all",
-    "endOfLine": "lf",
-    "tabWidth": 2,
-    "jsxBracketSameLine": false,
-    "printWidth": 120
+    "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,json,md,mjs}'",
+    "g:linked-command": "cd $INIT_CWD && node ../../scripts/switchLink.mjs",
+    "g:set-linked": "cd $INIT_CWD && yarn g:linked-command --set-linked",
+    "g:set-unlinked": "cd $INIT_CWD && yarn g:linked-command --set-unlinked",
+    "set-linked": "yarn workspaces foreach -pt --all --no-private -v run g:set-linked",
+    "set-unlinked": "yarn workspaces foreach -pt --all --no-private -v run g:set-unlinked"
   },
   "keywords": [
     "pod6",
