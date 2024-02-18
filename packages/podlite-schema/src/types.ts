@@ -63,6 +63,7 @@ export interface RulesStrict {
   nested: RuleHandler<BlockNested>
   output: RuleHandler<BlockOutput>
   input: RuleHandler<BlockInput>
+  picture: RuleHandler<BlockPicture>
   image: RuleHandler<BlockImage>
   ':image': RuleHandler<Image>
 
@@ -141,6 +142,14 @@ export interface BlockImage extends Omit<Block, 'content'> {
   link?: string
   content: [Image, BlockCaption]
 }
+
+export interface BlockPicture extends Omit<Block, 'content'> {
+  name: 'picture'
+  caption?: string //TODO: move caption into content and make it optional and may contain multiple nodes
+  link?: string
+  content: [Image, BlockCaption]
+}
+
 export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id'> {
   name: 'caption'
   content: Array<Node>
@@ -453,6 +462,7 @@ export type PodNode =
   | BlockItem
   | Alias
   | BlockToc
+  | BlockPicture
   // extra types
   | BlockImage
   | Image // :TODO: if it inline element, it should be in Para
