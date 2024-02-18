@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
+    Mermaid: DiagramPlugin
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAstResult(tree)
@@ -16,6 +17,7 @@ const parse = (str: string): PodliteDocument => {
 const parseToHtml = (str: string): string => {
   let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
+    Mermaid: DiagramPlugin
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAst(tree)
@@ -58,23 +60,23 @@ function render(jsx) {
 
 const pod = `
 =begin pod
-=Diagram
+=Mermaid
 graph LR
 A --- B
 B-->C[fa:fa-ban forbidden]
 B-->D(fa:fa-spinner aaaaa);
 =end pod`
 
-it('=Diagram: toAst', () => {
+it('=Mermaid: toAst', () => {
   const p = parse(pod)
   // try to validate Formal AST
   const r = validatePodliteAst(p)
   expect(r).toEqual([])
 })
 
-it('=Diagram: Error handle', () => {
+it('=Mermaid: Error handle', () => {
   const p = parse(
-    `=Diagram
+    `=Mermaid
 graph EROROROOROR
 A --- B
 B-->C[fa:fa-ban forbidden]
@@ -82,22 +84,22 @@ B-->D(fa:fa-spinner aaaaa);
 `,
   )
 
-  const diagram = getFromTree(p, 'Diagram')[0] as Object
+  const diagram = getFromTree(p, 'Mermaid')[0] as Object
   expect('custom' in diagram).toBeTruthy()
 })
 
-it('=Diagrams: parse to html', () => {
+it('=Mermaid: parse to html', () => {
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`""`)
 })
-it('=Diagrams: caption', () => {
+it('=Mermaid: caption', () => {
   const pod = `
-=begin Diagram :caption('Caption test')
+=begin Mermaid :caption('Caption test')
     graph LR
             A-->B
             B-->C
             C-->A
             D-->C
-=end Diagram
+=end Mermaid
 `
   render(<Podlite plugins={plugins}>{pod}</Podlite>)
   expect(root.innerHTML).toMatchInlineSnapshot(`
@@ -113,7 +115,7 @@ it('=Diagrams: caption', () => {
   `)
 })
 
-it('accepts =Diagram', () => {
+it('accepts =Mermaid', () => {
   render(<Podlite plugins={plugins}>{pod}</Podlite>)
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">

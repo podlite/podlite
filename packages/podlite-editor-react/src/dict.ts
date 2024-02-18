@@ -80,19 +80,19 @@ Everything else     57
 `,
   },
   {
-    displayText: 'Diagram simple 🏷',
-    text: `=begin Diagram  :caption('Caption of diagram')
+    displayText: 'Mermaid diagram simple 🏷',
+    text: `=begin Mermaid  :caption('Caption of diagram')
     graph LR
             A-->B
             B-->C
             C-->A
             D-->C
-=end Diagram
+=end Mermaid
 `,
   },
   {
-    displayText: 'Diagram Sequence 🏷',
-    text: `=for Diagram :caption('Caption of diagram')
+    displayText: 'Mermaid diagram Sequence 🏷',
+    text: `=for Mermaid :caption('Caption of diagram')
     sequenceDiagram
         autonumber
         Student->>Admin: Can I enrol this semester?
@@ -107,8 +107,8 @@ Everything else     57
 `,
   },
   {
-    displayText: 'Diagram flowchart 🏷',
-    text: `=for Diagram :caption('Caption of diagram')
+    displayText: 'Mermaid flowchart 🏷',
+    text: `=for Mermaid :caption('Caption of diagram')
     graph LR
         A[Square Rect] -- Link text --> B((Circle))
         A --> C(Round Rect)
@@ -118,8 +118,8 @@ Everything else     57
 `,
   },
   {
-    displayText: 'Diagram class 🏷',
-    text: `=for Diagram :caption('Caption of diagram')
+    displayText: 'Mermaid class 🏷',
+    text: `=for Mermaid :caption('Caption of diagram')
     classDiagram
        Person <|-- Student
        Person <|-- Professor
@@ -169,9 +169,9 @@ head1, head2, head3
 `,
   },
   {
-    displayText: 'toc ( picture, Diagrams )  + tables 🏷',
+    displayText: 'toc ( picture, Mermaid )  + tables 🏷',
     text: `=for toc :title('List of media')
-picture, Diagram
+picture, Mermaid
 =for toc :title('List of tables')
 table
 
@@ -234,8 +234,8 @@ table
     lang: 'md',
   },
   {
-    displayText: 'Diagram simple 🏷',
-    text: `\`\`\`diagram 
+    displayText: 'Mermaid simple 🏷',
+    text: `\`\`\`mermaid 
 graph LR
         A-->B
         B-->C
