@@ -7,7 +7,8 @@ export const parse = (str: string): PodliteDocument => {
 }
 export const getSuggestionContextForLine = (pod: string, line: number): 'pod6' | 'md' => {
   const tree = parse(pod)
-  const markdownBlocks = getFromTree(tree, 'Markdown') as any // TODO: remove `any`
+  // TODO:: deprecate named block =Markdown
+  const markdownBlocks = getFromTree(tree, 'Markdown', 'markdown') as any // TODO: remove `any`
   const isMd =
     markdownBlocks.findIndex(
       ({
