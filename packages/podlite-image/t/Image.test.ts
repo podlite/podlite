@@ -3,14 +3,14 @@ import { frozenIds, getFromTree, PodliteDocument, podlitePluggable, validateAstT
 import Image from '../src/index'
 
 const parse = (str: string): PodliteDocument => {
-  let podlite = podlitePluggable().use({ Image })
+  let podlite = podlitePluggable().use({ Image, picture: Image })
   let tree = podlite.parse(str)
   const asAst = podlite.toAst(tree)
   return asAst
 }
 
 const parseToHtml = (str: string): string => {
-  let podlite = podlitePluggable().use({ Image })
+  let podlite = podlitePluggable().use({ Image, picture: Image })
   let tree = podlite.parse(str)
   const asAst = podlite.toAst(tree)
   return podlite.toHtml(frozenIds()(asAst)).toString()
@@ -21,14 +21,14 @@ const cleanHTML = (html: string) => {
 }
 
 it('AST validate', () => {
-  const p = parse(`=Image test.png
+  const p = parse(`=picture test.png
     short caption`)
-  const Image = getFromTree(p, 'Image')[0]
+  const Image = getFromTree(p, 'picture')[0]
   const r = validateAstTree([Image])
   expect(r).toEqual([])
 })
-it('=Image minimal', () => {
-  const pod = `=for Image 
+it('=picture minimal', () => {
+  const pod = `=for picture 
 test`
   const html = parseToHtml(pod)
   expect(html).toMatchInlineSnapshot(`
@@ -42,8 +42,8 @@ test`
   `)
 })
 
-it('Image', () => {
-  const pod = `=for Image :id<111> :alt('testAlt') :caption('testCaption') :link('testLink')
+it('Picture', () => {
+  const pod = `=for picture :id<111> :alt('testAlt') :caption('testCaption') :link('testLink')
 test.png
 `
   const html = parseToHtml(pod)

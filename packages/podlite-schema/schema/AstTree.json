@@ -112,6 +112,9 @@
                     "$ref": "#/definitions/BlockImage"
                 },
                 {
+                    "$ref": "#/definitions/BlockPicture"
+                },
+                {
                     "$ref": "#/definitions/BlockCaption"
                 },
                 {
@@ -447,6 +450,71 @@
                 "name",
                 "type",
                 "value"
+            ]
+        },
+        "BlockPicture": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "picture"
+                    ]
+                },
+                "caption": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "$ref": "#/definitions/Image"
+                        },
+                        {
+                            "$ref": "#/definitions/BlockCaption"
+                        }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
             ]
         },
         "RootBlock": {
@@ -1167,6 +1235,9 @@
                             },
                             {
                                 "$ref": "#/definitions/BlockImage"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPicture"
                             },
                             {
                                 "$ref": "#/definitions/BlockCaption"

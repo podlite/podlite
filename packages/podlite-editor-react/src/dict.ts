@@ -47,8 +47,8 @@ const dict: Dict[] = [
 `,
   },
   {
-    displayText: 'Image 🏷',
-    text: `=Image https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
+    displayText: 'picture 🏷',
+    text: `=picture https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
 `,
   },
   {
@@ -169,9 +169,9 @@ head1, head2, head3
 `,
   },
   {
-    displayText: 'toc ( Images, Diagrams )  + tables 🏷',
+    displayText: 'toc ( picture, Diagrams )  + tables 🏷',
     text: `=for toc :title('List of media')
-Image, Diagram
+picture, Diagram
 =for toc :title('List of tables')
 table
 
@@ -216,7 +216,7 @@ table
     lang: 'md',
   },
   {
-    displayText: 'Image 🏷',
+    displayText: 'picture 🏷',
     text: `![Podlite](https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true "Podlite logo")
 
 `,

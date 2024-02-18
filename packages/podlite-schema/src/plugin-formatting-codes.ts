@@ -35,9 +35,10 @@ const middle: ParserPlugin = () => tree => {
       const isCodeBlock = 'name' in n && n.name === 'code'
       const isDataBlock = 'name' in n && n.name === 'data'
       const isMarkdownBlock = 'name' in n && n.name === 'markdown'
+      const isPictureBlock = 'name' in n && n.name === 'picture'
       const allowValues = conf.getAllValues('allow')
       // for code block not parse content by default
-      if ((isCodeBlock || isDataBlock || isMarkdownBlock) && allowValues.length == 0) return n
+      if ((isCodeBlock || isDataBlock || isMarkdownBlock || isPictureBlock) && allowValues.length == 0) return n
       const allowed = allowValues.sort()
 
       const transformer = makeTransformer({
