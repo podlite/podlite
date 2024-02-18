@@ -92,7 +92,7 @@ export interface RulesStrict {
   ':toc-list': RuleHandler<TocList>
   ':toc-item': RuleHandler<TocItem>
 
-   markdown:RuleHandler<BlockMarkdown>
+  markdown: RuleHandler<BlockMarkdown>
   // User-defined
   Diagram: RuleHandler<BlockDiagram>
   Image: RuleHandler<BlockNamed>
@@ -370,8 +370,8 @@ export interface BlockToc extends Block {
   name: 'toc'
 }
 export interface BlockMarkdown extends Block {
-    name: 'markdown'
-  }
+  name: 'markdown'
+}
 export interface BlockNested extends Block {
   name: 'nested'
 }
