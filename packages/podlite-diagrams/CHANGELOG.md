@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.20
+
+- going to use =Mermaid instad of =Diagaram
+
 ## 0.0.18
 
 - update deps

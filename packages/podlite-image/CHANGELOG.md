@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.15
+
+- support for `=picture` block
+
 ## 0.0.13
 
 - update deps

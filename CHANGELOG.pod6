@@ -2,6 +2,26 @@
 
 =head1 Upcoming
 
+=head1 0.0.36
+
+- going to use =Mermaid instad of =Diagaram
+- add `=picture`
+
+# @podlite/editor-react@0.0.22
+- support for `=Mermaid` block
+- add text search in document / cmd-F
+- support for `=picture` block
+- fix detect markdown context for suggestions
+
+# @podlite/image@0.0.15
+- support for `=picture` block
+
+# @podlite/markdown@0.0.9
+- implement `mermaid` support
+
+# @podlite/schema@0.0.16
+- support for `=picture` block
+
 =head1 0.0.35
 - fix packages build
 
