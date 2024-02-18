@@ -678,12 +678,12 @@ it('id for headers', () => {
   `)
 })
 
-it.skip('accepts =Diagram', () => {
+it.skip('accepts =Mermaid', () => {
   render(
     <Podlite>
       {`
   =begin pod
-  =Diagram
+  =Mermaid
 graph LR
 A --- B
 B-->C[fa:fa-ban forbidden]

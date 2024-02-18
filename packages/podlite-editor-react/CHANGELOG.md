@@ -2,6 +2,14 @@
 
 ## Upcoming
 
+## 0.0.22
+
+- support for `=Mermaid` block
+- add text search in document / cmd-F
+- support for `=picture` block
+- fix detect markdown context for suggestions
+
+
 ## 0.0.20
 
 - support for `=toc` block

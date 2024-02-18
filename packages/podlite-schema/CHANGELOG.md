@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.16
+
+- support for `=picture` block
+
 ## 0.0.14
 
 - fix parse `=alias` and `=config` directives

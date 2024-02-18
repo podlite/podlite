@@ -124,5 +124,6 @@ const Image: Plugin = {
 }
 export const PluginRegister: Plugins = {
   Image: Image,
+  picture: Image,
 }
 export default Image

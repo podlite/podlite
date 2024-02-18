@@ -1,5 +1,9 @@
 # @podlite/markdown
 
+## 0.0.9
+
+- implement `mermaid` support
+
 ## 0.0.7
 
 - `=markdown` now is standard block

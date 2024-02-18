@@ -63,6 +63,7 @@ export interface RulesStrict {
   nested: RuleHandler<BlockNested>
   output: RuleHandler<BlockOutput>
   input: RuleHandler<BlockInput>
+  picture: RuleHandler<BlockPicture>
   image: RuleHandler<BlockImage>
   ':image': RuleHandler<Image>
 
@@ -91,9 +92,11 @@ export interface RulesStrict {
   ':toc-list': RuleHandler<TocList>
   ':toc-item': RuleHandler<TocItem>
 
-   markdown:RuleHandler<BlockMarkdown>
+  markdown: RuleHandler<BlockMarkdown>
   // User-defined
+  // TODO deprecate Diagram
   Diagram: RuleHandler<BlockDiagram>
+  Mermaid: RuleHandler<BlockMermaid>
   Image: RuleHandler<BlockNamed>
 }
 
@@ -141,6 +144,14 @@ export interface BlockImage extends Omit<Block, 'content'> {
   link?: string
   content: [Image, BlockCaption]
 }
+
+export interface BlockPicture extends Omit<Block, 'content'> {
+  name: 'picture'
+  caption?: string //TODO: move caption into content and make it optional and may contain multiple nodes
+  link?: string
+  content: [Image, BlockCaption]
+}
+
 export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id'> {
   name: 'caption'
   content: Array<Node>
@@ -361,8 +372,8 @@ export interface BlockToc extends Block {
   name: 'toc'
 }
 export interface BlockMarkdown extends Block {
-    name: 'markdown'
-  }
+  name: 'markdown'
+}
 export interface BlockNested extends Block {
   name: 'nested'
 }
@@ -405,11 +416,18 @@ export interface BlockNamed extends Omit<Block, 'content'> {
   content: [(Verbatim | Para | Code)?] | Array<Image | BlockCaption> | RootBlock // TODO: use one of Verbatim or Code types
 }
 
+// TODO:deprecated
 export interface BlockDiagram extends Omit<BlockNamed, 'content'> {
   name: 'Diagram'
   content: [Verbatim]
   custom?: { location: Location }
 }
+export interface BlockMermaid extends Omit<BlockNamed, 'content'> {
+    name: 'Mermaid'
+    content: [Verbatim]
+    custom?: { location: Location }
+  }
+
 
 export type FormattingCodes =
   | FormattingCodeA
@@ -453,6 +471,7 @@ export type PodNode =
   | BlockItem
   | Alias
   | BlockToc
+  | BlockPicture
   // extra types
   | BlockImage
   | Image // :TODO: if it inline element, it should be in Para

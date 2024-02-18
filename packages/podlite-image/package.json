@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "image",
   "main": "./src/index.tsx",
   "types": "./lib/index.d.ts",
