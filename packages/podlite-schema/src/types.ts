@@ -94,7 +94,9 @@ export interface RulesStrict {
 
   markdown: RuleHandler<BlockMarkdown>
   // User-defined
+  // TODO deprecate Diagram
   Diagram: RuleHandler<BlockDiagram>
+  Mermaid: RuleHandler<BlockMermaid>
   Image: RuleHandler<BlockNamed>
 }
 
@@ -414,11 +416,18 @@ export interface BlockNamed extends Omit<Block, 'content'> {
   content: [(Verbatim | Para | Code)?] | Array<Image | BlockCaption> | RootBlock // TODO: use one of Verbatim or Code types
 }
 
+// TODO:deprecated
 export interface BlockDiagram extends Omit<BlockNamed, 'content'> {
   name: 'Diagram'
   content: [Verbatim]
   custom?: { location: Location }
 }
+export interface BlockMermaid extends Omit<BlockNamed, 'content'> {
+    name: 'Mermaid'
+    content: [Verbatim]
+    custom?: { location: Location }
+  }
+
 
 export type FormattingCodes =
   | FormattingCodeA
