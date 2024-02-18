@@ -1144,7 +1144,7 @@ it('[markdown]: parse strikethrough', () => {
 })
 it('[markdown]: parse diagrams', () => {
   const pod = `
-\`\`\`mermaids caption="1"
+\`\`\`mermaid caption="1"
 graph TD;
     A-->B;
     A-->C;
@@ -1153,5 +1153,46 @@ graph TD;
 \`\`\`
   `
   const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  expect(process(pod)).toMatchInlineSnapshot(`
+    Object {
+      "content": Array [
+        Object {
+          "config": Array [],
+          "content": Array [
+            Object {
+              "type": "verbatim",
+              "value": "graph TD;
+        A-->B;
+        A-->C;
+        B-->D;
+        C-->D;",
+            },
+          ],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 4,
+              "line": 8,
+              "offset": 81,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "margin": "",
+          "name": "Mermaid",
+          "type": "block",
+        },
+      ],
+      "id": "id",
+      "margin": "",
+      "name": "root",
+      "type": "block",
+    }
+  `)
   // console.log(JSON.stringify(tree, null,2 ))
 })
