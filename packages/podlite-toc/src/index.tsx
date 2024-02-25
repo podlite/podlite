@@ -11,6 +11,9 @@ import {
   Plugins,
   makeAttrs,
   isNamedBlock,
+  mkFomattingCodeL,
+  mkBlock,
+  mkNode,
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
@@ -43,11 +46,20 @@ export const getContentForToc = (node: PodNode): string => {
         const caption = getTextContentFromNode(conf.getFirstValue('caption'))
         return caption || 'table not have :caption'
       }
+      if (node.type === 'block' && node.name === 'item') {
+        if (Array.isArray(node.content) && node.content.length > 0) {
+            return getTextContentFromNode(node.content[0])
+        }
+      }
       return getTextContentFromNode(node)
     }
   }
   return 'Not supported toc element'
 }
+/* 
+
+
+*/
 export const plugin: Plugin = {
   toAstAfter: (writer, processor, fulltree) => {
     return (node, ctx) => {
@@ -67,9 +79,13 @@ export const plugin: Plugin = {
           const { level, node, content } = item
           // create new node for each item
           const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
-          //TODO: getNodeId should use ctx of node, but using {} instead
+          //TODO: 1. getNodeId should use ctx of node, but using {} instead
+          //TODO: 2. refactor linking for blocks
           const para = `L<${text}|#${getNodeId(node, {})}>`
-          const tocNode = processor(para)[0]
+          const para1 = mkNode({type:'para',content:[mkFomattingCodeL({meta:`#${getNodeId(node, {})}`},[text])]}) as PodNode;
+          //   const tocNode = processor(para)[0]
+        //   console.log(JSON.stringify({tocNode:processor(para),para1}, null,2))
+          const tocNode = para1
           resultList.push(mkTocItem(tocNode))
           if (Array.isArray(content) && content.length > 0) {
             resultList.push(createList(content, level + 1))

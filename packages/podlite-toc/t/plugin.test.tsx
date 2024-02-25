@@ -1,6 +1,7 @@
 import { frozenIds, getFromTree, PodliteDocument, podlitePluggable, validatePodliteAst } from '@podlite/schema'
 import { plugin } from '../src/index'
 import Image from '@podlite/image'
+import { cleanLocalHrefs } from '@podlite/schema/src/helpers/ids'
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
@@ -228,5 +229,66 @@ Image Diagram
         </p>
       </div>
     </div>
+  `)
+})
+
+const parseToHtml1 = (str: string): string => {
+  let podlite = podlitePluggable().use({
+    toc: plugin,
+    Image,
+  })
+  let tree = podlite.parse(str)
+  const asAst = podlite.toAst(frozenIds()(tree))
+  return podlite.toHtml(cleanLocalHrefs()(frozenIds()(asAst))).toString()
+}
+
+it('=toc item', () => {
+  const pod = `=toc item, head1
+    =begin item
+    use if C<L<>> code
+    
+    second para
+    =end item
+    =head1 test C<L<>>
+    `
+  expect(parseToHtml1(pod)).toMatchInlineSnapshot(`
+    <div classname="toc">
+      <ul class="toc-list listlevel1">
+        <li class="toc-item">
+          <p>
+            <a href="#">
+              use if L&lt;&gt; code
+            </a>
+          </p>
+        </li>
+        <li class="toc-item">
+          <p>
+            <a href="#">
+              test L&lt;&gt;
+            </a>
+          </p>
+        </li>
+      </ul>
+    </div>
+    <ul>
+      <li>
+        <p>
+          use if
+          <code>
+            L&lt;&gt;
+          </code>
+          code
+        </p>
+        <p>
+          second para
+        </p>
+      </li>
+    </ul>
+    <h1 id="id">
+      test
+      <code>
+        L&lt;&gt;
+      </code>
+    </h1>
   `)
 })
