@@ -152,7 +152,7 @@ Everything else     57
   {
     displayText: 'code block with formatting 🏷',
     text: `=begin code :allow<I B Z> 
-
+  {}
 =end code
 `,
   },

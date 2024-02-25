@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+##  
+
+-fix linking toc items
+
 ## 0.0.7
 
 - `=toc` now is standard block

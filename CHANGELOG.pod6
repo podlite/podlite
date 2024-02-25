@@ -2,6 +2,18 @@
 
 =head1 Upcoming
 
+=head1 0.0.37
+
+# @podlite/editor-react@0.0.23
+- add default cursor position for `code` snippet
+
+# @podlite/schema@0.0.17
+- fix linking when publish
+- fix types for L<> code
+
+# @podlite/toc@0.0.10
+-fix linking toc items
+
 =head1 0.0.36
 
 - going to use =Mermaid instad of =Diagaram

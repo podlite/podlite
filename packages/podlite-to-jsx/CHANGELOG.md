@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.21
+
+-fix anchors
+
 ## 0.0.18
 
 - update deps

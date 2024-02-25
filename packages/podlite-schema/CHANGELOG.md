@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.17
+
+- fix linking when publish
+- fix types for L<> code
+
 ## 0.0.16
 
 - support for `=picture` block
