@@ -26,6 +26,16 @@ export const cleanIds =
     return transformerBlocks(tree, {})
   }
 
+// TODO: refactor linking for blocks
+export const slugifyText = (text: string) => {
+    // https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/src/slugify.ts
+   return text.trim()
+    //    .toLowerCase()
+       .replace(/\s+/g, '-') 
+       .replace(/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g, '')
+       .replace(/^\-+/, ''); 
+}
+
 /**
  * Add set id to 'id' to each blocks
  */
@@ -34,10 +44,10 @@ export const frozenIds =
   tree => {
     const transformerBlocks = makeTransformer({
       '*': (node, ctx, visiter) => {
-        if ('id' in node) {
-          if ('content' in node) {
+        if ('content' in node) {
             node.content = visiter(node.content, ctx)
-          }
+        }
+        if ('id' in node) {
           const { id, ...rest } = node
           return { ...rest, id: 'id' }
         }
@@ -47,6 +57,25 @@ export const frozenIds =
     return transformerBlocks(tree, {})
   }
 
+  export const cleanLocalHrefs =
+  (src = { skipChain: 0, podMode: 1 }) =>
+  tree => {
+    const transformerBlocks = makeTransformer({
+      'L<>': (node, ctx, visiter) => {
+        if ('meta' in node) {
+          if ('content' in node) {
+            node.content = visiter(node.content, ctx)
+          }
+          const { id, ...rest } = node
+          return { ...rest, meta: '#' }
+        }
+        return node
+      },
+    })
+    return transformerBlocks(tree, {})
+  }
+
+
 const middleware: ParserPlugin = () => tree => {
   const transformerBlocks = makeTransformer({
     '*': (node, ctx, visiter) => {
@@ -55,7 +84,7 @@ const middleware: ParserPlugin = () => tree => {
           if (node.name == 'caption') {
             return node
           } else if (node.name == 'head') {
-            return { ...node, id: getTextContentFromNode(node).trim() } as BlockHead
+            return { ...node, id: slugifyText(getTextContentFromNode(node)) } as BlockHead
           } else {
             return { ...node, id: nanoid() } as PodNode
           }
