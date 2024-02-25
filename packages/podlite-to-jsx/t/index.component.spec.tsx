@@ -617,12 +617,12 @@ but some of us are looking at the stars!
   `)
 })
 
-it('accepts =Toc', () => {
+it('accepts =toc', () => {
   render(
     <Podlite>
       {`
     =begin pod
-    =Toc head1 item
+    =toc head1 item
     =for head1 :id<Test>
     head1
     =for item1 :id<item>
