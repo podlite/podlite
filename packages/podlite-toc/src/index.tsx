@@ -81,11 +81,8 @@ export const plugin: Plugin = {
           const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
           //TODO: 1. getNodeId should use ctx of node, but using {} instead
           //TODO: 2. refactor linking for blocks
-          const para = `L<${text}|#${getNodeId(node, {})}>`
-          const para1 = mkNode({type:'para',content:[mkFomattingCodeL({meta:`#${getNodeId(node, {})}`},[text])]}) as PodNode;
-          //   const tocNode = processor(para)[0]
-        //   console.log(JSON.stringify({tocNode:processor(para),para1}, null,2))
-          const tocNode = para1
+          const para = mkNode({type:'para',content:[mkFomattingCodeL({meta:`#${getNodeId(node, {})}`},[text])]}) as PodNode;
+          const tocNode = para
           resultList.push(mkTocItem(tocNode))
           if (Array.isArray(content) && content.length > 0) {
             resultList.push(createList(content, level + 1))

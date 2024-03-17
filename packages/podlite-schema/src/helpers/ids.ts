@@ -2,6 +2,7 @@ import { BlockHead, getTextContentFromNode, makeTransformer } from '..'
 import { ParserPlugin } from '..'
 import { nanoid } from 'nanoid'
 import { PodNode } from '..'
+import slugify from 'slugify'
 
 /**
  * Clean ids from tree
@@ -28,12 +29,7 @@ export const cleanIds =
 
 // TODO: refactor linking for blocks
 export const slugifyText = (text: string) => {
-    // https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/src/slugify.ts
-   return text.trim()
-    //    .toLowerCase()
-       .replace(/\s+/g, '-') 
-       .replace(/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g, '')
-       .replace(/^\-+/, ''); 
+   return slugify(text.trim(),{}); 
 }
 
 /**
