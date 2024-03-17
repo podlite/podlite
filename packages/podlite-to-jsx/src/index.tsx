@@ -176,7 +176,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
       ],
       nodeContent,
     ),
-    nested: handleNested(nodeContent, 1),
+    nested: handleNotificationBlock( handleNested(nodeContent, 1)),
     output: mkComponent(({ children, key }) => (
       <pre key={key}>
         <samp>{children}</samp>
