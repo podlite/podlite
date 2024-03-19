@@ -552,3 +552,81 @@ it('spec: 08-formattingcodes 5', () => {
     ]
   `)
 })
+
+it('spec: 08-formattingcodes 6', () => {
+    const pod = `=pod C«key => 1»`
+    const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+    console.log(JSON.stringify(tree, null, 2))
+    // expect(tree).toMatchInlineSnapshot(`
+    //   Array [
+    //     Object {
+    //       "content": Array [
+    //         Object {
+    //           "content": Array [
+    //             Object {
+    //               "content": Array [
+    //                 "bo",
+    //                 Object {
+    //                   "content": Array [
+    //                     "o",
+    //                   ],
+    //                   "name": "I",
+    //                   "type": "fcode",
+    //                 },
+    //               ],
+    //               "name": "B",
+    //               "type": "fcode",
+    //             },
+    //             " ",
+    //             Object {
+    //               "content": Array [
+    //                 "test",
+    //               ],
+    //               "name": "C",
+    //               "type": "fcode",
+    //             },
+    //             " ",
+    //             Object {
+    //               "content": Array [
+    //                 "test",
+    //               ],
+    //               "name": "C",
+    //               "type": "fcode",
+    //             },
+    //           ],
+    //           "location": Object {
+    //             "end": Object {
+    //               "column": 31,
+    //               "line": 1,
+    //               "offset": 30,
+    //             },
+    //             "start": Object {
+    //               "column": 1,
+    //               "line": 1,
+    //               "offset": 0,
+    //             },
+    //           },
+    //           "margin": "",
+    //           "text": "B«boI<o>» C«test» C<test>",
+    //           "type": "para",
+    //         },
+    //       ],
+    //       "location": Object {
+    //         "end": Object {
+    //           "column": 31,
+    //           "line": 1,
+    //           "offset": 30,
+    //         },
+    //         "start": Object {
+    //           "column": 1,
+    //           "line": 1,
+    //           "offset": 0,
+    //         },
+    //       },
+    //       "margin": "",
+    //       "name": "pod",
+    //       "type": "block",
+    //     },
+    //   ]
+    // `)
+  })
