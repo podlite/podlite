@@ -29,7 +29,7 @@ export const cleanIds =
 
 // TODO: refactor linking for blocks
 export const slugifyText = (text: string) => {
-   return slugify(text.trim(),{}); 
+  return slugify(text.trim(), {})
 }
 
 /**
@@ -41,7 +41,7 @@ export const frozenIds =
     const transformerBlocks = makeTransformer({
       '*': (node, ctx, visiter) => {
         if ('content' in node) {
-            node.content = visiter(node.content, ctx)
+          node.content = visiter(node.content, ctx)
         }
         if ('id' in node) {
           const { id, ...rest } = node
@@ -53,7 +53,7 @@ export const frozenIds =
     return transformerBlocks(tree, {})
   }
 
-  export const cleanLocalHrefs =
+export const cleanLocalHrefs =
   (src = { skipChain: 0, podMode: 1 }) =>
   tree => {
     const transformerBlocks = makeTransformer({
@@ -70,7 +70,6 @@ export const frozenIds =
     })
     return transformerBlocks(tree, {})
   }
-
 
 const middleware: ParserPlugin = () => tree => {
   const transformerBlocks = makeTransformer({
