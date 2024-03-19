@@ -68,6 +68,154 @@ it('spec: 09-configuration 0', () => {
   `)
 })
 
+it('spec: 09-configuration 0-1', () => {
+  const pod = `
+=begin defn
+C<doc:>
+
+=begin code :allow<B>
+  B<=NAME Dumper>
+  
+  You may wish to use L<B<doc:Dumper>> to
+  view the results.
+=end code
+=end defn
+  
+  `
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "config": Array [],
+            "content": Array [
+              Object {
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "doc:",
+                    ],
+                    "name": "C",
+                    "type": "fcode",
+                  },
+                ],
+                "name": "term",
+                "text": "C<doc:>",
+                "type": "para",
+              },
+              Object {
+                "type": "blankline",
+              },
+              Object {
+                "config": Array [
+                  Object {
+                    "name": "allow",
+                    "type": "array",
+                    "value": Array [
+                      "B",
+                    ],
+                  },
+                ],
+                "content": Array [
+                  "  ",
+                  Object {
+                    "content": Array [
+                      "=NAME Dumper",
+                    ],
+                    "name": "B",
+                    "type": "fcode",
+                  },
+                  "
+      
+      You may wish to use L<",
+                  Object {
+                    "content": Array [
+                      "doc:Dumper",
+                    ],
+                    "name": "B",
+                    "type": "fcode",
+                  },
+                  ">",
+                  " to
+      view the results.
+    ",
+                ],
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 11,
+                    "offset": 137,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 5,
+                    "offset": 22,
+                  },
+                },
+                "margin": "",
+                "name": "code",
+                "text": "=begin code :allow<B>
+      B<=NAME Dumper>
+      
+      You may wish to use L<B<doc:Dumper>> to
+      view the results.
+    =end code
+    ",
+                "type": "block",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 12,
+                "offset": 147,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 2,
+                "offset": 1,
+              },
+            },
+            "margin": "",
+            "name": "defn",
+            "type": "block",
+          },
+        ],
+        "level": 1,
+        "list": "variable",
+        "type": "list",
+      },
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "content": Array [
+          "  ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 3,
+            "line": 13,
+            "offset": 152,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 13,
+            "offset": 150,
+          },
+        },
+        "margin": "",
+        "text": "  ",
+        "type": "para",
+      },
+    ]
+  `)
+})
+
 it('spec: 09-configuration 1', () => {
   const pod = `
 =begin pod
