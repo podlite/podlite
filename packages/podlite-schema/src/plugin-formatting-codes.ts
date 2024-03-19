@@ -31,29 +31,32 @@ const middle: ParserPlugin = () => tree => {
           ...n,
           content: visiter(n.content, ctx, visiter),
         }
+
       const conf = makeAttrs(n, ctx)
       const isCodeBlock = 'name' in n && n.name === 'code'
       const isDataBlock = 'name' in n && n.name === 'data'
       const isMarkdownBlock = 'name' in n && n.name === 'markdown'
       const isPictureBlock = 'name' in n && n.name === 'picture'
-      const allowValues = conf.getAllValues('allow')
+      const allowValues = [...conf.getAllValues('allow'), ...(isCodeBlock ? ['NONE'] : [])]
+      if (isNamedBlock(n.name)) return n
       // for code block not parse content by default
       if ((isCodeBlock || isDataBlock || isMarkdownBlock || isPictureBlock) && allowValues.length == 0) return n
       const allowed = allowValues.sort()
-
       const transformer = makeTransformer({
         ':verbatim': (n: nVerbatim, ctx) => {
+          // special case for code block, 'NONE' - flag disabled all markup codes
+          // do not parse content by default
+          if (allowed.length == 1 && allowed.includes('NONE')) return n
           return fcparser.parse(n.value, { allowed })
         },
         ':text': (n: nText, ctx) => {
           return fcparser.parse(n.value, { allowed })
         },
         ':block': (n, ctx) => {
-          if (isNamedBlock(n.name)) return n
-          return { ...n, content: transformer(n.content, { ...ctx }) }
+          return transformerBlocks(n, { ...ctx })
         },
       })
-      return transformer(n, { ...ctx })
+      return { ...n, content: transformer(n.content, { ...ctx }) }
     },
   })
   return transformerBlocks(tree, {})
