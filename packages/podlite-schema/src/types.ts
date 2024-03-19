@@ -423,11 +423,10 @@ export interface BlockDiagram extends Omit<BlockNamed, 'content'> {
   custom?: { location: Location }
 }
 export interface BlockMermaid extends Omit<BlockNamed, 'content'> {
-    name: 'Mermaid'
-    content: [Verbatim]
-    custom?: { location: Location }
-  }
-
+  name: 'Mermaid'
+  content: [Verbatim]
+  custom?: { location: Location }
+}
 
 export type FormattingCodes =
   | FormattingCodeA
