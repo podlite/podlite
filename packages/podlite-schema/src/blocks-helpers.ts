@@ -40,7 +40,7 @@ export const mkFomattingCode = (attrs, content) => {
   return mkNode({ type: 'fcode', ...attrs, content })
 }
 
-export const mkFomattingCodeL = (attrs, content):FormattingCodeL => {
+export const mkFomattingCodeL = (attrs, content): FormattingCodeL => {
   let res = mkNode({ ...attrs, type: 'fcode', name: 'L', content: filterNulls(content) })
   return res
 }
