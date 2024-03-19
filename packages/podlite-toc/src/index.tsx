@@ -48,7 +48,7 @@ export const getContentForToc = (node: PodNode): string => {
       }
       if (node.type === 'block' && node.name === 'item') {
         if (Array.isArray(node.content) && node.content.length > 0) {
-            return getTextContentFromNode(node.content[0])
+          return getTextContentFromNode(node.content[0])
         }
       }
       return getTextContentFromNode(node)
@@ -81,7 +81,10 @@ export const plugin: Plugin = {
           const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
           //TODO: 1. getNodeId should use ctx of node, but using {} instead
           //TODO: 2. refactor linking for blocks
-          const para = mkNode({type:'para',content:[mkFomattingCodeL({meta:`#${getNodeId(node, {})}`},[text])]}) as PodNode;
+          const para = mkNode({
+            type: 'para',
+            content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, [text])],
+          }) as PodNode
           const tocNode = para
           resultList.push(mkTocItem(tocNode))
           if (Array.isArray(content) && content.length > 0) {
