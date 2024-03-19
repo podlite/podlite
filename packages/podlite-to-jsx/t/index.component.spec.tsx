@@ -678,6 +678,31 @@ it('id for headers', () => {
   `)
 })
 
+it('notification blocks =nested :notify<tip>', () => {
+  render(
+    <Podlite>
+      {`
+      =begin nested :notify<tip>
+      Remember to always use oven mitts when handling hot bakeware
+      to prevent burns.
+      =end nested`}
+    </Podlite>,
+  )
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <aside class="notify tip">
+      <p class="notify-title">
+        Tip
+      </p>
+      <blockquote>
+        <p>
+          Remember to always use oven mitts when handling hot bakeware
+          to prevent burns.
+        </p>
+      </blockquote>
+    </aside>
+  `)
+})
+
 it.skip('accepts =Mermaid', () => {
   render(
     <Podlite>
