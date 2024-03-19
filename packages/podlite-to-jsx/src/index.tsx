@@ -96,14 +96,14 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
         if (!nesting) {
           return children
         }
-        
+
         const arr = [...Array(nesting).keys()]
         return arr.reduce(acc => makeComponent('blockquote', node, acc), children)
       }
     }
   }
   // Handle nested block and :nested block attribute
-  const handleNotificationBlock = (defaultHandler) => {
+  const handleNotificationBlock = defaultHandler => {
     return (writer, processor) => {
       const defaultHandlerInited = defaultHandler(writer, processor)
       return (node, ctx, interator) => {
@@ -115,15 +115,22 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
         if (!notify) {
           return children
         }
-        return makeComponent(({ children, key }) => (
+        return makeComponent(
+          ({ children, key }) => (
             <aside className={`notify ${notify.toLowerCase()}`} key={key}>
-                <p className="notify-title">{ caption || notify.charAt(0).toUpperCase() + notify.slice(1) }</p>
-                {children}
-            </aside>), node,children,{  }, ctx)
+              <p className="notify-title">{caption || notify.charAt(0).toUpperCase() + notify.slice(1)}</p>
+              {children}
+            </aside>
+          ),
+          node,
+          children,
+          {},
+          ctx,
+        )
       }
     }
   }
-  
+
   return {
     pod: mkComponent('div'),
     root: nodeContent,
@@ -176,7 +183,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
       ],
       nodeContent,
     ),
-    nested: handleNotificationBlock( handleNested(nodeContent, 1)),
+    nested: handleNotificationBlock(handleNested(nodeContent, 1)),
     output: mkComponent(({ children, key }) => (
       <pre key={key}>
         <samp>{children}</samp>
