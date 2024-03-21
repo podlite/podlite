@@ -2,7 +2,7 @@
 
 ## Upcoming
 
-##  
+## 0.0.11
 
 -fix linking toc items
 

@@ -2,6 +2,12 @@
 
 ## Upcoming
 
+## 0.0.18
+
+- fix =toc links #6
+- fix :allow context for nested blocks
+- improved support for parentheses for markup codes
+
 ## 0.0.17
 
 - fix linking when publish

@@ -1,6 +1,24 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+=head1 0.0.38
+
+# @podlite/toc@0.0.11
+-fix linking toc items
+
+# @podlite/to-jsx@0.0.11
+- implement notification blocks
+
+# @podlite/schema@0.0.18
+
+- fix =toc links #6
+- fix :allow context for nested blocks
+- improved support for parentheses for markup codes
+
+# @podlite/editor-react@0.0.24
+
+- add default cursor position for `code` snippet
+- add support for notification blocks
 
 =head1 0.0.37
 

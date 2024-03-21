@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.24
+
+- add default cursor position for `code` snippet
+- add support for notification blocks
+
 ## 0.0.22
 
 - support for `=Mermaid` block

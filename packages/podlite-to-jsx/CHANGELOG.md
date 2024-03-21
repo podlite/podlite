@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.22
+
+- implement notification blocks
+
 ## 0.0.21
 
 -fix anchors
