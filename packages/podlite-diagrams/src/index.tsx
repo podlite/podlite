@@ -88,6 +88,6 @@ export const plugin: Plugin = {
 }
 export const PluginRegister: Plugins = {
   Diagram: plugin, // TODO: deprecate it
-  Mermaid: plugin
+  Mermaid: plugin,
 }
 export default Diagram

@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
-    Mermaid: DiagramPlugin
+    Mermaid: DiagramPlugin,
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAstResult(tree)
@@ -17,7 +17,7 @@ const parse = (str: string): PodliteDocument => {
 const parseToHtml = (str: string): string => {
   let podlite = podlitePluggable().use({
     Diagram: DiagramPlugin,
-    Mermaid: DiagramPlugin
+    Mermaid: DiagramPlugin,
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAst(tree)
