@@ -1,4 +1,4 @@
-import { toTree, toHtml } from '../..'
+import { toTree, toHtml } from '../../src'
 
 it('spec: 08-formattingcodes 0', () => {
   const pod = `
@@ -554,79 +554,98 @@ it('spec: 08-formattingcodes 5', () => {
 })
 
 it('spec: 08-formattingcodes 6', () => {
-    const pod = `=pod C«key => 1»`
-    const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
-    console.log(JSON.stringify(tree, null, 2))
-    // expect(tree).toMatchInlineSnapshot(`
-    //   Array [
-    //     Object {
-    //       "content": Array [
-    //         Object {
-    //           "content": Array [
-    //             Object {
-    //               "content": Array [
-    //                 "bo",
-    //                 Object {
-    //                   "content": Array [
-    //                     "o",
-    //                   ],
-    //                   "name": "I",
-    //                   "type": "fcode",
-    //                 },
-    //               ],
-    //               "name": "B",
-    //               "type": "fcode",
-    //             },
-    //             " ",
-    //             Object {
-    //               "content": Array [
-    //                 "test",
-    //               ],
-    //               "name": "C",
-    //               "type": "fcode",
-    //             },
-    //             " ",
-    //             Object {
-    //               "content": Array [
-    //                 "test",
-    //               ],
-    //               "name": "C",
-    //               "type": "fcode",
-    //             },
-    //           ],
-    //           "location": Object {
-    //             "end": Object {
-    //               "column": 31,
-    //               "line": 1,
-    //               "offset": 30,
-    //             },
-    //             "start": Object {
-    //               "column": 1,
-    //               "line": 1,
-    //               "offset": 0,
-    //             },
-    //           },
-    //           "margin": "",
-    //           "text": "B«boI<o>» C«test» C<test>",
-    //           "type": "para",
-    //         },
-    //       ],
-    //       "location": Object {
-    //         "end": Object {
-    //           "column": 31,
-    //           "line": 1,
-    //           "offset": 30,
-    //         },
-    //         "start": Object {
-    //           "column": 1,
-    //           "line": 1,
-    //           "offset": 0,
-    //         },
-    //       },
-    //       "margin": "",
-    //       "name": "pod",
-    //       "type": "block",
-    //     },
-    //   ]
-    // `)
-  })
+  const pod = `=pod C«key => 1»`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "content": Array [
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "key => 1",
+                ],
+                "name": "C",
+                "type": "fcode",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 17,
+                "line": 1,
+                "offset": 16,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "margin": "",
+            "text": "C«key => 1»",
+            "type": "para",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 17,
+            "line": 1,
+            "offset": 16,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 1,
+            "offset": 0,
+          },
+        },
+        "margin": "",
+        "name": "pod",
+        "type": "block",
+      },
+    ]
+  `)
+})
+
+it('spec: 08-formattingcodes 7', () => {
+  const pod = `B«M<» This text is highlighted in yellow B«|Marker :color('yellow')>»`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "content": Array [
+          Object {
+            "content": Array [
+              "M<",
+            ],
+            "name": "B",
+            "type": "fcode",
+          },
+          " This text is highlighted in yellow ",
+          Object {
+            "content": Array [
+              "|Marker :color('yellow')>",
+            ],
+            "name": "B",
+            "type": "fcode",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 70,
+            "line": 1,
+            "offset": 69,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 1,
+            "offset": 0,
+          },
+        },
+        "margin": "",
+        "text": "B«M<» This text is highlighted in yellow B«|Marker :color('yellow')>»",
+        "type": "para",
+      },
+    ]
+  `)
+})
