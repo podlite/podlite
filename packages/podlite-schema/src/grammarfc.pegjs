@@ -73,7 +73,11 @@ looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}
 text_C = text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / not_code )+ {return text}
 code_C = 
     name:start_code_2 &{ return name.code === "C" }
-    content:( text_C )+
+    content:(  
+        /*  TODO: refactor this after "Parametric rules" will be implemented 
+        https://github.com/pegjs/pegjs/issues/107#issuecomment-10256137
+        */
+        text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / text:$(!(etag:end_code &{ return  etag === name.end_tag }) !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
     end_tag:end_code &{ return  end_tag === name.end_tag }
      {
          return  { 
@@ -211,11 +215,25 @@ code_E =
 start_code = name:$(allowed_code) '<' { return name }
 start_code_2 = name:$(allowed_code) begin_tag:$('<' / '«') { return {code:name,begin_tag,end_tag:get_pair_tag(begin_tag)} }
 end_code = '>' / '»'
+// TODO: use later this declaration of code_2
+// code_2 = 
+//         name:start_code_2 &{ return name.code !== 'C' }
+//         content:(  
+//                   allowed_rules / code_2 /  text  
+//            )* 
+//         end_tag:end_code &{ return  end_tag === name.end_tag}  
+// { return {content, type:'fcode', name:name.code }}
 
 code_2 = 
         name:start_code_2 &{ return name.code !== 'C' }
         content:(  
-                      allowed_rules / code_2 / text 
+                  allowed_rules / code_2 / 
+                        /*  TODO: refactor this after "Parametric rules" will be implemented 
+                            https://github.com/pegjs/pegjs/issues/107#issuecomment-10256137
+                        */
+                  text:$( '<' text '>' / '«' text '»' / looks_like_code / 
+                    ( text:$(!(etag:end_code &{ return  etag === name.end_tag }) !start_code_2 !looks_like_code .)+ {return text}) 
+                                                                         )+ {return text} 
            )* 
         end_tag:end_code &{ return  end_tag === name.end_tag}  
 { return {content, type:'fcode', name:name.code }}
