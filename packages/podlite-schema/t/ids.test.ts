@@ -1,4 +1,12 @@
-import { getFromTree, getNodeId, getTextContentFromNode, mkRootBlock, PodliteDocument, toTree, validatePodliteAst } from '@podlite/schema'
+import {
+  getFromTree,
+  getNodeId,
+  getTextContentFromNode,
+  mkRootBlock,
+  PodliteDocument,
+  toTree,
+  validatePodliteAst,
+} from '@podlite/schema'
 import middleware from '../../core/src/ids'
 import { cleanLocalHrefs, frozenIds, slugifyText } from '../src/helpers/ids'
 
@@ -138,15 +146,13 @@ test`)
 })
 
 const getTree = (text: string, opt?): PodliteDocument => {
-    const rawTree = toTree()
-      .parse(text, (opt = { skipChain: 0, podMode: 1 }))
-    const root = mkRootBlock({ margin: '' }, rawTree)
-    return root
-  }
-
+  const rawTree = toTree().parse(text, (opt = { skipChain: 0, podMode: 1 }))
+  const root = mkRootBlock({ margin: '' }, rawTree)
+  return root
+}
 
 it('[slugifyText] multypass', () => {
-    const pass1 = slugifyText('item id<> test');
-    const pass2 = slugifyText(pass1);
-    expect(pass1).toEqual(pass2)
-  })
+  const pass1 = slugifyText('item id<> test')
+  const pass2 = slugifyText(pass1)
+  expect(pass1).toEqual(pass2)
+})
