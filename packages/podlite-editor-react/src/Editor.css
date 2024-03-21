@@ -93,7 +93,7 @@
     font-size: 15px;
   } */
   
-  /* Start pod6 */ 
+  /* Start podlite */ 
   body {
     margin: 0;
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
@@ -223,8 +223,62 @@
   .caption {
     text-align: center;
     font-size: 0.9rem;
+  }
+
+aside.notify {
+    border-left: .25em solid;
+    padding-left: 1rem ;
 }
-  /* End of pod6 */ 
+
+aside.notify>:first-child {
+    margin-top: 0
+}
+
+aside.notify>:last-child {
+    margin-bottom: 0
+}
+
+aside.notify.note {
+    border-left-color: #0085f2
+}
+
+aside.notify.note .notify-title {
+    color:  #0085f2
+}
+
+aside.notify.tip {
+    border-left-color: #007936;
+}
+
+aside.notify.tip .notify-title {
+    color: #007936;
+}
+
+
+aside.notify.important {
+    border-left-color: #8250df
+}
+
+aside.notify.important .notify-title {
+    color: #8250df
+}
+
+aside.notify.warning {
+    border-left-color: #9a6700;;
+}
+
+aside.notify.warning .notify-title {
+    color: #9a6700;;
+}
+
+aside.notify.caution {
+    border-left-color: #d30038;
+}
+
+aside.notify.caution .notify-title {
+    color: #d30038;
+}
+  /* End of podlite */ 
   
   
   .CodeMirror {
