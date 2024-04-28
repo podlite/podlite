@@ -23,6 +23,7 @@ import {
   frozenIds,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
+import { decodeHTMLStrict } from 'entities'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -241,9 +242,16 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
     'E<>': (writer, processor) => (node, ctx, interator) => {
       if ('content' in node && Array.isArray(node.content))
         return node.content
-          .filter(e => e && e.type == 'number')
+          .filter(e => e && e.type)
           .map(element => {
-            return String.fromCharCode(element.value)
+            if (element.type == 'number' && 'value' in element) {
+              return String.fromCharCode(element.value)
+            }
+            if (element.type == 'html_named' && 'value' in element) {
+              return decodeHTMLStrict(`&${element.value};`)
+            }
+            console.warn(`[jsx] E<> unsupported or unknown element type: ${element.type}`)
+            return ''
           })
           .join('')
     },

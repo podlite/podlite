@@ -11,6 +11,7 @@
   "dependencies": {
     "@podlite/diagram": "workspace:^",
     "@podlite/schema": "workspace:*",
+    "entities": "^4.5.0",
     "podlite": "workspace:*",
     "react-is": "^17.0.0"
   },
