@@ -173,7 +173,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
 
     ':blankline': emptyContent(),
     ':para': mkComponent('p'),
-    para: mkComponent('div'),
+    para: handleNested(mkComponent('div')),
     'comment:block': emptyContent(),
     defn: subUse(
       [
