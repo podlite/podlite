@@ -551,7 +551,7 @@ function podlite(
             interator(node.content, { ...ctx }),
           )
         }
-        console.warn('[podlite] Not supported: ' + JSON.stringify(node, null, 2))
+        console.warn('[to-jsx] Not supported: ' + JSON.stringify(node, null, 2))
         return createElement('code', { key: ++i_key_i }, `not supported node:${JSON.stringify(node, null, 2)}`)
       },
     })

@@ -33,7 +33,7 @@ function thisFunc(rules) {
       }
 
       if (typeof reversed[ruleIndex].fn !== 'function') {
-        console.warn('[pod6] bad fn for ' + JSON.stringify(node, null, 2))
+        console.warn('[podlite] bad fn for ' + JSON.stringify(node, null, 2))
       }
       return reversed[ruleIndex].fn(node, context, interator, defaultFn)
     } else {

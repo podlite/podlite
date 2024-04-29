@@ -76,11 +76,11 @@ export function is(query, node) {
   if (isEmpty(query)) return true
   for (var prop in query) {
     if (query === undefined) {
-      console.warn('[pod6] undefined key!!!')
+      console.warn('[podlite] undefined key!!!')
     }
     if (query.hasOwnProperty(prop)) {
       if (node === undefined) {
-        console.warn('[pod6] undefined node!!!')
+        console.warn('[podlite] undefined node!!!')
       }
       if (node && node.hasOwnProperty(prop)) {
         if (query[prop] !== node[prop]) {

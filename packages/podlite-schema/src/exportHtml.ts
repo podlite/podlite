@@ -280,7 +280,7 @@ const toHtml = opt =>
           writer.write(name)
           writer.writeRaw('</h1>')
         } else {
-          console.warn('[pod6] Unhandled node' + JSON.stringify(node, null, 2))
+          console.warn('[podlite] Unhandled node' + JSON.stringify(node, null, 2))
         }
         if (node.hasOwnProperty('content')) {
           interator(node.content, ctx)
