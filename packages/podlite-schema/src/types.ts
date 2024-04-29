@@ -178,10 +178,20 @@ export interface FormattingCodeC {
 export interface FormattingCodeE {
   type: 'fcode'
   name: 'E'
-  content: Array<{
-    type: 'number'
-    value: number
-  }>
+  content: Array<
+    | {
+        type: 'number'
+        value: number
+      }
+    | {
+        type: 'unicode_name'
+        value: string
+      }
+    | {
+        type: 'html_named'
+        value: string
+      }
+  >
 }
 
 export interface FormattingCodeN {

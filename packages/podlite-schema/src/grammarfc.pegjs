@@ -186,12 +186,16 @@ number = $([0-9]+)
 decimalNumber ='0d' number:number { return parseInt(number,10) }
 octalNumber = '0o' number:number { return parseInt(number,8) }
 binaryNumber = '0b' number:number { return parseInt(number,2) }
-hexadecimalNumber = $('0x' ([0-9A-Fa-f])+){ return parseInt(text()) }
+hexadecimalNumber = $('0x' ([0-9A-Fa-f])+) { return parseInt(text()) }
+unicodeCharacterName = $([A-Z ]+) &{ return  text() === text().toUpperCase() } {return text()}
+htmlNamedCharacterReference = s:$([a-z][a-z0-9]+) {return text()}
 
 
 // Only numbers is supported at this time
 //TODO: add Unicode character name
 item_E =  _ number: ( octalNumber / decimalNumber / binaryNumber / hexadecimalNumber / number  ) { return { type: 'number', value:parseInt(number,10)}}
+        / _ name: unicodeCharacterName { return { type: 'unicode_name', value:name}}
+        / _ name: htmlNamedCharacterReference { return { type: 'html_named', value:name}}
             
 
 
