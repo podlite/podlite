@@ -743,3 +743,41 @@ A<TERMS_URLS>
   console.log(root.innerHTML)
   // expect(root.innerHTML).toMatchInlineSnapshot();
 })
+
+it('process HTML entities', () => {
+  render(
+    <Podlite>
+      {`
+  =begin pod
+  
+  =for para :nested
+  E<bull> Animal
+  =for para :nested(2)
+  E<ndash> Vertebrate
+  =end pod
+      `}
+    </Podlite>,
+  )
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div id="id">
+      <blockquote>
+        <div id="id">
+          <p>
+            • Animal
+          </p>
+        </div>
+      </blockquote>
+      <blockquote>
+        <blockquote>
+          <div id="id">
+            <p>
+              – Vertebrate
+            </p>
+          </div>
+        </blockquote>
+      </blockquote>
+    </div>
+    <p>
+    </p>
+  `)
+})
