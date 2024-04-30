@@ -14,7 +14,6 @@
 - support for `=picture` block
 - fix detect markdown context for suggestions
 
-
 ## 0.0.20
 
 - support for `=toc` block
