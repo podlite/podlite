@@ -3,7 +3,6 @@
   "version": "0.0.11",
   "description": "'Table of contents' plugin for Podlite markup language",
   "main": "./src/index.tsx",
-  "types": "./lib/index.d.ts",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo",

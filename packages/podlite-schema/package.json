@@ -3,7 +3,6 @@
   "version": "0.0.18",
   "description": "AST tools for Podlite markup language",
   "main": "./src/index.ts",
-  "types": "./lib/index.d.ts",
   "license": "MIT",
   "files": [
     "lib/**/*.js",

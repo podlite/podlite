@@ -3,7 +3,6 @@
   "version": "0.0.31",
   "description": "Podlite - a lightweight block-based markup language",
   "main": "./src/index.ts",
-  "types": "lib/index.d.ts",
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
     "build": "yarn g:build",
