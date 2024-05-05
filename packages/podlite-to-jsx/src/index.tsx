@@ -212,7 +212,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
       return emptyContent()
     }),
 
-    // Formatting codes
+    // Markup codes
     'A<>': (writer, processor) => (node, ctx, interator) => {
       let term = node.content
       if (typeof term !== 'string' && 'value' in term) {

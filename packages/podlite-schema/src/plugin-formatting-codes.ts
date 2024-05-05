@@ -37,10 +37,15 @@ const middle: ParserPlugin = () => tree => {
       const isDataBlock = 'name' in n && n.name === 'data'
       const isMarkdownBlock = 'name' in n && n.name === 'markdown'
       const isPictureBlock = 'name' in n && n.name === 'picture'
+      const isFormulaBlock = 'name' in n && n.name === 'formula'
       const allowValues = [...conf.getAllValues('allow'), ...(isCodeBlock ? ['NONE'] : [])]
       if (isNamedBlock(n.name)) return n
       // for code block not parse content by default
-      if ((isCodeBlock || isDataBlock || isMarkdownBlock || isPictureBlock) && allowValues.length == 0) return n
+      if (
+        (isCodeBlock || isDataBlock || isMarkdownBlock || isPictureBlock || isFormulaBlock) &&
+        allowValues.length == 0
+      )
+        return n
       const allowed = allowValues.sort()
       const transformer = makeTransformer({
         ':verbatim': (n: nVerbatim, ctx) => {

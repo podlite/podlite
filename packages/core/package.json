@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@podlite/diagram": "workspace:^",
+    "@podlite/formula": "workspace:*",
     "@podlite/image": "workspace:^",
     "@podlite/markdown": "workspace:*",
     "@podlite/schema": "workspace:^",

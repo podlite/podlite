@@ -24,6 +24,7 @@
         'comment',
         'data',
         'defn',
+        'formula',
         'head',
         'input',
         'item',
@@ -227,7 +228,7 @@ delimitedBlockRaw =
     markerBegin name:strictIdentifier _ config:pod_configuration 
     &{ 
      return ( 
-       (name.match(/code|comment|output|input|markdown|picture|toc|data/))
+       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -446,7 +447,7 @@ abbreviatedBlockRaw =
   name:markerAbbreviatedBlock _ emptyline? 
     &{  
      return ( 
-       (name.match(/code|comment|output|input|markdown|picture|toc|data/))
+       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
         || 
         isNamedBlock(name)
       )
@@ -544,7 +545,7 @@ paragraphBlockRaw =
   marker:markerFor  name:strictIdentifier _ config:pod_configuration 
       &{  
      return ( 
-       (name.match(/code|comment|output|input|markdown|picture|toc|data/))
+       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
         || 
         isNamedBlock(name)
       )
