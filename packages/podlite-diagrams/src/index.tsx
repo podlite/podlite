@@ -79,7 +79,7 @@ export const plugin: Plugin = {
     const id = getNodeId(node, ctx)
     return helper(
       ({ children, key }) => {
-        return <Diagram id={id} isError={node.custom} caption={caption} chart={node.content[0].value} />
+        return <Diagram key={key} id={id} isError={node.custom} caption={caption} chart={node.content[0].value} />
       },
       node,
       interator(node.content, { ...ctx }),
