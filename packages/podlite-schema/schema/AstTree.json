@@ -267,6 +267,9 @@
                     "minItems": 2,
                     "maxItems": 2
                 },
+                "margin": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
@@ -275,9 +278,6 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
-                },
-                "margin": {
-                    "type": "string"
                 },
                 "config": {
                     "type": "array",
@@ -480,6 +480,9 @@
                     "minItems": 2,
                     "maxItems": 2
                 },
+                "margin": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
@@ -488,9 +491,6 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
-                },
-                "margin": {
-                    "type": "string"
                 },
                 "config": {
                     "type": "array",
@@ -529,14 +529,14 @@
                 "content": {
                     "$ref": "#/definitions/AstTree"
                 },
+                "margin": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
                         "block"
                     ]
-                },
-                "margin": {
-                    "type": "string"
                 },
                 "config": {
                     "type": "array",
@@ -2310,6 +2310,9 @@
                 "text": {
                     "type": "string"
                 },
+                "margin": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
@@ -2318,9 +2321,6 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
-                },
-                "margin": {
-                    "type": "string"
                 },
                 "config": {
                     "type": "array",
@@ -2495,6 +2495,9 @@
                         }
                     ]
                 },
+                "margin": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
@@ -2503,9 +2506,6 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
-                },
-                "margin": {
-                    "type": "string"
                 },
                 "config": {
                     "type": "array",
