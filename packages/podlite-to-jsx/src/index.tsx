@@ -21,6 +21,7 @@ import {
   toAnyRules,
   PodliteExport,
   frozenIds,
+  JSXHelper,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
@@ -28,7 +29,7 @@ import { decodeHTMLStrict } from 'entities'
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
 export type CreateElement = typeof React.createElement
-const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }) => {
+const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHelper => {
   let i_key_i = 0
   let mapByType = {}
   const getIdForNode = ({ type = 'notype', name = 'noname' }) => {
@@ -78,7 +79,7 @@ export const Podlite: React.FC<{
   const result: any = podlite(children, options)
   return result
 }
-const mapToReact = (makeComponent): Partial<RulesStrict> => {
+const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
     // prepare extraProps for createElement
     // add id attribute if exists
@@ -298,6 +299,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
             </div>
           ),
           {},
+          [],
         )
 
         writer.postInterator.push(FootNotes)
@@ -333,6 +335,7 @@ const mapToReact = (makeComponent): Partial<RulesStrict> => {
             </sup>
           ),
           node,
+          [],
         )
       }
     },

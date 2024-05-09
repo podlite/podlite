@@ -3,7 +3,13 @@ import { inlineRef } from 'ajv/dist/compile/resolve'
 export interface RuleHandler<T = any> {
   (writer: any, processor: any, tree: PodliteDocument): (node: T, ctx: any, interator: any) => void | AstTree | PodNode
 }
-export type JSXHelper = (src: string | Function, node: PodNode, children: any, extraProps?: {}, ctx?: {}) => any
+export type JSXHelper = (
+  src: string | Function,
+  node: PodNode | {},
+  children: React.ReactNode[],
+  extraProps?: {},
+  ctx?: {},
+) => any
 
 export interface Plugin<T = any> {
   toAst?: RuleHandler<T>
