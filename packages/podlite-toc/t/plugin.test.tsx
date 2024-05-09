@@ -1,7 +1,7 @@
 import { frozenIds, getFromTree, PodliteDocument, podlitePluggable, validatePodliteAst } from '@podlite/schema'
 import { plugin } from '../src/index'
 import Image from '@podlite/image'
-import { cleanLocalHrefs } from '@podlite/schema/src/helpers/ids'
+import { setAllLinksToAnchor } from '@podlite/schema/src/helpers/ids'
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable().use({
@@ -239,7 +239,7 @@ const parseToHtml1 = (str: string): string => {
   })
   let tree = podlite.parse(str)
   const asAst = podlite.toAst(frozenIds()(tree))
-  return podlite.toHtml(cleanLocalHrefs()(frozenIds()(asAst))).toString()
+  return podlite.toHtml(setAllLinksToAnchor()(frozenIds()(asAst))).toString()
 }
 
 it('=toc item', () => {

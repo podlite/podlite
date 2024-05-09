@@ -53,7 +53,7 @@ export const frozenIds =
     return transformerBlocks(tree, {})
   }
 
-export const cleanLocalHrefs =
+export const setAllLinksToAnchor =
   (src = { skipChain: 0, podMode: 1 }) =>
   tree => {
     const transformerBlocks = makeTransformer({

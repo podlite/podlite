@@ -8,7 +8,7 @@ import {
   validatePodliteAst,
 } from '@podlite/schema'
 import middleware from '../../core/src/ids'
-import { cleanLocalHrefs, frozenIds, slugifyText } from '../src/helpers/ids'
+import { setAllLinksToAnchor, frozenIds, slugifyText } from '../src/helpers/ids'
 
 export const parse = (text: string, opt?): PodliteDocument => {
   const rawTree = toTree()
@@ -45,7 +45,7 @@ it('[cleanHrefs] local links', () => {
   const parsed = parse(`L<test|#PARA>
 =for item :id<PARA>
 test`)
-  const p = cleanLocalHrefs()(frozenIds()(parsed))
+  const p = setAllLinksToAnchor()(frozenIds()(parsed))
   const r = validatePodliteAst(p)
   expect(r).toEqual([])
   expect(p).toMatchInlineSnapshot(`
