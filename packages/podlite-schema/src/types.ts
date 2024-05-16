@@ -1,10 +1,13 @@
-import { inlineRef } from 'ajv/dist/compile/resolve'
+import * as React from 'react'
 
 export interface RuleHandler<T = any> {
   (writer: any, processor: any, tree: PodliteDocument): (node: T, ctx: any, interator: any) => void | AstTree | PodNode
 }
+
+type createComponentParams = PodNode & { children: React.ReactNode[] } & { key: string | number }
+
 export type JSXHelper = (
-  src: string | Function,
+  src: string | (({}: createComponentParams, children: React.ReactNode[]) => React.ReactNode[] | React.ReactNode),
   node: PodNode | {},
   children: React.ReactNode[],
   extraProps?: {},
