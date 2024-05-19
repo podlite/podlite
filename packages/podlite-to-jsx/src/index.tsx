@@ -40,7 +40,7 @@ const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHel
     ++mapByType[type_idx]
     return `${type_idx}_${mapByType[type_idx]}`
   }
-  return function (src: string | Function, node: PodNode, children, extraProps = {}, ctx = {}) {
+  return function (src, node: PodNode, children, extraProps = {}, ctx = {}) {
     // for string return it
     if (typeof node == 'string') {
       return node
@@ -66,7 +66,7 @@ const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHel
 }
 
 export interface WrapElement {
-  (node: PodNode, children: React.ReactChild, ctx: any): JSX.Element
+  (node: PodNode, children: React.ReactNode[] | React.ReactNode, ctx: any): JSX.Element
 }
 export const Podlite: React.FC<{
   [key: string]: any
