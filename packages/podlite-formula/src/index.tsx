@@ -94,14 +94,7 @@ export const FormulaPlugin: Plugin = {
     return helper(
       ({ children, key }) => {
         return (
-          <Formula
-            key={key}
-            isInline={isInlineContext}
-            id={id}
-            isError={node.custom}
-            caption={caption}
-            formula={node.content[0].value}
-          />
+          <Formula key={key} isInline={isInlineContext} id={id} caption={caption} formula={node.content[0]?.value} />
         )
       },
       node,
