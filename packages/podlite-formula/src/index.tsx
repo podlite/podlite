@@ -5,40 +5,27 @@ import KaTeX from 'katex'
 
 const Formula = ({
   formula,
-  isError,
   isInline = false,
   caption,
   id,
 }: {
   formula: string
-  isError: any
   caption?: string
   id?: string
   isInline: boolean
 }) => {
-  const inputEl = useRef(null)
-
-  useEffect(() => {
-    if (isError) {
-      console.log(isError)
-      return
-    }
-    try {
-      KaTeX.render(formula, inputEl.current, {
-        displayMode: !isInline,
-        throwOnError: false,
-      })
-    } catch (e) {
-      console.log({ e })
-    }
-  }, [formula])
+  const element = (
+    <>
+      <Tex2ChtmlWithProvider className={`${isInline ? 'f-code' : 'formula'}`} latex={formula} inline={isInline} />
+      {caption ? <div className="caption">{caption}</div> : null}
+    </>
+  )
 
   return isInline ? (
-    <span className={`f-code${isError ? ' error' : ''}`} ref={inputEl}></span>
+    element
   ) : (
     <div className="formula" id={id}>
-      <div className={`formula${isError ? ' error' : ''}`} ref={inputEl} />
-      {caption ? <div className="caption">{caption}</div> : null}
+      {element}
     </div>
   )
 }
