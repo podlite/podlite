@@ -33,8 +33,9 @@
     "react-dom": "^16.0.0 || ^17.0.0",
     "react-is": "^17.0.0",
     "remark-gfm": "^3.0.1",
+    "remark-math": "5.1.1",
     "remark-parse": "^10.0.1",
-    "unified": "^10.1.2"
+    "unified": "10.1.2"
   },
   "devDependencies": {
     "esbuild": "^0.15.16",
