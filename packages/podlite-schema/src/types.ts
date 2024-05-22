@@ -37,6 +37,7 @@ export interface RulesStrict {
   'C<>': RuleHandler<FormattingCodeC>
   'D<>': RuleHandler<FormattingCodeD>
   'E<>': RuleHandler<FormattingCodeE>
+  'F<>': RuleHandler<FormattingCodeF>
   'I<>': RuleHandler<FormattingCodeI>
   'K<>': RuleHandler<FormattingCodeAny>
   'R<>': RuleHandler<FormattingCodeAny>
@@ -204,6 +205,14 @@ export interface FormattingCodeE {
         value: string
       }
   >
+}
+export interface FormattingCodeF {
+  type: 'fcode'
+  name: 'F'
+  content: Array<{
+    type: 'text'
+    value: string
+  }>
 }
 
 export interface FormattingCodeN {
@@ -450,12 +459,18 @@ export interface BlockMermaid extends Omit<BlockNamed, 'content'> {
   custom?: { location: Location }
 }
 
+export interface BlockFormula extends Omit<BlockNamed, 'content'> {
+  name: 'formula'
+  content: [Verbatim]
+}
+
 export type FormattingCodes =
   | FormattingCodeA
   | FormattingCodeC
   | FormattingCodeB
   | FormattingCodeD
   | FormattingCodeE
+  | FormattingCodeF
   | FormattingCodeI
   | FormattingCodeL
   | FormattingCodeN
@@ -469,6 +484,7 @@ export type PodNode =
   | Ambient //TODO: Needs move to outside of 'pod' block ?
   | BlockPod
   | BlockData
+  | BlockFormula
   | BlockCode
   | BlankLine
   | BlockNested
