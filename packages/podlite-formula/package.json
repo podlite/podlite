@@ -5,8 +5,8 @@
   "main": "./src/index.tsx",
   "license": "MIT",
   "scripts": {
-    "clean": "rm -rf dist lib *.tsbuildinfo",
-    "build": "yarn g:build",
+    "clean": "rm -rf esm lib *.tsbuildinfo",
+    "build": "yarn g:build && yarn g:copy_assets",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "files": [
@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "katex": "^0.16.10",
     "react-is": "^17.0.2"
   },
   "peerDependencies": {
