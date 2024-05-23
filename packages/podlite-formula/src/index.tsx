@@ -1,7 +1,6 @@
 import React from 'react'
 import { Plugin, Plugins, getNodeId, makeAttrs } from '@podlite/schema'
 import { Tex2ChtmlWithProvider } from './MathJax'
-import './default.css'
 
 const Formula = ({
   formula,
