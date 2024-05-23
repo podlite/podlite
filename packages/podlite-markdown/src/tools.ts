@@ -1,6 +1,8 @@
 import { unified } from 'unified'
 import markdown from 'remark-parse'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+
 import {
   toAny,
   AstTree,
@@ -10,6 +12,8 @@ import {
   mkFomattingCodeL,
   mkVerbatim,
   Location,
+  mkMarkupCodeF,
+  mkFormulaBlock,
 } from '@podlite/schema'
 import { mkRootBlock } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
@@ -19,7 +23,8 @@ import { mkFomattingCodeDelete } from '@podlite/schema'
 type Md2astArgs = { lineOffset?: number }
 export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0 }): AstTree => {
   // first convert mardown to ast
-  const md_tree = unified().use(markdown).use(remarkGfm).parse(src)
+  const md_tree = unified().use(markdown).use(remarkGfm).use(remarkMath).parse(src)
+
   // first pass : collect linkRefs
   let definitionMap = {}
   const applyLineOffset = (
