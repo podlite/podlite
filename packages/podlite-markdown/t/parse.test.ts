@@ -1196,3 +1196,19 @@ graph TD;
   `)
   // console.log(JSON.stringify(tree, null,2 ))
 })
+it('[markdown]: parse formulas', () => {
+  const pod = `
+test \$x+1\over\sqrt{1-x^2}\$
+ 
+  $$
+   L = \frac{1}{2} \rho v^2 S C_L
+  tes
+  $$
+  `
+  const tree = process(pod)
+
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  // expect(process(pod)).toMatchInlineSnapshot()
+  //   console.log(JSON.stringify(tree, null, 2))
+})
