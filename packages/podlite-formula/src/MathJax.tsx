@@ -10,6 +10,72 @@ export type ContextProps = {
   options?: {}
   src?: string
 }
+
+const MathJaxContext = createContext({})
+
+export type Tex2SVGProps = { [key: string]: any } & {
+  latex: string
+  onError?: (html: HTMLElement) => void
+  onSuccess?: (html: HTMLElement) => void
+  inline?: boolean
+}
+
+export const Tex2SVGWithProvider: React.FC<Tex2SVGProps> = props => (
+  <MathJaxProvider src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    <Tex2SVG {...props} />
+  </MathJaxProvider>
+)
+
+export const MathJaxProvider: React.FC<ContextProps> = ({
+  src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js',
+  options = {},
+  children = null,
+}) => {
+
+  const [mathJax, setMathJax] = useState(typeof window === 'undefined' ? null : window.MathJax)
+
+  useEffect(() => {
+    const existingScript = document.getElementById('mathjax-script')
+
+    if (existingScript) {
+      const onLoad = existingScript.onload as () => {}
+      existingScript.onload = () => {
+        onLoad()
+        setMathJax(window.MathJax)
+      }
+    }
+    console.log('try to load mathjax script' + (!existingScript && !window.MathJax))
+    if (!existingScript && !window.MathJax) {
+      const script = document.createElement('script')
+
+      window.MathJax = {
+        tex: {
+          inlineMath: [],
+          displayMath: [],
+        },
+        options: {
+          enableMenu: false,
+        },
+        startup: {
+          elements: null,
+          typeset: false,
+        },
+      }
+      script.id = 'mathjax-script'
+      // "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js";
+      // "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js";
+      // 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js'
+      script.src = src
+      script.async = true
+      script.onload = () => setMathJax(window.MathJax)
+      document.head.appendChild(script)
+    }
+
+    return () => {}
+  })
+  return <MathJaxContext.Provider value={mathJax}>{children}</MathJaxContext.Provider>
+}
+
 export function useTexChtml({
   latex = '',
   inline = false,
