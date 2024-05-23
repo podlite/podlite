@@ -11,6 +11,8 @@ import {
   Node,
   Image,
   FormattingCodeL,
+  FormattingCodeF,
+  BlockFormula,
 } from './types'
 import { nanoid } from 'nanoid'
 
@@ -41,13 +43,15 @@ export const mkFomattingCode = (attrs, content) => {
 }
 
 export const mkFomattingCodeL = (attrs, content): FormattingCodeL => {
-  let res = mkNode({ ...attrs, type: 'fcode', name: 'L', content: filterNulls(content) })
-  return res
+  return mkNode({ ...attrs, type: 'fcode', name: 'L', content: filterNulls(content) })
 }
 
 export const mkFomattingCodeDelete = content => {
-  let res = mkNode({ type: 'fcode', name: 'Delete', content: filterNulls(content) })
-  return res
+  return mkNode({ type: 'fcode', name: 'Delete', content: filterNulls(content) })
+}
+
+export const mkMarkupCodeF = (formula: string): FormattingCodeF => {
+  return mkNode({ type: 'fcode', name: 'F', content: [{ type: 'text', value: formula }] })
 }
 
 export const mkVerbatim = text => {
@@ -91,4 +95,7 @@ export interface mkBlockItemParams {
 
 export const mkItemBlock = ({ level, location, margin }: mkBlockItemParams, content: AstTree): BlockItem => {
   return mkBlock({ name: 'item', level, margin, location }, content)
+}
+export const mkFormulaBlock = ({ value, location }): BlockFormula => {
+  return mkBlock({ name: 'formula', location }, [mkVerbatim(value)])
 }
