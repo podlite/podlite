@@ -56,6 +56,33 @@ export function useTexChtml({
   return [html, { error, isLoading }]
 }
 
+export const Tex2Chtml: React.FC<Tex2SVGProps> = ({
+  latex = '',
+  inline = false,
+  className = inline ? 'f-code' : 'formula',
+  onError = (html: HTMLElement) => {},
+  onSuccess = (html: HTMLElement) => {},
+  ...props
+}) => {
+  const ref = useRef<HTMLElement | null>(null)
+  const [html, { error }] = useTexChtml({ latex, onError, onSuccess, inline })
+  useEffect(() => {
+    if (html && !error) {
+      Object.keys(props).map(key => html.setAttribute(key, props[key]))
+      ref.current?.appendChild(html)
+      return () => {
+        ref.current?.removeChild(html)
+      }
+    }
+
+    return () => {}
+  }, [props, html])
+  return React.createElement(inline ? 'span' : 'div', {
+    className,
+    ref: ref,
+  })
+}
+
 export const Tex2ChtmlWithProvider: React.FC<Tex2SVGProps> = props => (
   <MathJaxProvider src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js">
     <Tex2Chtml {...props} />
