@@ -71,6 +71,15 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
         const { children, position, ...attr } = node
         return mkRootBlock({}, interator(children, ctx))
       },
+      ':math': (writer, processor) => (node, ctx, interator) => {
+        const { value, children, position, ...attr } = node
+        return mkFormulaBlock({ value, location: applyLineOffset(position) })
+      },
+      ':inlineMath': (writer, processor) => (node, ctx, interator) => {
+        const { value, children, position, ...attr } = node
+        return mkMarkupCodeF(value)
+      },
+
       ':heading': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
         return mkBlock(
