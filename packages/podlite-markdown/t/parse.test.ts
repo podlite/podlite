@@ -56,8 +56,6 @@ it('=markdown: parse para', () => {
 it.skip('[markdown]: parse para', () => {
   const pod = `text`
   const tree = process(pod)
-  // console.log(JSON.stringify(tree, null, 2));
-  // console.log(JSON.stringify(parse(`L<https://uerl>`), null, 2));
   const r = validateAstTree([tree])
   expect(r).toEqual([])
   const errorDescribe = isValidateError(r, tree)
@@ -1194,7 +1192,6 @@ graph TD;
       "type": "block",
     }
   `)
-  // console.log(JSON.stringify(tree, null,2 ))
 })
 it('[markdown]: parse formulas', () => {
   const pod = `
