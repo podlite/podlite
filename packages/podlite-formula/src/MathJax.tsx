@@ -34,7 +34,10 @@ export function useTexSVG({
 
           setHtml(mathJaxElement)
         } catch (e) {
-          console.error('Something went really wrong, if this problem persists then please open an issue', e)
+          console.error(
+            '[podlite/formula] Something went really wrong, if this problem persists then please open an issue',
+            e,
+          )
         } finally {
           setIsLoading(false)
         }
@@ -93,7 +96,6 @@ export const MathJaxProvider: React.FC<ContextProps> = ({
   options = {},
   children = null,
 }) => {
-
   const [mathJax, setMathJax] = useState(typeof window === 'undefined' ? null : window.MathJax)
 
   useEffect(() => {
@@ -106,7 +108,6 @@ export const MathJaxProvider: React.FC<ContextProps> = ({
         setMathJax(window.MathJax)
       }
     }
-    console.log('try to load mathjax script' + (!existingScript && !window.MathJax))
     if (!existingScript && !window.MathJax) {
       const script = document.createElement('script')
 
@@ -153,7 +154,6 @@ export function useTexChtml({
     async function setMathJaxHTML() {
       let cancelled = false
       const isReady = mathJax?.tex2chtml || (await mathJax?.loader?.ready?.())
-      console.error(` before rtun ${latex}`)
       if (isReady) {
         try {
           setIsLoading(true)
@@ -166,13 +166,15 @@ export function useTexChtml({
             setHtml(mathJaxElement)
           })
         } catch (e) {
-          console.error('Something went really wrong, if this problem persists then please open an issue', e)
+          console.error(
+            '[podlite/formula] Something went really wrong, if this problem persists then please open an issue',
+            e,
+          )
         } finally {
           setIsLoading(false)
         }
       }
     }
-    console.error(` seteffect ${latex}`)
     setMathJaxHTML()
   }, [mathJax, latex])
 
