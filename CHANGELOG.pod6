@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=head1 0.0.3
+=head1 0.0.39
 
 # @podlite@0.0.32
 
