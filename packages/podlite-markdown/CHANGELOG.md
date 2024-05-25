@@ -1,5 +1,9 @@
 # @podlite/markdown
 
+## 0.0.12
+
+- implement inline `$...$` and block `$$...$$` formulas
+
 ## 0.0.9
 
 - implement `mermaid` support

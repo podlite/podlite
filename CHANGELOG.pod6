@@ -1,6 +1,44 @@
 =TITLE CHANGES 
 
 =head1 Upcoming
+
+=head1 0.0.3
+
+# @podlite@0.0.32
+
+- add `=formula`, `F<>` support
+
+# @podlite/to-jsx@0.0.23
+
+- add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
+- add support for HTML named entities reference (podlite/podlite-specs#9)
+
+# @podlite/diagram@0.0.23
+
+- fix react component
+
+# @podlite/formula@0.0.1
+
+- implement formulas using MathJax library
+
+# @podlite/schema@0.0.19
+
+- add `=formula`, `F<>` support
+- implement html named entities support
+
+# @podlite/editor-react@0.0.25
+
+- add formulas support
+- fix scrolling
+
+# @podlite/markdown@0.0.12
+
+- implement inline `$...$` and block `$$...$$` formulas
+
+# @podlite/toc@0.0.12
+
+- implement `:caption`
+
 =head1 0.0.38
 
 # @podlite/toc@0.0.11

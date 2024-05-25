@@ -12,9 +12,14 @@ const transformIgnores = [
   '.*vfile',
   'entity-decode',
   '.*remark-gfm',
+  '.*remark-math',
+  '.*mdast-util-math',
   '.*ccount',
   '.*escape-string-regexp',
   '.*markdown-table',
+  '.*longest-streak',
+  'remark',
+  'zwitch',
 ].join('|')
 
 module.exports = {

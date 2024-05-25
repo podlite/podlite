@@ -2,9 +2,13 @@
 
 ## Upcoming
 
+## 0.0.12
+
+- implement `:caption`
+
 ## 0.0.11
 
--fix linking toc items
+- fix linking toc items
 
 ## 0.0.7
 

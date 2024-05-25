@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.32
+
+- add `=formula`, `F<>` support
+
 ## 0.0.27
 
 - update deps

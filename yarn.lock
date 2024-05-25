@@ -2784,6 +2784,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@podlite/formula@workspace:*, @podlite/formula@workspace:packages/podlite-formula":
+  version: 0.0.0-use.local
+  resolution: "@podlite/formula@workspace:packages/podlite-formula"
+  dependencies:
+    "@podlite/schema": "workspace:*"
+    react-is: ^17.0.2
+  peerDependencies:
+    react: "^16.0.0 || ^17.0.0 "
+    react-dom: ^16.0.0 || ^17.0.0
+    react-is: "*"
+  languageName: unknown
+  linkType: soft
+
 "@podlite/image@workspace:^, @podlite/image@workspace:packages/podlite-image":
   version: 0.0.0-use.local
   resolution: "@podlite/image@workspace:packages/podlite-image"
@@ -2806,8 +2819,9 @@ __metadata:
     react-dom: ^16.0.0 || ^17.0.0
     react-is: ^17.0.0
     remark-gfm: ^3.0.1
+    remark-math: 5.1.1
     remark-parse: ^10.0.1
-    unified: ^10.1.2
+    unified: 10.1.2
   peerDependencies:
     react: "^16.0.0 || ^17.0.0 "
     react-dom: ^16.0.0 || ^17.0.0
@@ -3032,6 +3046,13 @@ __metadata:
   version: 0.0.29
   resolution: "@types/json5@npm:0.0.29"
   checksum: e60b153664572116dfea673c5bda7778dbff150498f44f998e34b5886d8afc47f16799280e4b6e241c0472aef1bc36add771c569c68fc5125fc2ae519a3eb9ac
+  languageName: node
+  linkType: hard
+
+"@types/katex@npm:^0.16.0":
+  version: 0.16.7
+  resolution: "@types/katex@npm:0.16.7"
+  checksum: 4fd15d93553be97c02c064e16be18d7ccbabf66ec72a9dc7fd5bfa47f0c7581da2f942f693c7cb59499de4c843c2189796e49c9647d336cbd52b777b6722a95a
   languageName: node
   linkType: hard
 
@@ -4296,6 +4317,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 0f82321821fc27b83bd409510bb9deeebcfa799ff0bf5d102128b500b7af22872c0c92cb6a0ebc5a4cf19c6b550fba9cedfa7329d18c6442a625f851377bacf0
+  languageName: node
+  linkType: hard
+
 "compare-func@npm:^2.0.0":
   version: 2.0.0
   resolution: "compare-func@npm:2.0.0"
@@ -4467,6 +4495,24 @@ __metadata:
   version: 0.1.1
   resolution: "copy-descriptor@npm:0.1.1"
   checksum: d4b7b57b14f1d256bb9aa0b479241048afd7f5bcf22035fc7b94e8af757adeae247ea23c1a774fe44869fd5694efba4a969b88d966766c5245fdee59837fe45b
+  languageName: node
+  linkType: hard
+
+"copyfiles@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "copyfiles@npm:2.4.1"
+  dependencies:
+    glob: ^7.0.5
+    minimatch: ^3.0.3
+    mkdirp: ^1.0.4
+    noms: 0.0.0
+    through2: ^2.0.1
+    untildify: ^4.0.0
+    yargs: ^16.1.0
+  bin:
+    copyfiles: copyfiles
+    copyup: copyfiles
+  checksum: aea69873bb99cc5f553967660cbfb70e4eeda198f572a36fb0f748b36877ff2c90fd906c58b1d540adbad8afa8ee82820172f1c18e69736f7ab52792c12745a7
   languageName: node
   linkType: hard
 
@@ -6359,6 +6405,20 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"glob@npm:^7.0.5":
+  version: 7.2.3
+  resolution: "glob@npm:7.2.3"
+  dependencies:
+    fs.realpath: ^1.0.0
+    inflight: ^1.0.4
+    inherits: 2
+    minimatch: ^3.1.1
+    once: ^1.3.0
+    path-is-absolute: ^1.0.0
+  checksum: 29452e97b38fa704dabb1d1045350fb2467cf0277e155aa9ff7077e90ad81d1ea9d53d3ee63bd37c05b09a065e90f16aec4a65f5b8de401d1dac40bc5605d133
+  languageName: node
+  linkType: hard
+
 "glob@npm:^7.1.7, glob@npm:^7.2.0":
   version: 7.2.0
   resolution: "glob@npm:7.2.0"
@@ -6753,7 +6813,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"inherits@npm:2, inherits@npm:^2.0.1, inherits@npm:^2.0.3, inherits@npm:~2.0.3":
+"inherits@npm:2, inherits@npm:^2.0.1, inherits@npm:^2.0.3, inherits@npm:~2.0.1, inherits@npm:~2.0.3":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
@@ -7198,6 +7258,13 @@ fsevents@^2.1.2:
   dependencies:
     is-docker: ^2.0.0
   checksum: 20849846ae414997d290b75e16868e5261e86ff5047f104027026fd61d8b5a9b0b3ade16239f35e1a067b3c7cc02f70183cb661010ed16f4b6c7c93dad1b19d8
+  languageName: node
+  linkType: hard
+
+"isarray@npm:0.0.1":
+  version: 0.0.1
+  resolution: "isarray@npm:0.0.1"
+  checksum: 49191f1425681df4a18c2f0f93db3adb85573bcdd6a4482539d98eac9e705d8961317b01175627e860516a2fc45f8f9302db26e5a380a97a520e272e2a40a8d4
   languageName: node
   linkType: hard
 
@@ -7969,6 +8036,17 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"katex@npm:^0.16.0":
+  version: 0.16.10
+  resolution: "katex@npm:0.16.10"
+  dependencies:
+    commander: ^8.3.0
+  bin:
+    katex: cli.js
+  checksum: 108e9d810e17840c43eef8d46171096f4cc97852bfd1e2dd1890d9b3435846816e3e98678a31d38bd064eb97eea83b18ff224cb65d5f9511b54ce7ff4359b591
+  languageName: node
+  linkType: hard
+
 "khroma@npm:^1.4.1":
   version: 1.4.1
   resolution: "khroma@npm:1.4.1"
@@ -8459,6 +8537,17 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"mdast-util-math@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "mdast-util-math@npm:2.0.2"
+  dependencies:
+    "@types/mdast": ^3.0.0
+    longest-streak: ^3.0.0
+    mdast-util-to-markdown: ^1.3.0
+  checksum: 60b3c1ca8dd0f009504de17515249fa396818fd4d5f83ed2c9c4aa3523add080c9076b32299b9622a8b1eb6e249d65fd4a8c1f0ab231a7656396353c2898d0bd
+  languageName: node
+  linkType: hard
+
 "mdast-util-to-markdown@npm:^1.0.0, mdast-util-to-markdown@npm:^1.3.0":
   version: 1.3.0
   resolution: "mdast-util-to-markdown@npm:1.3.0"
@@ -8671,6 +8760,21 @@ fsevents@^2.1.2:
     micromark-util-combine-extensions: ^1.0.0
     micromark-util-types: ^1.0.0
   checksum: b181479c87be38d5ae8d28e6dc52fab73c894fd2706876746f27a91fb186644ce03532a9c35dca2186327a0e2285cd5242ad0361dc89adedd4a50376ffd94e22
+  languageName: node
+  linkType: hard
+
+"micromark-extension-math@npm:^2.0.0":
+  version: 2.1.2
+  resolution: "micromark-extension-math@npm:2.1.2"
+  dependencies:
+    "@types/katex": ^0.16.0
+    katex: ^0.16.0
+    micromark-factory-space: ^1.0.0
+    micromark-util-character: ^1.0.0
+    micromark-util-symbol: ^1.0.0
+    micromark-util-types: ^1.0.0
+    uvu: ^0.5.0
+  checksum: cbfd1c1ab0e13579571f5af9982eed7c02630300fe3cf3f62b4457f6f3da007621b7d23bc53010f8e727267e6b4caa7bc1b923abd528209c4d8821d80fe4424d
   languageName: node
   linkType: hard
 
@@ -8955,6 +9059,15 @@ fsevents@^2.1.2:
   version: 1.0.1
   resolution: "min-indent@npm:1.0.1"
   checksum: bfc6dd03c5eaf623a4963ebd94d087f6f4bbbfd8c41329a7f09706b0cb66969c4ddd336abeb587bc44bc6f08e13bf90f0b374f9d71f9f01e04adc2cd6f083ef1
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^3.0.3, minimatch@npm:^3.1.1":
+  version: 3.1.2
+  resolution: "minimatch@npm:3.1.2"
+  dependencies:
+    brace-expansion: ^1.1.7
+  checksum: c154e566406683e7bcb746e000b84d74465b3a832c45d59912b9b55cd50dee66e5c4b1e5566dba26154040e51672f9aa450a9aef0c97cfc7336b78b7afb9540a
   languageName: node
   linkType: hard
 
@@ -9350,6 +9463,16 @@ fsevents@^2.1.2:
   version: 2.0.1
   resolution: "node-releases@npm:2.0.1"
   checksum: b20dd8d4bced11f75060f0387e05e76b9dc4a0451f7bb3516eade6f50499ea7768ba95d8a60d520c193402df1e58cb3fe301510cc1c1ad68949c3d57b5149866
+  languageName: node
+  linkType: hard
+
+"noms@npm:0.0.0":
+  version: 0.0.0
+  resolution: "noms@npm:0.0.0"
+  dependencies:
+    inherits: ^2.0.1
+    readable-stream: ~1.0.31
+  checksum: a05f056dabf764c86472b6b5aad10455f3adcb6971f366cdf36a72b559b29310a940e316bca30802f2804fdd41707941366224f4cba80c4f53071512245bf200
   languageName: node
   linkType: hard
 
@@ -10154,6 +10277,7 @@ fsevents@^2.1.2:
     "@types/react": ^17.0.2
     "@types/react-dom": ^17.0.2
     codemirror: 5.63.3
+    copyfiles: ^2.4.1
     fast-glob: ^3.3.2
     glob: ^7.2.0
     jest: ^26.5.2
@@ -10178,6 +10302,7 @@ fsevents@^2.1.2:
   resolution: "podlite@workspace:packages/core"
   dependencies:
     "@podlite/diagram": "workspace:^"
+    "@podlite/formula": "workspace:*"
     "@podlite/image": "workspace:^"
     "@podlite/markdown": "workspace:*"
     "@podlite/schema": "workspace:^"
@@ -10562,6 +10687,18 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"readable-stream@npm:~1.0.31":
+  version: 1.0.34
+  resolution: "readable-stream@npm:1.0.34"
+  dependencies:
+    core-util-is: ~1.0.0
+    inherits: ~2.0.1
+    isarray: 0.0.1
+    string_decoder: ~0.10.x
+  checksum: 85042c537e4f067daa1448a7e257a201070bfec3dd2706abdbd8ebc7f3418eb4d3ed4b8e5af63e2544d69f88ab09c28d5da3c0b77dc76185fddd189a59863b60
+  languageName: node
+  linkType: hard
+
 "readdir-scoped-modules@npm:^1.0.0":
   version: 1.1.0
   resolution: "readdir-scoped-modules@npm:1.1.0"
@@ -10686,6 +10823,18 @@ fsevents@^2.1.2:
     micromark-extension-gfm: ^2.0.0
     unified: ^10.0.0
   checksum: 02254f74d67b3419c2c9cf62d799ec35f6c6cd74db25c001361751991552a7ce86049a972107bff8122d85d15ae4a8d1a0618f3bc01a7df837af021ae9b2a04e
+  languageName: node
+  linkType: hard
+
+"remark-math@npm:5.1.1":
+  version: 5.1.1
+  resolution: "remark-math@npm:5.1.1"
+  dependencies:
+    "@types/mdast": ^3.0.0
+    mdast-util-math: ^2.0.0
+    micromark-extension-math: ^2.0.0
+    unified: ^10.0.0
+  checksum: 1baec5862e36bbb8645144a73740e63a3aed2d547a64b731bb1a0162658319679378fd70f3d3d534655c2a0fcc3f941adba31cca33808e134fa22202a5d314f9
   languageName: node
   linkType: hard
 
@@ -11585,6 +11734,13 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"string_decoder@npm:~0.10.x":
+  version: 0.10.31
+  resolution: "string_decoder@npm:0.10.31"
+  checksum: fe00f8e303647e5db919948ccb5ce0da7dea209ab54702894dd0c664edd98e5d4df4b80d6fabf7b9e92b237359d21136c95bf068b2f7760b772ca974ba970202
+  languageName: node
+  linkType: hard
+
 "string_decoder@npm:~1.1.1":
   version: 1.1.1
   resolution: "string_decoder@npm:1.1.1"
@@ -11840,7 +11996,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"through2@npm:^2.0.0":
+"through2@npm:^2.0.0, through2@npm:^2.0.1":
   version: 2.0.5
   resolution: "through2@npm:2.0.5"
   dependencies:
@@ -12292,7 +12448,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"unified@npm:^10.0.0, unified@npm:^10.1.2":
+"unified@npm:10.1.2, unified@npm:^10.0.0":
   version: 10.1.2
   resolution: "unified@npm:10.1.2"
   dependencies:
@@ -12402,6 +12558,13 @@ fsevents@^2.1.2:
     has-value: ^0.3.1
     isobject: ^3.0.0
   checksum: 5990ecf660672be2781fc9fb322543c4aa592b68ed9a3312fa4df0e9ba709d42e823af090fc8f95775b4cd2c9a5169f7388f0cec39238b6d0d55a69fc2ab6b29
+  languageName: node
+  linkType: hard
+
+"untildify@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "untildify@npm:4.0.0"
+  checksum: 39ced9c418a74f73f0a56e1ba4634b4d959422dff61f4c72a8e39f60b99380c1b45ed776fbaa0a4101b157e4310d873ad7d114e8534ca02609b4916bb4187fb9
   languageName: node
   linkType: hard
 
@@ -12900,7 +13063,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"yargs@npm:^16.2.0":
+"yargs@npm:^16.1.0, yargs@npm:^16.2.0":
   version: 16.2.0
   resolution: "yargs@npm:16.2.0"
   dependencies:

@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.19
+
+- add `=formula`, `F<>` support
+
 ## 0.0.18
 
 - fix =toc links #6

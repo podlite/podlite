@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.23
+
+- add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
+- add support for HTML named entities reference (podlite/podlite-specs#9)
+
 ## 0.0.22
 
 - implement notification blocks

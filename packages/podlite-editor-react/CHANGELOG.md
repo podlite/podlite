@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.25
+
+- add formulas support
+- fix scrolling
+
 ## 0.0.24
 
 - add default cursor position for `code` snippet

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "'Table of contents' plugin for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",
