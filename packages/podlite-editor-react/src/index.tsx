@@ -154,10 +154,10 @@ export const Editor = ({
         if (!lineElement) {
           console.warn(`[podlite-editor] can't get line for offset. Forget add .line-src ?`)
         }
-        return lineElement.line
+        return lineElement?.line
       }
       const line = getLine(element.scrollTop)
-      if (instanceCM) {
+      if (instanceCM && line) {
         const t = element.scrollTop === 0 ? 0 : instanceCM.charCoords({ line: line, ch: 0 }, 'local').top
         instanceCM.scrollTo(null, t)
       }
@@ -299,7 +299,6 @@ export const Editor = ({
             // add vMargin
             const text = addVMargin(from.ch, typeof completion == 'string' ? completion : completion.text)
             const selFromTemplate = templateGetSelectionPos(text)
-            console.log({ from, to, text })
             if (selFromTemplate) {
               const { text, start, end } = selFromTemplate
               cm.replaceRange(text, from, to, 'complete')
