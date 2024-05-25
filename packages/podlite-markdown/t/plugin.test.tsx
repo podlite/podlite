@@ -26,7 +26,6 @@ it('=markdown: check line offset', () => {
 header1
 `
   const tree = parse(pod)
-  //   console.log(JSON.stringify(tree, null, 2));
   const r = validateAstTree([tree])
   expect(r).toEqual([])
   expect(parse(pod)).toMatchInlineSnapshot(`
