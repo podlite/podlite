@@ -1,7 +1,7 @@
 import { podlitePluggable, Podlite } from '@podlite/schema'
 import externalPlugins from './plugins/extrnal'
 export interface PodliteOpt {
-  importPlugins: boolean
+  importPlugins?: boolean
 }
 
 export const podlite = ({ importPlugins = true }: PodliteOpt): Podlite => {
