@@ -263,7 +263,7 @@ export interface FormattingCodeL {
   type: 'fcode'
   name: 'L'
   meta: string | null
-  content: string | Text
+  content: string | Text | [Text] // TODO: link content can contain other formatting codes
 }
 
 export interface FormattingCodeI {
