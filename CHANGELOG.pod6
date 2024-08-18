@@ -2,6 +2,16 @@
 
 =head1 Upcoming
 
+=head1 0.0.40
+
+# @podlite@0.0.32
+
+- fix api types
+
+# @podlite/schema@0.0.19
+
+- fix schema for `L<>`
+
 =head1 0.0.39
 
 # @podlite@0.0.32

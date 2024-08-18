@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.20
+
+- fix schema for `L<>`
+
 ## 0.0.19
 
 - add `=formula`, `F<>` support

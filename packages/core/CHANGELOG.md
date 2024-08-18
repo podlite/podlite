@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.33
+
+- fix api types
+
 ## 0.0.32
 
 - add `=formula`, `F<>` support
