@@ -1,0 +1,28 @@
+=begin pod
+=TITLE NAME OF THE PROGRAM
+
+=for head1 :pubdate('2024-08-01')
+NAME 1
+=para This is a small description of the first article
+=head2 level2
+
+lorem ipsum dolor sit amet consectetur adipiscing elit
+
+=for head1 :pubdate('2024-08-02')
+NAME 2
+=para This is a small description of the second article
+=head2 lower level
+
+lorem ipsum dolor sit amet consectetur adipiscing elit
+
+=head1 Journal
+=for para :pubdate('2024-08-03T12:00:01Z')
+This is a journal entry 1
+
+=for para :pubdate('2024-08-03T12:00:02Z')
+This is a journal entry 2
+
+=for para :pubdate('2024-08-03T12:00:03Z')
+This is a journal entry 3
+
+=end pod

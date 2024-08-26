@@ -1,0 +1,15 @@
+=begin pod :pubdate('2024-06-01') :puburl</about>
+=TITLE Static Page
+
+This is a test para
+
+=end pod
+
+=begin pod
+=begin para :pubdate('2024-06-01 14:04:00')
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec odio nec nisl
+
+=end para
+
+=end pod

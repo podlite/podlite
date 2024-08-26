@@ -1,0 +1,11 @@
+=begin pod :pubdate('2024-06-01')
+=TITLE NAME OF THE PROGRAM 1
+=para :id<test>
+This is a test para
+=end pod
+
+=begin pod :pubdate('2024-06-02') :puburl<http://example.com>
+=TITLE NAME OF THE PROGRAM 2
+=para :id<test>
+This is a test para
+=end pod

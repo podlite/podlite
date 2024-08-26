@@ -1,0 +1,6 @@
+=begin pod :pubdate('2023-04-01')
+
+=para
+L<test|file:./src.pod6>
+
+=end pod
