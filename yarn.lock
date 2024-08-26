@@ -2828,6 +2828,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@podlite/publisher@workspace:packages/podlite-publisher":
+  version: 0.0.0-use.local
+  resolution: "@podlite/publisher@workspace:packages/podlite-publisher"
+  dependencies:
+    "@podlite/schema": "workspace:*"
+    "@types/node": ^17.0.7
+    crc-32: ^1.2.2
+    glob: ^7.2.0
+    gray-matter: ^4.0.3
+    iso_9: ^1.0.4
+    newbase60: ^1.3.1
+    npm-run-all: ^4.1.5
+    ts-node: ^9.1.1
+    typescript: 4.5.5
+  languageName: unknown
+  linkType: soft
+
 "@podlite/schema@workspace:*, @podlite/schema@workspace:^, @podlite/schema@workspace:packages/podlite-schema":
   version: 0.0.0-use.local
   resolution: "@podlite/schema@workspace:packages/podlite-schema"
@@ -4543,6 +4560,15 @@ __metadata:
     path-type: ^4.0.0
     yaml: ^1.10.0
   checksum: 6801feaa0249e9b9fdde5b3d70dc33b4f9c69095bec94d67e3fe08b66eac24dc7e2099f053597cfbc94b743de269aa5d2cfa7da3fde765433423b06bd122941a
+  languageName: node
+  linkType: hard
+
+"crc-32@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "crc-32@npm:1.2.2"
+  bin:
+    crc32: bin/crc32.njs
+  checksum: ad2d0ad0cbd465b75dcaeeff0600f8195b686816ab5f3ba4c6e052a07f728c3e70df2e3ca9fd3d4484dc4ba70586e161ca5a2334ec8bf5a41bf022a6103ff243
   languageName: node
   linkType: hard
 
@@ -6477,6 +6503,18 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"gray-matter@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "gray-matter@npm:4.0.3"
+  dependencies:
+    js-yaml: ^3.13.1
+    kind-of: ^6.0.2
+    section-matter: ^1.0.0
+    strip-bom-string: ^1.0.0
+  checksum: 37717bd424344487d655392251ce8d8878a1275ee087003e61208fba3bfd59cbb73a85b2159abf742ae95e23db04964813fdc33ae18b074208428b2528205222
+  languageName: node
+  linkType: hard
+
 "growly@npm:^1.3.0":
   version: 1.3.0
   resolution: "growly@npm:1.3.0"
@@ -7279,6 +7317,13 @@ fsevents@^2.1.2:
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
   checksum: 26bf6c5480dda5161c820c5b5c751ae1e766c587b1f951ea3fcfc973bafb7831ae5b54a31a69bd670220e42e99ec154475025a468eae58ea262f813fdc8d1c62
+  languageName: node
+  linkType: hard
+
+"iso_9@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "iso_9@npm:1.0.4"
+  checksum: f3cee79b339417339336f7a64ae279383b3607b022f4cbcc7f7b2f364404be37c1ca7a70e61782ab44847af9303fe6c8582e84ebaffd9799581c4c2bcb80a215
   languageName: node
   linkType: hard
 
@@ -9349,6 +9394,13 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"newbase60@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "newbase60@npm:1.3.1"
+  checksum: 40483a596b93341f5302c1daf98b5bf9221be080bfc39476f35fc907badf967f683dfc4437dbfc93070531d259586888b1f49503577dec921954931c486cecfb
+  languageName: node
+  linkType: hard
+
 "nice-try@npm:^1.0.4":
   version: 1.0.5
   resolution: "nice-try@npm:1.0.5"
@@ -11178,6 +11230,16 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
+"section-matter@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "section-matter@npm:1.0.0"
+  dependencies:
+    extend-shallow: ^2.0.1
+    kind-of: ^6.0.0
+  checksum: 3cc4131705493b2955729b075dcf562359bba66183debb0332752dc9cad35616f6da7a23e42b6cab45cd2e4bb5cda113e9e84c8f05aee77adb6b0289a0229101
+  languageName: node
+  linkType: hard
+
 "semver@npm:2 || 3 || 4 || 5, semver@npm:^5.5.0, semver@npm:^5.6.0, semver@npm:^5.7.1":
   version: 5.7.1
   resolution: "semver@npm:5.7.1"
@@ -11783,6 +11845,13 @@ fsevents@^2.1.2:
   dependencies:
     ansi-regex: ^5.0.1
   checksum: f3cd25890aef3ba6e1a74e20896c21a46f482e93df4a06567cebf2b57edabb15133f1f94e57434e0a958d61186087b1008e89c94875d019910a213181a14fc8c
+  languageName: node
+  linkType: hard
+
+"strip-bom-string@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "strip-bom-string@npm:1.0.0"
+  checksum: 5635a3656d8512a2c194d6c8d5dee7ef0dde6802f7be9413b91e201981ad4132506656d9cf14137f019fd50f0269390d91c7f6a2601b1bee039a4859cfce4934
   languageName: node
   linkType: hard
 
