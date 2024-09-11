@@ -32,7 +32,6 @@ export default {}
     const rules = {
       ':image': node => {
         // process copy files to assets
-        const pathMod = require('path')
         // '../assets/'
         const { path } = getPathToOpen(node.src, file)
         const { name, ext, dir } = pathMod.parse(path)
