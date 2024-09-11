@@ -76,9 +76,22 @@ export default {}
     const res = recs.map(item => {
       const node = processNode(item.node, item.file)
       // process images inside description
-      let extra = {} as { description?: PodNode }
+      let extra = {} as { description?: PodNode, template?: publishRecord}
       if (item.description) {
         extra.description = processNode(item.description, item.file)
+      }
+      if (item.template) {
+        const { footer, header } = item.template
+        const processedTemplate = processNode(item.template.node, item.template.file)
+        extra.template = item.template        
+        extra.template.node = processedTemplate
+        if ( footer ) {
+          extra.template.footer = processNode(footer, item.template.file)
+        }
+        if ( header ) {
+          extra.template.header = processNode(header, item.template.file)
+        }
+        
       }
 
       return { ...item, node, ...extra }

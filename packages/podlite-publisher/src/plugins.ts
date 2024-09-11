@@ -13,6 +13,10 @@ export type publishRecord = pubRecord & {
   sources: string[]
   node: PodliteDocument
   pubdate: string | undefined
+  template?: publishRecord | null
+  header?: PodNode | null
+  footer?: PodNode | null
+  subtitle?: string | null
 }
 
 export interface PodliteWebPluginContext {
