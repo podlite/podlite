@@ -8,6 +8,7 @@ import { makeAstFromSrc } from './shared'
 
 const plugin = (): PodliteWebPlugin => {
   const componensMap = new Map()
+  const processedNodes = new WeakSet<any>()
   const outCtx: PodliteWebPluginContext = {}
   const onExit = ctx => {
     if (!ctx.testing) {
@@ -76,23 +77,23 @@ export default {}
     const res = recs.map(item => {
       const node = processNode(item.node, item.file)
       // process images inside description
-      let extra = {} as { description?: PodNode, template?: publishRecord}
+      let extra = {} as { description?: PodNode; template?: publishRecord }
       if (item.description) {
         extra.description = processNode(item.description, item.file)
       }
-      if (item.template) {
+      if (item.template && !processedNodes.has(item.template)) {
         const { footer, header } = item.template
         const processedTemplate = processNode(item.template.node, item.template.file)
-        extra.template = item.template        
+        extra.template = item.template
         extra.template.node = processedTemplate
-        if ( footer ) {
+        if (footer) {
           extra.template.footer = processNode(footer, item.template.file)
         }
-        if ( header ) {
+        if (header) {
           extra.template.header = processNode(header, item.template.file)
         }
-        
-      }
+        processedNodes.add(item.template)
+      } 
 
       return { ...item, node, ...extra }
     })
