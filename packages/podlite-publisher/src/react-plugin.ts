@@ -93,7 +93,7 @@ export default {}
           extra.template.header = processNode(header, item.template.file)
         }
         processedNodes.add(item.template)
-      } 
+      }
 
       return { ...item, node, ...extra }
     })
