@@ -2,9 +2,8 @@ import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
 import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
-
-const pathFs = require('path')
-interface SiteInfo {
+import pathFs from 'path'
+export interface SiteInfo {
   redirects: { source: string; destination: string; statusCode: number }[]
   postsPerPage: number
   favicon: string
