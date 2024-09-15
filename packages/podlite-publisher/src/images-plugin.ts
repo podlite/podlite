@@ -1,6 +1,6 @@
 import { makeInterator, PodNode } from '@podlite/schema'
 import { ASSETS_PATH, IMAGE_LIB } from './constants'
-
+import pathMod from 'path'
 import * as fs from 'fs'
 import { getPathToOpen } from './node-utils'
 import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
