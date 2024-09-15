@@ -2,24 +2,22 @@ import { getFromTree, makeAttrs, makeInterator, PodliteDocument, PodNode } from 
 import { publishRecord, pubRecord } from '.'
 import { podlite as podlite_core } from 'podlite'
 // now we add base60 letters
-// const translit = require('iso_9')
-// const base60 = require('newbase60')
-import  translit  from 'iso_9'
+
+import translit from 'iso_9'
 import base60 from 'newbase60'
 
 export const getLangFromFilename = (filename?: string) => {
-    if(!filename) return  
-    const ext = filename.split('.').pop()
-    return defaultLangForFile[`.${ext}`] 
+  if (!filename) return
+  const ext = filename.split('.').pop()
+  return defaultLangForFile[`.${ext}`]
 }
 
 export const defaultLangForFile = {
-    '.rakudoc': 'raku',
-    '.pl': 'perl',
-    '.pm': 'perl',
-    '.rakumod': 'raku',
-  }
-
+  '.rakudoc': 'raku',
+  '.pl': 'perl',
+  '.pm': 'perl',
+  '.rakumod': 'raku',
+}
 
 export const makeAstFromSrc = (src: string) => {
   let podlite = podlite_core({ importPlugins: true }).use({})
