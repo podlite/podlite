@@ -214,6 +214,7 @@ export function getDocumentAttributes(node: PodliteDocument) {
   let subtitle
   let author
   let footer = ''
+  let header = null
   makeInterator({
     NAME: (node, ctx, interator) => {
       title = getTextContentFromNode(node)
@@ -234,6 +235,9 @@ export function getDocumentAttributes(node: PodliteDocument) {
     FOOTER: (node, ctx, interator) => {
       footer = node.content
     },
+    HEADER: (node, ctx, interator) => {
+      header = node.content
+    },
   })(node, {})
   const props = {
     title,
@@ -243,6 +247,7 @@ export function getDocumentAttributes(node: PodliteDocument) {
     footer,
     puburl: undefined,
     pubdate: undefined,
+    ...(header && { header }),
   }
   const [podnode] = getFromTree(node.content, 'pod')
   if (podnode) {
@@ -335,13 +340,14 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
     }
   })(f, podlite_document)
   // prepare attributes
-  const { title, description, subtitle, author, footer, puburl, pubdate } = attr
+  const { title, description, subtitle, author, footer, puburl, pubdate, header } = attr
   return {
     type: 'page',
     title,
     description,
     subtitle,
     author,
+    ...(header && { header }),
     footer,
     publishUrl: puburl,
     pubdate,
