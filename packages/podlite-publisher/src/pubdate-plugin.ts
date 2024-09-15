@@ -32,6 +32,7 @@ export function getArticles(item: publishRecord) {
         if (articleContent.length) {
           const description = getFromTree(articleContent, 'para')[0]
           const pubdate = makeAttrs(nodePublished, {}).getFirstValue('pubdate')
+          //TODO: use footer and header of document for generated articles
           articles.push({
             pubdate,
             title: getTextContentFromNode(nodePublished).trim(),
@@ -69,7 +70,7 @@ export function getNotes(item: publishRecord): publishRecord[] {
       const pubdate = a_pubdate.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/)
         ? a_pubdate.replace(' ', 'T')
         : a_pubdate
-
+      //TODO: use footer and header of document for generated notes
       return {
         pubdate,
         type: 'note',
@@ -90,6 +91,7 @@ export function getPages(item: publishRecord): publishRecord[] {
     .filter(n => makeAttrs(n, {}).exists('pubdate'))
     .map((n: PodNode) => {
       const { title, description, puburl, pubdate } = getPublishAttributes(n)
+      //TODO: use footer and header of document for generated pages
       return {
         pubdate: pubdate || '',
         type: 'page',
