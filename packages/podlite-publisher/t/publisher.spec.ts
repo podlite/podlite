@@ -97,6 +97,7 @@ it('main publish logic: process files', () => {
   const state = [processFile('virtual/index.podlite', indexFile), file2, file1]
   const [resState, resCtx] = processPlugin(makeConfigMainPlugin(), state, tctx)
   delete resCtx.siteData.node
+  delete resCtx.siteData.item
   delete resCtx.stateVersion
   expect(resCtx).toMatchInlineSnapshot(`
     Object {

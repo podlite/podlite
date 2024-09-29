@@ -17,6 +17,8 @@ export type publishRecord = pubRecord & {
   header?: PodNode | null
   footer?: PodNode | null
   subtitle?: string | null
+  pluginsData?: { [name: string]: any }
+  template_file?: string
 }
 
 export interface PodliteWebPluginContext {

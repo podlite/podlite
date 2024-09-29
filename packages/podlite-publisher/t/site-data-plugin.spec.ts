@@ -38,7 +38,7 @@ it('linksPlugin: linking', () => {
     return context
   }
   const { siteData } = getVersion(state)
-  const { node, ...rest } = siteData
+  const { node, item, ...rest } = siteData
   expect(rest).toMatchInlineSnapshot(`
     Object {
       "favicon": "favicon.png",
