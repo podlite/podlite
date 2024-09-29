@@ -1,7 +1,7 @@
 import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@podlite/schema'
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
+import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord, streamWriteArray } from '.'
 import pathFs from 'path'
 export interface SiteInfo {
   redirects: { source: string; destination: string; statusCode: number }[]
@@ -13,6 +13,7 @@ export interface SiteInfo {
   globalStyles: string
   footer: string
   gtmId: string
+  item: publishRecord
 }
 interface siteDataPluginInitParams {
   public_path: string
@@ -78,6 +79,7 @@ const plugin = ({
       redirects,
       footer,
       gtmId,
+      item: { ...indexPage, node: pageNode },
     }
     // !!! now get previsuly prepared data from context and prepare control.json
     const { stateVersion, nextPublishTime, imagesMap } = ctx
@@ -90,14 +92,35 @@ const plugin = ({
       fs.writeFileSync(`${public_path}/control.json`, JSON.stringify(controlJson, null, 2))
     }
     const dataJson = {
-      all: allRecords,
+      all: [],
       control: controlJson,
       imagesMap: imagesMap?.size ? Object.fromEntries(imagesMap) : {},
       siteInfo: siteData,
     }
+
     if (!ctx.testing) {
-      // data.json
-      fs.writeFileSync(`${built_path}/data.json`, JSON.stringify(dataJson, null, 2))
+      streamWriteArray(allRecords, `${built_path}/pages.json`)
+        .then(() => console.log('All pages written successfully'))
+        .catch(err => console.error('Error writing file:', err))
+      fs.writeFileSync(`${built_path}/data.json`, JSON.stringify(dataJson))
+
+      fs.writeFileSync(`${built_path}/siteInfo.json`, JSON.stringify(siteData, null, 2))
+
+      fs.writeFileSync(`${built_path}/imagesMap.json`, JSON.stringify(imagesMap, null, 2))
+    }
+
+    // prepare data for LastArticles component
+    if (!ctx.testing) {
+      const source = () => allRecords.filter(i => i.publishUrl).filter(({ type = '' }: any) => type !== 'page')
+      const articles = source().reverse().slice(0, 10)
+      // if (!articles[articles.length - 1]) {
+      //     throw new Error('No articles found' + JSON.stringify({'articles.length - 1':articles.length - 1, articles, 'allRecords':allRecords.length}, null, 2))
+      // }
+      // const lastArticleUrl = articles[articles.length - 1].publishUrl
+      // const articleIndex = source().findIndex(({ publishUrl }) => publishUrl === lastArticleUrl)
+      // const prev = source()[articleIndex - 1]
+
+      fs.writeFileSync(`${built_path}/lastArticles.json`, JSON.stringify({ articles, prev: {} }, null, 2))
     }
 
     // process GlobalStyles
