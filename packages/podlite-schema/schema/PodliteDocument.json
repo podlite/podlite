@@ -1780,7 +1780,7 @@
                             "$ref": "#/definitions/BlockCaption"
                         }
                     ],
-                    "minItems": 2,
+                    "minItems": 1,
                     "maxItems": 2
                 },
                 "margin": {
@@ -1845,7 +1845,7 @@
                             "$ref": "#/definitions/BlockCaption"
                         }
                     ],
-                    "minItems": 2,
+                    "minItems": 1,
                     "maxItems": 2
                 },
                 "margin": {
