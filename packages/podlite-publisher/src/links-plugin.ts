@@ -19,7 +19,17 @@ const plugin = (): PodliteWebPlugin => {
           if (isRemote) {
             return node
           }
-          const { title, url } = docsMap.get(docLink)
+          let title
+          let url
+          if (!docsMap.has(docLink)) {
+            console.error(`doc: ${docLink} not found`)
+            title = `doc: ${docLink} not found`
+            url = `doc: ${docLink} not found`
+          } else {
+            const { title: title1, url: url1 } = docsMap.get(docLink)
+            title = title1
+            url = url1
+          }
 
           const newContent: Text = {
             type: 'text',
@@ -59,11 +69,18 @@ const plugin = (): PodliteWebPlugin => {
     const docToFileLinksConverted = recs.map(item => {
       const node = processNode(item.node, item.file)
       // process images inside description
-      let extra = {} as { description?: PodNode }
+      let extra = {} as { description?: PodNode; footer?: PodNode; header?: PodNode }
       if (item.description) {
         extra.description = processNode(item.description, item.file)
       }
-
+      // process file header and footer
+      const { footer, header } = item
+      if (footer) {
+        extra.footer = processNode(footer, item.file)
+      }
+      if (header) {
+        extra.header = processNode(header, item.file)
+      }
       return { ...item, node, ...extra }
     })
 

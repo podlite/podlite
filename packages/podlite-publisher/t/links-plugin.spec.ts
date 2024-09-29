@@ -22,7 +22,7 @@ This is a test para
 
 =end pod
 `
-it('linksPlugin: linking', () => {
+it('linksPlugin: linking1', () => {
   const files = [processFile('virtual/src.pod6', file1), processFile('virtual/dst.pod6', file2)]
 
   const config: PluginConfig = {
@@ -92,3 +92,19 @@ it('linksPlugin: linking', () => {
     ]
   `)
 })
+
+// it('linksPlugin: linking', () => {
+//     const file1=
+// `[![Build Status](https://travis-ci.com/Raku/rakudoc.svg?branch=master)](https://travis-ci.com/Raku/rakudoc)
+
+// NAME
+// ====
+
+// rakudoc - A tool for reading Raku documentation
+
+// `
+//     const file = processFile('virtual/src.md', file1)
+//     console.log(JSON.stringify(file, null, 2)   )
+
+//     // expect(links).toMatchInlineSnapshot()
+//   })
