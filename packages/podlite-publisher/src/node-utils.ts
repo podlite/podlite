@@ -62,11 +62,22 @@ export const convertFileLinksToUrl = (records: publishRecord[], additinalMap = {
       },
     })
     const res = converter(item.node, {})
-    if (item.description) {
-      const description = converter(item.description, {})
-      return { ...item, node: res, description }
+    // process images inside description
+    let extra = {} as { description?: PodNode; footer?: PodNode; header?: PodNode }
+
+    // process item description  header and footer
+    const { footer, header, description } = item
+    if (description) {
+      extra.description = converter(description, {})
     }
-    return { ...item, node: res }
+    if (footer) {
+      extra.footer = converter(footer, {})
+    }
+    if (header) {
+      extra.header = converter(header, {})
+    }
+
+    return { ...item, node: res, ...extra }
   })
   return processed
 }
@@ -367,4 +378,35 @@ export function parseSources(path: string): publishRecord[] {
     .flat()
     .filter(Boolean)
   return allFiles as publishRecord[]
+}
+
+export function streamWriteArray(array: any[], outputPath) {
+  return new Promise((resolve, reject) => {
+    const writeStream = fs.createWriteStream(outputPath)
+
+    writeStream.write('[')
+
+    const writeItem = index => {
+      if (index >= array.length) {
+        writeStream.write(']')
+        writeStream.end()
+        resolve(1)
+        return
+      }
+
+      const item = array[index]
+      const json = JSON.stringify(item)
+      const data = index === 0 ? json : ',' + json
+
+      if (writeStream.write(data)) {
+        setImmediate(() => writeItem(index + 1))
+      } else {
+        writeStream.once('drain', () => writeItem(index + 1))
+      }
+    }
+
+    writeItem(0)
+
+    writeStream.on('error', reject)
+  })
 }
