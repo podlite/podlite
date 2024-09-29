@@ -1,5 +1,9 @@
 # @podlite/markdown
 
+## 0.0.14
+
+- avoid add `caption` element if title empty
+
 ## 0.0.12
 
 - implement inline `$...$` and block `$$...$$` formulas

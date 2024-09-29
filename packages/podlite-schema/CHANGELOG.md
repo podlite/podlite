@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.21
+
+- improve caption element
+
 ## 0.0.20
 
 - fix schema for `L<>`

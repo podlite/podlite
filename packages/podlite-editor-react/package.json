@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Podlite React component",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/publisher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Library that powers publishing and CLI tools for the Podlite markup language",
   "main": "./src/index.ts",
   "license": "MIT",
