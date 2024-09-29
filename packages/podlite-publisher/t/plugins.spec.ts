@@ -207,3 +207,82 @@ sdsd
     }
   `)
 })
+// it('joinPlugins: conpose  plugins into one plugin', () => {
+//     const testPlugin = ({ title = 'processed' }): PodliteWebPlugin => {
+//       return [
+//         items => {
+//           return items.map(i => ({ ...i, title }))
+//         },
+//         ctx => ({ ...ctx, ...{ testPlugin: 1 } }),
+//       ]
+//     }
+//     const upperCaseFied = ({ field = 'title' }): PodliteWebPlugin => {
+//       return [
+//         items => {
+//           return items.map(i => {
+//             const newItem = { ...i }
+//             newItem[field] = newItem[field].toUpperCase()
+//             return newItem
+//           })
+//         },
+//         ctx => ({ ...ctx, ...{ upperCaseFied: 1 } }),
+//       ]
+//     }
+//     const joinPlugins = (plugins: PodliteWebPlugin[], inintCtx = {}): PodliteWebPlugin => {
+//         const result = plugins.reduce(
+//           (acc, plugin) => {
+//             if (acc.config?.plugin) {
+//               const accCtx = acc.ctx || {}
+//               let resultCtx = {}
+//               const resultConfig: PluginConfig = {
+//                 plugin: [
+//                   items => {
+//                     const [processedAccState, processedAccCtx] = processPlugin(acc.config, items, accCtx)
+//                     const [processedState, processedCtx] = processPlugin(config, processedAccState, {
+//                       ...accCtx,
+//                       ...processedAccCtx,
+//                     })
+//                     resultCtx = { ...accCtx, ...processedAccCtx, ...processedCtx }
+//                     return processedState
+//                   },
+//                   () => {
+//                     return { ...accCtx, ...resultCtx }
+//                   },
+//                 ],
+//               }
+//               return { config: resultConfig, ctx: resultCtx }
+//             } else {
+//               return { config, ctx: inintCtx }
+//             }
+//           },
+//           { plugin: {} as PodliteWebPlugin, ctx: {} },
+//         )
+//         return result.config
+//       }
+//     const config1: PluginConfig = {
+//       plugin: testPlugin({ title: 'TEST_title' }),
+//       includePatterns: '.*',
+//       excludePatterns: 'dir1/mod1',
+//     }
+//     const config2: PluginConfig = {
+//       plugin: upperCaseFied({ field: 'title' }),
+//       includePatterns: '.*',
+//       excludePatterns: 'dir1/mod1',
+//     }
+
+//     // return result
+//     const configComposed = composePlugins([config1, config2])
+//     const file1 = `
+//   =begin pod
+//   sdsd
+//   =end pod
+//   `
+//     const files = [processFile('virtual/src.pod6', file1)]
+//     const [res, ctx] = processPlugin(configComposed, files, {})
+//     expect(ctx).toMatchInlineSnapshot(`
+//       Object {
+//         "testPlugin": 1,
+//         "upperCaseFied": 1,
+//       }
+//     `)
+//   })
