@@ -1209,3 +1209,74 @@ test \$x+1\over\sqrt{1-x^2}\$
   // expect(process(pod)).toMatchInlineSnapshot()
   //   console.log(JSON.stringify(tree, null, 2))
 })
+
+it('[markdown]: parse images', () => {
+  const pod = `
+[![Build Status](https://example.com/image.png)](https://example.org)
+
+    `
+  const tree = process(pod)
+  expect(process(pod)).toMatchInlineSnapshot(`
+    Object {
+      "content": Array [
+        Object {
+          "content": Array [
+            Object {
+              "content": Array [
+                Object {
+                  "config": Array [],
+                  "content": Array [
+                    Object {
+                      "alt": "Build Status",
+                      "src": "https://example.com/image.png",
+                      "type": "image",
+                    },
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 48,
+                      "line": 2,
+                      "offset": 48,
+                    },
+                    "start": Object {
+                      "column": 2,
+                      "line": 2,
+                      "offset": 2,
+                    },
+                  },
+                  "margin": "",
+                  "name": "Image",
+                  "type": "block",
+                },
+              ],
+              "meta": "https://example.org",
+              "name": "L",
+              "type": "fcode",
+            },
+          ],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 70,
+              "line": 2,
+              "offset": 70,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "margin": "",
+          "text": "text",
+          "type": "para",
+        },
+      ],
+      "id": "id",
+      "margin": "",
+      "name": "root",
+      "type": "block",
+    }
+  `)
+})

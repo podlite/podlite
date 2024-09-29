@@ -167,10 +167,9 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
         (node, ctx, interator): BlockImage => {
           const { title, alt, url, position, ...attr } = node
           let config = []
-          return mkBlock({ type: 'block', name: 'Image', config, location: applyLineOffset(position) }, [
-            mkImage(url, alt),
-            mkCaption([title]),
-          ])
+          const content: any[] = [mkImage(url, alt)]
+          if (title) content.push(mkCaption([title]))
+          return mkBlock({ type: 'block', name: 'Image', config, location: applyLineOffset(position) }, content)
         },
       ':thematicBreak': (writer, processor) => (node, ctx, interator) => {
         return null // TODO: add support for "thematic break"
