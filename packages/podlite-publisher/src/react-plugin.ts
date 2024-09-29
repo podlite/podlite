@@ -74,10 +74,11 @@ export default {}
     return makeInterator(rules)(node, {})
   }
   const onProcess = (recs: publishRecord[]) => {
+    console.log('react-plugin  start')
     const res = recs.map(item => {
       const node = processNode(item.node, item.file)
       // process images inside description
-      let extra = {} as { description?: PodNode; template?: publishRecord }
+      let extra = {} as { description?: PodNode; footer?: PodNode; header?: PodNode; template?: publishRecord }
       if (item.description) {
         extra.description = processNode(item.description, item.file)
       }
@@ -94,12 +95,20 @@ export default {}
         }
         processedNodes.add(item.template)
       }
+      // process file header and footer
+      const { footer, header } = item
+      if (footer) {
+        extra.footer = processNode(footer, item.file)
+      }
+      if (header) {
+        extra.header = processNode(header, item.file)
+      }
 
       return { ...item, node, ...extra }
     })
     return res
   }
-
+  console.log('react-plugin  finished')
   return [onProcess, onExit]
 }
 
