@@ -26,6 +26,26 @@ export const makeAstFromSrc = (src: string) => {
   return asAst
 }
 
+export function isExistsDocBlocks(node: PodNode) {
+  let isExistsDocBlocks = false
+  const markAsDocBlock = (node, ctx, interator) => {
+    // skip root block
+    if (node.type === 'block' && node.name === 'root') {
+      if (node.content) {
+        return interator(node.content, ctx)
+      }
+      return
+    }
+    isExistsDocBlocks = true
+  }
+  const rules = {
+    ':para': markAsDocBlock,
+    ':block': markAsDocBlock,
+  }
+  makeInterator(rules)(node, {})
+  return isExistsDocBlocks
+}
+
 export function isExistsPubdate(node: PodNode) {
   let isShouldBePublished = false
   const rules = {
