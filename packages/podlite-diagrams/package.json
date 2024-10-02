@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "license": "MIT",

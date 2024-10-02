@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=head1 0.0.42
+
+# @podlite/publisher@0.0.3
+
+- minor fixes 
+
 =head1 0.0.41
 
 # @podlite/markdown@0.0.14

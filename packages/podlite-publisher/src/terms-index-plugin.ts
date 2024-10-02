@@ -1,4 +1,4 @@
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '../src'
+import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from './'
 import {
   content,
   emptyContent,
@@ -11,7 +11,7 @@ import {
   subUse,
   toAny,
 } from '@podlite/schema'
-import { BUILT_PATH } from '../src/constants'
+import { BUILT_PATH } from './constants'
 import * as fs from 'fs'
 
 const plugin = ({ built_path = BUILT_PATH }): PodliteWebPlugin => {
