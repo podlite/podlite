@@ -82,7 +82,7 @@ it('parse Source:  typescript file', () => {
       "file": "packages/podlite-publisher/t/test-parse/main.ts",
       "footer": "",
       "pubdate": undefined,
-      "publishUrl": undefined,
+      "publishUrl": null,
       "sources": Array [],
       "subtitle": undefined,
       "title": "",
@@ -104,7 +104,7 @@ it('parse Source:  podlite file', () => {
       "file": "packages/podlite-publisher/t/test-parse/note.podlite",
       "footer": "",
       "pubdate": undefined,
-      "publishUrl": undefined,
+      "publishUrl": null,
       "sources": Array [],
       "subtitle": undefined,
       "title": "The Last of the Mohicans

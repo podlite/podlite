@@ -360,7 +360,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
     author,
     ...(header && { header }),
     footer,
-    publishUrl: puburl,
+    publishUrl: puburl || null,
     pubdate,
     file: f,
     sources: [],

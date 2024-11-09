@@ -9,7 +9,7 @@ export type pubRecord = {
 
 export type publishRecord = pubRecord & {
   title: string | null
-  publishUrl: string
+  publishUrl?: string | null
   sources: string[]
   node: PodliteDocument
   pubdate: string | undefined
