@@ -27,9 +27,11 @@ const plugin = (): PodliteWebPlugin => {
 
   const onProcess = (recs: publishRecord[]) => {
     recs.forEach(item => {
-      const breadcrumb = getBreadcrumb(item.publishUrl, recs)
-      item.pluginsData = item.pluginsData || {}
-      item.pluginsData.breadcrumb = breadcrumb
+      if (item.publishUrl) {
+        const breadcrumb = getBreadcrumb(item.publishUrl, recs)
+        item.pluginsData = item.pluginsData || {}
+        item.pluginsData.breadcrumb = breadcrumb
+      }
     })
 
     return recs
