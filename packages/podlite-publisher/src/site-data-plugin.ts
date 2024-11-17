@@ -14,6 +14,7 @@ export interface SiteInfo {
   footer: string
   gtmId: string
   item: publishRecord
+  templateFile?: string
 }
 interface siteDataPluginInitParams {
   public_path: string
@@ -41,7 +42,7 @@ const plugin = ({
     const [pod] = getFromTree(indexPage.node, 'pod')
     const attr = makeAttrs(pod, {})
     const pageAttr = Object.fromEntries(Object.keys(attr.asHash()).map(k => [k, attr.getFirstValue(k)]))
-    const { postsPerPage, favicon, puburl, url, globalStyles, gtmId } = pageAttr
+    const { postsPerPage, favicon, puburl, url, globalStyles, gtmId, templateFile } = pageAttr
 
     // process favicon file
 
@@ -79,6 +80,7 @@ const plugin = ({
       redirects,
       footer,
       gtmId,
+      ...(templateFile && { templateFile }),
       item: { ...indexPage, node: pageNode },
     }
     // !!! now get previsuly prepared data from context and prepare control.json
