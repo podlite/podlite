@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.4
+
+- add template configuration attribute for site: `:templateFile<file path>`
+- fix publishRecord
+
 ## 0.0.3
 
 - fix deps

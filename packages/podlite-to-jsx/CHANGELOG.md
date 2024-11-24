@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.27
+
+- render tables with align
+
 ## 0.0.23
 
 - add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)

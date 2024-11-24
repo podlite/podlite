@@ -1,5 +1,11 @@
 # @podlite/markdown
 
+## Upcoming
+
+## 0.0.16
+
+- added alignment for column contents ( #9 )
+
 ## 0.0.14
 
 - avoid add `caption` element if title empty

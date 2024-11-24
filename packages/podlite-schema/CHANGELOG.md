@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.23
+
+- added alignment for column contents
+
 ## 0.0.21
 
 - improve caption element
