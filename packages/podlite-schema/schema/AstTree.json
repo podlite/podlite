@@ -1399,6 +1399,24 @@
                         ]
                     }
                 },
+                "align": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "enum": [
+                                    "center",
+                                    "left",
+                                    "right"
+                                ],
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
                 "text": {
                     "type": "string"
                 },
