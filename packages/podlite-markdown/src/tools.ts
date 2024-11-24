@@ -180,12 +180,19 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
       //table section
       ':table': (writer, processor) => (node, ctx, interator) => {
-        const { children, position, ...attr } = node
-        return mkBlock({ name: 'table', location: applyLineOffset(position) }, interator(children, { ...ctx }))
+        const { children, position, align, ...attr } = node
+        return mkBlock(
+          { name: 'table', location: applyLineOffset(position), align },
+          interator(children, { ...ctx, isHeaderUsed: 0 }),
+        )
       },
       ':tableRow': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
-        return mkBlock({ name: 'table_row', location: applyLineOffset(position) }, interator(children, { ...ctx }))
+        const isHeaderUsed = ctx.isHeaderUsed++
+        return mkBlock(
+          { name: isHeaderUsed ? 'table_row' : 'table_head', location: applyLineOffset(position) },
+          interator(children, { ...ctx }),
+        )
       },
       ':tableCell': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node

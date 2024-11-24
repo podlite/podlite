@@ -200,27 +200,27 @@ it('=markdown: table render', () => {
       <caption class="caption">
       </caption>
       <tbody>
-        <tr id="id">
-          <td id="id">
+        <tr>
+          <th>
             Syntax
-          </td>
-          <td id="id">
+          </th>
+          <th>
             Description
-          </td>
+          </th>
         </tr>
-        <tr id="id">
-          <td id="id">
+        <tr>
+          <td>
             Header
           </td>
-          <td id="id">
+          <td>
             Title
           </td>
         </tr>
-        <tr id="id">
-          <td id="id">
+        <tr>
+          <td>
             Paragraph
           </td>
-          <td id="id">
+          <td>
             Text
           </td>
         </tr>

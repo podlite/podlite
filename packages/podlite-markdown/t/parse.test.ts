@@ -880,6 +880,10 @@ Content in the first column | Content in the second column
     Object {
       "content": Array [
         Object {
+          "align": Array [
+            null,
+            null,
+          ],
           "content": Array [
             Object {
               "content": Array [
@@ -940,7 +944,7 @@ Content in the first column | Content in the second column
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "table_head",
               "type": "block",
             },
             Object {
@@ -1094,6 +1098,554 @@ Content in the first column | Content in the second column
   `)
 })
 
+it('[markdown]: parse table with empty header', () => {
+  const pod = `
+  | | |
+  ------------ | -------------
+  Content from cell 1 | Content from cell 2
+  Content in the first column | Content in the second column
+  `
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
+  console.log(JSON.stringify(tree, null, 2))
+  expect(process(pod)).toMatchInlineSnapshot(`
+    Object {
+      "content": Array [
+        Object {
+          "align": Array [
+            null,
+            null,
+          ],
+          "content": Array [
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 6,
+                      "line": 2,
+                      "offset": 6,
+                    },
+                    "start": Object {
+                      "column": 3,
+                      "line": 2,
+                      "offset": 3,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 8,
+                      "line": 2,
+                      "offset": 8,
+                    },
+                    "start": Object {
+                      "column": 6,
+                      "line": 2,
+                      "offset": 6,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 8,
+                  "line": 2,
+                  "offset": 8,
+                },
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "margin": "",
+              "name": "table_head",
+              "type": "block",
+            },
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [
+                    "Content from cell 1",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 24,
+                      "line": 4,
+                      "offset": 63,
+                    },
+                    "start": Object {
+                      "column": 3,
+                      "line": 4,
+                      "offset": 42,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Content from cell 2",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 44,
+                      "line": 4,
+                      "offset": 83,
+                    },
+                    "start": Object {
+                      "column": 24,
+                      "line": 4,
+                      "offset": 63,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 44,
+                  "line": 4,
+                  "offset": 83,
+                },
+                "start": Object {
+                  "column": 3,
+                  "line": 4,
+                  "offset": 42,
+                },
+              },
+              "margin": "",
+              "name": "table_row",
+              "type": "block",
+            },
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [
+                    "Content in the first column",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 32,
+                      "line": 5,
+                      "offset": 115,
+                    },
+                    "start": Object {
+                      "column": 3,
+                      "line": 5,
+                      "offset": 86,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Content in the second column",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 61,
+                      "line": 5,
+                      "offset": 144,
+                    },
+                    "start": Object {
+                      "column": 32,
+                      "line": 5,
+                      "offset": 115,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 61,
+                  "line": 5,
+                  "offset": 144,
+                },
+                "start": Object {
+                  "column": 3,
+                  "line": 5,
+                  "offset": 86,
+                },
+              },
+              "margin": "",
+              "name": "table_row",
+              "type": "block",
+            },
+          ],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 61,
+              "line": 5,
+              "offset": 144,
+            },
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "margin": "",
+          "name": "table",
+          "type": "block",
+        },
+      ],
+      "id": "id",
+      "margin": "",
+      "name": "root",
+      "type": "block",
+    }
+  `)
+})
+
+it('[markdown]: parse table with align', () => {
+  const pod = `
+=markdown
+Left         | Centered         | Right
+:----------- | :--------------: | -------------------------:
+This is left | Text is centered | And this is right-aligned
+More text    | Even more text   | And even more to the right
+  `
+  const tree = process(pod)
+  const r = validateAstTree([tree])
+  expect(r).toEqual([])
+  const errorDescribe = isValidateError(r, tree)
+  expect(process(pod)).toMatchInlineSnapshot(`
+    Object {
+      "content": Array [
+        Object {
+          "content": Array [
+            "=markdown",
+          ],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 10,
+              "line": 2,
+              "offset": 10,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "margin": "",
+          "text": "text",
+          "type": "para",
+        },
+        Object {
+          "align": Array [
+            "left",
+            "center",
+            "right",
+          ],
+          "content": Array [
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [
+                    "Left",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 15,
+                      "line": 3,
+                      "offset": 25,
+                    },
+                    "start": Object {
+                      "column": 1,
+                      "line": 3,
+                      "offset": 11,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Centered",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 34,
+                      "line": 3,
+                      "offset": 44,
+                    },
+                    "start": Object {
+                      "column": 15,
+                      "line": 3,
+                      "offset": 25,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Right",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 40,
+                      "line": 3,
+                      "offset": 50,
+                    },
+                    "start": Object {
+                      "column": 34,
+                      "line": 3,
+                      "offset": 44,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 40,
+                  "line": 3,
+                  "offset": 50,
+                },
+                "start": Object {
+                  "column": 1,
+                  "line": 3,
+                  "offset": 11,
+                },
+              },
+              "margin": "",
+              "name": "table_head",
+              "type": "block",
+            },
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [
+                    "This is left",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 15,
+                      "line": 5,
+                      "offset": 126,
+                    },
+                    "start": Object {
+                      "column": 1,
+                      "line": 5,
+                      "offset": 112,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Text is centered",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 34,
+                      "line": 5,
+                      "offset": 145,
+                    },
+                    "start": Object {
+                      "column": 15,
+                      "line": 5,
+                      "offset": 126,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "And this is right-aligned",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 60,
+                      "line": 5,
+                      "offset": 171,
+                    },
+                    "start": Object {
+                      "column": 34,
+                      "line": 5,
+                      "offset": 145,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 60,
+                  "line": 5,
+                  "offset": 171,
+                },
+                "start": Object {
+                  "column": 1,
+                  "line": 5,
+                  "offset": 112,
+                },
+              },
+              "margin": "",
+              "name": "table_row",
+              "type": "block",
+            },
+            Object {
+              "content": Array [
+                Object {
+                  "content": Array [
+                    "More text",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 15,
+                      "line": 6,
+                      "offset": 186,
+                    },
+                    "start": Object {
+                      "column": 1,
+                      "line": 6,
+                      "offset": 172,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "Even more text",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 34,
+                      "line": 6,
+                      "offset": 205,
+                    },
+                    "start": Object {
+                      "column": 15,
+                      "line": 6,
+                      "offset": 186,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+                Object {
+                  "content": Array [
+                    "And even more to the right",
+                  ],
+                  "id": "id",
+                  "location": Object {
+                    "end": Object {
+                      "column": 61,
+                      "line": 6,
+                      "offset": 232,
+                    },
+                    "start": Object {
+                      "column": 34,
+                      "line": 6,
+                      "offset": 205,
+                    },
+                  },
+                  "margin": "",
+                  "name": "table_cell",
+                  "type": "block",
+                },
+              ],
+              "id": "id",
+              "location": Object {
+                "end": Object {
+                  "column": 61,
+                  "line": 6,
+                  "offset": 232,
+                },
+                "start": Object {
+                  "column": 1,
+                  "line": 6,
+                  "offset": 172,
+                },
+              },
+              "margin": "",
+              "name": "table_row",
+              "type": "block",
+            },
+          ],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 61,
+              "line": 6,
+              "offset": 232,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 3,
+              "offset": 11,
+            },
+          },
+          "margin": "",
+          "name": "table",
+          "type": "block",
+        },
+      ],
+      "id": "id",
+      "margin": "",
+      "name": "root",
+      "type": "block",
+    }
+  `)
+})
 it('[markdown]: parse strikethrough', () => {
   const pod = `
 ~~this~~
