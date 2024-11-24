@@ -1109,7 +1109,6 @@ it('[markdown]: parse table with empty header', () => {
   const r = validateAstTree([tree])
   expect(r).toEqual([])
   const errorDescribe = isValidateError(r, tree)
-  console.log(JSON.stringify(tree, null, 2))
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
       "content": Array [
