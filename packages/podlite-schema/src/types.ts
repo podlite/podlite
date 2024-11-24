@@ -415,6 +415,7 @@ export interface BlockHead extends Block {
 export interface BlockTable extends Omit<Block, 'content'> {
   name: 'table'
   content: Array<TableHead | TableSeparator | TableRow | BlankLine>
+  align?: ('left' | 'center' | 'right' | null)[]
   // why text not always presents here
   text?: string
 }
