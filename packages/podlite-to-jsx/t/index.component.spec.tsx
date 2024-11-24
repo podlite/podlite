@@ -62,67 +62,129 @@ sdsdsd
           Super table!
         </caption>
         <tbody>
-          <tr id="id">
-            <th id="id">
+          <tr>
+            <th>
               Superhero
             </th>
-            <th id="id">
+            <th>
               Secret Identity
             </th>
-            <th id="id">
+            <th>
               Superpower
             </th>
           </tr>
-          <tr id="id">
-            <td id="id">
+          <tr>
+            <td>
               The Shoveller
             </td>
-            <td id="id">
+            <td>
               Eddie Stevens
             </td>
-            <td id="id">
+            <td>
               King Arthur&#x27;s singing shovel
             </td>
           </tr>
-          <tr id="id">
-            <td id="id">
+          <tr>
+            <td>
               Blue Raja
             </td>
-            <td id="id">
+            <td>
               Geoffrey Smith
             </td>
-            <td id="id">
+            <td>
               Master of cutlery
             </td>
           </tr>
-          <tr id="id">
-            <td id="id">
+          <tr>
+            <td>
               Mr Furious
             </td>
-            <td id="id">
+            <td>
               Roy Orson
             </td>
-            <td id="id">
+            <td>
               Ticking time bomb of fury
             </td>
           </tr>
-          <tr id="id">
-            <td id="id">
+          <tr>
+            <td>
               The
               <i>
                 Bowler
               </i>
             </td>
-            <td id="id">
+            <td>
               Carol Pinnsler
             </td>
-            <td id="id">
+            <td>
               Haunted bowling ball
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+  `)
+})
+
+it('table with aligns', () => {
+  const t = render(
+    <Podlite>
+      {`
+  =begin pod
+  =begin markdown
+    Left         | Centered         | Right
+    :----------- | :--------------: | -------------------------:
+    This is left | Text is centered | And this is right-aligned
+    More text    | Even more text   | And even more to the right
+  =end markdown
+  =end pod
+  `}
+    </Podlite>,
+  )
+  expect(t).toMatchInlineSnapshot(`
+    <div id="id">
+      <table id="id">
+        <caption class="caption">
+        </caption>
+        <tbody>
+          <tr>
+            <th align="left">
+              Left
+            </th>
+            <th align="center">
+              Centered
+            </th>
+            <th align="right">
+              Right
+            </th>
+          </tr>
+          <tr>
+            <td align="left">
+              This is left
+            </td>
+            <td align="center">
+              Text is centered
+            </td>
+            <td align="right">
+              And this is right-aligned
+            </td>
+          </tr>
+          <tr>
+            <td align="left">
+              More text
+            </td>
+            <td align="center">
+              Even more text
+            </td>
+            <td align="right">
+              And even more to the right
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+    </p>
   `)
 })
 

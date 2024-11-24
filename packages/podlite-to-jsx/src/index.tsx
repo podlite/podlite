@@ -419,6 +419,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         return ''
       }
       const id = getNodeId(node, ctx)?.replace(/\s/g, '-')
+
       return makeComponent(
         ({ key, children }) => {
           return (
@@ -429,17 +430,52 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
           )
         },
         node,
-        interator(node.content, { ...ctx }),
+        interator(node.content, { ...ctx, ...(node.align && { 'table.align': node.align }) }),
       )
     },
     ':separator': emptyContent(),
-    table_row: mkComponent('tr'),
-    table_cell: mkComponent('td'),
+    table_row: setFn((node, ctx) => {
+      if (ctx['table.align']) {
+        ctx['cellinRow'] = 0
+      }
+      return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
+    }),
+    table_cell: setFn((node, ctx) => {
+      const align = (alignMap => {
+        if (!alignMap) return null
+        const num = ctx['cellinRow']++
+        return alignMap[num % alignMap.length]
+      })(ctx['table.align'])
+
+      return mkComponent(({ children, key }) => (
+        <td align={align} key={key}>
+          {children}
+        </td>
+      ))
+    }),
+
     table_head: subUse(
       {
-        table_cell: mkComponent('th'),
+        table_cell: setFn((node, ctx) => {
+          const align = (alignMap => {
+            if (!alignMap) return null
+            const num = ctx['cellinRow']++
+            return alignMap[num % alignMap.length]
+          })(ctx['table.align'])
+
+          return mkComponent(({ children, key }) => (
+            <th align={align} key={key}>
+              {children}
+            </th>
+          ))
+        }),
       },
-      mkComponent('tr'),
+      setFn((node, ctx) => {
+        if (ctx['table.align']) {
+          ctx['cellinRow'] = 0
+        }
+        return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
+      }),
     ),
     ':list': setFn((node, ctx) =>
       node.list === 'ordered' ? mkComponent('ol') : node.list === 'variable' ? mkComponent('dl') : mkComponent('ul'),
@@ -569,9 +605,7 @@ export const TestPodlite = ({ children, ...options }) => {
   let podlite = podlite_core({ importPlugins: true })
 
   // its replace all ids with "id"
-  let treeAfterParsed = frozenIds()(podlite.parse(children))
-
-  const tree = podlite.toAst(treeAfterParsed)
+  const tree = frozenIds()(podlite.toAst(podlite.parse(children)))
   return <Podlite {...{ children, ...options, tree: { interator: tree } as PodliteExport }} />
 }
 
