@@ -74,7 +74,7 @@ export default {}
     return makeInterator(rules)(node, {})
   }
   const onProcess = (recs: publishRecord[]) => {
-    console.log('react-plugin  start')
+    // console.log('react-plugin  start')
     const res = recs.map(item => {
       const node = processNode(item.node, item.file)
       // process images inside description
@@ -108,7 +108,7 @@ export default {}
     })
     return res
   }
-  console.log('react-plugin  finished')
+  //   console.log('react-plugin  finished')
   return [onProcess, onExit]
 }
 
