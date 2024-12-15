@@ -1,7 +1,7 @@
 import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@podlite/schema'
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord, streamWriteArray } from '.'
+import { PodliteWebPlugin, PodliteWebPluginContext, processFile, publishRecord, streamWriteArray } from '.'
 import pathFs from 'path'
 export interface SiteInfo {
   redirects: { source: string; destination: string; statusCode: number }[]
@@ -101,28 +101,11 @@ const plugin = ({
     }
 
     if (!ctx.testing) {
-      streamWriteArray(allRecords, `${built_path}/pages.json`)
-        .then(() => console.log('All pages written successfully'))
-        .catch(err => console.error('Error writing file:', err))
       fs.writeFileSync(`${built_path}/data.json`, JSON.stringify(dataJson))
 
       fs.writeFileSync(`${built_path}/siteInfo.json`, JSON.stringify(siteData, null, 2))
 
       fs.writeFileSync(`${built_path}/imagesMap.json`, JSON.stringify(imagesMap, null, 2))
-    }
-
-    // prepare data for LastArticles component
-    if (!ctx.testing) {
-      const source = () => allRecords.filter(i => i.publishUrl).filter(({ type = '' }: any) => type !== 'page')
-      const articles = source().reverse().slice(0, 10)
-      // if (!articles[articles.length - 1]) {
-      //     throw new Error('No articles found' + JSON.stringify({'articles.length - 1':articles.length - 1, articles, 'allRecords':allRecords.length}, null, 2))
-      // }
-      // const lastArticleUrl = articles[articles.length - 1].publishUrl
-      // const articleIndex = source().findIndex(({ publishUrl }) => publishUrl === lastArticleUrl)
-      // const prev = source()[articleIndex - 1]
-
-      fs.writeFileSync(`${built_path}/lastArticles.json`, JSON.stringify({ articles, prev: {} }, null, 2))
     }
 
     // process GlobalStyles
@@ -170,8 +153,21 @@ const plugin = ({
       throw new Error('Index page not found. Used path: ' + indexFilePath)
     }
     indexPage.publishUrl = '/'
-    allRecords.push(...recs)
-    return recs
+
+    const articlesJSON = JSON.stringify(recs.filter(i => i.publishUrl).filter(({ type = '' }: any) => type !== 'page'))
+
+    const storeFile = `
+=begin pod
+=for NAME  :id<PLUGIN_DATA>
+SITE DATA
+=begin data :id<articles>
+${articlesJSON}
+=end data
+=end pod    
+`
+    const storeDoc = processFile('virtual/site-data-plugin.podlite', storeFile)
+    allRecords.push(...recs, storeDoc)
+    return [...recs, storeDoc]
   }
 
   return [onProcess, onExit]
