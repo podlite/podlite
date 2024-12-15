@@ -16,20 +16,6 @@
       "jest-serializer-html"
     ]
   },
-  "exports1": {
-    ".": {
-      "import": "./lib/index.esm.js",
-      "require": "./lib/index.cjs"
-    },
-    "./types": {
-      "import": "./lib/index.d.ts",
-      "require": "./dist/index.d.cts"
-    },
-    "./import": "./lib/index.js",
-    "./require": "./lib/index.cjs",
-    "./lib/Editor.css": "./lib/index.esm.css",
-    "./lib/index.css": "./lib/index.css"
-  },
   "publishConfig": {
     "access": "public",
     "module": "lib/index.esm.js",
