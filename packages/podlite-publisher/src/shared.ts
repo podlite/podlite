@@ -1,4 +1,12 @@
-import { getFromTree, makeAttrs, makeInterator, PodliteDocument, PodNode } from '@podlite/schema'
+import {
+  getFromTree,
+  getNodeId,
+  getTextContentFromNode,
+  makeAttrs,
+  makeInterator,
+  PodliteDocument,
+  PodNode,
+} from '@podlite/schema'
 import { publishRecord, pubRecord } from '.'
 import { podlite as podlite_core } from 'podlite'
 // now we add base60 letters
@@ -169,4 +177,86 @@ export const addUrl = (items: publishRecord[]) => {
     ]
     return { ...item, shortUrl, publishUrl, sources }
   })
+}
+
+///  Support for Selectors
+
+type ParsedSelector = {
+  scheme: string
+  document: string
+  anchor?: string
+}
+
+const parseSelector = (selector: string): ParsedSelector => {
+  // doc:File1#data1
+  const docWithAnchorPattern = /^([^:]+):([^#]+)#(.+)$/
+  // Try doc:name#anchor pattern first
+  const anchorMatch = selector.match(docWithAnchorPattern)
+  if (anchorMatch) {
+    return {
+      scheme: anchorMatch[1],
+      document: anchorMatch[2],
+      anchor: anchorMatch[3],
+    }
+  }
+}
+const getDocIDs = (doc: publishRecord): string[] => {
+  const ids = []
+  //   for (const item of [doc]) {
+  getFromTree(doc.node, 'NAME', 'TITLE').map(block => {
+    const conf = makeAttrs(block, {})
+    const title = getTextContentFromNode(block).trim()
+
+    if (conf.exists('id')) {
+      const id = conf.getFirstValue('id')
+      if (id) {
+        ids.push(id)
+      }
+    }
+    ids.push(title)
+  })
+  return ids
+}
+
+function getMapIDsBlocks<T extends PodNode>(srcNode: T): Map<string, T> {
+  const ids = []
+  const idsMap = new Map<string, T>()
+  const t = getFromTree(srcNode, { type: 'block' }).map(i => {
+    const id = getNodeId(i, {})
+    if (id) {
+      idsMap.set(id, i as T)
+    }
+  })
+  return idsMap
+}
+
+export const runSelector = (selector: string, docs: publishRecord[]): publishRecord[] | PodNode[] => {
+  const paresedSelector = parseSelector(selector)
+  if (paresedSelector) {
+    const { scheme, document, anchor } = paresedSelector
+    const filters = []
+    if (scheme === 'doc') {
+      filters.push((doc: publishRecord) => {
+        // console.log(`[incliude] `)
+        return getDocIDs(doc).includes(document)
+      })
+    }
+    // Return documents that successfully pass all the filters.
+    const subdocs = docs.filter(item => !filters.some(fn => !fn(item)))
+    console.warn(`[include] fouond ${subdocs.length} docs for ${document}`)
+    if (anchor) {
+      const collected_blocks = []
+      for (const d of subdocs) {
+        const idsMap = getMapIDsBlocks(d.node)
+        const block = idsMap.get(anchor)
+        if (block) {
+          collected_blocks.push(block)
+        }
+      }
+      console.warn(`[include] found ${collected_blocks.length} blocks for anchor: ${anchor}`)
+      return collected_blocks
+    }
+  }
+  console.log(`[include] no any blocks found for ${selector}`)
+  return []
 }
