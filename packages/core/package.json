@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "Podlite - a lightweight block-based markup language",
   "main": "./src/index.ts",
   "scripts": {

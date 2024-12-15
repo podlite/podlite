@@ -2,6 +2,18 @@
 
 =head1 Upcoming
 
+=head1 0.0.44
+
+# @podlite/publisher@0.0.5
+
+- initial support for `=Include` blocks and Selectors (https://podlite.org/specification#Selectors)
+- add support for embeded data using `=data` block
+- refactor existed and added new plugins:
+  - docs-injector-plugin
+  - dump-pages-plugin
+  - include-resolve-plugin.spec
+  - prev-next-plugin
+
 =head1 0.0.43
 
 # Added support for alignment in markdown tables
