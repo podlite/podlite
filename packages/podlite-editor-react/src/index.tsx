@@ -14,6 +14,7 @@ import 'codemirror/addon/search/search'
 import 'codemirror/addon/search/searchcursor'
 import 'codemirror/addon/dialog/dialog'
 import 'codemirror/addon/dialog/dialog.css'
+import './podlite-mode'
 
 import './Editor.css'
 import { addVMargin, getSuggestionContextForLine, templateGetSelectionPos } from './helpers'
