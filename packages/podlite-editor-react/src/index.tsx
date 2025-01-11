@@ -49,6 +49,7 @@ type Props = {
   isAutoComplete?: boolean
   isPreviewModeEnabled?: boolean
   isControlled?: boolean
+  isHighlightSource?: boolean
 }
 
 export const Editor = ({
@@ -62,6 +63,7 @@ export const Editor = ({
   sourceType = 'pod6',
   isControlled = false,
   isAutoComplete = true,
+  isHighlightSource = false,
 }: Props) => {
   const [text, updateText] = useState(content)
 
@@ -117,15 +119,19 @@ export const Editor = ({
     autofocus: true,
     lineWrapping: true,
     viewportMargin: Infinity,
-    mode:
-      sourceType !== 'md'
-        ? null
-        : {
-            name: 'gfm',
-            tokenTypeOverrides: {
-              emoji: 'emoji',
-            },
-          },
+    ...(isHighlightSource
+      ? {
+          mode:
+            sourceType !== 'md'
+              ? { name: 'podlite' }
+              : {
+                  name: 'gfm',
+                  tokenTypeOverrides: {
+                    emoji: 'emoji',
+                  },
+                },
+        }
+      : { mode: null }),
     theme: isDarkTheme ? 'duotone-dark' : 'default',
   }
 

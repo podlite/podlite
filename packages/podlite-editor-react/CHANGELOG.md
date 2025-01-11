@@ -1,6 +1,7 @@
 # @podlite/editor-react
 
 ## Upcoming
+- syntax highlighting for source code
 
 ## 0.0.25
 

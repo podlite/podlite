@@ -408,3 +408,15 @@ aside.notify.caution .notify-title {
     z-index: 1000;
     border: none;
   }
+  .editorApp .cm-header {
+    color: #000;
+}
+.editorApp .cm-header-1 {
+    font-size: 150%;
+}
+.cm-header-2 {
+    font-size: 130%;
+}
+.cm-header-3 {
+    font-size: 110%;
+}
