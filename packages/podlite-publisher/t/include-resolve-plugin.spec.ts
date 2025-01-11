@@ -26,7 +26,7 @@ TEST
 const file2 = `
 test
 
-=Include doc:File1#data2
+=include doc:File1#data2
 `
 const tctx = { testing: true }
 

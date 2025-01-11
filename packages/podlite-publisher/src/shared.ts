@@ -243,7 +243,7 @@ export const runSelector = (selector: string, docs: publishRecord[]): publishRec
     }
     // Return documents that successfully pass all the filters.
     const subdocs = docs.filter(item => !filters.some(fn => !fn(item)))
-    console.warn(`[include] fouond ${subdocs.length} docs for ${document}`)
+    console.warn(`[include] found ${subdocs.length} docs for ${document}`)
     if (anchor) {
       const collected_blocks = []
       for (const d of subdocs) {

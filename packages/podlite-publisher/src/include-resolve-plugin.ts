@@ -7,7 +7,25 @@ const plugin = (): PodliteWebPlugin => {
   const onExit = ctx => ({ ...ctx, ...outCtx })
   const processNode = (node: PodNode, recs: publishRecord[]) => {
     const rules = {
+      // TODO: remove 'Include' due to duplicate to 'include'
       Include: node => {
+        const { content } = node
+        const selector = getTextContentFromNode(content).trim()
+        console.warn(`[include] start resolve selector: ${selector}`)
+        if (selector) {
+          // try to resolve selector
+          const [block] = runSelector(selector, recs)
+          if (typeof block === 'object' && !('file' in block)) {
+            const updated = { content: block }
+            return { ...node, ...updated }
+          }
+          if (!block) {
+            console.warn(`[plugin: resolve ] selector ${selector} not found`)
+          }
+        }
+        return node
+      },
+      include: node => {
         const { content } = node
         const selector = getTextContentFromNode(content).trim()
         console.warn(`[include] start resolve selector: ${selector}`)
