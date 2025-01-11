@@ -75,6 +75,7 @@ export interface RulesStrict {
   nested: RuleHandler<BlockNested>
   output: RuleHandler<BlockOutput>
   input: RuleHandler<BlockInput>
+  include: RuleHandler<BlockInclude>
   picture: RuleHandler<BlockPicture>
   image: RuleHandler<BlockImage>
   ':image': RuleHandler<Image>
@@ -391,6 +392,10 @@ export interface BlockInput extends Block {
   name: 'input'
 }
 
+export interface BlockInclude extends Block {
+  name: 'include'
+}
+
 export interface BlockPara extends Block {
   name: 'para'
 }
@@ -492,6 +497,7 @@ export type PodNode =
   | BlockMarkdown
   | BlockOutput
   | BlockInput
+  | BlockInclude
   | BlockPara
   | BlockHead
   | BlockComment

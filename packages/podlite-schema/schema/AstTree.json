@@ -142,6 +142,9 @@
                     "$ref": "#/definitions/BlockInput"
                 },
                 {
+                    "$ref": "#/definitions/BlockInclude"
+                },
+                {
                     "$ref": "#/definitions/BlockPara"
                 },
                 {
@@ -740,6 +743,58 @@
                 "type"
             ]
         },
+        "BlockInclude": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "include"
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "block"
+                    ]
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
         "BlockPara": {
             "type": "object",
             "properties": {
@@ -1006,6 +1061,9 @@
                             },
                             {
                                 "$ref": "#/definitions/BlockInput"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockInclude"
                             },
                             {
                                 "$ref": "#/definitions/BlockPara"

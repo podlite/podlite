@@ -196,6 +196,8 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         <kbd>{children}</kbd>
       </pre>
     )),
+    // TODO: add support for selectors, something like "data provider"
+    include: emptyContent(),
 
     // Directives
     ':config': setFn((node, ctx) => {

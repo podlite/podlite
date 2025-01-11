@@ -26,6 +26,7 @@
         'defn',
         'formula',
         'head',
+        'include',
         'input',
         'item',
         'markdown',

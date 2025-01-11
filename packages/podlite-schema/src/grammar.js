@@ -5975,6 +5975,7 @@ function peg$parse(input, options) {
           'defn',
           'formula',
           'head',
+          'include',
           'input',
           'item',
           'markdown',
