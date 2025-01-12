@@ -2,6 +2,26 @@
 
 =head1 Upcoming
 
+=head1 0.0.45
+
+# @podlite/editor-react@0.0.31
+
+- fix `=table` caption position
+- syntax highlighting for source code
+
+# @podlite/publisher@0.0.6
+
+- implement resolvers for  `=include` block
+
+# @podlite/schema@0.0.25
+
+- added initial support for `=include` block
+
+# @podlite/to-jsx@0.0.29
+
+- handle `=include` block
+- Removed alignment for Markdown table headers
+
 =head1 0.0.44
 
 # @podlite/publisher@0.0.5

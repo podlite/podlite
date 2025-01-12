@@ -32,7 +32,16 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 - [Source](https://github.com/podlite/podlite-specs)
 - [in HTML](https://podlite.org/specification)
 - [Discussions](https://github.com/podlite/podlite-specs/discussions)
-- [Implementation](https://github.com/podlite/podlite)
+
+<div align="center">
+
+##### implementation
+</div>
+
+- [Source](https://github.com/podlite/podlite)
+- [Changelog](https://github.com/podlite/podlite/releases)
+- [Issues](https://github.com/podlite/podlite/issues)
+
 
 </td><td valign=top><div align="center">
 
@@ -43,6 +52,8 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 - [Podlite-web](https://github.com/podlite/podlite-web)
 - [How-to article](https://zahatski.com/2022/8/23/1/start-you-own-blog-site-with-podlite-for-web)
 - [Issues](https://github.com/podlite/podlite-specs/issues)
+- [Changelog](https://github.com/podlite/podlite-web/releases)
+- [Example: Knowledge base for <br/> raku programming language](https://raku-knowledge-base.podlite.org/)
 
 </td><td valign=top><div align="center">
   
@@ -63,13 +74,15 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 - [podlite.org](https://podlite.org)
 - [pod6.in](https://pod6.in/)
 - [github.com/podlite](https://github.com/podlite/)
+- [Podlite project updates](https://podlite.org/contents)
 
 </td></tr></table>
 </div>
 
+
 ## AUTHOR
 
-Copyright (c) 2021-2024 Aliaksandr Zahatski
+Copyright (c) 2021-2025 Aliaksandr Zahatski
 
 ## License
 

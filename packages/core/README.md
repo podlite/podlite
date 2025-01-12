@@ -20,19 +20,66 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 
 ## Useful links
 
-📖 _Project site_: [podlite.org](https://podlite.org)
+<div align="center">
+<table border=0><tr><td valign=top><div align="center">
 
-📌 _Github_: [github.com/podlite](https://github.com/podlite/) 🤩
+##### specification
 
-🖥️ _Online editor_: [pod6.in](https://pod6.in/)
+</div>
 
-🖥️ _Desktop editor/viewer_: [github.com/podlite/podlite-desktop](https://github.com/podlite/podlite-desktop) - the viewer and editor of `.podlite` and `.pod6` files for Windows, Linux and Mac.
+- [Source](https://github.com/podlite/podlite-specs)
+- [in HTML](https://podlite.org/specification)
+- [Discussions](https://github.com/podlite/podlite-specs/discussions)
 
-📚 _Podlite for web_ - static site generator: [github.com/podlite/podlite-web](https://github.com/podlite/podlite-web)
+<div align="center">
+
+##### implementation
+</div>
+
+- [Source](https://github.com/podlite/podlite)
+- [Changelog](https://github.com/podlite/podlite/releases)
+- [Issues](https://github.com/podlite/podlite/issues)
+
+
+</td><td valign=top><div align="center">
+
+##### publishing system
+
+</div>
+
+- [Podlite-web](https://github.com/podlite/podlite-web)
+- [How-to article](https://zahatski.com/2022/8/23/1/start-you-own-blog-site-with-podlite-for-web)
+- [Issues](https://github.com/podlite/podlite-specs/issues)
+- [Changelog](https://github.com/podlite/podlite-web/releases)
+- [Example: Knowledge base for <br/> raku programming language](https://raku-knowledge-base.podlite.org/)
+
+</td><td valign=top><div align="center">
+  
+##### desktop viewer/editor
+
+</div>
+
+- [Podlite-desktop](https://github.com/podlite/podlite-desktop)
+- [Releases](https://github.com/podlite/podlite-desktop/releases)
+- [Issues](https://github.com/podlite/podlite-desktop/issues)
+
+</td><td valign=top><div align="center">
+
+##### online resurces
+
+ </div>
+
+- [podlite.org](https://podlite.org)
+- [pod6.in](https://pod6.in/)
+- [github.com/podlite](https://github.com/podlite/)
+- [Podlite project updates](https://podlite.org/contents)
+
+</td></tr></table>
+</div>
 
 ## AUTHOR
 
-Copyright (c) 2021-2024 Aliaksandr Zahatski
+Copyright (c) 2021-2025 Aliaksandr Zahatski
 
 ## License
 

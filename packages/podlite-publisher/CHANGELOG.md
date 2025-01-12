@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.6
+
+- implement resolvers for  `=include` block
+
 ## 0.0.5
 
 - initial support for `=Include` blocks and Selectors (https://podlite.org/specification#Selectors)

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/markdown",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "=markdown - markdown text block",
   "main": "./src/index.tsx",
   "license": "MIT",

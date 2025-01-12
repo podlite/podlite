@@ -1,6 +1,10 @@
 # @podlite/editor-react
 
 ## Upcoming
+
+## 0.0.31
+
+- fix `=table` caption position
 - syntax highlighting for source code
 
 ## 0.0.25

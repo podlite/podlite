@@ -62,7 +62,7 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 
 ## AUTHOR
 
-Copyright (c) 2021-2024 Aliaksandr Zahatski
+Copyright (c) 2021-2025 Aliaksandr Zahatski
 
 ## License
 

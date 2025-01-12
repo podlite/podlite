@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "image",
   "main": "./src/index.tsx",
   "license": "MIT",

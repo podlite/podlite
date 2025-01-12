@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.25
+
+- added initial support for `=include` block
+
 ## 0.0.23
 
 - added alignment for column contents

@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.29
+
+- Removed alignment for Markdown table headers
+- handle `=include` block
+
 ## 0.0.27
 
 - render tables with align
