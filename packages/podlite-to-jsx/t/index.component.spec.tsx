@@ -148,13 +148,13 @@ it('table with aligns', () => {
         </caption>
         <tbody>
           <tr>
-            <th align="left">
+            <th>
               Left
             </th>
-            <th align="center">
+            <th>
               Centered
             </th>
-            <th align="right">
+            <th>
               Right
             </th>
           </tr>
