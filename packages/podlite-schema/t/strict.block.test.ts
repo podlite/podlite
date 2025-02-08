@@ -283,4 +283,60 @@ test
       ]
     `)
   })
+
+  it('block inside header', () => {
+    const tree = parse(
+      `=head2  =toc - Automatic table of contents
+`,
+      { podMode: 1, skipChain: 1 },
+    )
+    expect(tree).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "content": Array [
+            Object {
+              "content": Array [
+                Object {
+                  "type": "text",
+                  "value": "=toc - Automatic table of contents
+      ",
+                },
+              ],
+              "location": Object {
+                "end": Object {
+                  "column": 1,
+                  "line": 2,
+                  "offset": 43,
+                },
+                "start": Object {
+                  "column": 1,
+                  "line": 1,
+                  "offset": 0,
+                },
+              },
+              "margin": "",
+              "text": "=toc - Automatic table of contents
+      ",
+              "type": "para",
+            },
+          ],
+          "location": Object {
+            "end": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 43,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "margin": "",
+          "name": "head2",
+          "type": "block",
+        },
+      ]
+    `)
+  })
 })

@@ -2,6 +2,8 @@
 
 ## Upcoming
 
+- fix the abbreviated block when its content starts with '='
+
 ## 0.0.25
 
 - added initial support for `=include` block

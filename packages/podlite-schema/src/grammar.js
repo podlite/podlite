@@ -469,7 +469,8 @@ function peg$parse(input, options) {
                   location:location()
                 }
         },
-      peg$c159 = function(vmargin, name, content) { 
+      peg$c159 = function(vmargin, name, first_line, content_rest) { 
+          const content = (first_line === "\n" ? "" : first_line ) + content_rest
           return {
                   margin:vmargin,
                   type:'block',
@@ -1457,6 +1458,44 @@ function peg$parse(input, options) {
           peg$currPos = s0;
           s0 = peg$FAILED;
         }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
+  function peg$parseraw_text_until_eol() {
+    var s0, s1, s2, s3;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    s2 = [];
+    s3 = peg$parseText();
+    if (s3 !== peg$FAILED) {
+      while (s3 !== peg$FAILED) {
+        s2.push(s3);
+        s3 = peg$parseText();
+      }
+    } else {
+      s2 = peg$FAILED;
+    }
+    if (s2 !== peg$FAILED) {
+      s1 = input.substring(s1, peg$currPos);
+    } else {
+      s1 = s2;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$parseEOL();
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s1 = peg$c34();
+        s0 = s1;
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -5123,7 +5162,7 @@ function peg$parse(input, options) {
           if (s4 !== peg$FAILED) {
             s5 = peg$parseemptyline();
             if (s5 === peg$FAILED) {
-              s5 = null;
+              s5 = peg$parseraw_text_until_eol();
             }
             if (s5 !== peg$FAILED) {
               s6 = peg$currPos;
@@ -5186,7 +5225,7 @@ function peg$parse(input, options) {
               }
               if (s6 !== peg$FAILED) {
                 peg$savedPos = s0;
-                s1 = peg$c159(s1, s3, s6);
+                s1 = peg$c159(s1, s3, s5, s6);
                 s0 = s1;
               } else {
                 peg$currPos = s0;

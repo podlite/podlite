@@ -118,6 +118,7 @@ Text "text" = $(c:char+)
 // TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
 // becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'
 text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
+raw_text_until_eol = $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             { return { type:"para", value:text(), error:true, location:location()}}
 /** 
@@ -486,9 +487,10 @@ abbreviatedBlockTable =
 
 abbreviatedBlock = 
   vmargin:$(_) !markers
-  name:markerAbbreviatedBlock _ emptyline?
-  content:$(!emptyline text:text_content )*
+  name:markerAbbreviatedBlock _ first_line:( emptyline / raw_text_until_eol )
+  content_rest:$( !emptyline text:text_content )*
   { 
+    const content = (first_line === "\n" ? "" : first_line ) + content_rest
     return {
             margin:vmargin,
             type:'block',
