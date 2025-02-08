@@ -79,8 +79,13 @@ function getDefaultContentState(token = 'content') {
         regex: new RegExp(`(?<code>${allcodes})(«)([^»]*)(»)`),
         token: handler(token),
       },
+
       {
-        regex: /./,
+        regex: new RegExp(`(.+?)(?=\\w[«<])`),
+        token: token,
+      },
+      {
+        regex: /(.+)$/,
         token: token,
       },
     ]
@@ -96,7 +101,7 @@ function getDefaultContentState(token = 'content') {
 function getVerbatimContentState(token = 'content') {
   return [
     {
-      regex: /./,
+      regex: /(.+)$/,
       token: token,
     },
   ]
@@ -123,7 +128,11 @@ function isBlankLine(attr = {}) {
 function getStatesForBlock(blockName, contentToken) {
   if (blockName.match(/^(?:code|comment|data)$/)) {
     return {
-      [`${blockName}_content_Abbr`]: [...getVerbatimContentState(contentToken)],
+      [`${blockName}_content_Abbr`]: [
+        ...isBlankLine({ pop: true }),
+        ...ifNextStartAnyBlock({ pop: true }),
+        ...getVerbatimContentState(contentToken),
+      ],
       [`${blockName}_attr_Para`]: [
         ...ifNextStartAnyBlock({ pop: true }),
         ...attributesContent({ next: `${blockName}_content_Para` }),
@@ -141,8 +150,8 @@ function getStatesForBlock(blockName, contentToken) {
         ...getVerbatimContentState(contentToken),
 
         {
-          regex: /.*/,
-          token: `content`,
+          regex: /(.*)$/,
+          token: ['content'],
         },
       ],
     }

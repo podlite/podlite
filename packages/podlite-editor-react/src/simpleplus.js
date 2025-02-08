@@ -4,7 +4,6 @@
 // Source:it's not possible to detect empty lines :https://discuss.codemirror.net/t/detect-blank-lines-with-simple-mode/2167/3
 
 import CodeMirror from 'codemirror'
-
 ;('use strict')
 
 CodeMirror.defineSimpleModePlus = function (name, states) {
@@ -162,7 +161,6 @@ function tokenFunction(states, config) {
         if (matches.length > 2 && rule.token && typeof rule.token != 'string') {
           for (var j = 2; j < matches.length; j++)
             if (matches[j])
-              //(state.pending || (state.pending = [])).push({text: matches[j], token: rule.token[j - 1]});
               (state.pending || (state.pending = [])).push({ text: matches[j], token: token[j - 1] })
           stream.backUp(matches[0].length - (matches[1] ? matches[1].length : 0))
           return token[0]
