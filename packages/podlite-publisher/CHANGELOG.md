@@ -4,7 +4,7 @@
 
 ## 0.0.6
 
-- implement resolvers for  `=include` block
+- implement resolvers for `=include` block
 
 ## 0.0.5
 

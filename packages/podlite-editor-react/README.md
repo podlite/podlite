@@ -36,12 +36,12 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 <div align="center">
 
 ##### implementation
+
 </div>
 
 - [Source](https://github.com/podlite/podlite)
 - [Changelog](https://github.com/podlite/podlite/releases)
 - [Issues](https://github.com/podlite/podlite/issues)
-
 
 </td><td valign=top><div align="center">
 
@@ -78,7 +78,6 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 
 </td></tr></table>
 </div>
-
 
 ## AUTHOR
 

@@ -2,6 +2,9 @@
 
 ## Upcoming
 
+- speed up podite mode for editor
+- added initial support for "Focus Write" mode
+
 ## 0.0.31
 
 - fix `=table` caption position

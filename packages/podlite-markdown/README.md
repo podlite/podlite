@@ -21,6 +21,7 @@ Its flexibility makes it an ideal tool for creating documentation, blogs, educat
 Podlite aims to provide users with a means for creativity and expressing ideas in a structured form, while ensuring ease of use and high flexibility in content creation.
 
 ## Useful links
+
 <div align="center">
 <table border=0><tr><td valign=top><div align="center">
 
@@ -35,12 +36,12 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 <div align="center">
 
 ##### implementation
+
 </div>
 
 - [Source](https://github.com/podlite/podlite)
 - [Changelog](https://github.com/podlite/podlite/releases)
 - [Issues](https://github.com/podlite/podlite/issues)
-
 
 </td><td valign=top><div align="center">
 

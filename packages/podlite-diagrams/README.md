@@ -144,12 +144,12 @@ In order to keep the match between this documentation and the last release, plea
 <div align="center">
 
 ##### implementation
+
 </div>
 
 - [Source](https://github.com/podlite/podlite)
 - [Changelog](https://github.com/podlite/podlite/releases)
 - [Issues](https://github.com/podlite/podlite/issues)
-
 
 </td><td valign=top><div align="center">
 

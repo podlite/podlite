@@ -465,11 +465,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
             return alignMap[num % alignMap.length]
           })(ctx['table.align'])
 
-          return mkComponent(({ children, key }) => (
-            <th key={key}>
-              {children}
-            </th>
-          ))
+          return mkComponent(({ children, key }) => <th key={key}>{children}</th>)
         }),
       },
       setFn((node, ctx) => {
