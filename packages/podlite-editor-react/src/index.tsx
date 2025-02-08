@@ -49,6 +49,7 @@ type Props = {
   isLineNumbers?: boolean
   isAutoComplete?: boolean
   isPreviewModeEnabled?: boolean
+  isFocusWriteModeEnabled?: boolean
   isControlled?: boolean
   isHighlightSource?: boolean
 }
@@ -59,6 +60,7 @@ export const Editor = ({
   isDarkTheme = false,
   isLineNumbers = false,
   isPreviewModeEnabled = false,
+  isFocusWriteModeEnabled = false,
   onConvertSource,
   onSavePressed = () => {},
   sourceType = 'pod6',
@@ -91,7 +93,9 @@ export const Editor = ({
   const [result, updateResult] = useState<ConverterResult>()
   useDebouncedEffect(
     () => {
-      updateResult(onConvertSource(text))
+      if (!isFocusWriteModeEnabled) {
+        updateResult(onConvertSource(text))
+      }
     },
     [text],
     50,
@@ -331,10 +335,9 @@ export const Editor = ({
       instanceCMLocal.off('change', onChange)
     }
   }, [instanceCMLocal, isAutoComplete])
-
   return (
     <div className="EditorApp">
-      <div className={isPreviewModeEnabled ? 'layoutPreview' : 'layout'}>
+      <div className={isPreviewModeEnabled ? 'layoutPreview' : isFocusWriteModeEnabled ? 'layoutFocusWrite' : 'layout'}>
         <div
           className="Editorleft"
           onMouseEnter={() => setPreviewScrolling(false)}

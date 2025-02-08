@@ -34,6 +34,11 @@
     width: 100%;
     /* height: 100%; */
   }
+  .layoutFocusWrite {
+    position: absolute;
+    width: 100%;
+    /* height: 100%; */
+  }
   .Editor {
     text-align: left;
     white-space: pre-wrap;
@@ -220,7 +225,7 @@
     list-style: none;
     font-size: .8rem;
   }
-
+  
   .caption {
     text-align: center;
     font-size: 0.9rem;
