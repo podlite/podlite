@@ -1,0 +1,11 @@
+=begin pod :puburl</editor>
+
+=TITLE Podlite React editor
+
+
+=useReact {TestEditor} from './demo/Components'
+=begin React :component<TestEditor> :id<menu> 
+=end React
+
+
+=end pod

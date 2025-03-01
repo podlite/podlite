@@ -4,7 +4,8 @@ import CMirror from 'codemirror'
 import dictionary from './dict'
 import { useState, useEffect, useRef } from 'react'
 import { isElement } from 'react-is'
-
+import Editor2 from './Editor'
+export { Editor2 as Editor2 }
 // TODO: use bundler to add into package
 // import '../../../node_modules/codemirror/lib/codemirror.css';
 import 'codemirror/mode/gfm/gfm'
@@ -16,7 +17,7 @@ import 'codemirror/addon/dialog/dialog'
 import 'codemirror/addon/dialog/dialog.css'
 import './podlite-mode'
 
-import './Editor.css'
+import './Editor.old.css'
 import { addVMargin, getSuggestionContextForLine, templateGetSelectionPos } from './helpers'
 
 //@ts-ignore
