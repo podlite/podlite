@@ -7,7 +7,7 @@ interface Dict {
 const dict: Dict[] = [
   {
     displayText: 'head1',
-    text: `=head1 `,
+    text: `=head1 #{}`,
   },
   {
     displayText: 'head2',
@@ -48,7 +48,7 @@ const dict: Dict[] = [
   },
   {
     displayText: 'picture 🏷',
-    text: `=picture https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true
+    text: `=picture #{https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true}
 `,
   },
   {
@@ -61,7 +61,7 @@ const dict: Dict[] = [
   },
   {
     displayText: 'table 2x 🏷',
-    text: `=begin table :caption('Caption of table')
+    text: `=begin table :caption('#{Caption of table}')
 Constants           1
 Variables           10
 Subroutines         33
@@ -71,7 +71,7 @@ Everything else     57
   },
   {
     displayText: 'table 3x 🏷',
-    text: `=for table :caption('Caption of table')
+    text: `=for table :caption('#{Caption of table}')
     Animal | Legs |    Eats
     =======================
     Zebra  +   4  + Cookies
@@ -81,7 +81,7 @@ Everything else     57
   },
   {
     displayText: 'Mermaid diagram simple 🏷',
-    text: `=begin Mermaid  :caption('Caption of diagram')
+    text: `=begin Mermaid  :caption('#{Caption of diagram}')
     graph LR
             A-->B
             B-->C
@@ -92,7 +92,7 @@ Everything else     57
   },
   {
     displayText: 'Mermaid diagram Sequence 🏷',
-    text: `=for Mermaid :caption('Caption of diagram')
+    text: `=for Mermaid :caption('#{Caption of diagram}')
     sequenceDiagram
         autonumber
         Student->>Admin: Can I enrol this semester?
@@ -108,7 +108,7 @@ Everything else     57
   },
   {
     displayText: 'Mermaid flowchart 🏷',
-    text: `=for Mermaid :caption('Caption of diagram')
+    text: `=for Mermaid :caption('#{Caption of diagram}')
     graph LR
         A[Square Rect] -- Link text --> B((Circle))
         A --> C(Round Rect)
@@ -119,7 +119,7 @@ Everything else     57
   },
   {
     displayText: 'Mermaid class 🏷',
-    text: `=for Mermaid :caption('Caption of diagram')
+    text: `=for Mermaid :caption('#{Caption of diagram}')
     classDiagram
        Person <|-- Student
        Person <|-- Professor
@@ -152,7 +152,7 @@ Everything else     57
   {
     displayText: 'code block with formatting 🏷',
     text: `=begin code :allow<I B Z> 
-  {}
+  #{}
 =end code
 `,
   },
@@ -181,9 +181,7 @@ table
   {
     displayText: 'markdown',
     text: `=begin markdown
-
-  {}
-
+#{}
 =end markdown
 `,
   },

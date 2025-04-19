@@ -9,6 +9,8 @@ import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
 import { isElement } from 'react-is'
 import { Node } from '@podlite/schema'
+import { autocompletion, snippet } from '@codemirror/autocomplete'
+import dictionary from './dict'
 
 function useDebouncedEffect(fn, deps, time) {
   const dependencies = [...deps, time]
@@ -270,6 +272,42 @@ function PodliteEditorInternal(
   if (enableScroll) {
     extensionsData.push(scrollExtensions)
   }
+  const makeApply = (text: string) => (editor, completion, from, to) => {
+    return snippet(text)(editor, completion, from - 1, to)
+  }
+
+  type Dict = {
+    displayText: string
+    text: string
+    lang?: 'pod6' | 'md'
+  }
+
+  const langDict: Dict[] = dictionary.filter(({ lang = 'pod6' }) => lang === 'pod6')
+  const completions = langDict.map(({ displayText, text }) => {
+    function cleanBraces(text: string): string {
+      return text.replace(/\#\{[^\}]*\}/g, '')
+    }
+
+    return {
+      label: displayText,
+      type: 'keyword',
+      apply: makeApply(text),
+      info: cleanBraces(text),
+    }
+  })
+  function myCompletions(context) {
+    let before = context.matchBefore(/^\s*=\w*/)
+    console.log({ before })
+    // If completion wasn't explicitly started and there
+    // is no word before the cursor, don't open completions.
+    if (!context.explicit && !before) return null
+    return {
+      from: before ? before.from + before.text.indexOf('=') + 1 : context.pos,
+      options: completions,
+      validFor: /^=\w*$/,
+    }
+  }
+  extensionsData.push(autocompletion({ override: [myCompletions] }))
 
   useDebouncedEffect(
     () => {
