@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plugin, Plugins, getNodeId, makeAttrs } from '@podlite/schema'
+import { Plugin, Plugins, getNodeId, getSafeNodeId, makeAttrs } from '@podlite/schema'
 import { Tex2ChtmlWithProvider } from './MathJax'
 export { MathJaxProvider } from './MathJax'
 const Formula = ({
@@ -33,7 +33,7 @@ export const FormulaPlugin: Plugin = {
   toJSX: helper => () => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
-    const id = getNodeId(node, ctx)
+    const id = getSafeNodeId(node, ctx)
     const isInlineContext = node.type === 'fcode'
     return helper(
       ({ children, key }) => {

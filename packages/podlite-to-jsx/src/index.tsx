@@ -7,7 +7,6 @@ import {
   Text,
   Rules,
   RulesStrict,
-  getNodeId,
   parse,
   makeAttrs,
   emptyContent,
@@ -22,6 +21,7 @@ import {
   PodliteExport,
   frozenIds,
   JSXHelper,
+  getSafeNodeId,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
@@ -83,7 +83,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
     // prepare extraProps for createElement
     // add id attribute if exists
-    const id = getNodeId(node, ctx)?.replace(/\s/g, '-')
+    const id = getSafeNodeId(node, ctx)
     // check if node.content defined
     return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], { id }, ctx)
   }
@@ -420,7 +420,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         console.warn('[jsx] no content in node')
         return ''
       }
-      const id = getNodeId(node, ctx)?.replace(/\s/g, '-')
+      const id = getSafeNodeId(node, ctx)
 
       return makeComponent(
         ({ key, children }) => {
@@ -490,7 +490,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       if (!(node.content instanceof Array)) {
         console.error(node)
       }
-      const id = getNodeId(node, ctx)?.replace(/\s/g, '-')
+      const id = getSafeNodeId(node, ctx)
       return makeComponent('li', node, interator(node.content, { ...ctx }), { id })
     },
     // table of content
