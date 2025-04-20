@@ -182,7 +182,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       setFn((node, ctx) => {
         const { level } = node
         // TODO: refactor linking for blocks
-        const id = getNodeId(node, ctx)?.replace(/\s/g, '-')
+        const id = getSafeNodeId(node, ctx)
         return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
       }),
     ),
