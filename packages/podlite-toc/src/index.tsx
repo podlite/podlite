@@ -51,6 +51,23 @@ export const getContentForToc = (node: PodNode): string => {
           return getTextContentFromNode(node.content[0])
         }
       }
+      const caption = ((conf, nodeName) => {
+        if (conf.exists('caption')) {
+          return getTextContentFromNode(conf.getFirstValue('caption'))
+        } else if (conf.exists('title')) {
+          return getTextContentFromNode(conf.getFirstValue('title'))
+        } else {
+          // try to find content child node
+          const [captionNode] = getFromTree(node, 'caption')
+          if (captionNode) {
+            return getTextContentFromNode(captionNode)
+          }
+          return null
+        }
+      })(conf, node.name)
+      if (caption) {
+        return caption
+      }
       return getTextContentFromNode(node)
     }
   }
