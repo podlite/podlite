@@ -138,16 +138,31 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     root: nodeContent,
     data: emptyContent(),
     ':ambient': emptyContent(),
-    ':code': mkComponent(({ children, key }) => (
-      <code key={key}>
-        <pre>{children}</pre>
-      </code>
-    )),
-    code: mkComponent(({ children, key }) => (
-      <code key={key}>
-        <pre>{children}</pre>
-      </code>
-    )),
+    ':code': setFn((node, ctx) => {
+      const id = getSafeNodeId(node, ctx)
+      return mkComponent(({ children, key }) => (
+        <pre key={key} id={id}>
+          <code>{children}</code>
+        </pre>
+      ))
+    }),
+    code: setFn((node, ctx) => {
+      const id = getSafeNodeId(node, ctx)
+      const conf = makeAttrs(node, ctx)
+      const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+      return mkComponent(({ children, key }) => (
+        <div className="code-block" key={`${key}-code-div`}>
+          <pre key={key} id={id}>
+            <code>{children}</code>
+          </pre>
+          {caption ? (
+            <div key={`${key}-caption`} className="caption">
+              {caption}
+            </div>
+          ) : null}
+        </div>
+      ))
+    }),
     image: nodeContent,
     ':image': setFn((node, ctx) => {
       return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={node.alt} />)
