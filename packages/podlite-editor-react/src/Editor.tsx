@@ -475,7 +475,6 @@ function PodliteEditorInternal(
   const wrapFunctionNoLines = (node: Node, children) => children
 
   const defaultPreview = (source: string) => {
-    //@ts-ignore
     const result = <Podlite wrapElement={wrapFunction} tree={getTree(source)} />
     return { result }
   }
