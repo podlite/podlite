@@ -113,7 +113,7 @@ export const plugin: Plugin = {
       const conf = makeAttrs(node, ctx)
       const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
       const makeToc = (tocTree: any, title): Toc => {
-        return mkToc(createList(tocTree.content, 1), title)
+        return mkToc(createList(tocTree.content, 1), title, node.location)
       }
 
       return makeToc(tocTree, tocTitle)
