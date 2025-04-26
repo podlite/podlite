@@ -185,7 +185,7 @@ it.skip('=toc Image Diagram1', () => {
     User content
     `
   const nodes = getFromTree(parseImage(pod), ':image')
-  console.log(JSON.stringify(nodes, null, 2))
+  //   console.log(JSON.stringify(nodes, null, 2))
   //   console.log(parseToHtml(nodes));
   // expect(parseToHtml(pod)).toMatchInlineSnapshot()
 })
