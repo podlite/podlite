@@ -59,8 +59,8 @@ export const mkVerbatim = text => {
 }
 
 // Table of contents helpers
-export const mkToc = (content: TocList, title?: string): Toc => {
-  return mkNode({ type: 'toc', title, content })
+export const mkToc = (content: TocList, title?: string, location?: Location): Toc => {
+  return mkNode({ type: 'toc', title, content, location })
 }
 export const mkTocList = (content: Array<TocItem | TocList>, level: number): TocList => {
   return mkNode({ type: 'toc-list', level, content })
