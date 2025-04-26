@@ -1,0 +1,20 @@
+
+/* load all styles by default */
+@import "@Styles/default.css";
+
+/* @import "./src/markdown.css";
+@import "./src/2index.css"; */
+/* customize it */
+
+header#menu {
+    justify-content: center;
+}
+header#menu   p {
+    white-space: nowrap;    
+}
+
+@media (min-width: 500px) {
+    :root {
+         --font-size:15px;
+    }
+}
