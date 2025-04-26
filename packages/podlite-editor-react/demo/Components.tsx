@@ -1,6 +1,6 @@
 import React from 'react'
 import Editor from '../src/Editor'
-
+import { WindowWrapper } from '../src/'
 // export default App;
 const text1 = `=head2 Diagrams
 
@@ -46,6 +46,14 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
 
   return (
     <div>
+      <WindowWrapper title="Code block">
+        <Editor height="500px" value={text1} enablePreview={false} enableScroll={false} />
+      </WindowWrapper>
+
+      <WindowWrapper title="Editor with Preview">
+        <Editor height="500px" value={text1} enablePreview={true} />
+      </WindowWrapper>
+
       <Editor
         onChange={(content: string) => {
           // updateText(content)
