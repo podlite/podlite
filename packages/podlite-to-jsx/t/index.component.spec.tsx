@@ -227,24 +227,30 @@ it('accepts =code', () => {
     </Podlite>,
   )
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <code>
-      <pre>
-        sdkljsalkdjlsd
+    <div class="code-block">
+      <pre id="id">
+        <code>
+          sdkljsalkdjlsd
       asdasdasdasdsad
+        </code>
       </pre>
-    </code>
-    <code>
-      <pre>
-        sdkljsalkdjlsd
+    </div>
+    <div class="code-block">
+      <pre id="id">
+        <code>
+          sdkljsalkdjlsd
       asdasdasdasdsad
+        </code>
       </pre>
-    </code>
-    <code>
-      <pre>
-        sdkljsalkdjlsd
+    </div>
+    <div class="code-block">
+      <pre id="id">
+        <code>
+          sdkljsalkdjlsd
       asdasdasdasdsad
+        </code>
       </pre>
-    </code>
+    </div>
   `)
 })
 
@@ -370,13 +376,15 @@ Print? B<K<n>>
     </Podlite>,
   )
   expect(root.innerHTML).toMatchInlineSnapshot(`
-    <code>
-      <pre>
-        <samp>
-          output
-        </samp>
+    <div class="code-block">
+      <pre id="id">
+        <code>
+          <samp>
+            output
+          </samp>
+        </code>
       </pre>
-    </code>
+    </div>
     <pre>
       <samp>
         Print?
@@ -841,5 +849,28 @@ it('process HTML entities', () => {
     </div>
     <p>
     </p>
+  `)
+})
+
+it('id for =code blocks', () => {
+  render(
+    <Podlite>
+      {`=begin pod
+    =begin code
+    12
+    =end code
+    =end pod`}
+    </Podlite>,
+  )
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <div id="id">
+      <div class="code-block">
+        <pre id="id">
+          <code>
+            12
+          </code>
+        </pre>
+      </div>
+    </div>
   `)
 })
