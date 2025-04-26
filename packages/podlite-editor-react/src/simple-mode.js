@@ -77,7 +77,6 @@ function Rule(data, states) {
 
 function tokenFunction(states) {
   return function (stream, state) {
-    // console.log("🍣" + JSON.stringify(state))
     if (state.pending && state.pending.length) {
       var pend = state.pending.shift()
       if (state.pending.length == 0) state.pending = null
