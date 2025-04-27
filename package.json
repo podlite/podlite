@@ -8,8 +8,12 @@
   ],
   "scripts": {
     "ci": "yarn clean && yarn",
-    "build": "tsc -v && yarn workspace @podlite/schema run build &&  yarn workspace @podlite/markdown run build &&  yarn workspace @podlite/image run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema --exclude @podlite/markdown --exclude @podlite/image run build",
+    "build": "tsc -v && yarn workspace @podlite/schema run build &&  yarn workspace @podlite/markdown run build &&  yarn workspace @podlite/image run build && yarn workspaces foreach -pt --all -v --no-private --exclude @podlite/schema --exclude @podlite/markdown --exclude @podlite/image --exclude @podlite/editor-react run build && yarn workspace @podlite/editor-react run build",
     "clean": "rimraf './packages/*/{dist,lib,built,node_modules,*.tsbuildinfo,esm}' './node_modules' || echo ok",
+    "podlite_build_plugin": "",
+    "build_plugin": "yarn podlite_build_plugin",
+    "podlite_post_plugin": "",
+    "post_plugin": "yarn podlite_post_plugin",
     "update:version": "lerna version --no-push --exact --no-git-tag-version",
     "update:version-patch": "lerna version --no-push --no-git-tag-version patch --yes",
     "github:publish": "yarn lerna publish from-package",
