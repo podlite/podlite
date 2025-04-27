@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.33
+
+- fix build process
+
 ## 0.0.32
 
 - add `Wrapper` component to decorate editor

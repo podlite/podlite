@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "Podlite React component",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
@@ -12,7 +12,11 @@
   },
   "sideEffects": true,
   "files": [
-    "lib"
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "jest": {
     "preset": "ts-jest",
@@ -22,8 +26,8 @@
   },
   "publishConfig": {
     "access": "public",
-    "module": "lib/index.esm.js",
-    "main": "lib/index.cjs",
+    "module": "esm/index.js",
+    "main": "lib/index.js",
     "types": "lib/index.d.ts"
   },
   "exports": {
