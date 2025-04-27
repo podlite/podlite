@@ -5,7 +5,7 @@
   "main": "./src/index.tsx",
   "license": "MIT",
   "scripts": {
-    "build": "yarn g:build",
+    "build": "yarn g:build && yarn g:copy_assets",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
@@ -14,6 +14,18 @@
     "entities": "^4.5.0",
     "podlite": "workspace:*",
     "react-is": "^17.0.0"
+  },
+  "exports": {
+    "./lib/podlite.css": "./lib/podlite.css",
+    ".": {
+      "import": "./esm/index.js",
+      "types": "./lib/index.d.ts",
+      "require": "./lib/index.js"
+    },
+    "./index": {
+      "import": "./esm/index.js",
+      "require": "./lib/index.js"
+    }
   },
   "files": [
     "lib",

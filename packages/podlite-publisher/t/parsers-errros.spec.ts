@@ -9,5 +9,5 @@ const file1 = `
 
 it.skip('check parser', () => {
   const t1 = processFile('t/image-plugin/virtualFile.rakumod', file1)
-  console.log(JSON.stringify(t1, null, 2))
+  //   console.log(JSON.stringify(t1, null, 2))
 })

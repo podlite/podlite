@@ -1,9 +1,32 @@
 // podlite, copyright (c) by Aliaksandr Zahatski
 // Distributed under an MIT license: https://github.com/podlite/podlite/blob/main/LICENSE
+import { HighlightStyle, LanguageSupport, StreamLanguage, syntaxHighlighting } from '@codemirror/language'
+import { Tag, tags } from '@lezer/highlight'
+import { simpleMode } from './simple-mode.js'
 
-import CodeMirror from 'codemirror'
-import './simpleplus'
-;('use strict')
+const tokenTable = {
+  content: tags.content,
+  comment: tags.comment,
+  identifier: tags.variableName,
+  register: Tag.define(),
+  number: tags.number,
+  string: tags.string,
+  label: Tag.define(),
+  opcode: Tag.define(),
+  directive: tags.directive,
+  keyword: tags.keyword,
+  operator: tags.operator,
+  punctuation: tags.punctuation,
+  unassigned: Tag.define(),
+  em: tags.emphasis,
+  'variable-3': tags.variableName,
+  'variable-2': tags.operator,
+  pod: Tag.define(),
+  header: tags.heading1,
+  'header-2': tags.heading2,
+  'header-3': tags.heading3,
+  strikethrough: tags.strikethrough,
+}
 
 function ifBeginAbbrBlock(ifOk) {
   const res = [
@@ -157,17 +180,22 @@ function getStatesForBlock(blockName, contentToken) {
     }
   }
   return {
-    [`${blockName}_content_Abbr`]: [...isBlankLine({ pop: true }), ...getContentState(contentToken)],
+    [`${blockName}_content_Abbr`]: [
+      ...isBlankLine({ pop: true }),
+      ...ifNextStartAnyBlock({ pop: true }),
+      ...getContentState(contentToken),
+    ],
     [`${blockName}_attr_Para`]: [
       ...ifNextStartAnyBlock({ pop: true }),
       ...attributesContent({ next: `${blockName}_content_Para` }),
     ],
-    [`${blockName}_content_Para`]: [...isBlankLine({ pop: true }), ...getContentState(contentToken)],
-
-    [`${blockName}_attr_Delim`]: [
+    [`${blockName}_content_Para`]: [
+      ...isBlankLine({ pop: true }),
       ...ifNextStartAnyBlock({ pop: true }),
-      ...attributesContent({ next: `${blockName}_content_Delim` }),
+      ...getContentState(contentToken),
     ],
+
+    [`${blockName}_attr_Delim`]: [...attributesContent({ next: `${blockName}_content_Delim` })],
 
     [`${blockName}_content_Delim`]: [
       ...ifNextAliasDirective('beginAliasDirective'),
@@ -243,7 +271,7 @@ function ifBlockName(ifOk = 'content', attr = {}) {
         /(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
-        return [`variable-2 ${blockName}`]
+        return [blockName === 'comment' ? 'comment' : `variable-2 ${blockName}`]
       },
       next: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
@@ -379,14 +407,16 @@ function ifNextConfigDirective(ifOk) {
     },
   ]
 }
-CodeMirror.defineSimpleModePlus('podlite', {
+
+export const podlite = simpleMode({
   start: [
     ...ifNextAliasDirective('beginAliasDirective'),
     ...ifNextConfigDirective('beginConfigDirective'),
     ...ifBeginParaBlock('beginParaBlock'),
     ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...ifBeginDelimBlock('beginDelimBlock'),
-
+    //   added if brocken sequence
+    //   ...ifNextEndDelimBlock({ push: 'endDelimBlock' }),
     ...getDefaultContentState(),
 
     // {
@@ -424,7 +454,7 @@ CodeMirror.defineSimpleModePlus('podlite', {
         /(\s*)(=end)(\s*)(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
-        return [null, 'keyword', null, blockName === 'comment' ? 'comment' : 'variable-2']
+        return [null, 'keyword', null, blockName === 'comment' ? 'comment' : `variable-2 ${blockName}`]
       },
       sol: true,
       pop: true,
@@ -476,6 +506,34 @@ CodeMirror.defineSimpleModePlus('podlite', {
   beginAbbrBlock: [...ifBlockName('Abbr')],
   content: [...getContentState()],
   ...getContentStates(),
+  languageData: {
+    name: 'Podlite',
+    commentTokens: { line: '#' },
+  },
+  tokenTable: tokenTable,
 })
 
-CodeMirror.defineMIME('text/podlite', 'podlite')
+const language = StreamLanguage.define(podlite)
+
+const syntaxHighlighter = syntaxHighlighting(
+  HighlightStyle.define([
+    // { tag: tokenTable.opcode, class: "text-editor-opcode" /* "text-green-700 dark:text-green-400" */ },
+    // { tag: tokenTable.directive, class: "text-editor-directive" /* "text-blue-700 dark:text-blue-400" */ },
+    // { tag: tokenTable.label, class: "text-editor-label" /* "text-yellow-700 dark:text-yellow-400" */ },
+    // {
+    //     tag: tokenTable.comment,
+    //     class: "text-editor-comment italic" /* "text-gray-500 dark:text-gray-500 italic" */,
+    // },
+    // { tag: tokenTable.register, class: "text-editor-register" /* "text-red-700 dark:text-red-400" */ },
+    // { tag: tokenTable.number, class: "text-editor-number" /* "text-orange-700 dark:text-orange-400" */ },
+    // { tag: tokenTable.string, class: "text-editor-string" /* "text-orange-600 dark:text-orange-600" */ },
+    // { tag: tokenTable.operator, class: "text-editor-operator" /* "text-pink-700 dark:text-pink-400" */ },
+    // { tag: tokenTable.punctuation, class: "text-editor-punctuation" /* "text-gray-600 dark:text-gray-400" */ },
+    { tag: tokenTable.header, class: 'text-editor-punctuation' /* "text-gray-600 dark:text-gray-400" */ },
+  ]),
+)
+export function podliteLang() {
+  // return language;
+  return new LanguageSupport(language, [])
+  // return new LanguageSupport(language, [syntaxHighlighter]);
+}

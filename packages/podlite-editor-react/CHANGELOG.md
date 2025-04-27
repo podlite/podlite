@@ -2,6 +2,7 @@
 
 ## Upcoming
 
+- adjust autocomplete
 - speed up podite mode for editor
 - added initial support for "Focus Write" mode
 

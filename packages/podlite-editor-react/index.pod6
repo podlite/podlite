@@ -1,0 +1,12 @@
+=begin pod  
+= :favicon<./logo.png>
+= :puburl<http://example.com>
+= :globalStyles("./styles.css")
+
+=TITLE Podlite Components
+
+=head1 Test
+
+L<Test|file:./index.podlite>
+
+=end pod

@@ -1,0 +1,185 @@
+/* Start podlite */ 
+/* body {
+    margin: 0;
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  } */
+  
+  
+  pre {
+    padding: 9.5px;
+    display: block;
+    word-break: break-all;
+    word-wrap: break-word;
+    background-color:  #f8f8f8;
+    border-radius:  4px;
+  }
+  
+  code {
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    white-space: pre-wrap;
+    background-color: transparent;
+    border-radius: 0;
+  }
+  
+  img {
+    max-width: 1024px;
+  }
+  
+  table {
+    word-break: normal;
+    border-spacing: 0;
+    border-collapse: collapse;
+    text-align: center;
+  }
+  table caption {
+    margin-bottom: 0.8em;
+    caption-side: bottom;
+  }
+  
+  table tbody tr:hover {
+    background-color:  #eee;
+    -webkit-transition: .5s;
+    transition: .5s
+  }
+  
+  tr th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #eee;
+  }
+  
+  td {
+    padding: 8px;
+    border: 1px solid #eee;
+  }
+  
+  .footnote a {
+    text-decoration: none;
+  }
+  .footnotes {
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #eee;
+  }
+  
+  img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  
+  .shadow {
+    -webkit-box-shadow: 3px 3px 5px 6px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:    3px 3px 5px 6px #ccc;  /* Firefox 3.5 - 3.6 */
+    box-shadow:         3px 3px 5px 6px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+  }
+  .box {
+    box-shadow:
+    0 2.8px 2.2px rgba(0, 0, 0, 0.034),
+    0 6.7px 5.3px rgba(0, 0, 0, 0.048),
+    0 12.5px 10px rgba(0, 0, 0, 0.06),
+    0 22.3px 17.9px rgba(0, 0, 0, 0.072),
+    0 41.8px 33.4px rgba(0, 0, 0, 0.086),
+    0 100px 80px rgba(0, 0, 0, 0.12)
+  ;
+    margin: 100px auto;
+    background: white;
+    border-radius: 5px;
+  }
+  
+  .image_block video {
+    max-width: 100%;
+    /* margin: 0 auto; */
+    margin-bottom: 1em;
+  }
+  
+  .image_block video{
+    width: 100%;
+    outline: none;
+    border: none;
+  }
+  
+  /* plugins */
+  .mermaid svg {
+    display: block;
+    margin: auto;
+  }
+
+  .toc {
+    padding: 1rem;
+  }
+  
+  .toc-list {
+    list-style: none;
+    font-size: .8rem;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+aside.notify {
+    border-left: .25em solid;
+    padding-left: 1rem ;
+}
+
+aside.notify>:first-child {
+    margin-top: 0
+}
+
+aside.notify>:last-child {
+    margin-bottom: 0
+}
+
+aside.notify.note {
+    border-left-color: #0085f2
+}
+
+aside.notify.note .notify-title {
+    color:  #0085f2
+}
+
+aside.notify.tip {
+    border-left-color: #007936;
+}
+
+aside.notify.tip .notify-title {
+    color: #007936;
+}
+
+
+aside.notify.important {
+    border-left-color: #8250df
+}
+
+aside.notify.important .notify-title {
+    color: #8250df
+}
+
+aside.notify.warning {
+    border-left-color: #9a6700;;
+}
+
+aside.notify.warning .notify-title {
+    color: #9a6700;;
+}
+
+aside.notify.caution {
+    border-left-color: #d30038;
+}
+
+aside.notify.caution .notify-title {
+    color: #d30038;
+}
+
+  /* End of podlite */ 
+  
