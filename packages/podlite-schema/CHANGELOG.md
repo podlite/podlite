@@ -2,7 +2,11 @@
 
 ## Upcoming
 
-- fix the abbreviated block when its content starts with '='
+## 0.0.26
+
+- add `location` from original node to `mkToc` helper
+- safe block id creation
+- fix the abbreviated block when its content starts with `=`
 
 ## 0.0.25
 

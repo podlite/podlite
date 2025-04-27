@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.19
+
+- improved toc usage in the editor
+- added default logic to retrieve the text for the toc element
+
 ## 0.0.12
 
 - implement `:caption`

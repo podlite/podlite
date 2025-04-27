@@ -2,7 +2,14 @@
 
 ## Upcoming
 
+## 0.0.32
+
+- add `Wrapper` component to decorate editor
+- refactor styles
 - adjust autocomplete
+- upgrade base editor library
+- add themes support
+- upgrade syntax highlighting code
 - speed up podite mode for editor
 - added initial support for "Focus Write" mode
 

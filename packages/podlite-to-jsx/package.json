@@ -1,9 +1,13 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "JSX converter for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "scripts": {
     "build": "yarn g:build && yarn g:copy_assets",
     "test": "yarn g:jest  --passWithNoTests"

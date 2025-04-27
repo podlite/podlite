@@ -1,11 +1,15 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Podlite React component",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
   "typings": "./lib/index.d.ts",
   "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "sideEffects": true,
   "files": [
     "lib"

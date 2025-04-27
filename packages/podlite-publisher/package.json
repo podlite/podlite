@@ -1,9 +1,13 @@
 {
   "name": "@podlite/publisher",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Library that powers publishing and CLI tools for the Podlite markup language",
   "main": "./src/index.ts",
   "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",

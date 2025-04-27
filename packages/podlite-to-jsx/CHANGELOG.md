@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.30
+
+- add minimal styles
+- add support for `:caption` attribute for code block
+
 ## 0.0.29
 
 - Removed alignment for Markdown table headers

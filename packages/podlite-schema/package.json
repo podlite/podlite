@@ -1,9 +1,13 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "AST tools for Podlite markup language",
   "main": "./src/index.ts",
   "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",

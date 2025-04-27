@@ -1,8 +1,12 @@
 {
   "name": "podlite",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "Podlite - a lightweight block-based markup language",
   "main": "./src/index.ts",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
     "build": "yarn g:build",

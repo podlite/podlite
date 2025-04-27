@@ -1,8 +1,12 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "Podlite - a lightweight block-based markup language",
   "private": true,
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "workspaces": [
     "packages/*"
   ],
