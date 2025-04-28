@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "Podlite React component",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
@@ -32,7 +32,7 @@
   },
   "exports": {
     "./lib/podlite-vars.css": "./lib/podlite-vars.css",
-    "./lib/editor.css": "./lib/editor.css",
+    "./lib/editor.css": "./lib/Editor.css",
     "./index.css": "./lib/Editor.old.css",
     "./demo/Components": "./demo/Components",
     ".": {
