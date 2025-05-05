@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=head1 0.0.49
+
+# @podlite/editor-react@0.0.35
+
+- fix editor positionning
+
 =head1 0.0.48
 
 # @podlite/editor-react@0.0.34

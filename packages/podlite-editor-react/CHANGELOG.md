@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.35
+
+- fix editor positionning
+
 ## 0.0.34
 
 - fix build process
