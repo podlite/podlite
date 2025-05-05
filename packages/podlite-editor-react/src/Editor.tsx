@@ -139,7 +139,7 @@ function PodliteEditorInternal(
   }
 
   const getNearestMapForLineReverse = (scrollMap: ScrollMap[], line): ScrollMap => {
-    const res = scrollMap.reverse().findIndex(i => i.line < line)
+    const res = scrollMap.findIndex(i => i.line > line)
     if (res === -1) {
       return scrollMap[0]
     }
