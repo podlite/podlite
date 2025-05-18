@@ -8,8 +8,6 @@
         "t"
     ],
 
-  "jsx": "react",
-  
   "compilerOptions": {
     // "target": "es2017",
     "module": "commonjs",
