@@ -75,6 +75,7 @@ export const Podlite: React.FC<{
   plugins?: any
   wrapElement?: WrapElement
   tree?: PodliteExport
+  mode?: 'pod' | 'md'
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
   return result
@@ -548,13 +549,14 @@ function podlite(
     plugins = () => {},
     wrapElement,
     tree,
-  }: { file?: string; plugins?: any; wrapElement?: WrapElement; tree?: PodliteExport },
+    mode = 'pod',
+  }: { file?: string; plugins?: any; wrapElement?: WrapElement; tree?: PodliteExport; mode?: 'pod' | 'md' },
   ...args
 ) {
   const ast = (tree => {
     if (tree) return tree.interator
     let podlite = podlite_core({ importPlugins: true })
-    let treeAfterParsed = podlite.parse(children || file)
+    let treeAfterParsed = podlite.parse(children || file, { podMode: mode === 'pod' ? 1 : 0 })
     return podlite.toAst(treeAfterParsed)
   })(tree)
 
