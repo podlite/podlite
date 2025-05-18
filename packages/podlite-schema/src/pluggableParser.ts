@@ -1,4 +1,4 @@
-import { Plugins, PodliteDocument, mkRootBlock, toAny, toAnyRules, toHtml, toTree } from '.'
+import { Plugins, PodliteDocument, mkRootBlock, parseOpt, toAny, toAnyRules, toHtml, toTree } from '.'
 import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
 export { cleanIds, frozenIds } from './helpers/ids'
@@ -20,7 +20,7 @@ export interface Podlite {
   toAstResult: (ast: PodliteDocument) => PodliteExport
   (): any
   use: (plugin: Plugins) => Podlite
-  parse: (text: string, opt?: { skipChain: number; podMode: number }) => PodliteDocument
+  parse: (text: string, opt?: parseOpt) => PodliteDocument
   toHtml: (ast: PodliteDocument) => PodliteExport
   toAst: (ast: PodliteDocument) => PodliteDocument
   getPlugins: () => Array<Plugins>
@@ -42,7 +42,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     return instance
   }
 
-  instance.parse = (text, opt = { skipChain: 0, podMode: 1 }) => {
+  instance.parse = (text, opt: parseOpt = { skipChain: 0, podMode: 1 }) => {
     const rawTree = toTree().use(idMiddleware).parse(text, opt)
     const root = mkRootBlock({ margin: '' }, rawTree)
     return root

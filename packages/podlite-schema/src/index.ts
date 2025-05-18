@@ -131,7 +131,11 @@ export interface nVerbatim {
 }
 export type Node = nBlock | nCode | nText | nPara | nVerbatim
 export type AST = Array<Node>
-export type ParserPlugin = (opt: { skipChain: number; podMode: number }) => (param: AST) => AST
+export type ParserPlugin = (opt: parseOpt) => (param: AST) => AST
+export type parseOpt = {
+  skipChain?: number
+  podMode?: number
+}
 function makeTree() {
   var plugins: Array<ParserPlugin> = []
   chain.use = use
@@ -161,9 +165,10 @@ function makeTree() {
     return chain
   }
 
-  function parse(src: string, opt = { skipChain: 0, podMode: 1 }) {
-    let tree: AST = parser.parse(src, { podMode: opt.podMode })
-    if (!opt.skipChain) {
+  function parse(src: string, opt: parseOpt = { skipChain: 0, podMode: 1 }) {
+    const { skipChain = 0, podMode = 1 } = opt
+    let tree: AST = parser.parse(src, { podMode })
+    if (!skipChain) {
       for (let i = 0; i < plugins.length; i++) {
         const plugin = plugins[i]
         // init
