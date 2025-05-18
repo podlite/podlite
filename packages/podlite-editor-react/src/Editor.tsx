@@ -42,6 +42,8 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   isFullscreen?: boolean
   onChange?: (value: string, viewUpdate: ViewUpdate) => void
   makePreviewComponent?: (source: string) => ConverterResult
+  /** Set the start line number of the preview */
+  startLinePreview?: number
 }
 
 export interface PodliteEditorRef {
@@ -71,17 +73,18 @@ function PodliteEditorInternal(
     onPreviewMode,
     isFullscreen,
     makePreviewComponent,
+    startLinePreview = 1, // start line number
     ...codemirrorProps
   } = props
+  const full_preview = previewWidth === '100%'
   const [value, setValue] = useState(props.value || '')
   const [text1, setText] = useState(props.value || '')
   const codeMirror = useRef<ReactCodeMirrorRef>(null)
   const container = useRef<HTMLDivElement>(null)
   const containerEditor = useRef<HTMLDivElement>(null)
   const preview = useRef<HTMLDivElement>(null)
-  const active = useRef<'editor' | 'preview'>('editor')
-  const topLine = useRef<number>(1)
-
+  const active = useRef<'editor' | 'preview'>(full_preview ? 'preview' : 'editor')
+  const topLine = useRef<number>(startLinePreview)
   const $viewHeight = useRef<number>(0)
   useImperativeHandle(
     ref,
@@ -231,7 +234,9 @@ function PodliteEditorInternal(
     onAnyUpdateEditorSize()
   }
   const mouseleaveHandle = () => {
-    active.current = 'editor'
+    if (!full_preview) {
+      active.current = 'editor'
+    }
     onAnyUpdateEditorSize()
   }
   useEffect(() => {
@@ -297,7 +302,6 @@ function PodliteEditorInternal(
   })
   function myCompletions(context) {
     let before = context.matchBefore(/^\s*=\w*/)
-    console.log({ before })
     // If completion wasn't explicitly started and there
     // is no word before the cursor, don't open completions.
     if (!context.explicit && !before) return null
@@ -317,25 +321,27 @@ function PodliteEditorInternal(
     50,
   )
 
-  useDebouncedEffect(
-    () => {
-      if (preview.current) {
-        const map = getNearestMapForLine(getScrollMap(preview.current), topLine.current)
-        const scrollToElement = preview.current.querySelector(`#line-${map?.line || 1}`) as HTMLDivElement
-        if (scrollToElement) {
-          preview.current.scrollTo({
-            top: scrollToElement.offsetTop,
-            left: 0,
-            behavior: 'auto',
-          })
-        } else {
-          console.log('scrollToElement not found' + `#line-${map?.line || 1}`)
-        }
+  // Add effect to handle initial scroll to startLinePreview
+  useEffect(() => {
+    onAnyUpdateEditorSize()
+    if (!preview.current || !enablePreview) return
+
+    // Small delay to ensure preview content is rendered
+    const timer = setTimeout(() => {
+      const map = getNearestMapForLine(getScrollMap(preview.current), startLinePreview)
+      const scrollToElement = preview.current.querySelector(`#line-${map?.line || 1}`) as HTMLDivElement
+      if (scrollToElement) {
+        preview.current.scrollTo({
+          top: scrollToElement.offsetTop,
+          left: 0,
+          //   behavior: 'auto',
+          behavior: 'smooth',
+        })
       }
-    },
-    [enablePreview, previewWidth],
-    1,
-  )
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [startLinePreview, enablePreview]) // Only run when startLinePreview or enablePreview changes
 
   const handleChange = (value: string, viewUpdate: ViewUpdate) => {
     setText(value)
@@ -390,8 +396,6 @@ function PodliteEditorInternal(
       }
     }
   }, [containerEditor, preview, previewWidth])
-
-  const full_preview = previewWidth === '100%'
 
   const $height = useRef<number>(0)
   const entriesHandle: ResizeObserverCallback = (entries: ResizeObserverEntry[]) => {
