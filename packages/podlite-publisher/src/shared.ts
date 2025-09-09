@@ -189,7 +189,7 @@ type ParsedSelector = {
 
 const parseSelector = (selector: string): ParsedSelector => {
   // doc:File1#data1
-  const docWithAnchorPattern = /^([^:]+):([^#]+)#(.+)$/
+  const docWithAnchorPattern = /^([^:]+):([^#]+)(?:#(.+))?$/
   // Try doc:name#anchor pattern first
   const anchorMatch = selector.match(docWithAnchorPattern)
   if (anchorMatch) {
@@ -237,13 +237,11 @@ export const runSelector = (selector: string, docs: publishRecord[]): publishRec
     const filters = []
     if (scheme === 'doc') {
       filters.push((doc: publishRecord) => {
-        // console.log(`[incliude] `)
         return getDocIDs(doc).includes(document)
       })
     }
     // Return documents that successfully pass all the filters.
     const subdocs = docs.filter(item => !filters.some(fn => !fn(item)))
-    console.warn(`[include] found ${subdocs.length} docs for ${document}`)
     if (anchor) {
       const collected_blocks = []
       for (const d of subdocs) {
@@ -253,10 +251,9 @@ export const runSelector = (selector: string, docs: publishRecord[]): publishRec
           collected_blocks.push(block)
         }
       }
-      console.warn(`[include] found ${collected_blocks.length} blocks for anchor: ${anchor}`)
       return collected_blocks
     }
+    return subdocs.map(d => d.node)
   }
-  console.log(`[include] no any blocks found for ${selector}`)
   return []
 }

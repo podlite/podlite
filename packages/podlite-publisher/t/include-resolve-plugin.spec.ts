@@ -31,9 +31,12 @@ test
 const tctx = { testing: true }
 
 it('listfiles comp: parse', () => {
-  const state = [processFile('src/file1.poclite', file1), processFile('src/file2.podlite', file2)]
+  const state = [processFile('src/file1.podlite', file1), processFile('src/file2.podlite', file2)]
   const [block] = runSelector('doc:File1#data1', state)
   expect(block).toBeDefined()
+  const [block1] = runSelector('doc:File1', state)
+  expect(block1).toBeDefined()
+  
   const resT = getTextContentFromNode(block as PodNode).trim()
   expect(resT).toBe('TEST')
   const config: PluginConfig = {
