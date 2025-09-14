@@ -2903,11 +2903,11 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:*"
     mermaid: 8.12.1
-    react-is: ^17.0.2
+    react-is: ^18.0.0
   peerDependencies:
     mermaid: "*"
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
     react-is: "*"
   languageName: unknown
   linkType: soft
@@ -2923,10 +2923,10 @@ __metadata:
     "@uiw/codemirror-extensions-events": ^4.23.8
     "@uiw/codemirror-themes": ^4.23.8
     "@uiw/react-codemirror": ^4.23.8
-    react-is: ^17.0.0
+    react-is: ^18.0.0
   peerDependencies:
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -2935,10 +2935,10 @@ __metadata:
   resolution: "@podlite/formula@workspace:packages/podlite-formula"
   dependencies:
     "@podlite/schema": "workspace:*"
-    react-is: ^17.0.2
+    react-is: ^18.0.0
   peerDependencies:
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
     react-is: "*"
   languageName: unknown
   linkType: soft
@@ -2949,8 +2949,8 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:^"
   peerDependencies:
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -2961,16 +2961,16 @@ __metadata:
     "@podlite/schema": "workspace:*"
     esbuild: ^0.15.16
     npm-run-all: ^4.1.5
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
-    react-is: ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react-is: ^18.0.0
     remark-gfm: ^3.0.1
     remark-math: 5.1.1
     remark-parse: ^10.0.1
     unified: 10.1.2
   peerDependencies:
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -3018,12 +3018,12 @@ __metadata:
     "@podlite/schema": "workspace:*"
     entities: ^4.5.0
     podlite: "workspace:*"
-    react-is: ^17.0.0
+    react-is: ^18.0.0
   peerDependencies:
     "@podlite/diagram": "*"
     "@podlite/schema": "*"
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -3032,12 +3032,12 @@ __metadata:
   resolution: "@podlite/toc@workspace:packages/podlite-toc"
   dependencies:
     "@podlite/schema": "workspace:*"
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
-    react-is: ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react-is: ^18.0.0
   peerDependencies:
-    react: "^16.0.0 || ^17.0.0 "
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -10556,7 +10556,7 @@ fsevents@^2.1.2:
     npm-run-all: ^4.1.5
     podlite: "workspace:*"
     prettier: ^2.5.1
-    react: ^17.0.2
+    react: 18.3.1
     react-dom: ^17.0.2
     rimraf: ^3.0.2
     ts-jest: ^26.4.1
@@ -10582,8 +10582,8 @@ fsevents@^2.1.2:
     npm-run-all: ^4.1.5
     typescript: 4.5.5
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
-    react-dom: ^16.0.0 || ^17.0.0
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
   languageName: unknown
   linkType: soft
 
@@ -10764,7 +10764,19 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^16.0.0 || ^17.0.0, react-dom@npm:^17.0.2":
+"react-dom@npm:^16.0.0 || ^17.0.0 || ^18":
+  version: 18.3.1
+  resolution: "react-dom@npm:18.3.1"
+  dependencies:
+    loose-envify: ^1.1.0
+    scheduler: ^0.23.2
+  peerDependencies:
+    react: ^18.3.1
+  checksum: 298954ecd8f78288dcaece05e88b570014d8f6dce5db6f66e6ee91448debeb59dcd31561dddb354eee47e6c1bb234669459060deb238ed0213497146e555a0b9
+  languageName: node
+  linkType: hard
+
+"react-dom@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-dom@npm:17.0.2"
   dependencies:
@@ -10777,20 +10789,26 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"react-is@npm:^17.0.0, react-is@npm:^17.0.1, react-is@npm:^17.0.2":
+"react-is@npm:^17.0.1":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
   languageName: node
   linkType: hard
 
-"react@npm:^16.0.0 || ^17.0.0 , react@npm:^17.0.2":
-  version: 17.0.2
-  resolution: "react@npm:17.0.2"
+"react-is@npm:^18.0.0":
+  version: 18.3.1
+  resolution: "react-is@npm:18.3.1"
+  checksum: e20fe84c86ff172fc8d898251b7cc2c43645d108bf96d0b8edf39b98f9a2cae97b40520ee7ed8ee0085ccc94736c4886294456033304151c3f94978cec03df21
+  languageName: node
+  linkType: hard
+
+"react@npm:18.3.1, react@npm:^16.0.0 || ^17.0.0 || ^18":
+  version: 18.3.1
+  resolution: "react@npm:18.3.1"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: b254cc17ce3011788330f7bbf383ab653c6848902d7936a87b09d835d091e3f295f7e9dd1597c6daac5dc80f90e778c8230218ba8ad599f74adcc11e33b9d61b
+  checksum: a27bcfa8ff7c15a1e50244ad0d0c1cb2ad4375eeffefd266a64889beea6f6b64c4966c9b37d14ee32d6c9fcd5aa6ba183b6988167ab4d127d13e7cb5b386a376
   languageName: node
   linkType: hard
 
@@ -11441,6 +11459,15 @@ fsevents@^2.1.2:
     loose-envify: ^1.1.0
     object-assign: ^4.1.1
   checksum: c4b35cf967c8f0d3e65753252d0f260271f81a81e427241295c5a7b783abf4ea9e905f22f815ab66676f5313be0a25f47be582254db8f9241b259213e999b8fc
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.23.2":
+  version: 0.23.2
+  resolution: "scheduler@npm:0.23.2"
+  dependencies:
+    loose-envify: ^1.1.0
+  checksum: 3e82d1f419e240ef6219d794ff29c7ee415fbdc19e038f680a10c067108e06284f1847450a210b29bbaf97b9d8a97ced5f624c31c681248ac84c80d56ad5a2c4
   languageName: node
   linkType: hard
 

@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.30
+
+- added `mode` support for parser
+
 ## 0.0.26
 
 - add `location` from original node to `mkToc` helper

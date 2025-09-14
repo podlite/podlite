@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.36
+
+- added start line for scroll preview (startLinePreview)
+
 ## 0.0.35
 
 - fix editor positionning

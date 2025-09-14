@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.11
+
+- implement Selector for `doc:<NAME|ID>`
+
 ## 0.0.6
 
 - implement resolvers for `=include` block

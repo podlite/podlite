@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "'Table of contents' plugin for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",
@@ -34,13 +34,13 @@
     "markup-language"
   ],
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0"
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0",
-    "react-is": "^17.0.0"
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18",
+    "react-is": "^18.0.0"
   }
 }

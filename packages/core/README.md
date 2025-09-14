@@ -51,7 +51,7 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 - [How-to article](https://zahatski.com/2022/8/23/1/start-you-own-blog-site-with-podlite-for-web)
 - [Issues](https://github.com/podlite/podlite-specs/issues)
 - [Changelog](https://github.com/podlite/podlite-web/releases)
-- [Example: Knowledge base for <br/> raku programming language](https://raku-knowledge-base.podlite.org/)
+- [Practical case: Raku knowledge base ](https://raku-knowledge-base.podlite.org/)
 
 </td><td valign=top><div align="center">
   
@@ -62,16 +62,20 @@ Podlite aims to provide users with a means for creativity and expressing ideas i
 - [Podlite-desktop](https://github.com/podlite/podlite-desktop)
 - [Releases](https://github.com/podlite/podlite-desktop/releases)
 - [Issues](https://github.com/podlite/podlite-desktop/issues)
-
+- Stores:
+     - [Linux](https://snapcraft.io/podlite)
+     - [Windows](https://www.microsoft.com/store/apps/9NVNT9SNQJM8)
+     - [Mac App](https://apps.apple.com/us/app/podlite/id1526511053)
 </td><td valign=top><div align="center">
 
 ##### online resurces
 
  </div>
 
+- [Roadmap](https://podlite.org/#Roadmap)
+- [github.com/podlite](https://github.com/podlite/)&nbsp;🤩
 - [podlite.org](https://podlite.org)
 - [pod6.in](https://pod6.in/)
-- [github.com/podlite](https://github.com/podlite/)
 - [Podlite project updates](https://podlite.org/contents)
 - [Funding the ongoing development](https://opencollective.com/podlite)
 

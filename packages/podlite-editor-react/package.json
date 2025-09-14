@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "description": "Podlite React component",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
@@ -26,11 +26,11 @@
   },
   "publishConfig": {
     "access": "public",
-    "module": "esm/index.js",
+    "module": "./esm/index.js",
     "main": "lib/index.js",
     "types": "lib/index.d.ts"
   },
-  "exports": {
+  "_exports_": {
     "./lib/podlite-vars.css": "./lib/podlite-vars.css",
     "./lib/editor.css": "./lib/Editor.css",
     "./index.css": "./lib/Editor.old.css",
@@ -58,10 +58,10 @@
     "@uiw/codemirror-extensions-events": "^4.23.8",
     "@uiw/codemirror-themes": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
-    "react-is": "^17.0.0"
+    "react-is": "^18.0.0"
   },
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0"
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   }
 }

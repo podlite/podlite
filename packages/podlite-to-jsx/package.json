@@ -1,6 +1,6 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "JSX converter for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "@podlite/schema": "workspace:*",
     "entities": "^4.5.0",
     "podlite": "workspace:*",
-    "react-is": "^17.0.0"
+    "react-is": "^18.0.0"
   },
   "exports": {
     "./lib/podlite.css": "./lib/podlite.css",
@@ -53,7 +53,7 @@
   "peerDependencies": {
     "@podlite/diagram": "*",
     "@podlite/schema": "*",
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0"
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   }
 }

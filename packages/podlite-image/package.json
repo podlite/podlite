@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "image",
   "main": "./src/index.tsx",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "@podlite/schema": "workspace:^"
   },
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0"
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   }
 }

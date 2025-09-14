@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "Diagram",
   "main": "./src/index.tsx",
   "license": "MIT",
@@ -29,12 +29,12 @@
   "dependencies": {
     "@podlite/schema": "workspace:*",
     "mermaid": "8.12.1",
-    "react-is": "^17.0.2"
+    "react-is": "^18.0.0"
   },
   "peerDependencies": {
     "mermaid": "*",
-    "react": "^16.0.0 || ^17.0.0 ",
-    "react-dom": "^16.0.0 || ^17.0.0",
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18",
     "react-is": "*"
   }
 }

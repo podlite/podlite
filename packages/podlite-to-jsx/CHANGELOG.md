@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.34
+
+- improve styles
+- added `mode` support for parser
+
 ## 0.0.30
 
 - add minimal styles

@@ -36,7 +36,7 @@ it('listfiles comp: parse', () => {
   expect(block).toBeDefined()
   const [block1] = runSelector('doc:File1', state)
   expect(block1).toBeDefined()
-  
+
   const resT = getTextContentFromNode(block as PodNode).trim()
   expect(resT).toBe('TEST')
   const config: PluginConfig = {

@@ -43,11 +43,27 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
     console.log('rendering preview')
     return { result: <h1>This is preview1111</h1> }
   }
-
+  const [line, setLine] = React.useState(20)
   return (
     <div>
+      <div
+        onClick={() => {
+          setLine(Math.max(1, line - 1))
+        }}
+      >
+        {' '}
+        +{' '}
+      </div>
+      {line}
+      <div onClick={() => setLine(line + 1)}> - </div>
       <WindowWrapper title="Code block">
-        <Editor height="500px" value={text1} enablePreview={false} enableScroll={false} />
+        <Editor
+          height="500px"
+          previewWidth={'100%'}
+          value={text1 + text1 + text1}
+          enablePreview={true}
+          startLinePreview={line}
+        />
       </WindowWrapper>
 
       <WindowWrapper title="Editor with Preview">
