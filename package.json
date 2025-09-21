@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.50",
+  "version": "0.0.51",
   "description": "Podlite - a lightweight block-based markup language",
   "private": true,
   "funding": {
@@ -34,7 +34,7 @@
     "g:copy_to_esm": "cd $INIT_CWD && yarn g:copyfiles esm",
     "g:copy_to_lib": "cd $INIT_CWD && yarn g:copyfiles lib",
     "g:copyfiles": "cd $INIT_CWD && copyfiles -E false -u 1 ./src/**/*.css",
-    "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,json,md,mjs}'",
+    "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,mjs}'",
     "g:linked-command": "cd $INIT_CWD && node ../../scripts/switchLink.mjs",
     "g:set-linked": "cd $INIT_CWD && yarn g:linked-command --set-linked",
     "g:set-unlinked": "cd $INIT_CWD && yarn g:linked-command --set-unlinked",

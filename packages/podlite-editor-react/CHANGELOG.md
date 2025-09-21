@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.37
+
+- added `enableAutocompletion` flag to toggle autocompletion
+
 ## 0.0.36
 
 - added start line for scroll preview (startLinePreview)
