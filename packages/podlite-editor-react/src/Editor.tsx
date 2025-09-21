@@ -44,6 +44,8 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   makePreviewComponent?: (source: string) => ConverterResult
   /** Set the start line number of the preview */
   startLinePreview?: number
+  /**  */
+  enableAutocompletion?: boolean
 }
 
 export interface PodliteEditorRef {
@@ -74,6 +76,7 @@ function PodliteEditorInternal(
     isFullscreen,
     makePreviewComponent,
     startLinePreview = 1, // start line number
+    enableAutocompletion = false,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -287,31 +290,34 @@ function PodliteEditorInternal(
     lang?: 'pod6' | 'md'
   }
 
-  const langDict: Dict[] = dictionary.filter(({ lang = 'pod6' }) => lang === 'pod6')
-  const completions = langDict.map(({ displayText, text }) => {
-    function cleanBraces(text: string): string {
-      return text.replace(/\#\{[^\}]*\}/g, '')
+  if (enableAutocompletion) {
+    const langDict: Dict[] = dictionary.filter(({ lang = 'pod6' }) => lang === 'pod6')
+    const completions = langDict.map(({ displayText, text }) => {
+      function cleanBraces(text: string): string {
+        return text.replace(/\#\{[^\}]*\}/g, '')
+      }
+
+      return {
+        label: displayText,
+        type: 'keyword',
+        apply: makeApply(text),
+        info: cleanBraces(text),
+      }
+    })
+    function myCompletions(context) {
+      let before = context.matchBefore(/^\s*=\w*/)
+      // If completion wasn't explicitly started and there
+      // is no word before the cursor, don't open completions.
+      if (!context.explicit && !before) return null
+      return {
+        from: before ? before.from + before.text.indexOf('=') + 1 : context.pos,
+        options: completions,
+        validFor: /^=\w*$/,
+      }
     }
 
-    return {
-      label: displayText,
-      type: 'keyword',
-      apply: makeApply(text),
-      info: cleanBraces(text),
-    }
-  })
-  function myCompletions(context) {
-    let before = context.matchBefore(/^\s*=\w*/)
-    // If completion wasn't explicitly started and there
-    // is no word before the cursor, don't open completions.
-    if (!context.explicit && !before) return null
-    return {
-      from: before ? before.from + before.text.indexOf('=') + 1 : context.pos,
-      options: completions,
-      validFor: /^=\w*$/,
-    }
+    extensionsData.push(autocompletion({ override: [myCompletions] }))
   }
-  extensionsData.push(autocompletion({ override: [myCompletions] }))
 
   useDebouncedEffect(
     () => {
