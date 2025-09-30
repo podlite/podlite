@@ -19,13 +19,16 @@ const tokenTable = {
   punctuation: tags.punctuation,
   unassigned: Tag.define(),
   em: tags.emphasis,
+  monospace: tags.monospace,
   'variable-3': tags.variableName,
   'variable-2': tags.operator,
   pod: Tag.define(),
-  header: tags.heading1,
+  header: tags.heading,
+  'header-1': tags.heading1,
   'header-2': tags.heading2,
   'header-3': tags.heading3,
   strikethrough: tags.strikethrough,
+  underline: Tag.define(),
 }
 
 function ifBeginAbbrBlock(ifOk) {
@@ -78,16 +81,18 @@ function getContentState(token = 'content') {
 }
 function getDefaultContentState(token = 'content') {
   const getStateForMarkupCodes = ({ token }) => {
-    const allcodes = ['A', 'B', 'F', 'I', 'L', 'O', 'Z'].join('|')
+    const allcodes = ['A', 'B', 'C', 'F', 'I', 'L', 'O', 'U', 'Z'].join('|')
     const handler = token => matches => {
       const code = matches?.groups?.code || 'NONEXISTS'
       const mapCodeToToken = {
         A: `variable-3 ${token}`,
         B: `strong ${token}`,
+        C: `monospace ${token}`,
         F: `${token}`,
         I: `em ${token}`,
         L: `link ${token}`,
         O: `strikethrough ${token}`,
+        U: `underline ${token}`,
         Z: `comment ${token}`,
       }
       const resultToken = matches[1]
@@ -530,10 +535,9 @@ const syntaxHighlighter = syntaxHighlighting(
     // { tag: tokenTable.operator, class: "text-editor-operator" /* "text-pink-700 dark:text-pink-400" */ },
     // { tag: tokenTable.punctuation, class: "text-editor-punctuation" /* "text-gray-600 dark:text-gray-400" */ },
     { tag: tokenTable.header, class: 'text-editor-punctuation' /* "text-gray-600 dark:text-gray-400" */ },
+    { tag: tokenTable.underline, textDecoration: 'underline' },
   ]),
 )
 export function podliteLang() {
-  // return language;
-  return new LanguageSupport(language, [])
-  // return new LanguageSupport(language, [syntaxHighlighter]);
+  return new LanguageSupport(language, [syntaxHighlighter])
 }

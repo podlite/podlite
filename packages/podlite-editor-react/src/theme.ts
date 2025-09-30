@@ -30,19 +30,18 @@ export const defaultTheme = createTheme({
     { tag: t.definition(t.typeName), color: 'var(--color-prettylights-syntax-entity)' },
     { tag: t.typeName, color: 'var(--color-prettylights-syntax-entity)' },
     { tag: t.list, color: 'var(--color-prettylights-syntax-markup-list)' },
-    { tag: t.heading, color: 'var(--color-prettylights-syntax-markup-heading)', fontSize: '150%', fontWeight: 'bold' },
+    { tag: t.heading, color: 'var(--color-prettylights-syntax-markup-heading)', fontSize: '105%', fontWeight: 'bold' },
+    {
+      tag: t.heading1,
+      fontSize: '150%',
+    },
     {
       tag: t.heading2,
-      class: 'cm-heading2',
-      color: 'var(--color-prettylights-syntax-markup-heading2)',
       fontSize: '130%',
-      fontWeight: 'bold',
     },
     {
       tag: t.heading3,
-      color: 'var(--color-prettylights-syntax-markup-heading3)',
       fontSize: '110%',
-      fontWeight: 'bold',
     },
     { tag: t.regexp, color: 'var(--color-prettylights-syntax-string-regexp)' },
     { tag: t.literal, color: 'var(--color-prettylights-syntax-markup-italic)' },
@@ -55,5 +54,15 @@ export const defaultTheme = createTheme({
     { tag: t.tagName, color: 'var(--color-prettylights-syntax-entity-tag)' },
     { tag: t.attributeName, color: 'var(--color-prettylights-syntax-constant)' },
     { tag: t.strong, fontWeight: 'bold' },
+    { tag: t.emphasis, fontStyle: 'italic' },
+    {
+      tag: t.monospace,
+      fontFamily: 'monospace',
+      color: 'var(--color-prettylights-syntax-string)',
+      backgroundColor: 'var(--color-canvas-subtle)',
+      borderRadius: '3px',
+    },
+    { tag: t.strikethrough, textDecoration: 'line-through' },
+
   ],
 })
