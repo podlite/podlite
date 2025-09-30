@@ -34,6 +34,9 @@ export const makeTransformer = rule => {
   }
 
   function visiter(node, context: any = {}) {
+    if (node == null) {
+      return node
+    }
     if (node instanceof Array) {
       return flattenDeep(node.map(item => visiter(item, context)))
     }

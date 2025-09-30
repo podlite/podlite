@@ -6,6 +6,9 @@ function flattenDeep(arr) {
 }
 function thisFunc(rules) {
   function interator(node, context) {
+    if (node == null) {
+      return node
+    }
     if (node instanceof Array) {
       // filter null and undefined nodes
       return flattenDeep(node.map(item => interator(item, context))).filter(Boolean)
