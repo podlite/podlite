@@ -234,22 +234,29 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     // Markup codes
     'A<>': (writer, processor) => (node, ctx, interator) => {
       let term = node.content
-      if (typeof term !== 'string' && 'value' in term) {
-        term = term.value
+
+      let termString: string
+      if (typeof term === 'string') {
+        termString = term
+      } else if (term && 'value' in term) {
+        termString = term.value as string
+      } else {
+        termString = ''
       }
+      termString = termString.trim()
       //get replacement text
-      if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
+      if (!(ctx.alias && ctx.alias.hasOwnProperty(termString))) {
         return makeComponent(
           ({ children, key }) => <code key={key}>A&lt;{children}&gt;</code>,
           node,
           interator(node.content, ctx),
         )
       } else {
-        const src = ctx.alias[term].join('\n')
+        const src = termString && ctx.alias[termString].join('\n')
         const tree_1 = processor(src)
         // now clean locations
         const tree = clean_plugin()(tree_1)
-        if (tree[0].type === 'para') {
+        if (tree[0]?.type === 'para') {
           return interator(tree[0].content, ctx)
         } else {
           return interator(tree, ctx)
