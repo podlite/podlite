@@ -161,7 +161,7 @@ A<  TERER >
           Object {
             "content": Array [
               Object {
-                "content": "TERER",
+                "content": "  TERER ",
                 "name": "A",
                 "type": "fcode",
               },

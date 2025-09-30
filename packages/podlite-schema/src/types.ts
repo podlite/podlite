@@ -250,7 +250,7 @@ export interface FormattingCodeS {
 export interface FormattingCodeA {
   type: 'fcode'
   name: 'A'
-  content: string | Text
+  content: string | Text | [Text] // TODO: remove [Text] case
 }
 
 export interface FormattingCodeD {

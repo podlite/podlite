@@ -24,10 +24,12 @@ allowed_code =
             }
 
 raw_text= $(.)
-content_A = ( !end_code _ id:$(identifier)? _ { return id } )?
+// identifier_A = $((!hs .)+)
+// content_A = ( !end_code _ id:$(identifier)? _ { return id } )?
+// content_A = ( !end_code _ id:$(identifier_A)? _ { return id } )?
 code_A = 
     name:start_code &{return name === "A"}
-    content: content_A
+    content: text_L // string || []
     end_code
      {
          return  { 
