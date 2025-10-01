@@ -29,6 +29,7 @@ const tokenTable = {
   'header-3': tags.heading3,
   strikethrough: tags.strikethrough,
   underline: Tag.define(),
+  link: tags.link,
 }
 
 function ifBeginAbbrBlock(ifOk) {
@@ -536,6 +537,7 @@ const syntaxHighlighter = syntaxHighlighting(
     // { tag: tokenTable.punctuation, class: "text-editor-punctuation" /* "text-gray-600 dark:text-gray-400" */ },
     { tag: tokenTable.header, class: 'text-editor-punctuation' /* "text-gray-600 dark:text-gray-400" */ },
     { tag: tokenTable.underline, textDecoration: 'underline' },
+    { tag: tokenTable.link, class: 'cm-clickable-link' },
   ]),
 )
 export function podliteLang() {

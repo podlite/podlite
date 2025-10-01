@@ -63,6 +63,5 @@ export const defaultTheme = createTheme({
       borderRadius: '3px',
     },
     { tag: t.strikethrough, textDecoration: 'line-through' },
-
   ],
 })

@@ -46,6 +46,9 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   startLinePreview?: number
   /**  */
   enableAutocompletion?: boolean
+  /** Handler for opening links from editor.
+   When provided, enables extensions that handle open links */
+  onOpenLink?: (url: string) => void
 }
 
 export interface PodliteEditorRef {
@@ -77,6 +80,7 @@ function PodliteEditorInternal(
     makePreviewComponent,
     startLinePreview = 1, // start line number
     enableAutocompletion = false,
+    onOpenLink,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -276,7 +280,60 @@ function PodliteEditorInternal(
     ...defaultKeymap,
   ])
 
+  // Add/remove a class on the editor root while Mod (Cmd/Ctrl) is pressed
+  const modKeyClass = EditorView.domEventHandlers({
+    keydown(e, view) {
+      if (e.metaKey || e.ctrlKey) view.dom.classList.add('cm-mod-pressed')
+    },
+    keyup(e, view) {
+      if (!e.metaKey && !e.ctrlKey) view.dom.classList.remove('cm-mod-pressed')
+    },
+    blur(_, view) {
+      view.dom.classList.remove('cm-mod-pressed')
+    },
+    // defensive: if mouse leaves, clear the class (helps when key is released elsewhere)
+    mouseleave(_, view) {
+      view.dom.classList.remove('cm-mod-pressed')
+    },
+  })
+  const openStyledLinkOnClick = EditorView.domEventHandlers({
+    click(event, view) {
+      const target = event.target as HTMLElement | null
+      if (!target) return
+
+      const el = target.closest('.cm-clickable-link') as HTMLElement | null
+      if (!el) return
+
+      // require Cmd/Ctrl for activation
+      const modPressed = event.metaKey || event.ctrlKey
+      if (!modPressed) return
+
+      const from = view.posAtDOM(el, 0)
+      const to = view.posAtDOM(el, el.childNodes.length)
+      const text = view.state.doc.sliceString(from, to).trim()
+
+      if (/^https?:\/\//i.test(text)) {
+        if (onOpenLink) {
+          onOpenLink(text) // i.e window.open(text, '_blank', 'noopener')
+        }
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    },
+  })
   let extensionsData: IPodliteEditor['extensions'] = [podliteLang(), EditorView.lineWrapping, preventToggleComment]
+  
+  if (onOpenLink) {
+    extensionsData.push(
+      modKeyClass,
+      openStyledLinkOnClick,
+      EditorView.theme({
+        '&.cm-editor.cm-mod-pressed .cm-clickable-link:hover': {
+          cursor: 'pointer',
+        },
+      }),
+    )
+  }
   if (enableScroll) {
     extensionsData.push(scrollExtensions)
   }

@@ -82,6 +82,9 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
         basicSetup={{ defaultKeymap: false }}
         readOnly={false}
         isFullscreen={false}
+        onOpenLink={(url: string) => {
+            console.log(url)
+        }}
         // makePreviewComponent={convertSourcetoComponent}
       />
 
