@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.32
+
+- improve support for `A<>`
+- made AST processing safest
+
 ## 0.0.30
 
 - added `mode` support for parser

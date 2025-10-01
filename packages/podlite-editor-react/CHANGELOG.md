@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.38
+
+- allow handle links `L<>` (`onOpenLink`)
+- add styles for `I<>`, `S<>`, `C<>`, `U<>` and fix heading styles
+
 ## 0.0.37
 
 - added `enableAutocompletion` flag to toggle autocompletion

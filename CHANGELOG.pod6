@@ -2,6 +2,23 @@
 
 =head1 Upcoming
 
+=head1 0.0.52
+
+# @podlite/schema@0.0.32
+
+- improve support for `A<>`
+- made AST processing safest
+
+# @podlite/editor-react@0.0.38
+
+- allow handle links `L<>` (`onOpenLink`)
+- add styles for `I<>`, `S<>`, `C<>`, `U<>` and fix heading styles
+
+# @podlite/to-jsx@0.0.36
+
+- handle `A<>` correctly
+
+
 =head1  0.0.51
 
 # @podlite/editor-react@0.0.37

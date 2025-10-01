@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.36
+
+- handle `A<>` correctly
+
 ## 0.0.34
 
 - improve styles
