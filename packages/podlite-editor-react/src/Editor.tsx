@@ -383,6 +383,28 @@ function PodliteEditorInternal(
     50,
   )
 
+  useEffect(() => {
+    if (!isBrowser || !container.current) return
+
+    let resizeObserver: ResizeObserver | undefined
+
+    const handleContainerResize: ResizeObserverCallback = (entries: ResizeObserverEntry[]) => {
+      onAnyUpdateEditorSize()
+    }
+
+    resizeObserver = new ResizeObserver(handleContainerResize)
+    resizeObserver.observe(container.current)
+
+    onAnyUpdateEditorSize()
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+        resizeObserver = undefined
+      }
+    }
+  }, [container, isFullscreen])
+
   // Add effect to handle initial scroll to startLinePreview
   useEffect(() => {
     onAnyUpdateEditorSize()
