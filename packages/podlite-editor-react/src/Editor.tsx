@@ -312,17 +312,16 @@ function PodliteEditorInternal(
       const to = view.posAtDOM(el, el.childNodes.length)
       const text = view.state.doc.sliceString(from, to).trim()
 
-      if (/^https?:\/\//i.test(text)) {
-        if (onOpenLink) {
-          onOpenLink(text) // i.e window.open(text, '_blank', 'noopener')
-        }
-        event.preventDefault()
-        event.stopPropagation()
+      if (onOpenLink) {
+        onOpenLink(text) // i.e window.open(text, '_blank', 'noopener')
       }
+
+      event.preventDefault()
+      event.stopPropagation()
     },
   })
   let extensionsData: IPodliteEditor['extensions'] = [podliteLang(), EditorView.lineWrapping, preventToggleComment]
-  
+
   if (onOpenLink) {
     extensionsData.push(
       modKeyClass,
