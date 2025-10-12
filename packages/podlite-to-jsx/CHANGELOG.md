@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+## 0.0.37
+
+- improved code block visibility in CSS
+
 ## 0.0.36
 
 - handle `A<>` correctly

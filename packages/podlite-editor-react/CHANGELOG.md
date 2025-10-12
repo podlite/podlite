@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+## 0.0.39
+
+- enhanced link handling `L<>`
+- fixed a redraw issue when resizing the application window
+
 ## 0.0.38
 
 - allow handle links `L<>` (`onOpenLink`)

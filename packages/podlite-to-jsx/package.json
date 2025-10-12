@@ -1,6 +1,6 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "JSX converter for Podlite markup language",
   "main": "./src/index.tsx",
   "license": "MIT",

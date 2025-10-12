@@ -2,6 +2,17 @@
 
 =head1 Upcoming
 
+=head1 0.0.53
+
+# @podlite/editor-react@0.0.39
+
+- enhanced link handling `L<>`
+- fixed a redraw issue when resizing the application window
+
+# @podlite/to-jsx@0.0.37
+
+- improved code block visibility in CSS
+
 =head1 0.0.52
 
 # @podlite/schema@0.0.32
@@ -17,7 +28,6 @@
 # @podlite/to-jsx@0.0.36
 
 - handle `A<>` correctly
-
 
 =head1  0.0.51
 
