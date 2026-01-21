@@ -1,62 +1,62 @@
 # @podlite/image
 
-## Upcoming
+=head1 Upcoming
 
-## 0.0.15
+=head1 0.0.15
 
-- support for `=picture` block
+=item support for `=picture` block
 
-## 0.0.13
+=head1 0.0.13
 
-- update deps
+=item update deps
 
-## 0.0.12
+=head1 0.0.12
 
-- refactor tests
+=item refactor tests
 
-## 0.0.11
+=head1 0.0.11
 
-- refactor
+=item refactor
 
-## 0.0.10
+=head1 0.0.10
 
-- refactor
+=item refactor
 
-## 0.0.9
+=head1 0.0.9
 
-- update register plugin api
+=item update register plugin api
 
-## 0.0.8
+=head1 0.0.8
 
-- add :link attribute support
-- change =Image format ( use text after image link as caption)
-- add :caption support
-- udpdate package
+=item add :link attribute support
+=item change =Image format ( use text after image link as caption)
+=item add :caption support
+=item udpdate package
 
-## 0.0.7
+=head1 0.0.7
 
-- handle empty content
+=item handle empty content
 
-## 0.0.6
+=head1 0.0.6
 
-- update deps
+=item update deps
 
-## 0.0.5
+=head1 0.0.5
 
-- update deps
+=item update deps
 
-## 0.0.4
+=head1 0.0.4
 
-- update deps
+=item update deps
 
-## 0.0.3
+=head1 0.0.3
 
-- update deps
+=item update deps
 
-## 0.0.2
+=head1 0.0.2
 
-- clean src field
+=item clean src field
 
-## 0.0.1
+=head1 0.0.1
 
--initial release
+=iteminitial release

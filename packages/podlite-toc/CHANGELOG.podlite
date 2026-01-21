@@ -1,46 +1,46 @@
 # @podlite/toc
 
-## Upcoming
+=head1 Upcoming
 
-## 0.0.19
+=head1 0.0.19
 
-- improved toc usage in the editor
-- added default logic to retrieve the text for the toc element
+=item improved toc usage in the editor
+=item added default logic to retrieve the text for the toc element
 
-## 0.0.12
+=head1 0.0.12
 
-- implement `:caption`
+=item implement `:caption`
 
-## 0.0.11
+=head1 0.0.11
 
-- fix linking toc items
+=item fix linking toc items
 
-## 0.0.7
+=head1 0.0.7
 
-- `=toc` now is standard block
+=item `=toc` now is standard block
 
-## 0.0.6
+=head1 0.0.6
 
-- refactor
+=item refactor
 
-## 0.0.5
+=head1 0.0.5
 
-- update deps
+=item update deps
 
-## 0.0.4
+=head1 0.0.4
 
-- update deps
+=item update deps
 
-## 0.0.3
+=head1 0.0.3
 
-- adjust plugin API
+=item adjust plugin API
 
-## 0.0.2
+=head1 0.0.2
 
-- update deps
+=item update deps
 
-## 0.0.1
+=head1 0.0.1
 
-- initial release
-- implement Table of conents =Toc block
-- add support :caption for =table
+=item initial release
+=item implement Table of conents =Toc block
+=item add support :caption for =table

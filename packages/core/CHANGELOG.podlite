@@ -1,101 +1,101 @@
-# @podlite
+=TITLE CHANGES 
 
-## Upcoming
+=head1 Upcoming
 
-## 0.0.33
+=head1 0.0.33
 
-- fix api types
+=item fix api types
 
-## 0.0.32
+=head1 0.0.32
 
-- add `=formula`, `F<>` support
+=item add `=formula`, `F<>` support
 
-## 0.0.27
+=head1 0.0.27
 
-- update deps
+=item update deps
 
-## 0.0.26
+=head1 0.0.26
 
-- move plugins object to @podlite/schema package
+=item move plugins object to @podlite/schema package
 
-## 0.0.25
+=head1 0.0.25
 
-- improve blocks linking
+=item improve blocks linking
 
-## 0.0.24
+=head1 0.0.24
 
-- clean source
+=item clean source
 
-## 0.0.23
+=head1 0.0.23
 
-- update deps
+=item update deps
 
-## 0.0.22
+=head1 0.0.22
 
-- update deps
+=item update deps
 
-## 0.0.21
+=head1 0.0.21
 
-- add =Markdown plugin
+=item add =Markdown plugin
 
-## 0.0.20
+=head1 0.0.20
 
-- update deps
+=item update deps
 
-## 0.0.19
+=head1 0.0.19
 
-- update depends
+=item update depends
 
-## 0.0.18
+=head1 0.0.18
 
-- update depends
+=item update depends
 
-## 0.0.17
+=head1 0.0.17
 
-- update depends
+=item update depends
 
-## 0.0.16
+=head1 0.0.16
 
-- update depends
+=item update depends
 
-## 0.0.15
+=head1 0.0.15
 
-- update depends
+=item update depends
 
-## 0.0.14
+=head1 0.0.14
 
-- update depends
+=item update depends
 
-## 0.0.13
+=head1 0.0.13
 
-- fix npm
+=item fix npm
 
-## 0.0.12
+=head1 0.0.12
 
-- add id prop to AST Schema
-- add =Toc plugin
+=item add id prop to AST Schema
+=item add =Toc plugin
 
-## 0.0.10
+=head1 0.0.10
 
-- update deps
+=item update deps
 
-## 0.0.9
+=head1 0.0.9
 
-- fix md transforms
+=item fix md transforms
 
-## 0.0.8
+=head1 0.0.8
 
-- update deps
+=item update deps
 
-## 0.0.7
+=head1 0.0.7
 
-- update deps
+=item update deps
 
-## 0.0.6
+=head1 0.0.6
 
-- enable tests
-- update deps
+=item enable tests
+=item update deps
 
-## 0.0.5
+=head1 0.0.5
 
-- import from original repo
+=item import from original repo

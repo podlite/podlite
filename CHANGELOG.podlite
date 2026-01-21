@@ -4,130 +4,130 @@
 
 =head1 0.0.53
 
-# @podlite/editor-react@0.0.39
+=head2 @podlite/editor-react@0.0.39
 
-- enhanced link handling `L<>`
-- fixed a redraw issue when resizing the application window
+=item enhanced link handling `L<>`
+=item fixed a redraw issue when resizing the application window
 
-# @podlite/to-jsx@0.0.37
+=head2 @podlite/to-jsx@0.0.37
 
-- improved code block visibility in CSS
+=item improved code block visibility in CSS
 
 =head1 0.0.52
 
-# @podlite/schema@0.0.32
+=head2 @podlite/schema@0.0.32
 
-- improve support for `A<>`
-- made AST processing safest
+=item improve support for `A<>`
+=item made AST processing safest
 
-# @podlite/editor-react@0.0.38
+=head2 @podlite/editor-react@0.0.38
 
-- allow handle links `L<>` (`onOpenLink`)
-- add styles for `I<>`, `S<>`, `C<>`, `U<>` and fix heading styles
+=item allow handle links `L<>` (`onOpenLink`)
+=item add styles for `I<>`, `S<>`, `C<>`, `U<>` and fix heading styles
 
-# @podlite/to-jsx@0.0.36
+=head2 @podlite/to-jsx@0.0.36
 
-- handle `A<>` correctly
+=item handle `A<>` correctly
 
 =head1  0.0.51
 
-# @podlite/editor-react@0.0.37
+=head2 @podlite/editor-react@0.0.37
 
-- added `enableAutocompletion` flag to toggle autocompletion
+=item added `enableAutocompletion` flag to toggle autocompletion
 
 =head1 0.0.50
 
-# @podlite/editor-react@0.0.36
+=head2 @podlite/editor-react@0.0.36
 
-- added start line for scroll preview (startLinePreview)
+=item added start line for scroll preview (startLinePreview)
 
-# @podlite/publisher@0.0.11
+=head2 @podlite/publisher@0.0.11
 
-- implement Selector for `doc:<NAME|ID>`
+=item implement Selector for `doc:<NAME|ID>`
 
-# @podlite/schema@0.0.30
+=head2 @podlite/schema@0.0.30
 
-- added `mode` support for parser
+=item added `mode` support for parser
 
-# @podlite/to-jsx@0.0.34
+=head2 @podlite/to-jsx@0.0.34
 
-- improve styles
-- added `mode` support for parser
+=item improve styles
+=item added `mode` support for parser
 
 =head1 0.0.49
 
-# @podlite/editor-react@0.0.35
+=head2 @podlite/editor-react@0.0.35
 
-- fix editor positionning
+=item fix editor positionning
 
 =head1 0.0.48
 
-# @podlite/editor-react@0.0.34
+=head2 @podlite/editor-react@0.0.34
 
-- corrective release
+=item corrective release
 
 =head1 0.0.47
 
-# @podlite/editor-react@0.0.33
+=head2 @podlite/editor-react@0.0.33
 
-- corrective release
+=item corrective release
 
 =head1 0.0.46
 
-# @podlite/editor-react@0.0.32
+=head2 @podlite/editor-react@0.0.32
 
-- add `Wrapper` component to decorate editor
-- refactor styles
-- adjust autocomplete
-- upgrade base editor library
-- add themes support
-- upgrade syntax highlighting code
-- speed up podite mode for editor
-- added initial support for "Focus Write" mode
+=item add `Wrapper` component to decorate editor
+=item refactor styles
+=item adjust autocomplete
+=item upgrade base editor library
+=item add themes support
+=item upgrade syntax highlighting code
+=item speed up podite mode for editor
+=item added initial support for "Focus Write" mode
 
-# @podlite/schema@0.0.26
+=head2 @podlite/schema@0.0.26
 
-- add `location` from original node to `mkToc` helper
-- safe block id creation
-- fix the abbreviated block when its content starts with `=`
+=item add `location` from original node to `mkToc` helper
+=item safe block id creation
+=item fix the abbreviated block when its content starts with `=`
 
-# @podlite/to-jsx@0.0.30
+=head2 @podlite/to-jsx@0.0.30
 
-- add minimal styles
-- add support for `:caption` attribute for code block
+=item add minimal styles
+=item add support for `:caption` attribute for code block
 
-# @podlite/toc@0.0.19
+=head2 @podlite/toc@0.0.19
 
-- improved toc usage in the editor
-- added default logic to retrieve the text for the toc element
+=item improved toc usage in the editor
+=item added default logic to retrieve the text for the toc element
 
 =head1 0.0.45
 
-# @podlite/editor-react@0.0.31
+=head2 @podlite/editor-react@0.0.31
 
-- fix `=table` caption position
-- syntax highlighting for source code
+=item fix `=table` caption position
+=item syntax highlighting for source code
 
-# @podlite/publisher@0.0.6
+=head2 @podlite/publisher@0.0.6
 
-- implement resolvers for  `=include` block
+=item implement resolvers for  `=include` block
 
-# @podlite/schema@0.0.25
+=head2 @podlite/schema@0.0.25
 
-- added initial support for `=include` block
+=item added initial support for `=include` block
 
-# @podlite/to-jsx@0.0.29
+=head2 @podlite/to-jsx@0.0.29
 
-- handle `=include` block
-- Removed alignment for Markdown table headers
+=item handle `=include` block
+=item Removed alignment for Markdown table headers
 
 =head1 0.0.44
 
-# @podlite/publisher@0.0.5
+=head2 @podlite/publisher@0.0.5
 
-- initial support for `=Include` blocks and Selectors (https://podlite.org/specification#Selectors)
-- add support for embeded data using `=data` block
-- refactor existed and added new plugins:
+=item initial support for `=Include` blocks and Selectors (https://podlite.org/specification#Selectors)
+=item add support for embeded data using `=data` block
+=item refactor existed and added new plugins:
   - docs-injector-plugin
   - dump-pages-plugin
   - include-resolve-plugin.spec
@@ -135,313 +135,313 @@
 
 =head1 0.0.43
 
-# Added support for alignment in markdown tables
+=head2 Added support for alignment in markdown tables
 
-# @podlite/markdown@0.0.16
+=head2 @podlite/markdown@0.0.16
 
-- added alignment for column contents ( #9 )
+=item added alignment for column contents ( #9 )
 
-# @podlite/publisher@0.0.4
+=head2 @podlite/publisher@0.0.4
 
-- add template configuration attribute for site: `:templateFile<file path>`
-- fix publishRecord
+=item add template configuration attribute for site: `:templateFile<file path>`
+=item fix publishRecord
 
-# @podlite/schema@ 0.0.23
+=head2 @podlite/schema@ 0.0.23
 
-- added alignment for column contents
+=item added alignment for column contents
 
-# @podlite/to-jsx@0.0.27
+=head2 @podlite/to-jsx@0.0.27
 
-- render tables with align
+=item render tables with align
 
 
 =head1 0.0.42
 
-# @podlite/publisher@0.0.3
+=head2 @podlite/publisher@0.0.3
 
-- minor fixes 
+=item minor fixes 
 
 =head1 0.0.41
 
-# @podlite/markdown@0.0.14
+=head2 @podlite/markdown@0.0.14
 
-- avoid add `caption` element if title empty
+=item avoid add `caption` element if title empty
 
-# @podlite/publisher@0.0.1
+=head2 @podlite/publisher@0.0.1
 
-- plugins :breadcrumb-plugin, links-plugin, terms-index-plugin
-- support tempating for docs
-- fix processing templates
-- add helper `isExistsDocBlocks`
+=item plugins :breadcrumb-plugin, links-plugin, terms-index-plugin
+=item support tempating for docs
+=item fix processing templates
+=item add helper `isExistsDocBlocks`
 
-# @podlite/schema@0.0.21
+=head2 @podlite/schema@0.0.21
 
-- improve caption element
+=item improve caption element
 
 
 =head1 0.0.40
 
-# @podlite@0.0.32
+=head2 @podlite@0.0.32
 
-- fix api types
+=item fix api types
 
-# @podlite/schema@0.0.19
+=head2 @podlite/schema@0.0.19
 
-- fix schema for `L<>`
+=item fix schema for `L<>`
 
 =head1 0.0.39
 
-# @podlite@0.0.32
+=head2 @podlite@0.0.32
 
-- add `=formula`, `F<>` support
+=item add `=formula`, `F<>` support
 
-# @podlite/to-jsx@0.0.23
+=head2 @podlite/to-jsx@0.0.23
 
-- add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
-- add support for HTML named entities reference (podlite/podlite-specs#9)
+=item add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
+=item add support for HTML named entities reference (podlite/podlite-specs#9)
 
-# @podlite/diagram@0.0.23
+=head2 @podlite/diagram@0.0.23
 
-- fix react component
+=item fix react component
 
-# @podlite/formula@0.0.1
+=head2 @podlite/formula@0.0.1
 
-- implement formulas using MathJax library
+=item implement formulas using MathJax library
 
-# @podlite/schema@0.0.19
+=head2 @podlite/schema@0.0.19
 
-- add `=formula`, `F<>` support
-- implement html named entities support
+=item add `=formula`, `F<>` support
+=item implement html named entities support
 
-# @podlite/editor-react@0.0.25
+=head2 @podlite/editor-react@0.0.25
 
-- add formulas support
-- fix scrolling
+=item add formulas support
+=item fix scrolling
 
-# @podlite/markdown@0.0.12
+=head2 @podlite/markdown@0.0.12
 
-- implement inline `$...$` and block `$$...$$` formulas
+=item implement inline `$...$` and block `$$...$$` formulas
 
-# @podlite/toc@0.0.12
+=head2 @podlite/toc@0.0.12
 
-- implement `:caption`
+=item implement `:caption`
 
 =head1 0.0.38
 
-# @podlite/toc@0.0.11
--fix linking toc items
+=head2 @podlite/toc@0.0.11
+=itemfix linking toc items
 
-# @podlite/to-jsx@0.0.11
-- implement notification blocks
+=head2 @podlite/to-jsx@0.0.11
+=item implement notification blocks
 
-# @podlite/schema@0.0.18
+=head2 @podlite/schema@0.0.18
 
-- fix =toc links #6
-- fix :allow context for nested blocks
-- improved support for parentheses for markup codes
+=item fix =toc links #6
+=item fix :allow context for nested blocks
+=item improved support for parentheses for markup codes
 
-# @podlite/editor-react@0.0.24
+=head2 @podlite/editor-react@0.0.24
 
-- add default cursor position for `code` snippet
-- add support for notification blocks
+=item add default cursor position for `code` snippet
+=item add support for notification blocks
 
 =head1 0.0.37
 
-# @podlite/editor-react@0.0.23
-- add default cursor position for `code` snippet
+=head2 @podlite/editor-react@0.0.23
+=item add default cursor position for `code` snippet
 
-# @podlite/schema@0.0.17
-- fix linking when publish
-- fix types for L<> code
+=head2 @podlite/schema@0.0.17
+=item fix linking when publish
+=item fix types for L<> code
 
-# @podlite/toc@0.0.10
--fix linking toc items
+=head2 @podlite/toc@0.0.10
+=itemfix linking toc items
 
 =head1 0.0.36
 
-- going to use =Mermaid instad of =Diagaram
-- add `=picture`
+=item going to use =Mermaid instad of =Diagaram
+=item add `=picture`
 
-# @podlite/editor-react@0.0.22
-- support for `=Mermaid` block
-- add text search in document / cmd-F
-- support for `=picture` block
-- fix detect markdown context for suggestions
+=head2 @podlite/editor-react@0.0.22
+=item support for `=Mermaid` block
+=item add text search in document / cmd-F
+=item support for `=picture` block
+=item fix detect markdown context for suggestions
 
-# @podlite/image@0.0.15
-- support for `=picture` block
+=head2 @podlite/image@0.0.15
+=item support for `=picture` block
 
-# @podlite/markdown@0.0.9
-- implement `mermaid` support
+=head2 @podlite/markdown@0.0.9
+=item implement `mermaid` support
 
-# @podlite/schema@0.0.16
-- support for `=picture` block
+=head2 @podlite/schema@0.0.16
+=item support for `=picture` block
 
 =head1 0.0.35
-- fix packages build
+=item fix packages build
 
 =head1 0.0.34
-# @podlite/toc@0.0.7
-- `=toc` now is standard block
+=head2 @podlite/toc@0.0.7
+=item `=toc` now is standard block
 
-# @podlite/editor-react@0.0.16
-- add Markdown block suggestion
-- save virtual margin for suggestions
+=head2 @podlite/editor-react@0.0.16
+=item add Markdown block suggestion
+=item save virtual margin for suggestions
 
-# @podlite/schema@0.0.14
-- fix parse `=alias` and `=config` directives
-- improve brackets support for C<> and L<> codes
-- support for `=toc` block
-- support for `=markdown` block
+=head2 @podlite/schema@0.0.14
+=item fix parse `=alias` and `=config` directives
+=item improve brackets support for C<> and L<> codes
+=item support for `=toc` block
+=item support for `=markdown` block
 
-# @podlite/markdown@0.0.7
-- `=markdown` now is standard block
+=head2 @podlite/markdown@0.0.7
+=item `=markdown` now is standard block
 
-# @podlite/editor-react@0.0.20
-- support for `=toc` block
-- support for `=markdown` block
+=head2 @podlite/editor-react@0.0.20
+=item support for `=toc` block
+=item support for `=markdown` block
 
 =head1 0.0.33
-- refactor tests
-- update deps
-- overal project updates
+=item refactor tests
+=item update deps
+=item overal project updates
 
 =head1 0.0.32
 
-# @podlite/0.0.25
-- improve blocks linking
+=head2 @podlite/0.0.25
+=item improve blocks linking
 
-# @podlite/schema@0.0.11
-- add helpers,
-- fix parser's grammars
-- add tests
-- update deps
+=head2 @podlite/schema@0.0.11
+=item add helpers,
+=item fix parser's grammars
+=item add tests
+=item update deps
 
 =head1 0.0.31
-# @podlite/0.0.24
-- clean source
+=head2 @podlite/0.0.24
+=item clean source
 
 =head1 0.0.30
-# @podlite/markdown@0.0.4
-- fix export
+=head2 @podlite/markdown@0.0.4
+=item fix export
 
 =head1 0.0.29
-# @podlite/diagram@0.0.15
-- support toJSX schema
-# @podlite/image@0.0.10
-- refactor
-# @podlite/schema@0.0.11
-- extend API by context for react component wrap function
-# @podlite/to-jsx@0.0.15
-- refactor logic for plugins
+=head2 @podlite/diagram@0.0.15
+=item support toJSX schema
+=head2 @podlite/image@0.0.10
+=item refactor
+=head2 @podlite/schema@0.0.11
+=item extend API by context for react component wrap function
+=head2 @podlite/to-jsx@0.0.15
+=item refactor logic for plugins
 =head1 0.0.28
-# @podlite/0.0.22
-- update build
+=head2 @podlite/0.0.22
+=item update build
 
 =head1 0.0.27
-# @podlite/markdown@0.0.2
-- update build
+=head2 @podlite/markdown@0.0.2
+=item update build
 
 =head1 0.0.26
-# @podlite@0.0.21
-- add =Markdown plugin
-- update API for plugins
-# @podlite/editor-react@0.0.16
-- add Markdown block suggestion
-- save virtual margin for suggestions
-# @podlite/schema@0.0.10
-- add Strikethrough inline element support
-- add JSX handler for plugins
+=head2 @podlite@0.0.21
+=item add =Markdown plugin
+=item update API for plugins
+=head2 @podlite/editor-react@0.0.16
+=item add Markdown block suggestion
+=item save virtual margin for suggestions
+=head2 @podlite/schema@0.0.10
+=item add Strikethrough inline element support
+=item add JSX handler for plugins
 
 =head1 0.0.25
-# @podlite@0.0.16
-- update depends
-# @podlite/diagram@0.0.12
-- handle run under node
+=head2 @podlite@0.0.16
+=item update depends
+=head2 @podlite/diagram@0.0.12
+=item handle run under node
 
 =head1 0.0.24
-# @podlite/diagram@0.0.12
-- error handling improved 
+=head2 @podlite/diagram@0.0.12
+=item error handling improved 
 
 =head1 0.0.23
-- fix npm 
+=item fix npm 
 
 =head1 0.0.22
--fix build time deps
+=itemfix build time deps
 
 =head1 0.0.21
 @podlite/editor-react@0.0.15
-- fix css for video
+=item fix css for video
 @podlite/schema@ 0.0.8
-- fix null elements in AST
-# @podlite/to-jsx@0.0.11
-- use <video> tags for mov/mp4 media
+=item fix null elements in AST
+=head2 @podlite/to-jsx@0.0.11
+=item use <video> tags for mov/mp4 media
 
 =head1 0.0.20
-# @podlite/editor-react@0.0.14
-- fix Toc suggestion
+=head2 @podlite/editor-react@0.0.14
+=item fix Toc suggestion
 
 =head1 0.0.19
-# @podlite@0.0.16
-- update depends
-# @podlite/editor-react@0.0.13
-- fix Toc suggestion
-# @podlite/to-jsx@0.0.10
-- fix id for =table
+=head2 @podlite@0.0.16
+=item update depends
+=head2 @podlite/editor-react@0.0.13
+=item fix Toc suggestion
+=head2 @podlite/to-jsx@0.0.10
+=item fix id for =table
 
 =head1 0.0.18
-# @podlite@0.0.15
-- update depends
-# @podlite/diagram@0.0.10
-- fix depends
+=head2 @podlite@0.0.15
+=item update depends
+=head2 @podlite/diagram@0.0.10
+=item fix depends
 
 =head1 0.0.17
-# @podlite@0.0.14
-- update depends
-# @podlite/to-jsx@0.0.9
-- fix npm
+=head2 @podlite@0.0.14
+=item update depends
+=head2 @podlite/to-jsx@0.0.9
+=item fix npm
 
 =head1 0.0.16
-# @podlite/diagram@0.0.9
-- fix npm
+=head2 @podlite/diagram@0.0.9
+=item fix npm
 =head1 0.0.15
-# @podlite@0.0.13
-- fix npm
+=head2 @podlite@0.0.13
+=item fix npm
 
 =head1 0.0.14
-- update pod6 to v0.0.43
-# @podlite@0.0.12
-- add id prop to AST Schema
-- add =Toc plugin
-# @podlite/diagram@0.0.8
-- add :caption, :id support
-- upgrade mermaid to 8.12.1
-# @podlite/editor-react@0.0.12
-- add caption, toc styles support
-- change search suggestions sorting
-- add =Toc related suggestions
-- add suggestions: code block with formatting
-- fix snippets
-- update build system
-# @podlite/image@0.0.8
-- add :link attribute support
-- change =Image format ( use text after image link as caption)
-- add :caption support
-- udpdate package
-# @podlite/schema@ 0.0.7
-- add ast interator module (ast-inerator) 
-- add AST nodes for image and caption objects, add mkImage and mkCaption helpers 
-- add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
-- add id prop to Node type
-- toc elements support
-# @podlite/to-jsx@0.0.8
-- add support for =Image
-- add caption for =Diagram
-- add support for id html attribute
-# @podlite/diagram@0.0.1
-- initial release
-- implement Table of conents =Toc block
-- add support :caption for =table
+=item update pod6 to v0.0.43
+=head2 @podlite@0.0.12
+=item add id prop to AST Schema
+=item add =Toc plugin
+=head2 @podlite/diagram@0.0.8
+=item add :caption, :id support
+=item upgrade mermaid to 8.12.1
+=head2 @podlite/editor-react@0.0.12
+=item add caption, toc styles support
+=item change search suggestions sorting
+=item add =Toc related suggestions
+=item add suggestions: code block with formatting
+=item fix snippets
+=item update build system
+=head2 @podlite/image@0.0.8
+=item add :link attribute support
+=item change =Image format ( use text after image link as caption)
+=item add :caption support
+=item udpdate package
+=head2 @podlite/schema@ 0.0.7
+=item add ast interator module (ast-inerator) 
+=item add AST nodes for image and caption objects, add mkImage and mkCaption helpers 
+=item add mkBlockItem, getTextContentFromNode and query blocks from AST helpers
+=item add id prop to Node type
+=item toc elements support
+=head2 @podlite/to-jsx@0.0.8
+=item add support for =Image
+=item add caption for =Diagram
+=item add support for id html attribute
+=head2 @podlite/diagram@0.0.1
+=item initial release
+=item implement Table of conents =Toc block
+=item add support :caption for =table
 
 =head1 0.0.13
 =item small bug fixes

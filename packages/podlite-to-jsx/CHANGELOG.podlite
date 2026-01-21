@@ -1,123 +1,123 @@
-# @podlite/to-jsx
+=TITLE CHANGES 
 
-## Upcoming
+=head1 Upcoming
 
-## 0.0.37
+=head1 0.0.37
 
-- improved code block visibility in CSS
+=item improved code block visibility in CSS
 
-## 0.0.36
+=head1 0.0.36
 
-- handle `A<>` correctly
+=item handle `A<>` correctly
 
-## 0.0.34
+=head1 0.0.34
 
-- improve styles
-- added `mode` support for parser
+=item improve styles
+=item added `mode` support for parser
 
-## 0.0.30
+=head1 0.0.30
 
-- add minimal styles
-- add support for `:caption` attribute for code block
+=item add minimal styles
+=item add support for `:caption` attribute for code block
 
-## 0.0.29
+=head1 0.0.29
 
-- Removed alignment for Markdown table headers
-- handle `=include` block
+=item Removed alignment for Markdown table headers
+=item handle `=include` block
 
-## 0.0.27
+=head1 0.0.27
 
-- render tables with align
+=item render tables with align
 
-## 0.0.23
+=head1 0.0.23
 
-- add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
-- add support for HTML named entities reference (podlite/podlite-specs#9)
+=item add support for `:nested` attribute for `=para` (podlite/podlite-specs#9)
+=item add support for HTML named entities reference (podlite/podlite-specs#9)
 
-## 0.0.22
+=head1 0.0.22
 
-- implement notification blocks
+=item implement notification blocks
 
-## 0.0.21
+=head1 0.0.21
 
--fix anchors
+=itemfix anchors
 
-## 0.0.18
+=head1 0.0.18
 
-- update deps
+=item update deps
 
-## 0.0.17
+=head1 0.0.17
 
-- refactor
+=item refactor
 
-## 0.0.16
+=head1 0.0.16
 
-- refactor
+=item refactor
 
-## 0.0.15
+=head1 0.0.15
 
-- refactor logic for plugins
+=item refactor logic for plugins
 
-## 0.0.14
+=head1 0.0.14
 
-- add Strikethrough inline element support
-- add toJSX support
+=item add Strikethrough inline element support
+=item add toJSX support
 
-## 0.0.13
+=head1 0.0.13
 
-- update deps
+=item update deps
 
-## 0.0.12
+=head1 0.0.12
 
-- fix imports
-- update deps
+=item fix imports
+=item update deps
 
-## 0.0.11
+=head1 0.0.11
 
-- use <video> tags for mov/mp4 media
-- update deps
+=item use <video> tags for mov/mp4 media
+=item update deps
 
-## 0.0.10
+=head1 0.0.10
 
-- fix id for =table
+=item fix id for =table
 
-## 0.0.9
+=head1 0.0.9
 
-- fix npm
+=item fix npm
 
-## 0.0.8
+=head1 0.0.8
 
-- add support for =Image
-- add caption for =Diagram
-- add support for id html attribute
+=item add support for =Image
+=item add caption for =Diagram
+=item add support for id html attribute
 
-## 0.0.7
+=head1 0.0.7
 
-- fix deps
+=item fix deps
 
-## 0.0.6
+=head1 0.0.6
 
-- fix process empty L<>
+=item fix process empty L<>
 
-## 0.0.5
+=head1 0.0.5
 
-- update deps
-- declare tree arg
+=item update deps
+=item declare tree arg
 
-## 0.0.4
+=head1 0.0.4
 
-- update deps
+=item update deps
 
-## 0.0.3
+=head1 0.0.3
 
-- update deps
+=item update deps
 
-## 0.0.2
+=head1 0.0.2
 
-- implement =defn
-- implemnt =nested
-- fix dependencies
+=item implement =defn
+=item implemnt =nested
+=item fix dependencies
 
-## 0.0.1
+=head1 0.0.1
 
-- initial version
+=item initial version

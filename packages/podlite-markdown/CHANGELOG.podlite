@@ -1,47 +1,47 @@
 # @podlite/markdown
 
-## Upcoming
+=head1 Upcoming
 
-## 0.0.16
+=head1 0.0.16
 
-- added alignment for column contents ( #9 )
+=item added alignment for column contents ( #9 )
 
-## 0.0.14
+=head1 0.0.14
 
-- avoid add `caption` element if title empty
+=item avoid add `caption` element if title empty
 
-## 0.0.12
+=head1 0.0.12
 
-- implement inline `$...$` and block `$$...$$` formulas
+=item implement inline `$...$` and block `$$...$$` formulas
 
-## 0.0.9
+=head1 0.0.9
 
-- implement `mermaid` support
+=item implement `mermaid` support
 
-## 0.0.7
+=head1 0.0.7
 
-- `=markdown` now is standard block
+=item `=markdown` now is standard block
 
-## 0.0.6
+=head1 0.0.6
 
-- refactor tests
+=item refactor tests
 
-## 0.0.5
+=head1 0.0.5
 
-- refactor
+=item refactor
 
-## 0.0.4
+=head1 0.0.4
 
-- fix export
+=item fix export
 
-## 0.0.3
+=head1 0.0.3
 
-- update deps
+=item update deps
 
-## 0.0.2
+=head1 0.0.2
 
-- update build
+=item update build
 
-## 0.0.1
+=head1 0.0.1
 
-- initial release
+=item initial release
