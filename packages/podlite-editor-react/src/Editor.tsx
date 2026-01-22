@@ -8,9 +8,10 @@ import { defaultTheme } from './theme'
 import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
 import { isElement } from 'react-is'
-import { Node } from '@podlite/schema'
+import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
+import HighlightedCode from './HighlightedCode'
 
 function useDebouncedEffect(fn, deps, time) {
   const dependencies = [...deps, time]
@@ -49,6 +50,8 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   /** Handler for opening links from editor.
    When provided, enables extensions that handle open links */
   onOpenLink?: (url: string) => void
+  /** Enable code highlighting */
+  enableHighlighting?: boolean
 }
 
 export interface PodliteEditorRef {
@@ -81,6 +84,7 @@ function PodliteEditorInternal(
     startLinePreview = 1, // start line number
     enableAutocompletion = false,
     onOpenLink,
+    enableHighlighting = false,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -563,7 +567,22 @@ function PodliteEditorInternal(
   const wrapFunctionNoLines = (node: Node, children) => children
 
   const defaultPreview = (source: string) => {
-    const result = <Podlite wrapElement={wrapFunction} tree={getTree(source)} />
+    const plugins = (makeComponent): Partial<Rules> => {
+      const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
+        // check if node.content defined
+        return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], ctx)
+      }
+      const hcode = mkComponent(({ children, key, ...node }, ctx) => (
+        <HighlightedCode node={node} keyProp={key} ctx={ctx}>
+          {children}
+        </HighlightedCode>
+      ))
+      return {
+        ':code': hcode,
+        code: hcode,
+      }
+    }
+    const result = <Podlite wrapElement={wrapFunction} plugins={plugins} tree={getTree(source)} />
     return { result }
   }
 
