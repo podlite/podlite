@@ -568,6 +568,9 @@ function PodliteEditorInternal(
 
   const defaultPreview = (source: string) => {
     const plugins = (makeComponent): Partial<Rules> => {
+      if (!enableHighlighting) {
+        return {}
+      }
       const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], ctx)

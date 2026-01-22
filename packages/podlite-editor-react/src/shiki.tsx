@@ -98,7 +98,7 @@ async function getHighlighterInstance(): Promise<Highlighter> {
   if (!state.initPromise) {
     state.initPromise = createHighlighter({
       // themes: Object.keys(bundledThemes) as BundledTheme[],
-      themes: Object.values(CONFIG.themes)as BundledTheme[],
+      themes: Object.values(CONFIG.themes) as BundledTheme[],
       langs: CONFIG.initialLanguages,
     }).then(instance => {
       state.instance = instance

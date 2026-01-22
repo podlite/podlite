@@ -34,6 +34,7 @@ Options B<are>:
 
 export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
   const [isFullscreen, setIsFullscreen] = React.useState(false)
+  const [isHighliteCode, setIsHighliteCode] = React.useState(false)
   const [isPreview, setIsPreview] = React.useState(false)
   const [isFullPreview, setFullPreview] = React.useState(false)
   const [textChanged, setTextChanged] = React.useState(false)
@@ -83,7 +84,7 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
         readOnly={false}
         isFullscreen={false}
         onOpenLink={(url: string) => {
-            console.log(url)
+          console.log(url)
         }}
         // makePreviewComponent={convertSourcetoComponent}
       />
@@ -93,6 +94,7 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
       </div>
       <div onClick={() => setIsPreview(!isPreview)}>preview {isPreview ? 'on' : 'off'}: </div>
       <div onClick={() => setFullPreview(!isFullPreview)}>full Preview {isFullPreview ? 'on' : 'off'}: </div>
+      <div onClick={() => setIsHighliteCode(!isHighliteCode)}>higlite code {isHighliteCode ? 'on' : 'off'}: </div>
       <Editor
         onChange={(content: string) => {
           // updateText(content)
@@ -105,6 +107,7 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
         basicSetup={{ defaultKeymap: false }}
         readOnly={false}
         isFullscreen={isFullscreen}
+        enableHighlighting={isHighliteCode}
       />
     </div>
   )
