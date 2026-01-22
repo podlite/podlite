@@ -145,12 +145,6 @@ test`)
   `)
 })
 
-const getTree = (text: string, opt?): PodliteDocument => {
-  const rawTree = toTree().parse(text, (opt = { skipChain: 0, podMode: 1 }))
-  const root = mkRootBlock({ margin: '' }, rawTree)
-  return root
-}
-
 it('[slugifyText] multypass', () => {
   const pass1 = slugifyText('item id<> test')
   const pass2 = slugifyText(pass1)

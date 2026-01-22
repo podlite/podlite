@@ -52,6 +52,30 @@ export function getTextContentFromNode(node: PodNode) {
   return text
 }
 
+export function getPodContentFromNode(node: PodNode) {
+  let text = ''
+  const rules = {
+    '*': (node, ctx, visiter) => {
+      if (node.type === 'blankline') {
+        text += '\n'
+        return
+      }
+      if (node.text) {
+        text += node.text
+        return
+      }
+
+      text += `=${node.name} `
+      if ('content' in node) {
+        visiter(node.content, ctx)
+      }
+      return node
+    },
+  }
+  const transformer = makeInterator(rules)
+  const res = transformer(node, {})
+  return text
+}
 export function validatePodliteAst(data: unknown): SchemaValidationError[] {
   return validateAst(data, 'PodliteDocument')
 }

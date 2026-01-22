@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item added C<getPodContentFromNode> helper
+
 =head1 0.0.32
 
 =item improve support for `A<>`
