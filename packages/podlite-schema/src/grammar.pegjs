@@ -264,7 +264,7 @@ delimitedBlockRaw =
                               config,
                               location:location()
                               }}
-tableHeadSeparator = !( _ ( markers / markerAbbreviatedBlock ) / blankline ) hs* $([+-=_|] hs*)+ EOL
+tableHeadSeparator = !( _ ( markers / markerAbbreviatedBlock ) / blankline ) hs* $([-+=_|] hs*)+ EOL
                     { return { type: 'separator', text:text() } }
 
 tableBodyRowSeparator  =  $( tableHeadSeparator / &{ return options.isDelimited } blankline ) 

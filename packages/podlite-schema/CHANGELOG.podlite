@@ -2,6 +2,7 @@
 
 =head1 Upcoming
 
+=item fixed table parsing without separator
 =item added C<getPodContentFromNode> helper
 
 =head1 0.0.32
