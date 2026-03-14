@@ -874,3 +874,189 @@ it('id for =code blocks', () => {
     </div>
   `)
 })
+
+// Tests for :folded attribute
+describe(':folded attribute', () => {
+  it('renders notification block with :folded as collapsed by default', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=begin nested :notify<tip> :folded :caption<Pro Tip>
+This is a tip that is collapsed by default.
+=end nested
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <details class="notify tip folded">
+          <summary class="notify-title">
+            Pro Tip
+          </summary>
+          <div class="folded-content">
+            <blockquote>
+              <p>
+                This is a tip that is collapsed by default.
+              </p>
+            </blockquote>
+          </div>
+        </details>
+      </div>
+    `)
+  })
+
+  it('renders notification block with :!folded as expanded by default', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=begin nested :notify<warning> :!folded :caption<Important Warning>
+This warning is expanded by default.
+=end nested
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <details class="notify warning folded"
+                 open
+        >
+          <summary class="notify-title">
+            Important Warning
+          </summary>
+          <div class="folded-content">
+            <blockquote>
+              <p>
+                This warning is expanded by default.
+              </p>
+            </blockquote>
+          </div>
+        </details>
+      </div>
+    `)
+  })
+
+  it('renders notification block with :folded(0) as expanded', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=begin nested :notify<note> :folded(0)
+Expanded note.
+=end nested
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <details class="notify note folded"
+                 open
+        >
+          <summary class="notify-title">
+            Note
+          </summary>
+          <div class="folded-content">
+            <blockquote>
+              <p>
+                Expanded note.
+              </p>
+            </blockquote>
+          </div>
+        </details>
+      </div>
+    `)
+  })
+
+  it('renders table with :folded and :caption', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=for table :folded :caption<Data Table>
+  A   B   C
+  1   2   3
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <details class="folded table-folded">
+          <summary class="folded-summary">
+            Data Table
+          </summary>
+          <div class="folded-content">
+            <table id="id">
+              <tbody>
+                <tr>
+                  <td>
+                    A
+                  </td>
+                  <td>
+                    B
+                  </td>
+                  <td>
+                    C
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    2
+                  </td>
+                  <td>
+                    3
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    `)
+  })
+
+  it('renders table with folded as expanded', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=for table :!folded :caption<Expanded Table>
+  X   Y
+  1   2
+=end pod`}
+      </Podlite>,
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <details class="folded table-folded"
+                 open
+        >
+          <summary class="folded-summary">
+            Expanded Table
+          </summary>
+          <div class="folded-content">
+            <table id="id">
+              <tbody>
+                <tr>
+                  <td>
+                    X
+                  </td>
+                  <td>
+                    Y
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    2
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    `)
+  })
+})

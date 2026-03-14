@@ -182,5 +182,107 @@ aside.notify.caution .notify-title {
     color: #d30038;
 }
 
-  /* End of podlite */ 
+/* Folded blocks using <details>/<summary> */
+details.folded {
+    border: 1px solid var(--color-border-default, #d0d7de);
+    border-radius: 6px;
+    margin: 1em 0;
+}
+
+details.folded > summary {
+    cursor: pointer;
+    padding: 0.5em 1em;
+    background-color: var(--color-canvas-subtle, #f6f8fa);
+    border-radius: 6px 6px 0 0;
+    font-weight: 500;
+    list-style: none;
+}
+
+details.folded > summary::-webkit-details-marker {
+    display: none;
+}
+
+details.folded > summary::before {
+    content: '▶ ';
+    display: inline-block;
+    margin-right: 0.5em;
+    transition: transform 0.2s ease;
+}
+
+details.folded[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+details.folded[open] > summary {
+    border-bottom: 1px solid var(--color-border-default, #d0d7de);
+    border-radius: 6px 6px 0 0;
+}
+
+details.folded > .folded-content {
+    padding: 1em;
+}
+
+/* Folded notification blocks */
+details.notify.folded {
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+
+details.notify.folded > summary {
+    background-color: transparent;
+}
+
+details.notify.folded.note {
+    border-left-color: #0085f2;
+}
+
+details.notify.folded.note > summary {
+    color: #0085f2;
+}
+
+details.notify.folded.tip {
+    border-left-color: #007936;
+}
+
+details.notify.folded.tip > summary {
+    color: #007936;
+}
+
+details.notify.folded.important {
+    border-left-color: #8250df;
+}
+
+details.notify.folded.important > summary {
+    color: #8250df;
+}
+
+details.notify.folded.warning {
+    border-left-color: #9a6700;
+}
+
+details.notify.folded.warning > summary {
+    color: #9a6700;
+}
+
+details.notify.folded.caution {
+    border-left-color: #d30038;
+}
+
+details.notify.folded.caution > summary {
+    color: #d30038;
+}
+
+/* Folded tables */
+/* details.table-folded > .folded-content {
+     padding: 0;
+    overflow-x: auto;
+} */
+
+/* details.table-folded table {
+    margin: 0;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+} */
+
+  /* End of podlite */
   

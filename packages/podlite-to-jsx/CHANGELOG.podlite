@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item added C<:folded> attribute support for blocks, tables, and notifications
+=item added CSS for collapsible C<< <details> >> elements
+
 =head1 0.0.37
 
 =item improved code block visibility in CSS

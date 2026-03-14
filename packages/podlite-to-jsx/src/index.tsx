@@ -105,6 +105,41 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       }
     }
   }
+  // Handle :folded attribute - wraps content in collapsible <details> element
+  const handleFolded = defaultHandler => {
+    return (writer, processor) => {
+      const defaultHandlerInited = defaultHandler(writer, processor)
+      return (node, ctx, interator) => {
+        const conf = makeAttrs(node, ctx)
+        const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
+        const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+        const children = defaultHandlerInited(node, ctx, interator)
+
+        // if :folded not specified - return children as is
+        if (folded === null) {
+          return children
+        }
+
+        // :folded or :folded(1) = collapsed by default (no open attribute)
+        // :!folded or :folded(0) = expanded by default (open attribute present)
+        const isExpanded = folded === false || folded === 0 || folded === '0'
+
+        return makeComponent(
+          ({ children, key }) => (
+            <details className="folded" key={key} open={isExpanded || undefined}>
+              {caption && <summary className="folded-summary">{caption}</summary>}
+              <div className="folded-content">{children}</div>
+            </details>
+          ),
+          node,
+          children,
+          {},
+          ctx,
+        )
+      }
+    }
+  }
+
   // Handle nested block and :nested block attribute
   const handleNotificationBlock = defaultHandler => {
     return (writer, processor) => {
@@ -112,16 +147,42 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       return (node, ctx, interator) => {
         const conf = makeAttrs(node, ctx)
         const notify = conf.getFirstValue('notify')
+        const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
         const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
         const children = defaultHandlerInited(node, ctx, interator)
-        // if no nesting needs - simply return children
+        // if no notify attribute - simply return children
         if (!notify) {
           return children
         }
+
+        // Determine the title for the notification
+        const title = caption || notify.charAt(0).toUpperCase() + notify.slice(1)
+
+        // :folded or :folded(1) = collapsed by default
+        // :!folded or :folded(0) = expanded by default
+        const isExpanded = folded === false || folded === 0 || folded === '0'
+
+        // If :folded is specified, wrap in <details>
+        if (folded !== null) {
+          return makeComponent(
+            ({ children, key }) => (
+              <details className={`notify ${notify.toLowerCase()} folded`} key={key} open={isExpanded || undefined}>
+                <summary className="notify-title">{title}</summary>
+                <div className="folded-content">{children}</div>
+              </details>
+            ),
+            node,
+            children,
+            {},
+            ctx,
+          )
+        }
+
+        // Default rendering without folding
         return makeComponent(
           ({ children, key }) => (
             <aside className={`notify ${notify.toLowerCase()}`} key={key}>
-              <p className="notify-title">{caption || notify.charAt(0).toUpperCase() + notify.slice(1)}</p>
+              <p className="notify-title">{title}</p>
               {children}
             </aside>
           ),
@@ -431,11 +492,9 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     // table section
     table: (writer, processor) => (node, ctx, interator) => {
       const conf = makeAttrs(node, ctx)
-      let attr = { caption: '' }
-      if (conf.exists('caption')) {
-        const caption = conf.getFirstValue('caption')
-        attr.caption = caption
-      }
+      const caption = conf.exists('caption') ? conf.getFirstValue('caption') : ''
+      const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
+
       if (typeof node === 'string') {
         return node
       }
@@ -445,17 +504,43 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       }
       const id = getSafeNodeId(node, ctx)
 
+      // :folded or :folded(1) = collapsed by default
+      // :!folded or :folded(0) = expanded by default
+      const isExpanded = folded === false || folded === 0 || folded === '0'
+
+      const tableContent = interator(node.content, { ...ctx, ...(node.align && { 'table.align': node.align }) })
+
+      // If :folded is specified, wrap table in <details>
+      if (folded !== null) {
+        return makeComponent(
+          ({ key, children }) => (
+            <details className="folded table-folded" key={key} open={isExpanded || undefined}>
+              {caption && <summary className="folded-summary">{caption}</summary>}
+              <div className="folded-content">
+                <table id={id}>
+                  {!caption ? null : null}
+                  <tbody>{children}</tbody>
+                </table>
+              </div>
+            </details>
+          ),
+          node,
+          tableContent,
+        )
+      }
+
+      // Default rendering without folding
       return makeComponent(
         ({ key, children }) => {
           return (
             <table key={key} id={id}>
-              <caption className="caption">{attr.caption}</caption>
+              <caption className="caption">{caption}</caption>
               <tbody>{children}</tbody>
             </table>
           )
         },
         node,
-        interator(node.content, { ...ctx, ...(node.align && { 'table.align': node.align }) }),
+        tableContent,
       )
     },
     ':separator': emptyContent(),
