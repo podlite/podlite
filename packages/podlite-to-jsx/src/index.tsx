@@ -584,7 +584,17 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       }),
     ),
     ':list': setFn((node, ctx) =>
-      node.list === 'ordered' ? mkComponent('ol') : node.list === 'variable' ? mkComponent('dl') : mkComponent('ul'),
+      node.list === 'ordered'
+        ? mkComponent('ol')
+        : node.list === 'variable'
+        ? mkComponent('dl')
+        : node.list === 'task'
+        ? mkComponent(({ children, key }) => (
+            <ul className="task-list" key={key}>
+              {children}
+            </ul>
+          ))
+        : mkComponent('ul'),
     ),
     'item:block': (writer, processor) => (node, ctx, interator) => {
       if (typeof node === 'string') {
@@ -599,6 +609,14 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         console.error(node)
       }
       const id = getSafeNodeId(node, ctx)
+      const isTask = node.checked !== undefined
+
+      if (isTask) {
+        const checkbox = <input key="checkbox" type="checkbox" disabled checked={node.checked || undefined} />
+        const content = interator(node.content, { ...ctx })
+        return makeComponent('li', node, [checkbox, ...[].concat(content)], { id, className: 'task-list-item' })
+      }
+
       return makeComponent('li', node, interator(node.content, { ...ctx }), { id })
     },
     // table of content

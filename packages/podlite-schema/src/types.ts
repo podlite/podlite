@@ -382,6 +382,7 @@ export interface BlockItem extends Block {
   name: 'item'
   content: Array<Node>
   level: string | number // TODO: find source of string, must be number
+  checked?: boolean
 }
 
 export interface BlockOutput extends Block {

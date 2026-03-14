@@ -4,6 +4,8 @@
 
 =item added C<:folded> attribute support for blocks, tables, and notifications
 =item added CSS for collapsible C<< <details> >> elements
+=item added task list rendering with checkbox support
+=item added CSS for task lists (GitHub-style checkbox alignment)
 
 =head1 0.0.37
 

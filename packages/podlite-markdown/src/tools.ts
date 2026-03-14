@@ -102,11 +102,20 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
       ':listItem': (writer, processor) => (node, ctx, interator) => {
         const savedListLevel = ctx['listLevel'] || 0
-        const { children, position, ...attr } = node
-        return mkBlock(
-          { name: 'item', type: 'block', level: ctx['listLevel'], location: applyLineOffset(position) },
-          interator(children, { ...ctx, listLevel: savedListLevel, ordered: node.ordered }),
-        )
+        const { children, position, checked, ...attr } = node
+        const blockAttrs: any = {
+          name: 'item',
+          type: 'block',
+          level: ctx['listLevel'],
+          location: applyLineOffset(position),
+        }
+
+        if (checked !== null && checked !== undefined) {
+          blockAttrs.checked = checked
+          blockAttrs.config = [{ name: 'checked', value: checked, type: 'boolean' }]
+        }
+
+        return mkBlock(blockAttrs, interator(children, { ...ctx, listLevel: savedListLevel, ordered: node.ordered }))
       },
       ':paragraph': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node

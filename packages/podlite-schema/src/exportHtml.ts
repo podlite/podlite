@@ -193,6 +193,8 @@ const rules = {
       ? wrapContent('<ol>', '</ol>')
       : node.list === 'variable'
       ? wrapContent('<dl>', '</dl>')
+      : node.list === 'task'
+      ? wrapContent('<ul class="task-list">', '</ul>')
       : wrapContent('<ul>', '</ul>'),
   ),
   'item:block': (writer, processor) => (node, ctx, interator) => {
@@ -200,10 +202,15 @@ const rules = {
     if (!(node.content instanceof Array)) {
       console.error('[pod6] item:block : Error in content of ' + JSON.stringify(node))
     }
-    const [firstPara, ...other] = node.content
-    writer.writeRaw('<li>')
-    // TODO: get cases for handle first para in items
-    // interator([...firstPara.content, ...other], ctx)
+    const isTask = node.checked !== undefined
+
+    if (isTask) {
+      writer.writeRaw('<li class="task-list-item">')
+      writer.writeRaw(node.checked ? '<input type="checkbox" disabled checked> ' : '<input type="checkbox" disabled> ')
+    } else {
+      writer.writeRaw('<li>')
+    }
+
     interator(node.content, ctx)
     writer.writeRaw('</li>')
   },

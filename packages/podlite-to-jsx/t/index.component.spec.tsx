@@ -1060,3 +1060,95 @@ Expanded note.
     `)
   })
 })
+
+// Task list (checkbox) tests
+describe('task lists', () => {
+  it('renders checked and unchecked items', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=item [x] Buy groceries
+=item [ ] Clean the garage
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <ul class="task-list">
+          <li id="id"
+              class="task-list-item"
+          >
+            <input type="checkbox"
+                   disabled
+                   checked
+            >
+            <p>
+              Buy groceries
+            </p>
+          </li>
+          <li id="id"
+              class="task-list-item"
+          >
+            <input type="checkbox"
+                   disabled
+            >
+            <p>
+              Clean the garage
+            </p>
+          </li>
+        </ul>
+      </div>
+    `)
+  })
+
+  it('renders multilevel task list', () => {
+    render(
+      <Podlite>
+        {`=begin pod
+=item1 [ ] Work
+  =item2 [x] Send emails
+  =item2 [ ] Prepare presentation
+=end pod`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div id="id">
+        <ul class="task-list">
+          <li id="id"
+              class="task-list-item"
+          >
+            <input type="checkbox"
+                   disabled
+            >
+            <p>
+              Work
+            </p>
+          </li>
+          <ul class="task-list">
+            <li id="id"
+                class="task-list-item"
+            >
+              <input type="checkbox"
+                     disabled
+                     checked
+              >
+              <p>
+                Send emails
+              </p>
+            </li>
+            <li id="id"
+                class="task-list-item"
+            >
+              <input type="checkbox"
+                     disabled
+              >
+              <p>
+                Prepare presentation
+              </p>
+            </li>
+          </ul>
+        </ul>
+      </div>
+    `)
+  })
+})

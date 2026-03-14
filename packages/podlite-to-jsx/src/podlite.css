@@ -284,5 +284,23 @@ details.notify.folded.caution > summary {
     border-radius: 0 0 6px 6px;
 } */
 
+/* Task lists */
+ul.task-list {
+    list-style: none;
+    padding-left: 2em;
+}
+
+li.task-list-item {
+    margin-left: -1em;
+    padding-left: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35em;
+}
+
+li.task-list-item p {
+    margin: 0;
+}
+
   /* End of podlite */
   

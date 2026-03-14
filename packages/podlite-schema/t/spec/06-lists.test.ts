@@ -1305,3 +1305,528 @@ As you can see, folk wisdom is often of dubious value.
     ]
   `)
 })
+
+// Task lists (checkbox syntax)
+it('spec: 06-lists task-list bracket syntax', () => {
+  const pod = `
+=begin pod
+=item [x] Buy groceries
+=item [ ] Clean the garage
+=end pod
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "config": Array [],
+        "content": Array [
+          Object {
+            "content": Array [
+              Object {
+                "checked": true,
+                "config": Array [
+                  Object {
+                    "name": "checked",
+                    "type": "boolean",
+                    "value": true,
+                  },
+                ],
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "Buy groceries
+    ",
+                    ],
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 4,
+                        "offset": 36,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 3,
+                        "offset": 12,
+                      },
+                    },
+                    "margin": "",
+                    "text": "Buy groceries
+    ",
+                    "type": "para",
+                  },
+                ],
+                "level": 1,
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 4,
+                    "offset": 36,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 3,
+                    "offset": 12,
+                  },
+                },
+                "margin": "",
+                "name": "item",
+                "type": "block",
+              },
+              Object {
+                "checked": false,
+                "config": Array [
+                  Object {
+                    "name": "checked",
+                    "type": "boolean",
+                    "value": false,
+                  },
+                ],
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "Clean the garage
+    ",
+                    ],
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 63,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 4,
+                        "offset": 36,
+                      },
+                    },
+                    "margin": "",
+                    "text": "Clean the garage
+    ",
+                    "type": "para",
+                  },
+                ],
+                "level": 1,
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 5,
+                    "offset": 63,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 4,
+                    "offset": 36,
+                  },
+                },
+                "margin": "",
+                "name": "item",
+                "type": "block",
+              },
+            ],
+            "level": 1,
+            "list": "task",
+            "type": "list",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 6,
+            "offset": 72,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "",
+        "name": "pod",
+        "type": "block",
+      },
+    ]
+  `)
+})
+
+it('spec: 06-lists task-list config attribute', () => {
+  const pod = `
+=begin pod
+=for item :checked
+Buy groceries
+=for item :!checked
+Clean the garage
+=end pod
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "config": Array [],
+        "content": Array [
+          Object {
+            "content": Array [
+              Object {
+                "checked": true,
+                "config": Array [
+                  Object {
+                    "name": "checked",
+                    "type": "boolean",
+                    "value": true,
+                  },
+                ],
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "Buy groceries
+    ",
+                    ],
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 45,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 3,
+                        "offset": 12,
+                      },
+                    },
+                    "margin": "",
+                    "text": "Buy groceries
+    ",
+                    "type": "para",
+                  },
+                ],
+                "level": 1,
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 5,
+                    "offset": 45,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 3,
+                    "offset": 12,
+                  },
+                },
+                "margin": "",
+                "name": "item",
+                "type": "block",
+              },
+              Object {
+                "checked": false,
+                "config": Array [
+                  Object {
+                    "name": "checked",
+                    "type": "boolean",
+                    "value": false,
+                  },
+                ],
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "Clean the garage
+    ",
+                    ],
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 7,
+                        "offset": 82,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 45,
+                      },
+                    },
+                    "margin": "",
+                    "text": "Clean the garage
+    ",
+                    "type": "para",
+                  },
+                ],
+                "level": 1,
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 7,
+                    "offset": 82,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 5,
+                    "offset": 45,
+                  },
+                },
+                "margin": "",
+                "name": "item",
+                "type": "block",
+              },
+            ],
+            "level": 1,
+            "list": "task",
+            "type": "list",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 8,
+            "offset": 91,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "",
+        "name": "pod",
+        "type": "block",
+      },
+    ]
+  `)
+})
+
+it('spec: 06-lists task-list html output', () => {
+  const pod = `
+=begin pod
+=item [x] Buy groceries
+=item [ ] Clean the garage
+=end pod
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  const result = toHtml({}).run(tree).toString()
+  expect(result).toMatchInlineSnapshot(`
+    <ul class="task-list">
+      <li class="task-list-item">
+        <input type="checkbox"
+               disabled
+               checked
+        >
+        <p>
+          Buy groceries
+        </p>
+      </li>
+      <li class="task-list-item">
+        <input type="checkbox"
+               disabled
+        >
+        <p>
+          Clean the garage
+        </p>
+      </li>
+    </ul>
+  `)
+})
+
+it('spec: 06-lists task-list multilevel', () => {
+  const pod = `
+=begin pod
+=item1 [ ] Work
+  =item2 [ ] Prepare presentation
+  =item2 [x] Send emails
+=end pod
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "config": Array [],
+        "content": Array [
+          Object {
+            "content": Array [
+              Object {
+                "checked": false,
+                "config": Array [
+                  Object {
+                    "name": "checked",
+                    "type": "boolean",
+                    "value": false,
+                  },
+                ],
+                "content": Array [
+                  Object {
+                    "content": Array [
+                      "Work
+    ",
+                    ],
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 4,
+                        "offset": 28,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 3,
+                        "offset": 12,
+                      },
+                    },
+                    "margin": "",
+                    "text": "Work
+    ",
+                    "type": "para",
+                  },
+                ],
+                "level": "1",
+                "location": Object {
+                  "end": Object {
+                    "column": 1,
+                    "line": 4,
+                    "offset": 28,
+                  },
+                  "start": Object {
+                    "column": 1,
+                    "line": 3,
+                    "offset": 12,
+                  },
+                },
+                "margin": "",
+                "name": "item",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  Object {
+                    "checked": false,
+                    "config": Array [
+                      Object {
+                        "name": "checked",
+                        "type": "boolean",
+                        "value": false,
+                      },
+                    ],
+                    "content": Array [
+                      Object {
+                        "content": Array [
+                          "Prepare presentation
+    ",
+                        ],
+                        "location": Object {
+                          "end": Object {
+                            "column": 1,
+                            "line": 5,
+                            "offset": 62,
+                          },
+                          "start": Object {
+                            "column": 1,
+                            "line": 4,
+                            "offset": 28,
+                          },
+                        },
+                        "margin": "",
+                        "text": "Prepare presentation
+    ",
+                        "type": "para",
+                      },
+                    ],
+                    "level": "2",
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 62,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 4,
+                        "offset": 28,
+                      },
+                    },
+                    "margin": "  ",
+                    "name": "item",
+                    "type": "block",
+                  },
+                  Object {
+                    "checked": true,
+                    "config": Array [
+                      Object {
+                        "name": "checked",
+                        "type": "boolean",
+                        "value": true,
+                      },
+                    ],
+                    "content": Array [
+                      Object {
+                        "content": Array [
+                          "Send emails
+    ",
+                        ],
+                        "location": Object {
+                          "end": Object {
+                            "column": 1,
+                            "line": 6,
+                            "offset": 87,
+                          },
+                          "start": Object {
+                            "column": 1,
+                            "line": 5,
+                            "offset": 62,
+                          },
+                        },
+                        "margin": "",
+                        "text": "Send emails
+    ",
+                        "type": "para",
+                      },
+                    ],
+                    "level": "2",
+                    "location": Object {
+                      "end": Object {
+                        "column": 1,
+                        "line": 6,
+                        "offset": 87,
+                      },
+                      "start": Object {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 62,
+                      },
+                    },
+                    "margin": "  ",
+                    "name": "item",
+                    "type": "block",
+                  },
+                ],
+                "level": "2",
+                "list": "task",
+                "type": "list",
+              },
+            ],
+            "level": "1",
+            "list": "task",
+            "type": "list",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 7,
+            "offset": 96,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "",
+        "name": "pod",
+        "type": "block",
+      },
+    ]
+  `)
+})
