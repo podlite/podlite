@@ -14,7 +14,9 @@
     "watch:ts": "tsc -w --pretty",
     "watch:tests": "jest --watch -t \"test\""
   },
+  "bin": "./bin/podlite.js",
   "files": [
+    "bin",
     "lib",
     "esm",
     "README.md",

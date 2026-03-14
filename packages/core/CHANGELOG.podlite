@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item added CLI entrypoint C<bin/podlite.js>
+
 =head1 0.0.33
 
 =item fix api types
