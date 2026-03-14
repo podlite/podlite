@@ -61,7 +61,11 @@ node scripts/extract-changelog.mjs --aggregate
 echo "→ Updating changelogs..."
 node scripts/extract-changelog.mjs --update
 
-# Step 5: Build and test
+# Step 6: Install dependencies (versions changed, need to update lockfile)
+echo "→ Installing dependencies..."
+yarn install
+
+# Step 7: Build and test
 echo "→ Building..."
 yarn build
 
