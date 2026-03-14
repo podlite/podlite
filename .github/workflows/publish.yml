@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 15.x
+          node-version: 18.x
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install and Build
         run: |
-          yarn install 
+          yarn install
           yarn build
           yarn test
 
@@ -24,10 +24,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 15.x
+          node-version: 18.x
           registry-url: https://registry.npmjs.org/
       - run: |
           yarn install && yarn build && yarn release-packages

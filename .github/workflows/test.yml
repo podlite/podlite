@@ -3,7 +3,7 @@ name: Run Tests
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -11,11 +11,11 @@ jobs:
 
     steps:
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 11.x
+          node-version: 18.x
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: Install and Test
         run: |
           yarn install
