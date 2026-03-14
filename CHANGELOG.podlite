@@ -2,6 +2,36 @@
 
 =head1 Upcoming
 
+=head1 0.0.54
+
+
+=head2 podlite
+
+=item added CLI entrypoint C<bin/podlite.js>
+
+=head2 @podlite/editor-react
+
+=item add C<enableHighlighting> prop to toggle code highlighting in preview (podlite/podlite-desktop#42)
+
+=head2 @podlite/schema
+
+=item migrated build from PEG.js to Pegmill 0.1.0
+=item added export to Markdown
+=item fixed table parsing without separator
+=item added C<getPodContentFromNode> helper
+=item added task list support: C<:checked>/C<:!checked> and C<[x]>/C<[ ]> syntax
+=item added C<checked> property to C<BlockItem> AST type
+=item added C<list: 'task'> type for task list grouping
+=item fixed list grouping for mixed list types at nested levels
+=item fixed string/number level comparison in C<plugin-group-items>
+
+=head2 @podlite/to-jsx
+
+=item added C<:folded> attribute support for blocks, tables, and notifications
+=item added CSS for collapsible C<< <details> >> elements
+=item added task list rendering with checkbox support
+=item added CSS for task lists (GitHub-style checkbox alignment)
+
 =head1 0.0.53
 
 =head2 @podlite/editor-react@0.0.39

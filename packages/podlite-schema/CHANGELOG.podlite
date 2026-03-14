@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.34
+
 =item migrated build from PEG.js to Pegmill 0.1.0
 =item added export to Markdown
 =item fixed table parsing without separator
