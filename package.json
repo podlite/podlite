@@ -18,9 +18,6 @@
     "build_plugin": "yarn podlite_build_plugin",
     "podlite_post_plugin": "",
     "post_plugin": "yarn podlite_post_plugin",
-    "update:version": "lerna version --no-push --exact --no-git-tag-version",
-    "update:version-patch": "lerna version --no-push --no-git-tag-version patch --yes",
-    "github:publish": "yarn lerna publish from-package",
     "release": "bash scripts/release.sh",
     "release-packages": "yarn workspaces foreach -pt --all --no-private npm publish --tolerate-republish",
     "watch:changed": " yarn build && yarn test",
@@ -55,7 +52,6 @@
   "dependencies": {
     "codemirror": "5.63.3",
     "jest-watch-typeahead": "^0.6.1",
-    "lerna": "^4.0.0",
     "podlite": "workspace:*"
   },
   "devDependencies": {

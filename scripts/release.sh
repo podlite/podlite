@@ -48,7 +48,7 @@ fi
 
 # Step 3: Bump versions
 echo "→ Bumping package versions..."
-yarn update:version-patch
+yarn set-upversion
 
 echo "→ Bumping root version..."
 npm version patch --no-git-tag-version
