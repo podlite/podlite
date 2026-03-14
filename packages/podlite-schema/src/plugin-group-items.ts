@@ -5,9 +5,11 @@ export default () => tree => {
     (n1.name === 'item' || n1.name === 'defn') &&
     n2.name === n1.name &&
     n1['level'] === n2.level &&
-    isNumbered(n1) === isNumbered(n2)
+    isNumbered(n1) === isNumbered(n2) &&
+    isChecked(n1) === isChecked(n2)
 
   const isNumbered = node => Boolean(makeAttrs(node, {}).exists('numbered'))
+  const isChecked = node => node.checked !== undefined
 
   const group = (a, level = 1) => {
     const isInListMode = a => {
@@ -31,7 +33,8 @@ export default () => tree => {
         (!isInListMode(a) ||
           // different type of list and item
           // at the same  level
-          (i.level === level && getList(a).list !== (isNumbered(i) ? 'ordered' : 'itemized')))
+          (Number(i.level) === level &&
+            getList(a).list !== (isNumbered(i) ? 'ordered' : isChecked(i) ? 'task' : 'itemized')))
       ) {
         // create empty list
         // list = ['ordered', 'variable', 'itemized']
@@ -39,7 +42,7 @@ export default () => tree => {
           type: 'list',
           level: i.level,
           content: [],
-          list: isNumbered(i) ? 'ordered' : 'itemized',
+          list: isNumbered(i) ? 'ordered' : isChecked(i) ? 'task' : 'itemized',
         })
       }
       // main logic
@@ -56,12 +59,12 @@ export default () => tree => {
      * { type = 'list',
      *   ordered = [true, false]
      *   content = [ .... ]
-     *   list = ['ordered', 'variable', 'itemized']
+     *   list = ['ordered', 'variable', 'task', 'itemized']
      */
     return result.map(item => {
       // process any item with content ( except formatting codes)
       if (item.content && item.type !== 'fcode') {
-        item.content = group(item.content, item.level + 1)
+        item.content = group(item.content, Number(item.level || 0) + 1)
       }
       return item
     })
