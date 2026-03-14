@@ -209,6 +209,7 @@ export { makeTree as toTree }
 const parse: Function = makeTree().parse
 export { parse as parse }
 export { default as toHtml } from './exportHtml'
+export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
 // Cannot be `import` as it's not under TS root dir
 // https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp

@@ -1,4 +1,5 @@
 import { Plugins, PodliteDocument, mkRootBlock, parseOpt, toAny, toAnyRules, toHtml, toTree } from '.'
+import toMarkdown from './exportMarkdown'
 import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
 export { cleanIds, frozenIds } from './helpers/ids'
@@ -22,6 +23,7 @@ export interface Podlite {
   use: (plugin: Plugins) => Podlite
   parse: (text: string, opt?: parseOpt) => PodliteDocument
   toHtml: (ast: PodliteDocument) => PodliteExport
+  toMarkdown: (ast: PodliteDocument) => PodliteExport
   toAst: (ast: PodliteDocument) => PodliteDocument
   getPlugins: () => Array<Plugins>
 }
@@ -89,6 +91,11 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
   instance.toHtml = ast => {
     const toHtmlPlugins = toAnyRules('toHtml', instance.getPlugins())
     return toHtml({}).use(toHtmlPlugins).run(ast, null)
+  }
+
+  instance.toMarkdown = ast => {
+    const toMarkdownPlugins = toAnyRules('toMarkdown', instance.getPlugins())
+    return toMarkdown({}).use(toMarkdownPlugins).run(ast, null)
   }
 
   instance.getPlugins = () => _plugins
