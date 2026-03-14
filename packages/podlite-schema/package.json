@@ -31,9 +31,9 @@
     "build": "run-s build:pegjs build_lib build:ast ",
     "build_lib": "yarn g:build",
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
-    "build:pegjs": "pegjs -o src/grammar.js src/grammar.pegjs && pegjs -o src/grammarfc.js src/grammarfc.pegjs",
+    "build:pegjs": "pegmill -o src/grammar.js src/grammar.pegjs && pegmill -o src/grammarfc.js src/grammarfc.pegjs",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
-    "watch:pegjs": "npx nodemon -e pegjs --exec 'yarn' build:pegjs",
+    "watch:pegjs": "npx nodemon -e pegmill --exec 'yarn' build:pegjs",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "keywords": [
@@ -53,7 +53,7 @@
     "@types/node": "^17.0.7",
     "glob": "^7.2.0",
     "npm-run-all": "^4.1.5",
-    "pegjs": "^0.10.0",
+    "pegmill": "0.1.0",
     "ts-node": "^9.1.1",
     "typescript": "4.5.5",
     "typescript-json-schema": "0.53.0"
