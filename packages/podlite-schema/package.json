@@ -1,8 +1,17 @@
 {
   "name": "@podlite/schema",
   "version": "0.0.34",
-  "description": "AST tools for Podlite markup language",
+  "description": "AST tools and schema for Podlite markup language — validate, traverse, and transform document trees",
   "main": "./src/index.ts",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-schema"
+  },
   "license": "MIT",
   "funding": {
     "type": "opencollective",
@@ -37,10 +46,16 @@
     "test": "yarn g:jest  --passWithNoTests"
   },
   "keywords": [
-    "markdown",
     "podlite",
-    "markup",
-    "markup-language"
+    "schema",
+    "ast",
+    "syntax-tree",
+    "markup-language",
+    "transform",
+    "visitor",
+    "parser",
+    "markdown",
+    "tree"
   ],
   "dependencies": {
     "ajv": "^7.2.3",

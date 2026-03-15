@@ -1,7 +1,13 @@
 {
   "name": "podlite",
   "version": "0.0.47",
-  "description": "Podlite - a lightweight block-based markup language",
+  "description": "Podlite markup language parser — Markdown-compatible, with native support for diagrams, formulas, and custom blocks",
+  "homepage": "https://podlite.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/core"
+  },
   "main": "./src/index.ts",
   "funding": {
     "type": "opencollective",
@@ -25,10 +31,17 @@
   ],
   "keywords": [
     "podlite",
-    "markup",
+    "parser",
     "markup-language",
+    "markup",
     "markdown",
-    "pod6"
+    "markdown-alternative",
+    "lightweight-markup",
+    "ast",
+    "syntax-tree",
+    "html",
+    "document-parser",
+    "renderer"
   ],
   "author": "Aliaksandr Zahatski",
   "license": "MIT",

@@ -1,8 +1,30 @@
 {
   "name": "@podlite/diagram",
   "version": "0.0.38",
-  "description": "Diagram",
+  "description": "Embed Mermaid diagrams in Podlite documents — renders to SVG",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-diagrams"
+  },
+  "keywords": [
+    "podlite",
+    "diagram",
+    "mermaid",
+    "mermaid-diagram",
+    "flowchart",
+    "svg",
+    "chart",
+    "visualization",
+    "sequence-diagram",
+    "render",
+    "graph"
+  ],
   "license": "MIT",
   "funding": {
     "type": "opencollective",

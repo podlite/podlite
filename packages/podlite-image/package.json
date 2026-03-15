@@ -1,8 +1,29 @@
 {
   "name": "@podlite/image",
   "version": "0.0.33",
-  "description": "image",
+  "description": "Image handling plugin for Podlite — caption and embed images",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-image"
+  },
+  "keywords": [
+    "podlite",
+    "image",
+    "figure",
+    "caption",
+    "figure-caption",
+    "embed",
+    "plugin",
+    "media",
+    "responsive-image",
+    "alt-text"
+  ],
   "license": "MIT",
   "funding": {
     "type": "opencollective",

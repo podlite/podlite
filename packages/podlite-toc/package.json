@@ -1,8 +1,17 @@
 {
   "name": "@podlite/toc",
   "version": "0.0.27",
-  "description": "'Table of contents' plugin for Podlite markup language",
+  "description": "Auto-generate table of contents from Podlite documents",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-toc"
+  },
   "license": "MIT",
   "funding": {
     "type": "opencollective",
@@ -27,11 +36,16 @@
     "LICENSE"
   ],
   "keywords": [
-    "markdown",
-    "pod6",
     "podlite",
-    "markup",
-    "markup-language"
+    "toc",
+    "table-of-contents",
+    "markdown",
+    "markup-language",
+    "heading",
+    "navigation",
+    "outline",
+    "auto-generate",
+    "sidebar"
   ],
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0 || ^18",

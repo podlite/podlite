@@ -1,9 +1,35 @@
 {
   "name": "@podlite/formula",
   "version": "0.0.16",
-  "description": "=formula",
+  "description": "Render LaTeX math formulas in Podlite documents — MathJax-powered",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-formula"
+  },
+  "keywords": [
+    "podlite",
+    "formula",
+    "latex",
+    "math",
+    "mathjax",
+    "katex",
+    "equation",
+    "math-renderer",
+    "tex",
+    "render",
+    "typesetting"
+  ],
   "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
   "scripts": {
     "clean": "rm -rf esm lib *.tsbuildinfo",
     "build": "yarn g:build && yarn g:copy_assets",

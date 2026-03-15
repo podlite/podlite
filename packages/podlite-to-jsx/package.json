@@ -1,8 +1,17 @@
 {
   "name": "@podlite/to-jsx",
   "version": "0.0.38",
-  "description": "JSX converter for Podlite markup language",
+  "description": "Render Podlite markup as React JSX components",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-to-jsx"
+  },
   "license": "MIT",
   "funding": {
     "type": "opencollective",
@@ -39,10 +48,16 @@
     "LICENSE"
   ],
   "keywords": [
-    "markdown",
     "podlite",
-    "markup",
-    "markup-language"
+    "jsx",
+    "react",
+    "react-component",
+    "renderer",
+    "markup-language",
+    "markdown-to-jsx",
+    "markdown",
+    "render",
+    "component"
   ],
   "publishConfig": {
     "access": "public",

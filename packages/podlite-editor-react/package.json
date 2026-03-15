@@ -1,10 +1,32 @@
 {
   "name": "@podlite/editor-react",
   "version": "0.0.40",
-  "description": "Podlite React component",
+  "description": "Rich text editor React component for Podlite — syntax highlighting, live preview, CodeMirror 6",
   "main": "./src/index.tsx",
   "types": "lib/index.d.ts",
   "typings": "./lib/index.d.ts",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-editor-react"
+  },
+  "keywords": [
+    "podlite",
+    "editor",
+    "react",
+    "react-component",
+    "rich-text-editor",
+    "markdown-editor",
+    "codemirror",
+    "codemirror-6",
+    "live-preview",
+    "syntax-highlighting",
+    "wysiwyg"
+  ],
   "license": "MIT",
   "funding": {
     "type": "opencollective",

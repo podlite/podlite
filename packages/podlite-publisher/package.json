@@ -1,8 +1,17 @@
 {
   "name": "@podlite/publisher",
   "version": "0.0.15",
-  "description": "Library that powers publishing and CLI tools for the Podlite markup language",
+  "description": "Publishing toolkit for Podlite — transform documents to HTML, generate sites",
   "main": "./src/index.ts",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-publisher"
+  },
   "license": "MIT",
   "funding": {
     "type": "opencollective",
@@ -31,10 +40,17 @@
     "test": "yarn g:jest  --passWithNoTests"
   },
   "keywords": [
-    "markdown",
     "podlite",
-    "markup",
-    "markup-language"
+    "publisher",
+    "publishing",
+    "html",
+    "markup-to-html",
+    "static-site",
+    "documentation",
+    "converter",
+    "generator",
+    "markdown",
+    "transform"
   ],
   "dependencies": {
     "@podlite/schema": "workspace:*",

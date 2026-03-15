@@ -1,8 +1,17 @@
 {
   "name": "@podlite/markdown",
   "version": "0.0.27",
-  "description": "=markdown - markdown text block",
+  "description": "Bidirectional Markdown support for Podlite — parse .md files, embed Markdown blocks",
   "main": "./src/index.tsx",
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-markdown"
+  },
   "license": "MIT",
   "funding": {
     "type": "opencollective",
@@ -26,10 +35,16 @@
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   },
   "keywords": [
-    "markdown",
     "podlite",
+    "markdown",
+    "markdown-parser",
+    "parser",
+    "markup-language",
+    "converter",
+    "bidirectional",
+    "markdown-to-ast",
     "markup",
-    "markup-language"
+    "compatibility"
   ],
   "dependencies": {
     "@podlite/schema": "workspace:*",
