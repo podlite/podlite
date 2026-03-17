@@ -98,7 +98,7 @@ const getReleaseContent = (changelog, version, pkg) => {
   return undefined
 }
 
-const getUpcomingContent = (changelog) => {
+const getUpcomingContent = changelog => {
   const headerRegex = /^=head1\s+Upcoming\s*$/m
   const match = headerRegex.exec(changelog)
   if (!match) return ''

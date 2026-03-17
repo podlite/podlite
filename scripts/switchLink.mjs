@@ -4,7 +4,7 @@ import fs from 'fs'
 const fse = {
   readFile: (p, enc) => fs.promises.readFile(p, enc),
   writeFile: (p, data, enc) => fs.promises.writeFile(p, data, enc),
-  existsSync: (p) => fs.existsSync(p),
+  existsSync: p => fs.existsSync(p),
 }
 
 const packagePath = process.cwd()
