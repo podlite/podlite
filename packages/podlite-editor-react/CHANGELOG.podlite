@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item add list continuation on Enter: auto-insert C<=itemN> with type prefix preserved (C<[ ]>, C<[x]>→C<[ ]>, C<#>)
+=item pressing Enter on empty C<=itemN> (or prefix-only) exits the list
+
 =head1 0.0.40
 
 =item add C<enableHighlighting> prop to toggle code highlighting in preview (podlite/podlite-desktop#42)

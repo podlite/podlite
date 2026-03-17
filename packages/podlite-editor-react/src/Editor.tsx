@@ -11,6 +11,7 @@ import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
+import { listContinuationKeymap } from './listContinuation'
 import HighlightedCode from './HighlightedCode'
 
 function useDebouncedEffect(fn, deps, time) {
@@ -324,7 +325,12 @@ function PodliteEditorInternal(
       event.stopPropagation()
     },
   })
-  let extensionsData: IPodliteEditor['extensions'] = [podliteLang(), EditorView.lineWrapping, preventToggleComment]
+  let extensionsData: IPodliteEditor['extensions'] = [
+    podliteLang(),
+    EditorView.lineWrapping,
+    listContinuationKeymap,
+    preventToggleComment,
+  ]
 
   if (onOpenLink) {
     extensionsData.push(
