@@ -11,7 +11,7 @@ import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
-import { listContinuationKeymap } from './listContinuation'
+import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import HighlightedCode from './HighlightedCode'
 
 function useDebouncedEffect(fn, deps, time) {
@@ -328,6 +328,7 @@ function PodliteEditorInternal(
   let extensionsData: IPodliteEditor['extensions'] = [
     podliteLang(),
     EditorView.lineWrapping,
+    itemLevelKeymap,
     listContinuationKeymap,
     preventToggleComment,
   ]
@@ -612,6 +613,7 @@ function PodliteEditorInternal(
       <div className={`podlite-editor-content-editor`} ref={containerEditor}>
         <CodeMirror
           theme={defaultTheme}
+          indentWithTab={false}
           {...{ ...codemirrorProps, ...{ basicSetup: { defaultKeymap: false } } }}
           className={`podlite-editor-inner`}
           extensions={extensionsData}
