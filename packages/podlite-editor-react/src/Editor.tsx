@@ -7,11 +7,13 @@ import { podliteLang } from './podlite'
 import { defaultTheme } from './theme'
 import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
+import { foldGutter, foldKeymap, foldedRanges, foldEffect } from '@codemirror/language'
 import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
+import { podliteFoldService } from './foldPodlite'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
 
@@ -115,6 +117,21 @@ function PodliteEditorInternal(
     [codeMirror],
   )
 
+  // Helper: serialize current fold ranges from EditorState
+  const serializeFoldedRanges = useCallback(
+    (view: { state: { field: Function } }): Array<{ from: number; to: number }> => {
+      const ranges: Array<{ from: number; to: number }> = []
+      const folded = foldedRanges(view.state as any)
+      const iter = folded.iter()
+      while (iter.value) {
+        ranges.push({ from: iter.from, to: iter.to })
+        iter.next()
+      }
+      return ranges
+    },
+    [],
+  )
+
   // Restore editor session state once after mount
   useEffect(() => {
     if (initialStateApplied.current || !initialEditorState) return
@@ -128,9 +145,21 @@ function PodliteEditorInternal(
       view.dispatch({ selection: { anchor: offset } })
     }
 
-    // Restore scroll position
+    // Restore fold ranges
+    if (initialEditorState.foldedRanges && initialEditorState.foldedRanges.length > 0) {
+      const effects = initialEditorState.foldedRanges
+        .filter(r => r.from < view.state.doc.length && r.to <= view.state.doc.length)
+        .map(r => foldEffect.of({ from: r.from, to: r.to }))
+      if (effects.length > 0) {
+        view.dispatch({ effects })
+      }
+    }
+
+    // Restore scroll position (after folds applied, so layout is correct)
     if (initialEditorState.scrollTop != null) {
-      view.scrollDOM.scrollTop = initialEditorState.scrollTop
+      requestAnimationFrame(() => {
+        view.scrollDOM.scrollTop = initialEditorState.scrollTop!
+      })
     }
   }, [initialEditorState, codeMirror.current?.view])
 
@@ -144,6 +173,7 @@ function PodliteEditorInternal(
       onEditorStateChange({
         cursorOffset: view.state.selection.main.head,
         scrollTop: view.scrollDOM.scrollTop,
+        foldedRanges: serializeFoldedRanges(view),
       })
     }
 
@@ -159,7 +189,7 @@ function PodliteEditorInternal(
       view.scrollDOM.removeEventListener('scroll', handleScroll)
       if (scrollTimer) clearTimeout(scrollTimer)
     }
-  }, [onEditorStateChange, codeMirror.current?.view])
+  }, [onEditorStateChange, codeMirror.current?.view, serializeFoldedRanges])
 
   const height = isFullscreen
     ? '100%'
@@ -382,6 +412,9 @@ function PodliteEditorInternal(
   let extensionsData: IPodliteEditor['extensions'] = [
     podliteLang(),
     EditorView.lineWrapping,
+    podliteFoldService,
+    foldGutter(),
+    keymap.of(foldKeymap),
     itemLevelKeymap,
     listContinuationKeymap,
     preventToggleComment,
@@ -500,6 +533,7 @@ function PodliteEditorInternal(
       onEditorStateChange({
         cursorOffset: view.state.selection.main.head,
         scrollTop: view.scrollDOM.scrollTop,
+        foldedRanges: serializeFoldedRanges(view),
       })
     }
   }
