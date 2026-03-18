@@ -12,6 +12,7 @@ import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
+import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
 
 function useDebouncedEffect(fn, deps, time) {
@@ -53,6 +54,10 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   onOpenLink?: (url: string) => void
   /** Enable code highlighting */
   enableHighlighting?: boolean
+  /** Initial editor session state to restore (cursor, scroll, folds) */
+  initialEditorState?: EditorSessionState
+  /** Called when editor state changes (cursor move, scroll, fold/unfold) */
+  onEditorStateChange?: (state: EditorSessionState) => void
 }
 
 export interface PodliteEditorRef {
@@ -86,6 +91,8 @@ function PodliteEditorInternal(
     enableAutocompletion = false,
     onOpenLink,
     enableHighlighting = false,
+    initialEditorState,
+    onEditorStateChange,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -98,6 +105,7 @@ function PodliteEditorInternal(
   const active = useRef<'editor' | 'preview'>(full_preview ? 'preview' : 'editor')
   const topLine = useRef<number>(startLinePreview)
   const $viewHeight = useRef<number>(0)
+  const initialStateApplied = useRef(false)
   useImperativeHandle(
     ref,
     () => ({
@@ -106,6 +114,52 @@ function PodliteEditorInternal(
     }),
     [codeMirror],
   )
+
+  // Restore editor session state once after mount
+  useEffect(() => {
+    if (initialStateApplied.current || !initialEditorState) return
+    const view = codeMirror.current?.view
+    if (!view) return
+    initialStateApplied.current = true
+
+    // Restore cursor position
+    if (initialEditorState.cursorOffset != null) {
+      const offset = Math.min(initialEditorState.cursorOffset, view.state.doc.length)
+      view.dispatch({ selection: { anchor: offset } })
+    }
+
+    // Restore scroll position
+    if (initialEditorState.scrollTop != null) {
+      view.scrollDOM.scrollTop = initialEditorState.scrollTop
+    }
+  }, [initialEditorState, codeMirror.current?.view])
+
+  // Expose editor state changes via callback
+  useEffect(() => {
+    if (!onEditorStateChange) return
+    const view = codeMirror.current?.view
+    if (!view) return
+
+    const emitState = (): void => {
+      onEditorStateChange({
+        cursorOffset: view.state.selection.main.head,
+        scrollTop: view.scrollDOM.scrollTop,
+      })
+    }
+
+    // Debounce scroll events
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null
+    const handleScroll = (): void => {
+      if (scrollTimer) clearTimeout(scrollTimer)
+      scrollTimer = setTimeout(emitState, 200)
+    }
+
+    view.scrollDOM.addEventListener('scroll', handleScroll)
+    return () => {
+      view.scrollDOM.removeEventListener('scroll', handleScroll)
+      if (scrollTimer) clearTimeout(scrollTimer)
+    }
+  }, [onEditorStateChange, codeMirror.current?.view])
 
   const height = isFullscreen
     ? '100%'
@@ -441,6 +495,13 @@ function PodliteEditorInternal(
   const handleChange = (value: string, viewUpdate: ViewUpdate) => {
     setText(value)
     onChange && onChange(value, viewUpdate)
+    if (onEditorStateChange) {
+      const view = viewUpdate.view
+      onEditorStateChange({
+        cursorOffset: view.state.selection.main.head,
+        scrollTop: view.scrollDOM.scrollTop,
+      })
+    }
   }
 
   useEffect(() => {
