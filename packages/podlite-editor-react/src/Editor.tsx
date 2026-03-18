@@ -7,7 +7,7 @@ import { podliteLang } from './podlite'
 import { defaultTheme } from './theme'
 import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
-import { foldGutter, foldKeymap, foldedRanges, foldEffect } from '@codemirror/language'
+import { foldGutter, foldKeymap, foldedRanges, foldEffect, unfoldEffect } from '@codemirror/language'
 import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
@@ -156,11 +156,13 @@ function PodliteEditorInternal(
     }
 
     // Restore scroll position (after folds applied, so layout is correct)
-    if (initialEditorState.scrollTop != null) {
-      requestAnimationFrame(() => {
+    // and focus the editor so the blinking cursor is visible
+    requestAnimationFrame(() => {
+      if (initialEditorState.scrollTop != null) {
         view.scrollDOM.scrollTop = initialEditorState.scrollTop!
-      })
-    }
+      }
+      view.focus()
+    })
   }, [initialEditorState, codeMirror.current?.view])
 
   // Expose editor state changes via callback
@@ -409,12 +411,31 @@ function PodliteEditorInternal(
       event.stopPropagation()
     },
   })
+  // Track fold/unfold and cursor changes to emit editor state
+  const stateChangeListener = onEditorStateChange
+    ? EditorView.updateListener.of(update => {
+        // Emit on fold/unfold (transactions with fold effects) or cursor move
+        const hasFoldChange = update.transactions.some(tr =>
+          tr.effects.some(e => e.is(foldEffect) || e.is(unfoldEffect)),
+        )
+        const hasCursorChange = update.selectionSet
+        if (hasFoldChange || hasCursorChange) {
+          onEditorStateChange({
+            cursorOffset: update.state.selection.main.head,
+            scrollTop: update.view.scrollDOM.scrollTop,
+            foldedRanges: serializeFoldedRanges(update.view),
+          })
+        }
+      })
+    : []
+
   let extensionsData: IPodliteEditor['extensions'] = [
     podliteLang(),
     EditorView.lineWrapping,
     podliteFoldService,
     foldGutter(),
     keymap.of(foldKeymap),
+    stateChangeListener,
     itemLevelKeymap,
     listContinuationKeymap,
     preventToggleComment,
