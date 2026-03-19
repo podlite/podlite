@@ -622,6 +622,9 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     // table of content
     ':toc': setFn((node: Toc, ctx) => {
       const tocTitle = node.title
+      if (node.foldedLevels) {
+        ctx._tocFoldedLevels = node.foldedLevels
+      }
       return mkComponent(({ children, key }) => (
         <div className="toc" key={key}>
           {tocTitle ? <div className="toctitle">{tocTitle}</div> : ''}
@@ -631,6 +634,15 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     }),
     ':toc-list': setFn((node, ctx) => {
       const { level } = node
+      const foldedLevels = ctx._tocFoldedLevels as Record<number, boolean> | undefined
+      if (foldedLevels && foldedLevels[level] === true) {
+        return mkComponent(({ children, key }) => (
+          <details className="toc-fold" key={key}>
+            <summary className={`toc-list-summary listlevel${level}`}></summary>
+            <ul className={`toc-list listlevel${level}`}>{children}</ul>
+          </details>
+        ))
+      }
       return mkComponent(({ children, key }) => (
         <ul className={`toc-list listlevel${level}`} key={key}>
           {children}

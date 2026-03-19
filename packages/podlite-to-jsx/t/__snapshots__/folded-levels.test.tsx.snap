@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`:folded-levels rendering in JSX full document with :folded-levels[2,3] renders correctly (snapshot) 1`] = `
+<div id="id">
+  <div class="toc">
+    <div class="toctitle">
+      Contents
+    </div>
+    <ul class="toc-list listlevel1">
+      <li class="toc-item">
+        <a href="#Introduction">
+          Introduction
+        </a>
+      </li>
+      <details class="toc-fold">
+        <summary class="toc-list-summary listlevel2">
+        </summary>
+        <ul class="toc-list listlevel2">
+          <li class="toc-item">
+            <a href="#Background">
+              Background
+            </a>
+          </li>
+          <details class="toc-fold">
+            <summary class="toc-list-summary listlevel3">
+            </summary>
+            <ul class="toc-list listlevel3">
+              <li class="toc-item">
+                <a href="#History">
+                  History
+                </a>
+              </li>
+            </ul>
+          </details>
+        </ul>
+      </details>
+      <li class="toc-item">
+        <a href="#Conclusion">
+          Conclusion
+        </a>
+      </li>
+    </ul>
+  </div>
+  <h1 id="id">
+    Introduction
+  </h1>
+  <p>
+    First section content.
+  </p>
+  <h2 id="id">
+    Background
+  </h2>
+  <p>
+    Background details.
+  </p>
+  <h3 id="id">
+    History
+  </h3>
+  <p>
+    Historical context.
+  </p>
+  <h1 id="id">
+    Conclusion
+  </h1>
+  <p>
+    Final thoughts.
+  </p>
+</div>
+`;

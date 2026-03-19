@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item added C<foldedLevels> field in C<Toc> type and C<mkToc> helper
+
 =head1 0.0.34
 
 =item migrated build from PEG.js to Pegmill 0.1.0

@@ -24,7 +24,7 @@ const findTocNode = (node: any): Toc | null => {
 }
 
 describe(':folded-levels for =toc', () => {
-  it('T1: :folded-levels[2,3] - foldedLevels: {2: true, 3: true}', () => {
+  it(':folded-levels[2,3] sets foldedLevels for levels 2 and 3', () => {
     const pod = `
 =begin pod
 =for toc :folded-levels[2,3]
@@ -40,7 +40,7 @@ head1, head2, head3
     expect(tocNode!.foldedLevels).toEqual({ 2: true, 3: true })
   })
 
-  it('T2: :folded-levels[1] - foldedLevels: {1: true}', () => {
+  it(':folded-levels[1] sets foldedLevels for level 1', () => {
     const pod = `
 =begin pod
 =for toc :folded-levels[1]
@@ -55,7 +55,7 @@ head1, head2
     expect(tocNode!.foldedLevels).toEqual({ 1: true })
   })
 
-  it('T3: no :folded-levels - foldedLevels is undefined', () => {
+  it('without :folded-levels foldedLevels is undefined', () => {
     const pod = `
 =begin pod
 =for toc :caption('TOC')
