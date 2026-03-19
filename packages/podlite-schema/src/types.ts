@@ -137,6 +137,7 @@ export interface Image {
 export interface Toc {
   type: 'toc'
   title?: string
+  foldedLevels?: Record<number, boolean>
   content: TocList
 }
 export interface TocList {

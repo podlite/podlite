@@ -2688,6 +2688,15 @@
                 "title": {
                     "type": "string"
                 },
+                "foldedLevels": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[0-9]+$": {
+                            "type": "boolean"
+                        }
+                    }
+                },
                 "content": {
                     "$ref": "#/definitions/TocList"
                 }
