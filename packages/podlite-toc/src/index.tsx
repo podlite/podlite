@@ -112,8 +112,25 @@ export const plugin: Plugin = {
       }
       const conf = makeAttrs(node, ctx)
       const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
+
+      // Parse :folded-levels attribute
+      // Supports array syntax: :folded-levels[2,3] -> {2: true, 3: true}
+      let foldedLevels: Record<number, boolean> | undefined
+      if (conf.exists('folded-levels')) {
+        const values = conf.getAllValues('folded-levels')
+        if (Array.isArray(values) && values.length > 0) {
+          foldedLevels = {}
+          for (const v of values) {
+            const level = Number(v)
+            if (!isNaN(level)) {
+              foldedLevels[level] = true
+            }
+          }
+        }
+      }
+
       const makeToc = (tocTree: any, title): Toc => {
-        return mkToc(createList(tocTree.content, 1), title, node.location)
+        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels)
       }
 
       return makeToc(tocTree, tocTitle)
