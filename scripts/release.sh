@@ -40,7 +40,7 @@ if [[ -n "$DRY_RUN" ]]; then
   echo "2. node scripts/extract-changelog.mjs --update (rename Upcoming → version)"
   echo "3. yarn build && yarn test"
   echo "4. git commit + push"
-  echo "5. gh release create"
+  echo "5. gh release create # check before: gh auth status -->  gh auth switch --user zag"
   echo ""
   echo "Run without --dry-run to execute."
   exit 0
