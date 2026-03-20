@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.39
+
 =item added C<:folded-levels> rendering for C<=toc> block -- folded levels wrapped in C<< <details> >> element
 
 =head1 0.0.38

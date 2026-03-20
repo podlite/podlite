@@ -2,6 +2,29 @@
 
 =head1 Upcoming
 
+=head1 0.0.55
+
+
+=head2 @podlite/editor-react
+
+=item add list continuation on Enter: auto-insert C<=itemN> with type prefix preserved (C<[ ]>, C<[x]>→C<[ ]>, C<#>)
+=item pressing Enter on empty C<=itemN> (or prefix-only) exits the list
+=item add Tab/Shift-Tab to increase/decrease C<=item> nesting level (2-space indent per level)
+=item add code folding for C<=begin>/C<=end> blocks and C<=head> sections with fold gutter
+=item add C<initialEditorState> and C<onEditorStateChange> props for session state persistence (cursor, scroll, folds)
+
+=head2 @podlite/schema
+
+=item added C<foldedLevels> field in C<Toc> type and C<mkToc> helper
+
+=head2 @podlite/to-jsx
+
+=item added C<:folded-levels> rendering for C<=toc> block -- folded levels wrapped in C<< <details> >> element
+
+=head2 @podlite/toc
+
+=item added C<:folded-levels> attribute for C<=toc> block -- controls which TOC levels are collapsed by default (array syntax)
+
 =head1 0.0.54
 
 

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.28
+
 =item added C<:folded-levels> attribute for C<=toc> block -- controls which TOC levels are collapsed by default (array syntax)
 
 =head1 0.0.19
