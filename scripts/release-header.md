@@ -61,3 +61,12 @@
 - [github.com/podlite](https://github.com/podlite/)&nbsp;🤩
 - [podlite.org](https://podlite.org)
 - [pod6.in](https://pod6.in/)
+- [Podlite project updates](https://podlite.org/contents)
+- [Funding the ongoing development](https://opencollective.com/podlite)
+
+</td></tr></table>
+</div>
+
+
+
+</div>
