@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item add C<enableCopyPng> prop to C<WindowWrapper> — copies content as PNG to clipboard via C<dom-to-image-more>
+=item refactor C<WindowWrapper>: remove dead SVG foreignObject screenshot code, add TypeScript types
+
 =head1 0.0.41
 
 =item add list continuation on Enter: auto-insert C<=itemN> with type prefix preserved (C<[ ]>, C<[x]>→C<[ ]>, C<#>)
