@@ -67,7 +67,7 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
         />
       </WindowWrapper>
 
-      <WindowWrapper title="Editor with Preview">
+      <WindowWrapper title="Editor with Preview" enableCopyPng>
         <Editor height="500px" value={text1} enablePreview={true} />
       </WindowWrapper>
 
