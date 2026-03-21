@@ -3,6 +3,7 @@ import type { EditorState } from '@codemirror/state'
 import type { Extension } from '@codemirror/state'
 
 type FoldRange = { from: number; to: number }
+type LineRange = { from: number; to: number }
 
 // =begin Name ... =end Name
 const beginRe = /^(\s*)=begin\s+(\S+)/
@@ -11,10 +12,39 @@ const endRe = /^(\s*)=end\s+(\S+)/
 // =headN (level 1-6)
 const headRe = /^(\s*)=head(\d+)\s/
 
+// Verbatim block types where content should not be folded
+const verbatimTypes = new Set(['code', 'comment', 'data', 'input', 'output'])
+
 // Parse =begin line, return block name or null
 function parseBeginLine(lineText: string): string | null {
   const m = lineText.match(beginRe)
   return m ? m[2] ?? null : null
+}
+
+// Scan document for verbatim block ranges (lines BETWEEN =begin and =end)
+function getVerbatimRanges(state: EditorState): LineRange[] {
+  const ranges: LineRange[] = []
+  for (let i = 1; i <= state.doc.lines; i++) {
+    const line = state.doc.line(i)
+    const m = line.text.match(beginRe)
+    if (m && verbatimTypes.has(m[2])) {
+      for (let j = i + 1; j <= state.doc.lines; j++) {
+        const endLine = state.doc.line(j)
+        const em = endLine.text.match(endRe)
+        if (em && em[2] === m[2]) {
+          if (i + 1 <= j - 1) {
+            ranges.push({ from: i + 1, to: j - 1 })
+          }
+          break
+        }
+      }
+    }
+  }
+  return ranges
+}
+
+function isInsideVerbatim(lineNumber: number, ranges: LineRange[]): boolean {
+  return ranges.some(r => lineNumber >= r.from && lineNumber <= r.to)
 }
 
 // Fold =begin Name ... =end Name: fold from end of =begin line to start of =end line
@@ -79,6 +109,10 @@ function foldHeadSection(state: EditorState, lineStart: number): FoldRange | nul
 }
 
 export const podliteFoldService: Extension = foldService.of(
-  (state: EditorState, lineStart: number): FoldRange | null =>
-    foldBeginEnd(state, lineStart) ?? foldHeadSection(state, lineStart),
+  (state: EditorState, lineStart: number): FoldRange | null => {
+    const line = state.doc.lineAt(lineStart)
+    const verbatimRanges = getVerbatimRanges(state)
+    if (isInsideVerbatim(line.number, verbatimRanges)) return null
+    return foldBeginEnd(state, lineStart) ?? foldHeadSection(state, lineStart)
+  },
 )

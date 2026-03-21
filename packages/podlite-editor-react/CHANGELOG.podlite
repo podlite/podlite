@@ -4,6 +4,7 @@
 
 =item add C<enableCopyPng> prop to C<WindowWrapper> — copies content as PNG to clipboard via C<dom-to-image-more>
 =item refactor C<WindowWrapper>: remove dead SVG foreignObject screenshot code, add TypeScript types
+=item fix fold markers appearing inside verbatim blocks (C<=code>, C<=comment>, C<=data>, C<=input>, C<=output>)
 
 =head1 0.0.41
 
