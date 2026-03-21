@@ -132,7 +132,12 @@ function PodliteEditorInternal(
     [],
   )
 
-  // Restore editor session state once after mount
+  // Reset applied flag when initialEditorState changes (new file opened)
+  useEffect(() => {
+    initialStateApplied.current = false
+  }, [initialEditorState])
+
+  // Restore editor session state once after mount or file change
   useEffect(() => {
     if (initialStateApplied.current || !initialEditorState) return
     const view = codeMirror.current?.view
@@ -730,6 +735,7 @@ function PodliteEditorInternal(
         <CodeMirror
           theme={defaultTheme}
           indentWithTab={false}
+          autoFocus
           {...{ ...codemirrorProps, ...{ basicSetup: { defaultKeymap: false } } }}
           className={`podlite-editor-inner`}
           extensions={extensionsData}
