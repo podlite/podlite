@@ -1,0 +1,220 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WindowWrapper renders with enableCopyPng 1`] = `
+<div class="window-capture">
+  <div class="window">
+    <div class="titlebar">
+      <div class="buttons">
+      </div>
+      <span class="title">
+        Diagram
+      </span>
+      <div class="titlebar-spacer">
+      </div>
+      <button class="copy-png-btn"
+              title="Copy as PNG"
+      >
+        ⎘
+      </button>
+    </div>
+    <div class="content">
+      <div>
+        diagram content
+      </div>
+    </div>
+  </div>
+  <style>
+    .window-capture {
+          padding: 1.5rem;
+          display: inline-block;
+          margin: 0.5rem;
+        }
+
+        .window {
+          position: relative;
+          border-radius: 6px;
+          background: white;
+          box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
+          border: 1px solid #ccc;
+        }
+
+        .titlebar {
+          background: linear-gradient(to bottom, #f7f7f7, #e6e6e6);
+          padding: 8px 12px;
+          border-top-left-radius: 6px;
+          border-top-right-radius: 6px;
+          border-bottom: 1px solid #ccc;
+          display: flex;
+          align-items: center;
+        }
+
+        .titlebar-spacer {
+          flex: 1;
+        }
+
+        .buttons {
+          display: flex;
+          gap: 6px;
+          margin-right: 8px;
+        }
+
+        .buttons button {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+        }
+
+        .close {
+          background: #ff5f56;
+          border: 1px solid #e0443e;
+        }
+
+        .minimize {
+          background: #ffbd2e;
+          border: 1px solid #dea123;
+        }
+
+        .maximize {
+          background: #27c93f;
+          border: 1px solid #1aab29;
+        }
+
+        .title {
+          color: #4d4d4d;
+          font-size: 13px;
+          margin-left: 4px;
+        }
+
+        .content {
+          padding: 16px;
+        }
+
+        .copy-png-btn {
+          background: none;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          padding: 2px 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #666;
+          line-height: 1;
+          transition: background 0.15s, color 0.15s;
+        }
+
+        .copy-png-btn:hover {
+          background: #e0e0e0;
+          color: #333;
+        }
+  </style>
+</div>
+`;
+
+exports[`WindowWrapper renders without enableCopyPng (default) 1`] = `
+<div class="window-capture">
+  <div class="window">
+    <div class="titlebar">
+      <div class="buttons">
+      </div>
+      <span class="title">
+        Test
+      </span>
+      <div class="titlebar-spacer">
+      </div>
+    </div>
+    <div class="content">
+      <div>
+        content
+      </div>
+    </div>
+  </div>
+  <style>
+    .window-capture {
+          padding: 1.5rem;
+          display: inline-block;
+          margin: 0.5rem;
+        }
+
+        .window {
+          position: relative;
+          border-radius: 6px;
+          background: white;
+          box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
+          border: 1px solid #ccc;
+        }
+
+        .titlebar {
+          background: linear-gradient(to bottom, #f7f7f7, #e6e6e6);
+          padding: 8px 12px;
+          border-top-left-radius: 6px;
+          border-top-right-radius: 6px;
+          border-bottom: 1px solid #ccc;
+          display: flex;
+          align-items: center;
+        }
+
+        .titlebar-spacer {
+          flex: 1;
+        }
+
+        .buttons {
+          display: flex;
+          gap: 6px;
+          margin-right: 8px;
+        }
+
+        .buttons button {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+        }
+
+        .close {
+          background: #ff5f56;
+          border: 1px solid #e0443e;
+        }
+
+        .minimize {
+          background: #ffbd2e;
+          border: 1px solid #dea123;
+        }
+
+        .maximize {
+          background: #27c93f;
+          border: 1px solid #1aab29;
+        }
+
+        .title {
+          color: #4d4d4d;
+          font-size: 13px;
+          margin-left: 4px;
+        }
+
+        .content {
+          padding: 16px;
+        }
+
+        .copy-png-btn {
+          background: none;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          padding: 2px 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #666;
+          line-height: 1;
+          transition: background 0.15s, color 0.15s;
+        }
+
+        .copy-png-btn:hover {
+          background: #e0e0e0;
+          color: #333;
+        }
+  </style>
+</div>
+`;
