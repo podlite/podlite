@@ -53,7 +53,6 @@ describe('toMarkdown', () => {
   describe('lists', () => {
     it('unordered list', () => {
       const result = render('=pod\n=item First\n=item Second\n=item Third\n')
-      console.log(result)
       expect(result).toContain('- First')
       expect(result).toContain('- Second')
       expect(result).toContain('- Third')

@@ -1932,6 +1932,7 @@ __metadata:
     "@uiw/codemirror-extensions-events": ^4.23.8
     "@uiw/codemirror-themes": ^4.23.8
     "@uiw/react-codemirror": ^4.23.8
+    dom-to-image-more: ^3.7.2
     react-is: ^18.0.0
     shiki: ^3.21.0
   peerDependencies:
@@ -4167,6 +4168,13 @@ __metadata:
     domelementtype: ^2.0.1
     entities: ^2.0.0
   checksum: 376344893e4feccab649a14ca1a46473e9961f40fe62479ea692d4fee4d9df1c00ca8654811a79c1ca7b020096987e1ca4fb4d7f8bae32c1db800a680a0e5d5e
+  languageName: node
+  linkType: hard
+
+"dom-to-image-more@npm:^3.7.2":
+  version: 3.7.2
+  resolution: "dom-to-image-more@npm:3.7.2"
+  checksum: 0e903e2f7ed3940d281d3163ef4613631de67977dec7351c360efa1bfd89f73852f458268a4b504d02839dfe53a5578986084a7b4699ff33aae335ac00438ff8
   languageName: node
   linkType: hard
 

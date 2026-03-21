@@ -80,6 +80,7 @@
     "@uiw/codemirror-extensions-events": "^4.23.8",
     "@uiw/codemirror-themes": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
+    "dom-to-image-more": "^3.7.2",
     "react-is": "^18.0.0",
     "shiki": "^3.21.0"
   },
