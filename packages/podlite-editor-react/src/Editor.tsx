@@ -108,6 +108,16 @@ function PodliteEditorInternal(
   const topLine = useRef<number>(startLinePreview)
   const $viewHeight = useRef<number>(0)
   const initialStateApplied = useRef(false)
+
+  // Stable refs for callbacks used in memoized extensions
+  // Stable refs for callbacks used in memoized extensions
+  const onEditorStateChangeRef = useRef(onEditorStateChange)
+  onEditorStateChangeRef.current = onEditorStateChange
+  const onOpenLinkRef = useRef(onOpenLink)
+  onOpenLinkRef.current = onOpenLink
+
+  // Stable basicSetup config to prevent CodeMirror reconfiguration on re-render
+  const basicSetupConfig = React.useMemo(() => ({ defaultKeymap: false }), [])
   useImperativeHandle(
     ref,
     () => ({
@@ -376,93 +386,91 @@ function PodliteEditorInternal(
     ...defaultKeymap,
   ])
 
-  // Add/remove a class on the editor root while Mod (Cmd/Ctrl) is pressed
-  const modKeyClass = EditorView.domEventHandlers({
-    keydown(e, view) {
-      if (e.metaKey || e.ctrlKey) view.dom.classList.add('cm-mod-pressed')
-    },
-    keyup(e, view) {
-      if (!e.metaKey && !e.ctrlKey) view.dom.classList.remove('cm-mod-pressed')
-    },
-    blur(_, view) {
-      view.dom.classList.remove('cm-mod-pressed')
-    },
-    // defensive: if mouse leaves, clear the class (helps when key is released elsewhere)
-    mouseleave(_, view) {
-      view.dom.classList.remove('cm-mod-pressed')
-    },
-  })
-  const openStyledLinkOnClick = EditorView.domEventHandlers({
-    click(event, view) {
-      const target = event.target as HTMLElement | null
-      if (!target) return
+  // Memoized extensions to prevent CodeMirror reconfiguration on re-render
+  // (reconfiguration closes panels like search)
 
-      const el = target.closest('.cm-clickable-link') as HTMLElement | null
-      if (!el) return
+  const modKeyClass = React.useMemo(
+    () =>
+      EditorView.domEventHandlers({
+        keydown(e, view) {
+          if (e.metaKey || e.ctrlKey) view.dom.classList.add('cm-mod-pressed')
+        },
+        keyup(e, view) {
+          if (!e.metaKey && !e.ctrlKey) view.dom.classList.remove('cm-mod-pressed')
+        },
+        blur(_, view) {
+          view.dom.classList.remove('cm-mod-pressed')
+        },
+        mouseleave(_, view) {
+          view.dom.classList.remove('cm-mod-pressed')
+        },
+      }),
+    [],
+  )
 
-      // require Cmd/Ctrl for activation
-      const modPressed = event.metaKey || event.ctrlKey
-      if (!modPressed) return
+  const openStyledLinkOnClick = React.useMemo(
+    () =>
+      EditorView.domEventHandlers({
+        click(event, view) {
+          const target = event.target as HTMLElement | null
+          if (!target) return
 
-      const from = view.posAtDOM(el, 0)
-      const to = view.posAtDOM(el, el.childNodes.length)
-      const text = view.state.doc.sliceString(from, to).trim()
+          const el = target.closest('.cm-clickable-link') as HTMLElement | null
+          if (!el) return
 
-      if (onOpenLink) {
-        onOpenLink(text) // i.e window.open(text, '_blank', 'noopener')
-      }
+          const modPressed = event.metaKey || event.ctrlKey
+          if (!modPressed) return
 
-      event.preventDefault()
-      event.stopPropagation()
-    },
-  })
+          const from = view.posAtDOM(el, 0)
+          const to = view.posAtDOM(el, el.childNodes.length)
+          const text = view.state.doc.sliceString(from, to).trim()
+
+          onOpenLinkRef.current?.(text)
+
+          event.preventDefault()
+          event.stopPropagation()
+        },
+      }),
+    [],
+  )
+
   // Track fold/unfold and cursor changes to emit editor state
-  const stateChangeListener = onEditorStateChange
-    ? EditorView.updateListener.of(update => {
-        // Emit on fold/unfold (transactions with fold effects) or cursor move
-        const hasFoldChange = update.transactions.some(tr =>
-          tr.effects.some(e => e.is(foldEffect) || e.is(unfoldEffect)),
-        )
-        const hasCursorChange = update.selectionSet
-        if (hasFoldChange || hasCursorChange) {
-          onEditorStateChange({
-            cursorOffset: update.state.selection.main.head,
-            scrollTop: update.view.scrollDOM.scrollTop,
-            foldedRanges: serializeFoldedRanges(update.view),
+  const stateChangeListener = React.useMemo(
+    () =>
+      onEditorStateChange
+        ? EditorView.updateListener.of(update => {
+            const hasFoldChange = update.transactions.some(tr =>
+              tr.effects.some(e => e.is(foldEffect) || e.is(unfoldEffect)),
+            )
+            const hasCursorChange = update.selectionSet
+            if (hasFoldChange || hasCursorChange) {
+              onEditorStateChangeRef.current?.({
+                cursorOffset: update.state.selection.main.head,
+                scrollTop: update.view.scrollDOM.scrollTop,
+                foldedRanges: serializeFoldedRanges(update.view),
+              })
+            }
           })
-        }
-      })
-    : []
+        : [],
+    [!!onEditorStateChange, serializeFoldedRanges],
+  )
 
-  let extensionsData: IPodliteEditor['extensions'] = [
-    podliteLang(),
-    EditorView.lineWrapping,
-    podliteFoldService,
-    foldGutter(),
-    keymap.of(foldKeymap),
-    stateChangeListener,
-    itemLevelKeymap,
-    listContinuationKeymap,
-    preventToggleComment,
-  ]
-
-  if (onOpenLink) {
-    extensionsData.push(
-      modKeyClass,
-      openStyledLinkOnClick,
+  const linkTheme = React.useMemo(
+    () =>
       EditorView.theme({
         '&.cm-editor.cm-mod-pressed .cm-clickable-link:hover': {
           cursor: 'pointer',
         },
       }),
-    )
-  }
-  if (enableScroll) {
-    extensionsData.push(scrollExtensions)
-  }
-  const makeApply = (text: string) => (editor, completion, from, to) => {
-    return snippet(text)(editor, completion, from - 1, to)
-  }
+    [],
+  )
+
+  const makeApply = useCallback(
+    (text: string) => (editor, completion, from, to) => {
+      return snippet(text)(editor, completion, from - 1, to)
+    },
+    [],
+  )
 
   type Dict = {
     displayText: string
@@ -470,13 +478,13 @@ function PodliteEditorInternal(
     lang?: 'pod6' | 'md'
   }
 
-  if (enableAutocompletion) {
+  const autocompletionExt = React.useMemo(() => {
+    if (!enableAutocompletion) return null
     const langDict: Dict[] = dictionary.filter(({ lang = 'pod6' }) => lang === 'pod6')
     const completions = langDict.map(({ displayText, text }) => {
       function cleanBraces(text: string): string {
         return text.replace(/\#\{[^\}]*\}/g, '')
       }
-
       return {
         label: displayText,
         type: 'keyword',
@@ -486,8 +494,6 @@ function PodliteEditorInternal(
     })
     function myCompletions(context) {
       let before = context.matchBefore(/^\s*=\w*/)
-      // If completion wasn't explicitly started and there
-      // is no word before the cursor, don't open completions.
       if (!context.explicit && !before) return null
       return {
         from: before ? before.from + before.text.indexOf('=') + 1 : context.pos,
@@ -495,9 +501,43 @@ function PodliteEditorInternal(
         validFor: /^=\w*$/,
       }
     }
+    return autocompletion({ override: [myCompletions] })
+  }, [enableAutocompletion, makeApply])
 
-    extensionsData.push(autocompletion({ override: [myCompletions] }))
-  }
+  const extensionsData = React.useMemo(() => {
+    const exts: IPodliteEditor['extensions'] = [
+      podliteLang(),
+      EditorView.lineWrapping,
+      podliteFoldService,
+      foldGutter(),
+      keymap.of(foldKeymap),
+      stateChangeListener,
+      itemLevelKeymap,
+      listContinuationKeymap,
+      preventToggleComment,
+    ]
+
+    if (onOpenLink) {
+      exts.push(modKeyClass, openStyledLinkOnClick, linkTheme)
+    }
+    if (enableScroll) {
+      exts.push(scrollExtensions)
+    }
+    if (autocompletionExt) {
+      exts.push(autocompletionExt)
+    }
+    return exts
+  }, [
+    stateChangeListener,
+    modKeyClass,
+    openStyledLinkOnClick,
+    linkTheme,
+    !!onOpenLink,
+    enableScroll,
+    scrollExtensions,
+    preventToggleComment,
+    autocompletionExt,
+  ])
 
   useDebouncedEffect(
     () => {
@@ -736,7 +776,8 @@ function PodliteEditorInternal(
           theme={defaultTheme}
           indentWithTab={false}
           autoFocus
-          {...{ ...codemirrorProps, ...{ basicSetup: { defaultKeymap: false } } }}
+          {...codemirrorProps}
+          basicSetup={basicSetupConfig}
           className={`podlite-editor-inner`}
           extensions={extensionsData}
           height={height}
