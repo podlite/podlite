@@ -99,7 +99,7 @@ function PodliteEditorInternal(
   } = props
   const full_preview = previewWidth === '100%'
   const [value, setValue] = useState(props.value || '')
-  const [text1, setText] = useState(props.value || '')
+  const pendingTextRef = useRef(props.value || '')
   const codeMirror = useRef<ReactCodeMirrorRef>(null)
   const container = useRef<HTMLDivElement>(null)
   const containerEditor = useRef<HTMLDivElement>(null)
@@ -217,7 +217,9 @@ function PodliteEditorInternal(
   const preValue = props.value
 
   useEffect(() => setValue(preValue ?? ''), [preValue])
-  useEffect(() => setText(preValue ?? ''), [preValue])
+  useEffect(() => {
+    pendingTextRef.current = preValue ?? ''
+  }, [preValue])
   const fullRef = useRef(isFullscreen)
   useEffect(() => {
     fullRef.current = isFullscreen
@@ -539,13 +541,15 @@ function PodliteEditorInternal(
     autocompletionExt,
   ])
 
-  useDebouncedEffect(
-    () => {
-      setValue(text1)
-    },
-    [text1],
-    50,
-  )
+  // Debounced preview update: check ref every 300ms, update value state only when text changed
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (pendingTextRef.current !== value) {
+        setValue(pendingTextRef.current)
+      }
+    }, 300)
+    return () => clearInterval(interval)
+  }, [value])
 
   useEffect(() => {
     if (!isBrowser || !container.current) return
@@ -591,18 +595,17 @@ function PodliteEditorInternal(
     return () => clearTimeout(timer)
   }, [startLinePreview, enablePreview]) // Only run when startLinePreview or enablePreview changes
 
-  const handleChange = (value: string, viewUpdate: ViewUpdate) => {
-    setText(value)
-    onChange && onChange(value, viewUpdate)
-    if (onEditorStateChange) {
-      const view = viewUpdate.view
-      onEditorStateChange({
-        cursorOffset: view.state.selection.main.head,
-        scrollTop: view.scrollDOM.scrollTop,
-        foldedRanges: serializeFoldedRanges(view),
+  const handleChange = useCallback(
+    (value: string, viewUpdate: ViewUpdate) => {
+      pendingTextRef.current = value
+      // Defer parent callback to next frame so CodeMirror textupdate handler
+      // completes immediately and the typed character appears without delay
+      requestAnimationFrame(() => {
+        onChange?.(value, viewUpdate)
       })
-    }
-  }
+    },
+    [onChange],
+  )
 
   useEffect(() => {
     if (preview.current) {

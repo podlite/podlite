@@ -21,8 +21,14 @@ function parseBeginLine(lineText: string): string | null {
   return m ? m[2] ?? null : null
 }
 
-// Scan document for verbatim block ranges (lines BETWEEN =begin and =end)
+// Cache verbatim ranges per document version to avoid rescanning on every fold query
+let _cachedVerbatimDoc: unknown = null
+let _cachedVerbatimRanges: LineRange[] = []
+
 function getVerbatimRanges(state: EditorState): LineRange[] {
+  // EditorState.doc is immutable — same reference means same content
+  if (_cachedVerbatimDoc === state.doc) return _cachedVerbatimRanges
+
   const ranges: LineRange[] = []
   for (let i = 1; i <= state.doc.lines; i++) {
     const line = state.doc.line(i)
@@ -40,6 +46,8 @@ function getVerbatimRanges(state: EditorState): LineRange[] {
       }
     }
   }
+  _cachedVerbatimDoc = state.doc
+  _cachedVerbatimRanges = ranges
   return ranges
 }
 
