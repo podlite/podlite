@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "description": "Image handling plugin for Podlite — caption and embed images",
   "main": "./src/index.tsx",
   "homepage": "https://podlite.org",

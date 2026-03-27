@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.42
+
 =item fix performance: eliminate synchronous re-renders on keystroke (text state → ref, deferred onChange via rAF, 300ms debounced preview)
 =item fix performance: cache verbatim ranges in fold service (O(N) per call → O(1) via document identity cache)
 =item fix search panel closing after Enter on first result — memoize extensions and basicSetup to prevent CodeMirror reconfiguration on re-render

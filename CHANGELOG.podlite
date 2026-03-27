@@ -2,6 +2,19 @@
 
 =head1 Upcoming
 
+=head1 0.0.56
+
+
+=head2 @podlite/editor-react
+
+=item fix performance: eliminate synchronous re-renders on keystroke (text state → ref, deferred onChange via rAF, 300ms debounced preview)
+=item fix performance: cache verbatim ranges in fold service (O(N) per call → O(1) via document identity cache)
+=item fix search panel closing after Enter on first result — memoize extensions and basicSetup to prevent CodeMirror reconfiguration on re-render
+=item add C<enableCopyPng> prop to C<WindowWrapper> — copies content as PNG to clipboard via C<dom-to-image-more>
+=item refactor C<WindowWrapper>: remove dead SVG foreignObject screenshot code, add TypeScript types
+=item fix fold markers appearing inside verbatim blocks (C<=code>, C<=comment>, C<=data>, C<=input>, C<=output>)
+=item fix cursor not visible on file open — add C<autoFocus> + reset C<initialStateApplied> on file change
+
 =head1 0.0.55
 
 
