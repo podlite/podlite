@@ -2,6 +2,16 @@
 
 =head1 Upcoming
 
+=head1 0.0.57
+
+
+=head2 @podlite/editor-react
+
+=item add C<enableFolding> prop — control fold gutter visibility (default C<true>, C<false> for embedded editors)
+=item fix embedded editor preview: align first element with editor, reduce list item spacing
+=item fix C<WindowWrapper> overflow — add C<max-width: 100%> and restore C<margin: 2rem> on C<.window>
+=item fix fold gutter width compensation when folding disabled (C<padding-left: 11px>)
+
 =head1 0.0.56
 
 

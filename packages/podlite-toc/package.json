@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Auto-generate table of contents from Podlite documents",
   "main": "./src/index.tsx",
   "homepage": "https://podlite.org",

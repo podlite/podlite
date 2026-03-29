@@ -1,6 +1,6 @@
 {
   "name": "@podlite/diagram",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "description": "Embed Mermaid diagrams in Podlite documents — renders to SVG",
   "main": "./src/index.tsx",
   "homepage": "https://podlite.org",
