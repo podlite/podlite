@@ -56,6 +56,8 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   onOpenLink?: (url: string) => void
   /** Enable code highlighting */
   enableHighlighting?: boolean
+  /** Enable code folding (fold gutter + fold keymap) @default `true` */
+  enableFolding?: boolean
   /** Initial editor session state to restore (cursor, scroll, folds) */
   initialEditorState?: EditorSessionState
   /** Called when editor state changes (cursor move, scroll, fold/unfold) */
@@ -93,6 +95,7 @@ function PodliteEditorInternal(
     enableAutocompletion = false,
     onOpenLink,
     enableHighlighting = false,
+    enableFolding = true,
     initialEditorState,
     onEditorStateChange,
     ...codemirrorProps
@@ -510,14 +513,15 @@ function PodliteEditorInternal(
     const exts: IPodliteEditor['extensions'] = [
       podliteLang(),
       EditorView.lineWrapping,
-      podliteFoldService,
-      foldGutter(),
-      keymap.of(foldKeymap),
       stateChangeListener,
       itemLevelKeymap,
       listContinuationKeymap,
       preventToggleComment,
     ]
+
+    if (enableFolding) {
+      exts.push(podliteFoldService, foldGutter(), keymap.of(foldKeymap))
+    }
 
     if (onOpenLink) {
       exts.push(modKeyClass, openStyledLinkOnClick, linkTheme)
@@ -539,6 +543,7 @@ function PodliteEditorInternal(
     scrollExtensions,
     preventToggleComment,
     autocompletionExt,
+    enableFolding,
   ])
 
   // Debounced preview update: check ref every 300ms, update value state only when text changed

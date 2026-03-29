@@ -18,3 +18,25 @@ header#menu   p {
          --font-size:15px;
     }
 }
+
+.editor-block.tiny {
+    max-width: var(--spacing-width-tiny);
+    margin-left: auto;
+    margin-right: auto;
+}
+.editor-block.small {
+    max-width: calc( var(--spacing-width-tiny) * 3);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.editor-block.medium {
+    max-width: calc(var(--spacing-width-max ) * 2) ;
+    margin-left: auto;
+    margin-right: auto;
+}
+.editor-block.large {
+    max-width:120%; 
+    margin-left: auto;
+    margin-right: auto;
+}

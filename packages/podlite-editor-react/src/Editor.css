@@ -53,3 +53,22 @@
 .podlite-editor h6 a {
   display: none;
 }
+.podlite-editor .podlite-editor-preview > .content {
+  margin-top: 0;
+}
+.podlite-editor .podlite-editor-preview li,
+.podlite-editor .podlite-editor-preview .line-src,
+.podlite-editor .podlite-editor-preview ul {
+  margin-top: 0;
+}
+.podlite-editor-preview .content > :first-child,
+.podlite-editor-preview .content > .line-src:first-child {
+  margin-top: 0;
+}
+.podlite-editor-preview .content > .line-src:first-child > * {
+  margin-top: 0;
+}
+/* Compensate for missing fold gutter width when folding is disabled */
+.podlite-editor .cm-editor:not(:has(.cm-foldGutter)) .cm-content {
+  padding-left: 11px;
+}

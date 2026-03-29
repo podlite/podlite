@@ -4,6 +4,18 @@
 
 
 =useReact {TestEditor} from './demo/Components'
+=useReact {DemoEditor} from './demo/Components'
+
+=begin comment
+=begin React :component<DemoEditor> :id<editor> 
+=end React
+=end comment
+
+=begin PodLite :height<300px> :caption("Headings") :size<tiny> 
+ 
+=end PodLite
+
+=begin comment
 =begin React :component<TestEditor> :id<menu> 
 =end React
 
@@ -33,5 +45,5 @@ Z<>=end code
 
 =end PodLite
 
-
+=end comment
 =end pod

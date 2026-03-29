@@ -113,6 +113,46 @@ export const TestEditor = ({ id, children, item, renderNode, isShowRoot }) => {
   )
 }
 
+export const DemoEditor = ({ id, children, item, renderNode, isShowRoot }) => {
+  const [isFullscreen, setIsFullscreen] = React.useState(false)
+  const [isHighliteCode, setIsHighliteCode] = React.useState(false)
+  const [isPreview, setIsPreview] = React.useState(false)
+  const [isFullPreview, setFullPreview] = React.useState(false)
+  const [textChanged, setTextChanged] = React.useState(false)
+  const [text, updateText] = React.useState(text1 + text1 + text1 + text1 + text1)
+  const wrapFunctionNoLines = (node: Node, children) => children
+  const convertSourcetoComponent = (text: string) => {
+    console.log('rendering preview')
+    return { result: <h1>This is preview1111</h1> }
+  }
+  const [line, setLine] = React.useState(20)
+  return (
+    <div>
+      <WindowWrapper title="Editor with Preview" enableCopyPng>
+        <Editor height="500px" value={text1} enablePreview={true} />
+      </WindowWrapper>
+
+      <Editor
+        onChange={(content: string) => {
+          // updateText(content)
+          setTextChanged(true)
+        }}
+        height={'500px'}
+        value={text}
+        enablePreview={true}
+        previewWidth={'50%'}
+        basicSetup={{ defaultKeymap: false }}
+        readOnly={false}
+        isFullscreen={false}
+        onOpenLink={(url: string) => {
+          console.log(url)
+        }}
+        // makePreviewComponent={convertSourcetoComponent}
+      />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <div>

@@ -53,14 +53,19 @@ const WindowWrapper = ({ children, title = '', enableCopyPng = false }: WindowWr
           padding: 1.5rem;
           display: inline-block;
           margin: 0.5rem;
+          max-width: 100%;
+          box-sizing: border-box;
         }
 
         .window {
           position: relative;
+          margin: 2rem;
           border-radius: 6px;
           background: white;
           box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
           border: 1px solid #ccc;
+          max-width: 100%;
+          box-sizing: border-box;
         }
 
         .titlebar {
