@@ -1,11 +1,9 @@
 <div align="center">
 
-[![Podlite](https://github.com/zag/specs/raw/podlite-specification/assets/podlite_logo_256x256.png)](https://podlite.org)
+[![Podlite](https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg)](https://podlite.org)
 
-**Podlite is a lightweight block-based markup language designed for flexibility and ease of use.**
+**Podlite — lightweight block-based markup language**
 
-
-<div align="center">
 <table border=0><tr><td valign=top><div align="center">
 
 ##### specification
@@ -13,7 +11,7 @@
 </div>
 
 - [Source](https://github.com/podlite/podlite-specs)
-- [in HTML](https://podlite.org/specification)
+- [HTML](https://podlite.org/specification)
 - [Discussions](https://github.com/podlite/podlite-specs/discussions)
 
 <div align="center">
@@ -28,46 +26,35 @@
 
 </td><td valign=top><div align="center">
 
-##### publishing system
+##### publishing
 
 </div>
 
 - [Podlite-web](https://github.com/podlite/podlite-web)
 - [How-to article](https://zahatski.com/2022/8/23/1/start-you-own-blog-site-with-podlite-for-web)
-- [Issues](https://github.com/podlite/podlite-specs/issues)
 - [Changelog](https://github.com/podlite/podlite-web/releases)
-- [Practical case: Raku knowledge base ](https://raku-knowledge-base.podlite.org/)
 
 </td><td valign=top><div align="center">
-  
-##### desktop viewer/editor
+
+##### desktop editor
 
 </div>
 
-- [Podlite-desktop](https://github.com/podlite/podlite-desktop)
 - [Releases](https://github.com/podlite/podlite-desktop/releases)
 - [Issues](https://github.com/podlite/podlite-desktop/issues)
-- Stores:
-     - [Linux](https://snapcraft.io/podlite)
-     - [Windows](https://www.microsoft.com/store/apps/9NVNT9SNQJM8)
-     - [Mac App](https://apps.apple.com/us/app/podlite/id1526511053)
+- Stores: [Mac](https://apps.apple.com/us/app/podlite/id1526511053) · [Windows](https://www.microsoft.com/store/apps/9NVNT9SNQJM8) · [Linux](https://snapcraft.io/podlite)
+
 </td><td valign=top><div align="center">
 
-##### online resurces
+##### resources
 
- </div>
+</div>
 
-- [Roadmap](https://podlite.org/#Roadmap)
-- [github.com/podlite](https://github.com/podlite/)&nbsp;🤩
 - [podlite.org](https://podlite.org)
 - [pod6.in](https://pod6.in/)
-- [Podlite project updates](https://podlite.org/contents)
-- [Funding the ongoing development](https://opencollective.com/podlite)
+- [github.com/podlite](https://github.com/podlite/)
+- [Funding](https://opencollective.com/podlite)
 
 </td></tr></table>
-</div>
-
-
 
 </div>
-
