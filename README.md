@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/podlite-mark-core.svg" width="200" alt="Podlite">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core-dark.svg">
+    <img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="200" alt="Podlite">
+  </picture>
 </p>
 <h1 align="center">Podlite</h1>
 <p align="center"><em>one markup, many possibilities</em></p>
@@ -76,7 +79,7 @@ Extensibility is a core feature — define domain-specific blocks and expand the
 </div>
 
 <p align="center">
-  <a href="https://podlite.org"><img src="./assets/podlite-mark-mono.svg" width="80" alt="Podlite"></a>
+  <a href="https://podlite.org"><img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-mono.svg" width="80" alt="Podlite"></a>
 </p>
 
 ## Author

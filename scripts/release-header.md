@@ -1,6 +1,9 @@
 <div align="center">
 
-[![Podlite](https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg)](https://podlite.org)
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core-dark.svg">
+<img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="200" alt="Podlite">
+</picture>
 
 **Podlite — lightweight block-based markup language**
 
