@@ -1,10 +1,9 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core-dark.svg">
-    <img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="200" alt="Podlite">
+    <img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="350" alt="Podlite">
   </picture>
 </p>
-<h1 align="center">Podlite</h1>
 <p align="center"><em>one markup, many possibilities</em></p>
 <p align="center">lightweight block-based markup language with parser, AST and renderers</p>
 
