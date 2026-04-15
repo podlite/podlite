@@ -35,6 +35,8 @@
         'para',
         'picture',
         'pod',
+        'row',
+        'cell',
         'table',
         'toc',
           ].includes(name) 
@@ -60,6 +62,7 @@
 Document = nodes:Element*  { return nodes }
 
 Element =  delimitedBlockRaw
+         / delimitedBlockTableStructured
          / delimitedBlockTable
          / delimitedBlock
          / paragraphBlockRaw 
@@ -344,9 +347,46 @@ tableRow = t:text_content { return { name:'row', type:'text', value:t } }
       }
     / tableRow+
 
-delimitedBlockTable = 
-    vmargin:$(_) 
-    markerBegin name:strictIdentifier _ config:pod_configuration 
+delimitedBlockTableStructured =
+    vmargin:$(_)
+    markerBegin name:strictIdentifier _ config:pod_configuration
+    &{ return name === 'table' }
+    &{ options.isDelimited = true; return true }
+    content:( nodes:(
+            blankline
+            / delimitedBlockRaw
+            / delimitedBlock
+            / paragraphBlockRaw
+            / paragraphBlock
+            / abbreviatedBlockRaw
+            / abbreviatedBlock
+            )* { return nodes }
+    )
+    &{ return content.some(n => n && (n.name === 'row' || n.name === 'cell')) }
+    vmargin2:$(_)
+    res:(
+            markerEnd ename:strictIdentifier &{ return name === ename } Endline?
+            {
+              return {
+                      type:'block',
+                      content,
+                      name,
+                      margin:vmargin
+                    }
+            }
+        )
+    {
+        return {
+                ...res,
+                text:text(),
+                config,
+                location:location()
+              }
+    }
+
+delimitedBlockTable =
+    vmargin:$(_)
+    markerBegin name:strictIdentifier _ config:pod_configuration
     &{ return name === 'table' }
     // set type of block
     &{  options.isDelimited = true; return true }
