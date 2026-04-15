@@ -38,29 +38,28 @@ FCodeSimple<Letter, Content>
 
 fcode_content_verbatim = $(!end_code .)*
 fcode_content_V = $(text_C)+
+fcode_content_D = ( text_L )+
+fcode_content_X = ( text_L )*
+
+FCodeWithArray<Letter, ContentRule>
+  = name:$Letter
+    &{ return !(options.allowed || []).length || (options.allowed || []).includes(name) }
+    begin_tag:$('<' / '«')
+    content:ContentRule
+    items:( separator t:array_items* { return flattenDeep(t) } )?
+    end_tag:end_code
+    &{ return end_tag === get_pair_tag(begin_tag) }
+    { return { name, content, items } }
 
 code_A = FCodeSimple<"A", text_L>
 code_V = FCodeSimple<"V", fcode_content_V>
 code_S = FCodeSimple<"S", fcode_content_verbatim>
 code_Z = FCodeSimple<"Z", fcode_content_verbatim>
 
-code_D = 
-    name:start_code &{return name === "D"}
-            
-    content: ( text_L )+
-     
-     synonyms:(
-           separator t:array_items*  { return flattenDeep(t) }
-           )?
-     end_code
-     {
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-                synonyms  
-             }
-    }
+code_D = r:FCodeWithArray<"D", fcode_content_D>
+         { return { content: r.content, type: 'fcode', name: r.name, synonyms: r.items } }
+code_X = r:FCodeWithArray<"X", fcode_content_X>
+         { return { content: r.content, type: 'fcode', name: r.name, entry: r.items } }
 
 allowed_code_C =('B')
 looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}  
@@ -116,23 +115,6 @@ array_items =
                             { return flattenDeep([ code, codes ]) }
           / code:item { return [code] }
 
-code_X = 
-    name:start_code &{return name === "X"}
-            
-    content: ( text_L )*
-     
-     entry:(
-           separator t:array_items*  { return flattenDeep(t) }
-           )?
-     end_code
-     {
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-                entry
-             }
-    }
 
 
 /*

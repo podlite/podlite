@@ -55,6 +55,22 @@ describe('fcode guillemet support', () => {
     expect(fc?.content).toBe('comment')
   })
 
+  it('D«term|syn1;syn2» parses with synonyms', () => {
+    const fc = firstFcode('=pod\nD«term|syn1;syn2»\n') as {
+      name: string
+      content: unknown
+      synonyms?: unknown[]
+    } | null
+    expect(fc?.name).toBe('D')
+    expect(fc?.synonyms).toEqual(['syn1', 'syn2'])
+  })
+
+  it('X«topic|entry» parses with entry', () => {
+    const fc = firstFcode('=pod\nX«topic|entry»\n') as { name: string; content: unknown; entry?: unknown[] } | null
+    expect(fc?.name).toBe('X')
+    expect(fc?.entry).toEqual(['entry'])
+  })
+
   it('mismatched brackets A«foo> fall back', () => {
     const fc = firstFcode('=pod\nA«foo>\n')
     expect(fc?.name).not.toBe('A')
