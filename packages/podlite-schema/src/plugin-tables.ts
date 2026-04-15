@@ -83,9 +83,33 @@ const extractColumnsByTemplate = (text, template) => {
  *  Main transforms
  */
 
+const wrapImplicitCells = rowNode => {
+  if (!Array.isArray(rowNode.content) || rowNode.content.length === 0) return rowNode
+  const hasNonCell = rowNode.content.some(c => c && c.type === 'block' && c.name !== 'cell' && c.name !== 'blankline')
+  if (!hasNonCell) return rowNode
+  const wrapped = rowNode.content.map(c => {
+    if (!c || c.type !== 'block') return c
+    if (c.name === 'cell' || c.name === 'blankline') return c
+    return { type: 'block', name: 'cell', content: [c], margin: c.margin || '' }
+  })
+  return { ...rowNode, content: wrapped }
+}
+
+const isStructured = tableNode =>
+  Array.isArray(tableNode.content) &&
+  tableNode.content.some(c => c && c.type === 'block' && (c.name === 'row' || c.name === 'cell'))
+
 export default () => tree => {
   const transformer = makeTransformer({
     table: node => {
+      // structured mode: transform row children (wrap implicit cells)
+      if (isStructured(node)) {
+        const transformedContent = (node.content || []).map(c => {
+          if (c && c.name === 'row') return wrapImplicitCells(c)
+          return c
+        })
+        return { ...node, content: transformedContent }
+      }
       let rows = []
       const collectValues = row => {
         rows.push(row.value)

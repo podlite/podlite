@@ -244,6 +244,19 @@ const rules = {
     },
     wrapContent('<tr>', '</tr>'),
   ),
+  row: (writer, processor) => (node, ctx, interator) => {
+    const conf = makeAttrs(node, ctx)
+    const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false
+    writer.writeRaw('<tr>')
+    interator(node.content, { ...ctx, __row_header: isHeader })
+    writer.writeRaw('</tr>')
+  },
+  cell: (writer, processor) => (node, ctx, interator) => {
+    const tag = ctx.__row_header ? 'th' : 'td'
+    writer.writeRaw(`<${tag}>`)
+    interator(node.content, ctx)
+    writer.writeRaw(`</${tag}>`)
+  },
   // Toc
   ':toc': (writer, processor) => (node, ctx, interator) => {
     writer.writeRaw('<div className="toc">')

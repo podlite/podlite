@@ -585,6 +585,18 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
       }),
     ),
+    row: setFn((node, ctx) => {
+      const conf = makeAttrs(node, ctx)
+      const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false
+      ctx.__row_header = isHeader
+      return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
+    }),
+    cell: setFn((node, ctx) => {
+      const tag = ctx.__row_header ? 'th' : 'td'
+      return mkComponent(({ children, key }) =>
+        tag === 'th' ? <th key={key}>{children}</th> : <td key={key}>{children}</td>,
+      )
+    }),
     ':list': setFn((node, ctx) =>
       node.list === 'ordered'
         ? mkComponent('ol')

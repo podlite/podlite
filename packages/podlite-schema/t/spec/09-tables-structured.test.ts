@@ -1,4 +1,4 @@
-import { parse } from '../../src'
+import { parse, toTree, toHtml } from '../../src'
 
 function findNodeByName(tree: unknown, name: string): unknown {
   if (!tree || typeof tree !== 'object') return null
@@ -99,5 +99,60 @@ describe('structured tables (=row/=cell)', () => {
     const ast = parse(src, { podMode: 1 })
     const cells = collectNodesByName(ast, 'cell') as Array<{ content?: unknown[] }>
     expect(cells).toHaveLength(2)
+  })
+
+  it('renders structured table to HTML with <tr>/<td>', () => {
+    const src = `=begin table
+
+=begin row
+=cell Fruits
+=cell Bananas
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).toContain('<table>')
+    expect(html).toContain('<tr>')
+    expect(html).toMatch(/<td>[\s\S]*Fruits[\s\S]*<\/td>/)
+    expect(html).toMatch(/<td>[\s\S]*Bananas[\s\S]*<\/td>/)
+  })
+
+  it('renders :header row with <th> cells', () => {
+    const src = `=begin table
+
+=begin row :header
+=cell Name
+=cell Age
+=end row
+
+=begin row
+=cell Alice
+=cell 30
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).toMatch(/<th>[\s\S]*Name[\s\S]*<\/th>/)
+    expect(html).toMatch(/<th>[\s\S]*Age[\s\S]*<\/th>/)
+    expect(html).toMatch(/<td>[\s\S]*Alice[\s\S]*<\/td>/)
+    expect(html).toMatch(/<td>[\s\S]*30[\s\S]*<\/td>/)
+  })
+
+  it('implicit cell wrapping for non-cell children in row', () => {
+    const src = `=begin table
+
+=begin row
+=para Direct paragraph
+=cell Explicit cell
+=end row
+
+=end table
+`
+    // implicit wrap happens via plugin-tables transform (skipChain=0 = skip plugins)
+    const processed = toTree().parse(src, { podMode: 1 })
+    const cells = collectNodesByName(processed, 'cell')
+    expect(cells.length).toBe(2)
   })
 })

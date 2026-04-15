@@ -95,6 +95,8 @@ export interface RulesStrict {
   'table:block': RuleHandler<BlockTable>
   table: RuleHandler<BlockTable>
   ':separator': RuleHandler<Separator>
+  row: RuleHandler<TableRow>
+  cell: RuleHandler<TableCell>
   table_row: RuleHandler<TableRow>
   table_cell: RuleHandler<TableCell>
   table_head: RuleHandler<TableHead>

@@ -259,14 +259,24 @@ const rules = {
     }
 
     // collect rows data for proper Markdown table rendering
-    const rows = (node.content || []).filter(child => child.name === 'table_row' || child.name === 'table_head')
+    const rows = (node.content || []).filter(
+      child => child.name === 'table_row' || child.name === 'table_head' || child.name === 'row',
+    )
     if (rows.length === 0) return
 
-    const hasHeader = rows[0].name === 'table_head'
+    const isRowHeader = row => {
+      if (row.name === 'table_head') return true
+      if (row.name === 'row' && Array.isArray(row.config)) {
+        return row.config.some(c => c.name === 'header' && c.value !== false)
+      }
+      return false
+    }
+
+    const hasHeader = isRowHeader(rows[0])
 
     // render each row
     rows.forEach((row, rowIndex) => {
-      const cells = (row.content || []).filter(c => c.name === 'table_cell')
+      const cells = (row.content || []).filter(c => c.name === 'table_cell' || c.name === 'cell')
       writer.writeRaw('|')
       cells.forEach(cell => {
         writer.writeRaw(' ')
@@ -307,6 +317,8 @@ const rules = {
   table_row: emptyContent, // handled inside table:block
   table_cell: emptyContent, // handled inside table:block
   table_head: emptyContent, // handled inside table:block
+  row: emptyContent, // handled inside table:block
+  cell: emptyContent, // handled inside table:block
   // Toc
   ':toc': emptyContent,
   ':toc-list': emptyContent,
