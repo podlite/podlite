@@ -18,7 +18,7 @@ import {
 import { mkRootBlock } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
 import { mkCaption } from '@podlite/schema'
-import { mkFomattingCodeDelete } from '@podlite/schema'
+import { mkFomattingCodeO } from '@podlite/schema'
 
 type Md2astArgs = { lineOffset?: number }
 export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0 }): AstTree => {
@@ -209,7 +209,7 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
       ':delete': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
-        return mkFomattingCodeDelete(interator(children, { ...ctx }))
+        return mkFomattingCodeO(interator(children, { ...ctx }))
       },
       ':break': (writer, processor) => (node, ctx, interator) => {
         return null

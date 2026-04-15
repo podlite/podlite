@@ -5,6 +5,8 @@
 =item added guillemet bracket support («...») for formatting codes A, V, S, Z, D, X — previously only angle brackets (<...>) worked for these codes
 =item refactored grammarfc to use parametric rules — unified simple codes via C<FCodeSimple> template, D/X via C<FCodeWithArray>
 =item bumped Pegmill dependency from 0.1.0 to 0.1.2
+=item added C<O<>> strikethrough formatting code (renders to HTML C<<del>>, Markdown C<~~...~~>)
+=item replaced legacy C<Delete<>> alias with canonical C<O<>> — Markdown C<~~text~~> now produces AST C<{name:'O'}>. Helper renamed C<mkFomattingCodeDelete> → C<mkFomattingCodeO>
 
 =head1 0.0.35
 

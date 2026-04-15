@@ -1662,7 +1662,7 @@ it('[markdown]: parse strikethrough', () => {
               "content": Array [
                 "this",
               ],
-              "name": "Delete",
+              "name": "O",
               "type": "fcode",
             },
           ],

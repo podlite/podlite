@@ -54,6 +54,7 @@ const rules = {
   'I<>': wrapContent('<em>', '</em>'),
   'R<>': wrapContent('<var>', '</var>'),
   'K<>': wrapContent('<kbd>', '</kbd>'),
+  'O<>': wrapContent('<del>', '</del>'),
   'L<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {

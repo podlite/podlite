@@ -46,8 +46,8 @@ export const mkFomattingCodeL = (attrs, content): FormattingCodeL => {
   return mkNode({ ...attrs, type: 'fcode', name: 'L', content: filterNulls(content) })
 }
 
-export const mkFomattingCodeDelete = content => {
-  return mkNode({ type: 'fcode', name: 'Delete', content: filterNulls(content) })
+export const mkFomattingCodeO = content => {
+  return mkNode({ type: 'fcode', name: 'O', content: filterNulls(content) })
 }
 
 export const mkMarkupCodeF = (formula: string): FormattingCodeF => {

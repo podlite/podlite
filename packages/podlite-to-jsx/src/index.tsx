@@ -488,7 +488,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       })
       return interator(node.content, ctx)
     },
-    'Delete<>': mkComponent('del'),
+    'O<>': mkComponent('del'),
     // table section
     table: (writer, processor) => (node, ctx, interator) => {
       const conf = makeAttrs(node, ctx)

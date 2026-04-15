@@ -81,4 +81,14 @@ describe('fcode guillemet support', () => {
     expect(fc?.name).toBe('A')
     expect(fc?.content).toBe('link')
   })
+
+  it('O<strike> parses as strikethrough', () => {
+    const fc = firstFcode('=pod\nO<strike>\n')
+    expect(fc?.name).toBe('O')
+  })
+
+  it('O«strike» parses with guillemets', () => {
+    const fc = firstFcode('=pod\nO«strike»\n')
+    expect(fc?.name).toBe('O')
+  })
 })
