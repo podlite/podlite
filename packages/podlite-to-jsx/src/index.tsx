@@ -342,7 +342,9 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
           })
           .join('')
     },
+    'H<>': mkComponent('sup'),
     'I<>': mkComponent('i'),
+    'J<>': mkComponent('sub'),
     'K<>': mkComponent('kbd'),
     /**
      * CSS rules for footnotes

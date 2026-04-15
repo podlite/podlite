@@ -91,4 +91,21 @@ describe('fcode guillemet support', () => {
     const fc = firstFcode('=pod\nO«strike»\n')
     expect(fc?.name).toBe('O')
   })
+
+  it('H<2> parses as superscript', () => {
+    const fc = firstFcode('=pod\nH<2>\n')
+    expect(fc?.name).toBe('H')
+  })
+
+  it('J<0> parses as subscript', () => {
+    const fc = firstFcode('=pod\nJ<0>\n')
+    expect(fc?.name).toBe('J')
+  })
+
+  it('H«2» and J«0» parse with guillemets', () => {
+    const h = firstFcode('=pod\nH«2»\n')
+    const j = firstFcode('=pod\nJ«0»\n')
+    expect(h?.name).toBe('H')
+    expect(j?.name).toBe('J')
+  })
 })
