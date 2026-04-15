@@ -27,17 +27,22 @@ raw_text= $(.)
 // identifier_A = $((!hs .)+)
 // content_A = ( !end_code _ id:$(identifier)? _ { return id } )?
 // content_A = ( !end_code _ id:$(identifier_A)? _ { return id } )?
-code_A = 
-    name:start_code &{return name === "A"}
-    content: text_L // string || []
-    end_code
-     {
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-             }
-    }
+FCodeSimple<Letter, Content>
+  = name:$Letter
+    &{ return !(options.allowed || []).length || (options.allowed || []).includes(name) }
+    begin_tag:$('<' / '«')
+    content:Content
+    end_tag:end_code
+    &{ return end_tag === get_pair_tag(begin_tag) }
+    { return { content, type: 'fcode', name } }
+
+fcode_content_verbatim = $(!end_code .)*
+fcode_content_V = $(text_C)+
+
+code_A = FCodeSimple<"A", text_L>
+code_V = FCodeSimple<"V", fcode_content_V>
+code_S = FCodeSimple<"S", fcode_content_verbatim>
+code_Z = FCodeSimple<"Z", fcode_content_verbatim>
 
 code_D = 
     name:start_code &{return name === "D"}
@@ -57,17 +62,6 @@ code_D =
              }
     }
 
-code_V = 
-    name:start_code &{return name === "V"}
-    content: $( text_C )+ 
-    end_code
-     {  
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-             }
-    }
 allowed_code_C =('B')
 looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}  
      /
@@ -140,30 +134,6 @@ code_X =
              }
     }
 
-code_S = 
-    name:start_code &{return name === "S"}
-    content: $(!end_code .)*
-    end_code
-     {
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-             }
-    }
-
-
-code_Z = 
-    name:start_code &{return name === "Z"}
-    content: $(!end_code .)*
-    end_code
-     {
-         return  { 
-                content,
-                'type':"fcode",
-                name,
-             }
-    }
 
 /*
     E<0b10101011> and E<0b10111011>.

@@ -2013,7 +2013,7 @@ __metadata:
     json-pointer: ^0.6.1
     nanoid: 3.1.30
     npm-run-all: ^4.1.5
-    pegmill: 0.1.0
+    pegmill: 0.1.2
     slugify: ^1.6.6
     ts-node: ^9.1.1
     typescript: 4.5.5
@@ -8014,12 +8014,12 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"pegmill@npm:0.1.0":
-  version: 0.1.0
-  resolution: "pegmill@npm:0.1.0"
+"pegmill@npm:0.1.2":
+  version: 0.1.2
+  resolution: "pegmill@npm:0.1.2"
   bin:
     pegmill: bin/pegmill
-  checksum: 0d8d48e4d7dd23b05f9573ec085114cf220dc12ad5fdb3e24acfe2d66b39bfbaa5c5912a8508e7627d6a597f6a6e717cfe8ee01ffe28ed4b937662587c297b16
+  checksum: c975590976bf65e22133b67e1fba7a512447b2c7aa7364cddb380c2da0b604aa70746ff3dd8982043f2e4a96e36d8a1c0006b8712ac02d40b55b5183aa2503c3
   languageName: node
   linkType: hard
 
