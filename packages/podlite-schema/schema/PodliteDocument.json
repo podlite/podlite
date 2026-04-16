@@ -1521,7 +1521,7 @@
                 "name": {
                     "type": "string",
                     "enum": [
-                        "table_row"
+                        "row"
                     ]
                 },
                 "type": {
@@ -1549,7 +1549,7 @@
                 "name": {
                     "type": "string",
                     "enum": [
-                        "table_cell"
+                        "cell"
                     ]
                 },
                 "type": {
@@ -1577,7 +1577,7 @@
                 "name": {
                     "type": "string",
                     "enum": [
-                        "table_head"
+                        "row"
                     ]
                 },
                 "type": {

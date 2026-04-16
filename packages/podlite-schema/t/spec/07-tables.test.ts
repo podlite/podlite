@@ -25,25 +25,25 @@ it('spec: 07-tables 0', () => {
                 "content": Array [
                   " The Shoveller",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Eddie Stevens ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " King Arthur's singing shovel",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -52,25 +52,25 @@ it('spec: 07-tables 0', () => {
                 "content": Array [
                   " Blue Raja    ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Geoffrey Smith",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Master of cutlery",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -79,25 +79,25 @@ it('spec: 07-tables 0', () => {
                 "content": Array [
                   " Mr Furious   ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Roy Orson     ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Ticking time bomb of fury",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -106,25 +106,25 @@ it('spec: 07-tables 0', () => {
                 "content": Array [
                   " The Bowler   ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Carol Pinnsler",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Haunted bowling ball",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -182,18 +182,18 @@ it('spec: 07-tables 1', () => {
                 "content": Array [
                   " Constants      ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " 1",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -202,18 +202,18 @@ it('spec: 07-tables 1', () => {
                 "content": Array [
                   " Variables      ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " 10",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -222,18 +222,18 @@ it('spec: 07-tables 1', () => {
                 "content": Array [
                   " Subroutines    ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " 33",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -242,18 +242,18 @@ it('spec: 07-tables 1', () => {
                 "content": Array [
                   " Everything else",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " 57",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -303,18 +303,18 @@ it('spec: 07-tables 2', () => {
                 "content": Array [
                   " mouse   ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " mice",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -323,18 +323,18 @@ it('spec: 07-tables 2', () => {
                 "content": Array [
                   " horse   ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " horses",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -343,18 +343,18 @@ it('spec: 07-tables 2', () => {
                 "content": Array [
                   " elephant",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " elephants",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -401,30 +401,37 @@ it('spec: 07-tables 3', () => {
         "config": Array [],
         "content": Array [
           Object {
+            "config": Array [
+              Object {
+                "name": "header",
+                "type": "boolean",
+                "value": true,
+              },
+            ],
             "content": Array [
               Object {
                 "content": Array [
                   " Animal",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Legs",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "    Eats",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_head",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -438,25 +445,25 @@ it('spec: 07-tables 3', () => {
                 "content": Array [
                   " Zebra ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "   4 ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Cookies",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -465,25 +472,25 @@ it('spec: 07-tables 3', () => {
                 "content": Array [
                   " Human ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "   2 ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "   Pizza",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -492,25 +499,25 @@ it('spec: 07-tables 3', () => {
                 "content": Array [
                   " Shark ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "   0 ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "    Fish",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -556,30 +563,37 @@ it('spec: 07-tables 4', () => {
         "config": Array [],
         "content": Array [
           Object {
+            "config": Array [
+              Object {
+                "name": "header",
+                "type": "boolean",
+                "value": true,
+              },
+            ],
             "content": Array [
               Object {
                 "content": Array [
                   " Superhero                  ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Secret        Identity     ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "  Superpower",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_head",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -593,25 +607,25 @@ it('spec: 07-tables 4', () => {
                 "content": Array [
                   " The Shoveller",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Eddie Stevens",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " King Arthur's singing shovel",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -668,30 +682,37 @@ it('spec: 07-tables 5', () => {
         "config": Array [],
         "content": Array [
           Object {
+            "config": Array [
+              Object {
+                "name": "header",
+                "type": "boolean",
+                "value": true,
+              },
+            ],
             "content": Array [
               Object {
                 "content": Array [
                   "               Superhero    ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Secret Identity      ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "  Superpower",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_head",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -705,25 +726,25 @@ it('spec: 07-tables 5', () => {
                 "content": Array [
                   " The Shoveller              ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Eddie Stevens                ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " King Arthur's singing shovel",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -737,25 +758,25 @@ it('spec: 07-tables 5', () => {
                 "content": Array [
                   " Blue Raja    ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Geoffrey Smith",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Master of cutlery",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -769,25 +790,25 @@ it('spec: 07-tables 5', () => {
                 "content": Array [
                   " Mr Furious                 ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Roy Orson                    ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Ticking time bomb of fury",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -801,25 +822,25 @@ it('spec: 07-tables 5', () => {
                 "content": Array [
                   " The Bowler   ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Carol Pinnsler",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Haunted bowling ball",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -893,25 +914,25 @@ it('spec: 07-tables 6', () => {
                 "content": Array [
                   " X",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " O",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -925,25 +946,25 @@ it('spec: 07-tables 6', () => {
                 "content": Array [
                   "  ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " X",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " O",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -957,25 +978,25 @@ it('spec: 07-tables 6', () => {
                 "content": Array [
                   "  ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   "  ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " X",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
         ],
@@ -1044,11 +1065,11 @@ bar
                 "content": Array [
                   " foo",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1057,11 +1078,11 @@ bar
                 "content": Array [
                   " bar",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1131,23 +1152,30 @@ it('spec: extra', () => {
         ],
         "content": Array [
           Object {
+            "config": Array [
+              Object {
+                "name": "header",
+                "type": "boolean",
+                "value": true,
+              },
+            ],
             "content": Array [
               Object {
                 "content": Array [
                   " Block typename",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Specifies",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_head",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1161,18 +1189,18 @@ it('spec: extra', () => {
                 "content": Array [
                   " code          ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Verbatim pre-formatted sample source code",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1181,18 +1209,18 @@ it('spec: extra', () => {
                 "content": Array [
                   " comment       ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Content to be ignored by all renderers",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1201,18 +1229,18 @@ it('spec: extra', () => {
                 "content": Array [
                   " defn          ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " Definition of a term",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {
@@ -1221,18 +1249,18 @@ it('spec: extra', () => {
                 "content": Array [
                   " Typename      ",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
                   " User-defined block",
                 ],
-                "name": "table_cell",
+                "name": "cell",
                 "type": "block",
               },
             ],
-            "name": "table_row",
+            "name": "row",
             "type": "block",
           },
           Object {

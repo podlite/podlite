@@ -236,14 +236,6 @@ const rules = {
     writer.writeRaw('</table>')
   }),
   ':separator': emptyContent,
-  table_row: wrapContent('<tr>', '</tr>'),
-  table_cell: wrapContent('<td>', '</td>'),
-  table_head: subUse(
-    {
-      table_cell: wrapContent('<th>', '</th>'),
-    },
-    wrapContent('<tr>', '</tr>'),
-  ),
   row: (writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false

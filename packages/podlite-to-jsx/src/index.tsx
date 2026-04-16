@@ -546,55 +546,28 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       )
     },
     ':separator': emptyContent(),
-    table_row: setFn((node, ctx) => {
-      if (ctx['table.align']) {
-        ctx['cellinRow'] = 0
-      }
+    row: setFn((node, ctx) => {
+      const conf = makeAttrs(node, ctx)
+      const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false
+      ctx.__row_header = isHeader
+      if (ctx['table.align']) ctx['cellinRow'] = 0
       return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
     }),
-    table_cell: setFn((node, ctx) => {
+    cell: setFn((node, ctx) => {
       const align = (alignMap => {
         if (!alignMap) return null
         const num = ctx['cellinRow']++
         return alignMap[num % alignMap.length]
       })(ctx['table.align'])
-
-      return mkComponent(({ children, key }) => (
-        <td align={align} key={key}>
-          {children}
-        </td>
-      ))
-    }),
-
-    table_head: subUse(
-      {
-        table_cell: setFn((node, ctx) => {
-          const align = (alignMap => {
-            if (!alignMap) return null
-            const num = ctx['cellinRow']++
-            return alignMap[num % alignMap.length]
-          })(ctx['table.align'])
-
-          return mkComponent(({ children, key }) => <th key={key}>{children}</th>)
-        }),
-      },
-      setFn((node, ctx) => {
-        if (ctx['table.align']) {
-          ctx['cellinRow'] = 0
-        }
-        return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
-      }),
-    ),
-    row: setFn((node, ctx) => {
-      const conf = makeAttrs(node, ctx)
-      const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false
-      ctx.__row_header = isHeader
-      return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
-    }),
-    cell: setFn((node, ctx) => {
-      const tag = ctx.__row_header ? 'th' : 'td'
+      const isHeader = ctx.__row_header
       return mkComponent(({ children, key }) =>
-        tag === 'th' ? <th key={key}>{children}</th> : <td key={key}>{children}</td>,
+        isHeader ? (
+          <th key={key}>{children}</th>
+        ) : (
+          <td align={align} key={key}>
+            {children}
+          </td>
+        ),
       )
     }),
     ':list': setFn((node, ctx) =>

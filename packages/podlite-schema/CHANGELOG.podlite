@@ -8,6 +8,9 @@
 =item added C<O<>> strikethrough formatting code (renders to HTML C<<del>>, Markdown C<~~...~~>)
 =item replaced legacy C<Delete<>> alias with canonical C<O<>> — Markdown C<~~text~~> now produces AST C<{name:'O'}>. Helper renamed C<mkFomattingCodeDelete> → C<mkFomattingCodeO>
 =item added C<H<>> superscript (renders to HTML C<<sup>>) and C<J<>> subscript (renders to HTML C<<sub>>) formatting codes
+=item added structured table format with C<=begin row> and C<=cell> blocks, including C<:header> attribute support (renders to HTML C<<thead>/<th>>, JSX, GFM pipe tables)
+=item implicit cell wrapping: non-cell children inside C<=row> are automatically wrapped in C<=cell>
+=item unified table AST across text-mode, structured and Markdown inputs — all produce C<{name:'row'}>/C<{name:'cell'}>. Legacy C<table_row>/C<table_cell>/C<table_head> node names removed
 
 =head1 0.0.35
 

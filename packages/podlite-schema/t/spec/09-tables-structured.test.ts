@@ -72,7 +72,7 @@ describe('structured tables (=row/=cell)', () => {
     expect(headerConfig?.value).toBe(true)
   })
 
-  it('falls back to text-mode for non-structured table', () => {
+  it('text-mode table produces unified row/cell AST', () => {
     const src = `=begin table
   Name  | Age
   Alice | 30
@@ -83,7 +83,9 @@ describe('structured tables (=row/=cell)', () => {
     const table = findNodeByName(ast, 'table') as { content?: unknown[] } | null
     expect(table).not.toBeNull()
     const rows = collectNodesByName(table, 'row')
-    expect(rows).toHaveLength(0)
+    expect(rows).toHaveLength(3)
+    const cells = collectNodesByName(table, 'cell')
+    expect(cells.length).toBeGreaterThanOrEqual(6)
   })
 
   it('parses abbreviated =cell form', () => {

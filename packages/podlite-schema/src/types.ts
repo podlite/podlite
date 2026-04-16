@@ -97,9 +97,6 @@ export interface RulesStrict {
   ':separator': RuleHandler<Separator>
   row: RuleHandler<TableRow>
   cell: RuleHandler<TableCell>
-  table_row: RuleHandler<TableRow>
-  table_cell: RuleHandler<TableCell>
-  table_head: RuleHandler<TableHead>
 
   //toc
   toc: RuleHandler<BlockToc>
@@ -429,18 +426,18 @@ export interface BlockTable extends Omit<Block, 'content'> {
   text?: string
 }
 export interface TableCell {
-  name: 'table_cell'
+  name: 'cell'
   type: 'block'
   content: Array<string>
 }
 export interface TableRow {
-  name: 'table_row'
+  name: 'row'
   type: 'block'
   content: Array<TableCell>
 }
 
 export interface TableHead {
-  name: 'table_head'
+  name: 'row'
   type: 'block'
   content: Array<TableCell>
 }

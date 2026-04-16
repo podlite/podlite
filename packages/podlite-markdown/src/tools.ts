@@ -198,14 +198,18 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       ':tableRow': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
         const isHeaderUsed = ctx.isHeaderUsed++
-        return mkBlock(
-          { name: isHeaderUsed ? 'table_row' : 'table_head', location: applyLineOffset(position) },
-          interator(children, { ...ctx }),
-        )
+        const blockAttrs: Record<string, unknown> = {
+          name: 'row',
+          location: applyLineOffset(position),
+        }
+        if (!isHeaderUsed) {
+          blockAttrs.config = [{ name: 'header', value: true, type: 'boolean' }]
+        }
+        return mkBlock(blockAttrs, interator(children, { ...ctx }))
       },
       ':tableCell': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
-        return mkBlock({ name: 'table_cell', location: applyLineOffset(position) }, interator(children, { ...ctx }))
+        return mkBlock({ name: 'cell', location: applyLineOffset(position) }, interator(children, { ...ctx }))
       },
       ':delete': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node

@@ -21,18 +21,18 @@ describe('no separator in table  ', () => {
                       "content": Array [
                         "   X",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
                         " Y",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                   ],
-                  "name": "table_row",
+                  "name": "row",
                   "type": "block",
                 },
                 Object {
@@ -41,18 +41,18 @@ describe('no separator in table  ', () => {
                       "content": Array [
                         "   1",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
                         " 2",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                   ],
-                  "name": "table_row",
+                  "name": "row",
                   "type": "block",
                 },
               ],
@@ -114,18 +114,18 @@ describe('no separator in table  ', () => {
                       "content": Array [
                         "   X ",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
                         " Y",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                   ],
-                  "name": "table_row",
+                  "name": "row",
                   "type": "block",
                 },
                 Object {
@@ -134,18 +134,18 @@ describe('no separator in table  ', () => {
                       "content": Array [
                         "   1a",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
                         "  2a",
                       ],
-                      "name": "table_cell",
+                      "name": "cell",
                       "type": "block",
                     },
                   ],
-                  "name": "table_row",
+                  "name": "row",
                   "type": "block",
                 },
               ],

@@ -145,9 +145,13 @@ export default () => tree => {
       })(node)
 
       const columnTemplate = makeMask(lines, separators)
-      const makeBlock = (name, content, ...attr) => {
-        return { ...attr, name, type: 'block', content: Array.isArray(content) ? content : [content] }
+      const makeBlock = (name, content, extra = {}) => {
+        return { ...extra, name, type: 'block', content: Array.isArray(content) ? content : [content] }
       }
+      const makeRow = cells => makeBlock('row', cells)
+      const makeHeaderRow = cells =>
+        makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
+      const makeCell = text => makeBlock('cell', { type: 'text', value: text })
       // make columns
       const res = makeTransformer({
         'row:text': row => {
@@ -155,25 +159,16 @@ export default () => tree => {
             // split each text row into lines
             const textRowsLines = flattenDeep([row.value].map(splitToLines))
             return textRowsLines.map(rowValue => {
-              const res = extractColumnsByTemplate(rowValue, columnTemplate)
-              return makeBlock(
-                'table_row',
-                res.map(col => makeBlock('table_cell', { type: 'text', value: col })),
-              )
+              const cols = extractColumnsByTemplate(rowValue, columnTemplate)
+              return makeRow(cols.map(makeCell))
             })
           }
-          const res = extractColumnsByTemplate(row.value, columnTemplate)
-          return makeBlock(
-            'table_row',
-            res.map(col => makeBlock('table_cell', { type: 'text', value: col })),
-          )
+          const cols = extractColumnsByTemplate(row.value, columnTemplate)
+          return makeRow(cols.map(makeCell))
         },
         'head:text': head => {
-          const res = extractColumnsByTemplate(head.value, columnTemplate)
-          return makeBlock(
-            'table_head',
-            res.map(col => makeBlock('table_cell', { type: 'text', value: col })),
-          )
+          const cols = extractColumnsByTemplate(head.value, columnTemplate)
+          return makeHeaderRow(cols.map(makeCell))
         },
       })(node)
 

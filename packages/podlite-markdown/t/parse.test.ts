@@ -886,6 +886,13 @@ Content in the first column | Content in the second column
           ],
           "content": Array [
             Object {
+              "config": Array [
+                Object {
+                  "name": "header",
+                  "type": "boolean",
+                  "value": true,
+                },
+              ],
               "content": Array [
                 Object {
                   "content": Array [
@@ -905,7 +912,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -926,7 +933,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -944,7 +951,7 @@ Content in the first column | Content in the second column
                 },
               },
               "margin": "",
-              "name": "table_head",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -967,7 +974,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -988,7 +995,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1006,7 +1013,7 @@ Content in the first column | Content in the second column
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -1029,7 +1036,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1050,7 +1057,7 @@ Content in the first column | Content in the second column
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1068,7 +1075,7 @@ Content in the first column | Content in the second column
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
           ],
@@ -1119,6 +1126,13 @@ it('[markdown]: parse table with empty header', () => {
           ],
           "content": Array [
             Object {
+              "config": Array [
+                Object {
+                  "name": "header",
+                  "type": "boolean",
+                  "value": true,
+                },
+              ],
               "content": Array [
                 Object {
                   "content": Array [],
@@ -1136,7 +1150,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1155,7 +1169,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1173,7 +1187,7 @@ it('[markdown]: parse table with empty header', () => {
                 },
               },
               "margin": "",
-              "name": "table_head",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -1196,7 +1210,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1217,7 +1231,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1235,7 +1249,7 @@ it('[markdown]: parse table with empty header', () => {
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -1258,7 +1272,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1279,7 +1293,7 @@ it('[markdown]: parse table with empty header', () => {
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1297,7 +1311,7 @@ it('[markdown]: parse table with empty header', () => {
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
           ],
@@ -1371,6 +1385,13 @@ More text    | Even more text   | And even more to the right
           ],
           "content": Array [
             Object {
+              "config": Array [
+                Object {
+                  "name": "header",
+                  "type": "boolean",
+                  "value": true,
+                },
+              ],
               "content": Array [
                 Object {
                   "content": Array [
@@ -1390,7 +1411,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1411,7 +1432,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1432,7 +1453,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1450,7 +1471,7 @@ More text    | Even more text   | And even more to the right
                 },
               },
               "margin": "",
-              "name": "table_head",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -1473,7 +1494,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1494,7 +1515,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1515,7 +1536,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1533,7 +1554,7 @@ More text    | Even more text   | And even more to the right
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
             Object {
@@ -1556,7 +1577,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1577,7 +1598,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
                 Object {
@@ -1598,7 +1619,7 @@ More text    | Even more text   | And even more to the right
                     },
                   },
                   "margin": "",
-                  "name": "table_cell",
+                  "name": "cell",
                   "type": "block",
                 },
               ],
@@ -1616,7 +1637,7 @@ More text    | Even more text   | And even more to the right
                 },
               },
               "margin": "",
-              "name": "table_row",
+              "name": "row",
               "type": "block",
             },
           ],
