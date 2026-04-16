@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item fix performance: in full-preview mode skip C<view.dispatch({scrollIntoView:true})> and C<getBoundingClientRect> calls on the hidden CodeMirror view; coalesce preview scroll tracking to one C<getScrollMap> pass per frame via C<requestAnimationFrame>; apply the recorded line in a single dispatch on mode exit
+=item fix UX: entering full-preview scrolls the preview to the editor's current top visible line (was always line 1); leaving full-preview places the cursor on the last visible preview line and centers it at ~1/4 from the top of the editor
+=item add CSS containment (C<contain: layout paint style>) to C<.line-src> wrappers and C<.podlite-editor-preview> to reduce per-paint cost during scroll
+
 =head1 0.0.43
 
 =item add C<enableFolding> prop — control fold gutter visibility (default C<true>, C<false> for embedded editors)

@@ -72,3 +72,11 @@
 .podlite-editor .cm-editor:not(:has(.cm-foldGutter)) .cm-content {
   padding-left: 11px;
 }
+/* Scope layout/paint/style recalculation to each wrapped AST node so that
+   scrolling a long preview does not invalidate the whole document. */
+.podlite-editor .podlite-editor-preview .line-src {
+  contain: layout paint style;
+}
+.podlite-editor .podlite-editor-preview {
+  contain: layout paint;
+}

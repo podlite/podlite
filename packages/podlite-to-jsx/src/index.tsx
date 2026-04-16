@@ -573,10 +573,10 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       return mkComponent(({ children, key }) => <tr key={key}>{children}</tr>)
     }),
     cell: setFn((node, ctx) => {
-      const align = (alignMap => {
-        if (!alignMap) return null
+      const colAlign = (alignMap => {
+        if (!Array.isArray(alignMap)) return null
         const num = ctx['cellinRow']++
-        return alignMap[num % alignMap.length]
+        return alignMap[num] || null
       })(ctx['table.align'])
       const isHeader = ctx.__row_header
       const conf = makeAttrs(node, ctx)
@@ -584,13 +584,17 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       const rowSpanRaw = conf.exists('rowspan') ? Number(conf.getFirstValue('rowspan')) : 0
       const colSpan = colSpanRaw > 1 ? colSpanRaw : undefined
       const rowSpan = rowSpanRaw > 1 ? rowSpanRaw : undefined
+      const style =
+        colAlign && ['left', 'right', 'center', 'justify'].includes(colAlign)
+          ? { textAlign: colAlign as 'left' | 'right' | 'center' | 'justify' }
+          : undefined
       return mkComponent(({ children, key }) =>
         isHeader ? (
-          <th key={key} colSpan={colSpan} rowSpan={rowSpan}>
+          <th key={key} colSpan={colSpan} rowSpan={rowSpan} style={style}>
             {children}
           </th>
         ) : (
-          <td align={align} key={key} colSpan={colSpan} rowSpan={rowSpan}>
+          <td key={key} colSpan={colSpan} rowSpan={rowSpan} style={style}>
             {children}
           </td>
         ),

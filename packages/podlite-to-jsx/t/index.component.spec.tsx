@@ -148,37 +148,37 @@ it('table with aligns', () => {
       <table id="id">
         <thead>
           <tr>
-            <th>
+            <th style="text-align:left">
               Left
             </th>
-            <th>
+            <th style="text-align:center">
               Centered
             </th>
-            <th>
+            <th style="text-align:right">
               Right
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="left">
+            <td style="text-align:left">
               This is left
             </td>
-            <td align="center">
+            <td style="text-align:center">
               Text is centered
             </td>
-            <td align="right">
+            <td style="text-align:right">
               And this is right-aligned
             </td>
           </tr>
           <tr>
-            <td align="left">
+            <td style="text-align:left">
               More text
             </td>
-            <td align="center">
+            <td style="text-align:center">
               Even more text
             </td>
-            <td align="right">
+            <td style="text-align:right">
               And even more to the right
             </td>
           </tr>

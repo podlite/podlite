@@ -232,12 +232,13 @@ const rules = {
       writer.write(conf.getFirstValue('caption'))
       writer.writeRaw('</caption>')
     }
+    const innerCtx = { ...ctx, ...(node.align && { 'table.align': node.align }) }
     const content = node.content || []
     const isHeaderRow = c =>
       c && c.name === 'row' && Array.isArray(c.config) && c.config.some(a => a.name === 'header' && a.value !== false)
     const hasHeader = content.some(isHeaderRow)
     if (!hasHeader) {
-      interator(content, ctx)
+      interator(content, innerCtx)
       writer.writeRaw('</table>')
       return
     }
@@ -247,13 +248,13 @@ const rules = {
     while (headerEnd < rowNodes.length && isHeaderRow(rowNodes[headerEnd])) headerEnd++
     const headerRows = rowNodes.slice(0, headerEnd)
     const bodyRows = rowNodes.slice(headerEnd)
-    interator(nonRowContent, ctx)
+    interator(nonRowContent, innerCtx)
     writer.writeRaw('<thead>')
-    interator(headerRows, ctx)
+    interator(headerRows, innerCtx)
     writer.writeRaw('</thead>')
     if (bodyRows.length > 0) {
       writer.writeRaw('<tbody>')
-      interator(bodyRows, ctx)
+      interator(bodyRows, innerCtx)
       writer.writeRaw('</tbody>')
     }
     writer.writeRaw('</table>')
@@ -263,7 +264,7 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const isHeader = conf.exists('header') && conf.getFirstValue('header') !== false
     writer.writeRaw('<tr>')
-    interator(node.content, { ...ctx, __row_header: isHeader })
+    interator(node.content, { ...ctx, __row_header: isHeader, cellinRow: 0 })
     writer.writeRaw('</tr>')
   },
   cell: (writer, processor) => (node, ctx, interator) => {
@@ -271,9 +272,16 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const colspan = conf.exists('colspan') ? conf.getFirstValue('colspan') : null
     const rowspan = conf.exists('rowspan') ? conf.getFirstValue('rowspan') : null
+    const colAlign = (alignMap => {
+      if (!Array.isArray(alignMap)) return null
+      const num = ctx['cellinRow']++
+      return alignMap[num] || null
+    })(ctx['table.align'])
     let attrs = ''
     if (colspan !== null && Number(colspan) > 1) attrs += ` colspan="${colspan}"`
     if (rowspan !== null && Number(rowspan) > 1) attrs += ` rowspan="${rowspan}"`
+    if (colAlign && ['left', 'right', 'center', 'justify'].includes(colAlign))
+      attrs += ` style="text-align:${colAlign}"`
     writer.writeRaw(`<${tag}${attrs}>`)
     interator(node.content, ctx)
     writer.writeRaw(`</${tag}>`)

@@ -111,6 +111,11 @@ function PodliteEditorInternal(
   const topLine = useRef<number>(startLinePreview)
   const $viewHeight = useRef<number>(0)
   const initialStateApplied = useRef(false)
+  // In full-preview mode we record the top visible line during scroll but defer
+  // the CodeMirror cursor/scroll dispatch until the user leaves preview, since
+  // dispatching on the hidden editor forces an expensive measure pass.
+  const pendingPreviewLine = useRef<number | null>(null)
+  const fullPreviewScrollRaf = useRef<number>(0)
 
   // Stable refs for callbacks used in memoized extensions
   // Stable refs for callbacks used in memoized extensions
@@ -278,12 +283,24 @@ function PodliteEditorInternal(
 
   useEffect(() => {
     if (!preview.current) return
+    const previewEl = preview.current
     const listener = e => {
       if (!enableScroll) return
-
       if (active.current === 'editor') return
-      let element = e.target
-      const line = getNearestMapForOffset(getScrollMap(preview.current), element.scrollTop).line
+      const scrollTop = (e.target as HTMLElement).scrollTop
+
+      if (full_preview) {
+        // Defer CM6 work: only record the target line, coalesced per frame.
+        if (fullPreviewScrollRaf.current) return
+        fullPreviewScrollRaf.current = requestAnimationFrame(() => {
+          fullPreviewScrollRaf.current = 0
+          if (!preview.current) return
+          pendingPreviewLine.current = getNearestMapForOffset(getScrollMap(preview.current), scrollTop).line
+        })
+        return
+      }
+
+      const line = getNearestMapForOffset(getScrollMap(preview.current), scrollTop).line
 
       // get pos from
       const pos = codeMirror.current.view.state.doc.line(line).from + 0
@@ -303,16 +320,66 @@ function PodliteEditorInternal(
       }
       return true
     }
-    preview?.current?.addEventListener('scroll', listener)
+    previewEl.addEventListener('scroll', listener)
 
     return () => {
-      preview?.current?.removeEventListener('scroll', listener)
+      previewEl.removeEventListener('scroll', listener)
+      if (fullPreviewScrollRaf.current) {
+        cancelAnimationFrame(fullPreviewScrollRaf.current)
+        fullPreviewScrollRaf.current = 0
+      }
     }
-  }, [preview, enableScroll, enablePreview, value])
+  }, [preview, enableScroll, enablePreview, value, full_preview])
+
+  // Bidirectional scroll handoff for full-preview mode:
+  //   entering  → scroll the preview to the editor's current top line
+  //   leaving   → move the editor cursor + scroll to the last preview line
+  // All CodeMirror measure work is concentrated in these two transitions so
+  // nothing expensive runs during the scroll itself.
+  useEffect(() => {
+    const view = codeMirror.current?.view
+    if (!view) return
+
+    if (full_preview) {
+      if (!preview.current) return
+      const rect = view.dom.getBoundingClientRect()
+      const topBlock = view.lineBlockAtHeight(rect.top - view.documentTop)
+      const targetLine = view.state.doc.lineAt(topBlock.from).number
+      topLine.current = targetLine
+      const timer = setTimeout(() => {
+        const previewEl = preview.current
+        if (!previewEl) return
+        const map = getNearestMapForLine(getScrollMap(previewEl), targetLine)
+        const el = previewEl.querySelector(`#line-${map?.line || targetLine}`) as HTMLDivElement
+        if (el) {
+          previewEl.scrollTo({ top: el.offsetTop, left: 0, behavior: 'auto' })
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+
+    const line = pendingPreviewLine.current
+    if (line == null) return
+    pendingPreviewLine.current = null
+    if (line < 1 || line > view.state.doc.lines) return
+    const pos = view.state.doc.line(line).from
+    view.dispatch({ selection: { anchor: pos }, scrollIntoView: true })
+    // Re-center so the target line sits at ~1/4 from the top of the editor,
+    // matching the pre-optimization positioning.
+    const rafId = requestAnimationFrame(() => {
+      const linePos = view.coordsAtPos(pos)
+      if (!linePos) return
+      const editorRect = view.dom.getBoundingClientRect()
+      const offset = linePos.top - editorRect.top - editorRect.height / 4
+      view.scrollDOM.scrollTop += offset
+    })
+    return () => cancelAnimationFrame(rafId)
+  }, [full_preview])
 
   const previewScrollHandle = useCallback(
     (event: Event) => {
       if (!enableScroll) return
+      if (full_preview) return
       onAnyUpdateEditorSize()
       if (codeMirror?.current?.view) {
         const rect = codeMirror.current.view.dom.getBoundingClientRect()
@@ -345,7 +412,7 @@ function PodliteEditorInternal(
         }
       }
     },
-    [enableScroll],
+    [enableScroll, full_preview],
   )
   const mouseoverHandle = () => {
     active.current = 'preview'
@@ -578,10 +645,12 @@ function PodliteEditorInternal(
     }
   }, [container, isFullscreen])
 
-  // Add effect to handle initial scroll to startLinePreview
+  // Add effect to handle initial scroll to startLinePreview.
+  // Skipped in full-preview mode — the dedicated full_preview effect above
+  // syncs the preview to the editor's current top line instead.
   useEffect(() => {
     onAnyUpdateEditorSize()
-    if (!preview.current || !enablePreview) return
+    if (!preview.current || !enablePreview || full_preview) return
 
     // Small delay to ensure preview content is rendered
     const timer = setTimeout(() => {
@@ -598,7 +667,7 @@ function PodliteEditorInternal(
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [startLinePreview, enablePreview]) // Only run when startLinePreview or enablePreview changes
+  }, [startLinePreview, enablePreview, full_preview])
 
   const handleChange = useCallback(
     (value: string, viewUpdate: ViewUpdate) => {
