@@ -560,11 +560,18 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         return alignMap[num % alignMap.length]
       })(ctx['table.align'])
       const isHeader = ctx.__row_header
+      const conf = makeAttrs(node, ctx)
+      const colSpanRaw = conf.exists('colspan') ? Number(conf.getFirstValue('colspan')) : 0
+      const rowSpanRaw = conf.exists('rowspan') ? Number(conf.getFirstValue('rowspan')) : 0
+      const colSpan = colSpanRaw > 1 ? colSpanRaw : undefined
+      const rowSpan = rowSpanRaw > 1 ? rowSpanRaw : undefined
       return mkComponent(({ children, key }) =>
         isHeader ? (
-          <th key={key}>{children}</th>
+          <th key={key} colSpan={colSpan} rowSpan={rowSpan}>
+            {children}
+          </th>
         ) : (
-          <td align={align} key={key}>
+          <td align={align} key={key} colSpan={colSpan} rowSpan={rowSpan}>
             {children}
           </td>
         ),

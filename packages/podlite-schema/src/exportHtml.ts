@@ -245,7 +245,13 @@ const rules = {
   },
   cell: (writer, processor) => (node, ctx, interator) => {
     const tag = ctx.__row_header ? 'th' : 'td'
-    writer.writeRaw(`<${tag}>`)
+    const conf = makeAttrs(node, ctx)
+    const colspan = conf.exists('colspan') ? conf.getFirstValue('colspan') : null
+    const rowspan = conf.exists('rowspan') ? conf.getFirstValue('rowspan') : null
+    let attrs = ''
+    if (colspan !== null && Number(colspan) > 1) attrs += ` colspan="${colspan}"`
+    if (rowspan !== null && Number(rowspan) > 1) attrs += ` rowspan="${rowspan}"`
+    writer.writeRaw(`<${tag}${attrs}>`)
     interator(node.content, ctx)
     writer.writeRaw(`</${tag}>`)
   },

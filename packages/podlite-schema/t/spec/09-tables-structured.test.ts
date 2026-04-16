@@ -142,6 +142,51 @@ describe('structured tables (=row/=cell)', () => {
     expect(html).toMatch(/<td>[\s\S]*30[\s\S]*<\/td>/)
   })
 
+  it('renders :colspan and :rowspan as HTML attributes', () => {
+    const src = `=begin table
+
+=begin row :header
+=for cell :colspan(2)
+Item and Quantity
+=cell Description
+=end row
+
+=begin row
+=cell Apples
+=cell 5
+=for cell :rowspan(2)
+Fruit for snacking
+=end row
+
+=begin row
+=cell Bananas
+=cell 3
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).toMatch(/<th colspan="2">/)
+    expect(html).toMatch(/<td rowspan="2">/)
+  })
+
+  it('colspan=1 and rowspan=1 do not emit attributes', () => {
+    const src = `=begin table
+
+=begin row
+=for cell :colspan(1)
+Alpha
+=for cell :rowspan(1)
+Beta
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).not.toMatch(/colspan=/)
+    expect(html).not.toMatch(/rowspan=/)
+  })
+
   it('implicit cell wrapping for non-cell children in row', () => {
     const src = `=begin table
 

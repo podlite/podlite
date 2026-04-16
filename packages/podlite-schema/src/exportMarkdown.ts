@@ -265,7 +265,50 @@ const rules = {
     const isRowHeader = row =>
       Array.isArray(row.config) && row.config.some(c => c.name === 'header' && c.value !== false)
 
+    const cellSpan = (cell, name) => {
+      if (!Array.isArray(cell.config)) return 0
+      const entry = cell.config.find(c => c.name === name)
+      if (!entry) return 0
+      const n = Number(entry.value)
+      return Number.isFinite(n) && n > 1 ? n : 0
+    }
+
+    // GFM pipe-tables don't support colspan/rowspan — fall back to inline HTML
+    const hasSpans = rows.some(row =>
+      (row.content || []).some(c => c.name === 'cell' && (cellSpan(c, 'colspan') || cellSpan(c, 'rowspan'))),
+    )
+
     const hasHeader = isRowHeader(rows[0])
+
+    if (hasSpans) {
+      writer.writeRaw('<table>\n')
+      rows.forEach(row => {
+        const tag = isRowHeader(row) ? 'th' : 'td'
+        writer.writeRaw('<tr>')
+        const cells = (row.content || []).filter(c => c.name === 'cell')
+        cells.forEach(cell => {
+          const colspan = cellSpan(cell, 'colspan')
+          const rowspan = cellSpan(cell, 'rowspan')
+          let attrs = ''
+          if (colspan) attrs += ` colspan="${colspan}"`
+          if (rowspan) attrs += ` rowspan="${rowspan}"`
+          writer.writeRaw(`<${tag}${attrs}>`)
+          if (cell.content) {
+            cell.content.forEach(c => {
+              if (typeof c === 'string') {
+                writer.write(c.trim())
+              } else {
+                interator([c], ctx)
+              }
+            })
+          }
+          writer.writeRaw(`</${tag}>`)
+        })
+        writer.writeRaw('</tr>\n')
+      })
+      writer.writeRaw('</table>\n')
+      return
+    }
 
     // render each row
     rows.forEach((row, rowIndex) => {
