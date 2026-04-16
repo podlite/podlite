@@ -61,7 +61,7 @@ sdsdsd
         <caption class="caption">
           Super table!
         </caption>
-        <tbody>
+        <thead>
           <tr>
             <th>
               Superhero
@@ -73,6 +73,8 @@ sdsdsd
               Superpower
             </th>
           </tr>
+        </thead>
+        <tbody>
           <tr>
             <td>
               The Shoveller
@@ -144,9 +146,7 @@ it('table with aligns', () => {
   expect(t).toMatchInlineSnapshot(`
     <div id="id">
       <table id="id">
-        <caption class="caption">
-        </caption>
-        <tbody>
+        <thead>
           <tr>
             <th>
               Left
@@ -158,6 +158,8 @@ it('table with aligns', () => {
               Right
             </th>
           </tr>
+        </thead>
+        <tbody>
           <tr>
             <td align="left">
               This is left
@@ -983,6 +985,9 @@ Expanded note.
           </summary>
           <div class="folded-content">
             <table id="id">
+              <caption class="caption">
+                Data Table
+              </caption>
               <tbody>
                 <tr>
                   <td>
@@ -1035,6 +1040,9 @@ Expanded note.
           </summary>
           <div class="folded-content">
             <table id="id">
+              <caption class="caption">
+                Expanded Table
+              </caption>
               <tbody>
                 <tr>
                   <td>

@@ -5,4 +5,4 @@
     Human  +   2  +   Pizza
     Shark  +   0  +    Fish
 ~~~~~~~
-"<table><tr><th> Animal</th><th> Legs</th><th>    Eats</th></tr><tr><td> Zebra </td><td>   4 </td><td> Cookies</td></tr><tr><td> Human </td><td>   2 </td><td>   Pizza</td></tr><tr><td> Shark </td><td>   0 </td><td>    Fish</td></tr></table>"
+"<table><thead><tr><th> Animal</th><th> Legs</th><th>    Eats</th></tr></thead><tbody><tr><td> Zebra </td><td>   4 </td><td> Cookies</td></tr><tr><td> Human </td><td>   2 </td><td>   Pizza</td></tr><tr><td> Shark </td><td>   0 </td><td>    Fish</td></tr></tbody></table>"

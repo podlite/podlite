@@ -510,40 +510,59 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       // :!folded or :folded(0) = expanded by default
       const isExpanded = folded === false || folded === 0 || folded === '0'
 
-      const tableContent = interator(node.content, { ...ctx, ...(node.align && { 'table.align': node.align }) })
+      const tableCtx = { ...ctx, ...(node.align && { 'table.align': node.align }) }
+      const content: any[] = (node as any).content || []
+      const isHeaderRow = (c: any) =>
+        c &&
+        c.name === 'row' &&
+        Array.isArray(c.config) &&
+        c.config.some((a: any) => a.name === 'header' && a.value !== false)
+      const hasHeader = content.some(isHeaderRow)
+
+      let renderTable: (extraKey: string | number) => JSX.Element
+      if (!hasHeader) {
+        const rendered = interator(content, tableCtx)
+        renderTable = extraKey => (
+          <table key={extraKey} id={id}>
+            {caption ? <caption className="caption">{caption}</caption> : null}
+            <tbody>{rendered}</tbody>
+          </table>
+        )
+      } else {
+        const rowNodes = content.filter((c: any) => c && c.name === 'row')
+        const nonRowContent = content.filter((c: any) => !c || c.name !== 'row')
+        let headerEnd = 0
+        while (headerEnd < rowNodes.length && isHeaderRow(rowNodes[headerEnd])) headerEnd++
+        const headerRows = rowNodes.slice(0, headerEnd)
+        const bodyRows = rowNodes.slice(headerEnd)
+        const nonRowRendered = interator(nonRowContent, tableCtx)
+        const headerRendered = interator(headerRows, tableCtx)
+        const bodyRendered = bodyRows.length > 0 ? interator(bodyRows, tableCtx) : null
+        renderTable = extraKey => (
+          <table key={extraKey} id={id}>
+            {caption ? <caption className="caption">{caption}</caption> : null}
+            {nonRowRendered}
+            <thead>{headerRendered}</thead>
+            {bodyRendered ? <tbody>{bodyRendered}</tbody> : null}
+          </table>
+        )
+      }
 
       // If :folded is specified, wrap table in <details>
       if (folded !== null) {
         return makeComponent(
-          ({ key, children }) => (
+          ({ key }) => (
             <details className="folded table-folded" key={key} open={isExpanded || undefined}>
               {caption && <summary className="folded-summary">{caption}</summary>}
-              <div className="folded-content">
-                <table id={id}>
-                  {!caption ? null : null}
-                  <tbody>{children}</tbody>
-                </table>
-              </div>
+              <div className="folded-content">{renderTable(`${key}-table`)}</div>
             </details>
           ),
           node,
-          tableContent,
+          [],
         )
       }
 
-      // Default rendering without folding
-      return makeComponent(
-        ({ key, children }) => {
-          return (
-            <table key={key} id={id}>
-              <caption className="caption">{caption}</caption>
-              <tbody>{children}</tbody>
-            </table>
-          )
-        },
-        node,
-        tableContent,
-      )
+      return makeComponent(({ key }) => renderTable(key), node, [])
     },
     ':separator': emptyContent(),
     row: setFn((node, ctx) => {

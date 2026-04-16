@@ -187,6 +187,46 @@ Beta
     expect(html).not.toMatch(/rowspan=/)
   })
 
+  it('emits <thead>/<tbody> structure for table with header row', () => {
+    const src = `=begin table
+
+=begin row :header
+=cell Name
+=cell Age
+=end row
+
+=begin row
+=cell Alice
+=cell 30
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).toMatch(/<thead><tr>[\s\S]*?<\/tr><\/thead>/)
+    expect(html).toMatch(/<tbody><tr>[\s\S]*?<\/tr><\/tbody>/)
+    const theadIdx = html.indexOf('<thead>')
+    const tbodyIdx = html.indexOf('<tbody>')
+    expect(theadIdx).toBeGreaterThan(-1)
+    expect(tbodyIdx).toBeGreaterThan(theadIdx)
+  })
+
+  it('omits <thead>/<tbody> wrapping when no header row', () => {
+    const src = `=begin table
+
+=begin row
+=cell Alice
+=cell 30
+=end row
+
+=end table
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).not.toMatch(/<thead>/)
+    expect(html).not.toMatch(/<tbody>/)
+    expect(html).toMatch(/<table><tr>/)
+  })
+
   it('implicit cell wrapping for non-cell children in row', () => {
     const src = `=begin table
 

@@ -232,7 +232,30 @@ const rules = {
       writer.write(conf.getFirstValue('caption'))
       writer.writeRaw('</caption>')
     }
-    interator(node.content, ctx)
+    const content = node.content || []
+    const isHeaderRow = c =>
+      c && c.name === 'row' && Array.isArray(c.config) && c.config.some(a => a.name === 'header' && a.value !== false)
+    const hasHeader = content.some(isHeaderRow)
+    if (!hasHeader) {
+      interator(content, ctx)
+      writer.writeRaw('</table>')
+      return
+    }
+    const rowNodes = content.filter(c => c && c.name === 'row')
+    const nonRowContent = content.filter(c => !c || c.name !== 'row')
+    let headerEnd = 0
+    while (headerEnd < rowNodes.length && isHeaderRow(rowNodes[headerEnd])) headerEnd++
+    const headerRows = rowNodes.slice(0, headerEnd)
+    const bodyRows = rowNodes.slice(headerEnd)
+    interator(nonRowContent, ctx)
+    writer.writeRaw('<thead>')
+    interator(headerRows, ctx)
+    writer.writeRaw('</thead>')
+    if (bodyRows.length > 0) {
+      writer.writeRaw('<tbody>')
+      interator(bodyRows, ctx)
+      writer.writeRaw('</tbody>')
+    }
     writer.writeRaw('</table>')
   }),
   ':separator': emptyContent,

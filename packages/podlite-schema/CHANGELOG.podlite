@@ -12,6 +12,7 @@
 =item implicit cell wrapping: non-cell children inside C<=row> are automatically wrapped in C<=cell>
 =item unified table AST across text-mode, structured and Markdown inputs — all produce C<{name:'row'}>/C<{name:'cell'}>. Legacy C<table_row>/C<table_cell>/C<table_head> node names removed
 =item added C<:colspan(N)> and C<:rowspan(N)> attributes for C<=cell> blocks. Values of 1 treated as default (no attribute emitted). Markdown export falls back to inline HTML C<<table>> when any cell has spans (GFM pipe-tables don't support colspan/rowspan)
+=item tables with a C<:header> row now emit semantic C<<thead>>/C<<tbody>> wrapping in HTML and JSX. Tables without headers keep the flat C<<tr>> layout
 
 =head1 0.0.35
 

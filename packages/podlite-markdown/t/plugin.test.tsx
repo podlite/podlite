@@ -197,9 +197,7 @@ it('=markdown: table render', () => {
   //   console.log(root.innerHTML);
   expect(renderToStaticMarkup(<Podlite>{pod}</Podlite>)).toMatchInlineSnapshot(`
     <table id="id">
-      <caption class="caption">
-      </caption>
-      <tbody>
+      <thead>
         <tr>
           <th>
             Syntax
@@ -208,6 +206,8 @@ it('=markdown: table render', () => {
             Description
           </th>
         </tr>
+      </thead>
+      <tbody>
         <tr>
           <td>
             Header

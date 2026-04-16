@@ -15,4 +15,4 @@
 
 =end table
 ~~~~~~~
-"<table><tr><th>               Superhero    </th><th> Secret Identity      </th><th>  Superpower</th></tr><tr><td> The Shoveller              </td><td> Eddie Stevens                </td><td> King Arthur&#x27;s singing shovel</td></tr><tr><td> Blue Raja    </td><td> Geoffrey Smith</td><td> Master of cutlery</td></tr><tr><td> Mr Furious                 </td><td> Roy Orson                    </td><td> Ticking time bomb of fury</td></tr><tr><td> The Bowler   </td><td> Carol Pinnsler</td><td> Haunted bowling ball</td></tr></table>"
+"<table><thead><tr><th>               Superhero    </th><th> Secret Identity      </th><th>  Superpower</th></tr></thead><tbody><tr><td> The Shoveller              </td><td> Eddie Stevens                </td><td> King Arthur&#x27;s singing shovel</td></tr><tr><td> Blue Raja    </td><td> Geoffrey Smith</td><td> Master of cutlery</td></tr><tr><td> Mr Furious                 </td><td> Roy Orson                    </td><td> Ticking time bomb of fury</td></tr><tr><td> The Bowler   </td><td> Carol Pinnsler</td><td> Haunted bowling ball</td></tr></tbody></table>"
