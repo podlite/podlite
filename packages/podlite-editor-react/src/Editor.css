@@ -80,3 +80,11 @@
 .podlite-editor .podlite-editor-preview {
   contain: layout paint;
 }
+/* Defer layout/paint of off-screen blocks in full-preview mode. The browser
+   skips rendering work for elements outside the viewport, using
+   contain-intrinsic-size as a placeholder. `auto 2em` lets the browser
+   remember the actual rendered size after first paint. */
+.podlite-editor .podlite-editor-preview[data-full-preview='true'] .line-src {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2em;
+}

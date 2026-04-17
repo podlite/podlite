@@ -863,7 +863,12 @@ function PodliteEditorInternal(
         />
       </div>
       {enablePreview && (
-        <div className={clsPreview} style={{ overflow: full_preview ? 'visible' : 'hidden' }} ref={preview}>
+        <div
+          className={clsPreview}
+          data-full-preview={full_preview ? 'true' : 'false'}
+          style={{ overflow: full_preview ? 'visible' : 'hidden' }}
+          ref={preview}
+        >
           {previewContent()}
         </div>
       )}
