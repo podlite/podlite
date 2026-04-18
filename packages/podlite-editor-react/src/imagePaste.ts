@@ -1,4 +1,6 @@
-export type SaveAssetCallback = (file: File) => Promise<string | null>
+export type SaveAssetSource = 'paste' | 'drop'
+
+export type SaveAssetCallback = (file: File, source: SaveAssetSource) => Promise<string | null>
 
 export const SUPPORTED_PASTE_MIME = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp'])
 export const SUPPORTED_DROP_MIME = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'])

@@ -2,6 +2,7 @@ import { EditorView } from '@codemirror/view'
 import {
   extractImagesFromDataTransfer,
   SaveAssetCallback,
+  SaveAssetSource,
   SUPPORTED_PASTE_MIME,
   SUPPORTED_DROP_MIME,
 } from './imagePaste'
@@ -21,12 +22,12 @@ function insertPicture(view: EditorView, path: string): void {
 }
 
 export function createImagePasteDropHandler(getSave: () => SaveAssetCallback | undefined) {
-  const handleFiles = (view: EditorView, files: File[]): void => {
+  const handleFiles = (view: EditorView, files: File[], source: SaveAssetSource): void => {
     const save = getSave()
     if (!save || files.length === 0) return
     ;(async () => {
       for (const file of files) {
-        const path = await save(file)
+        const path = await save(file, source)
         if (path) insertPicture(view, path)
       }
     })()
@@ -38,7 +39,7 @@ export function createImagePasteDropHandler(getSave: () => SaveAssetCallback | u
       const files = extractImagesFromDataTransfer(event.clipboardData, SUPPORTED_PASTE_MIME)
       if (files.length === 0) return false
       event.preventDefault()
-      handleFiles(view, files)
+      handleFiles(view, files, 'paste')
       return true
     },
     drop(event, view) {
@@ -47,7 +48,7 @@ export function createImagePasteDropHandler(getSave: () => SaveAssetCallback | u
       const files = extractImagesFromDataTransfer(event.dataTransfer, SUPPORTED_DROP_MIME)
       if (files.length === 0) return false
       event.preventDefault()
-      handleFiles(view, files)
+      handleFiles(view, files, 'drop')
       return true
     },
   })
