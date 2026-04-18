@@ -6,4 +6,5 @@ export { WindowWrapper as WindowWrapper }
 export { HighlightedCode as HighlightedCode }
 export type { EditorSessionState } from './types'
 export type { ConverterResult, IPodliteEditor, PodliteEditorRef } from './Editor'
+export type { SaveAssetCallback } from './imagePaste'
 export default Editor2

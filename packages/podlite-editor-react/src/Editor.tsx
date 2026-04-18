@@ -16,6 +16,8 @@ import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
+import { createImagePasteDropHandler } from './imagePasteHandler'
+import { SaveAssetCallback } from './imagePaste'
 
 function useDebouncedEffect(fn, deps, time) {
   const dependencies = [...deps, time]
@@ -62,6 +64,9 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   initialEditorState?: EditorSessionState
   /** Called when editor state changes (cursor move, scroll, fold/unfold) */
   onEditorStateChange?: (state: EditorSessionState) => void
+  /** Save a pasted or dropped image file. Return the path to insert in
+      `=picture`, or `null` to cancel (e.g. buffer not yet saved to disk). */
+  onSaveAsset?: SaveAssetCallback
 }
 
 export interface PodliteEditorRef {
@@ -98,6 +103,7 @@ function PodliteEditorInternal(
     enableFolding = true,
     initialEditorState,
     onEditorStateChange,
+    onSaveAsset,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -123,6 +129,8 @@ function PodliteEditorInternal(
   onEditorStateChangeRef.current = onEditorStateChange
   const onOpenLinkRef = useRef(onOpenLink)
   onOpenLinkRef.current = onOpenLink
+  const onSaveAssetRef = useRef(onSaveAsset)
+  onSaveAssetRef.current = onSaveAsset
 
   // Stable basicSetup config to prevent CodeMirror reconfiguration on re-render
   const basicSetupConfig = React.useMemo(() => ({ defaultKeymap: false }), [])
@@ -506,6 +514,8 @@ function PodliteEditorInternal(
     [],
   )
 
+  const imagePasteDropHandler = React.useMemo(() => createImagePasteDropHandler(() => onSaveAssetRef.current), [])
+
   // Track fold/unfold and cursor changes to emit editor state
   const stateChangeListener = React.useMemo(
     () =>
@@ -584,6 +594,7 @@ function PodliteEditorInternal(
       itemLevelKeymap,
       listContinuationKeymap,
       preventToggleComment,
+      imagePasteDropHandler,
     ]
 
     if (enableFolding) {
@@ -611,6 +622,7 @@ function PodliteEditorInternal(
     preventToggleComment,
     autocompletionExt,
     enableFolding,
+    imagePasteDropHandler,
   ])
 
   // Debounced preview update: check ref every 300ms, update value state only when text changed
