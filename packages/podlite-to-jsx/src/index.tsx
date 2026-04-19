@@ -236,17 +236,19 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
       return node.value
     },
-    'head:block': subUse(
-      {
-        // inside head don't wrap into <p>
-        ':para': nodeContent,
-      },
-      setFn((node, ctx) => {
-        const { level } = node
-        // TODO: refactor linking for blocks
-        const id = getSafeNodeId(node, ctx)
-        return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
-      }),
+    'head:block': handleFolded(
+      subUse(
+        {
+          // inside head don't wrap into <p>
+          ':para': nodeContent,
+        },
+        setFn((node, ctx) => {
+          const { level } = node
+          // TODO: refactor linking for blocks
+          const id = getSafeNodeId(node, ctx)
+          return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
+        }),
+      ),
     ),
 
     ':blankline': emptyContent(),
