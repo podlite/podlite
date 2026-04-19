@@ -113,17 +113,29 @@ export const plugin: Plugin = {
       const conf = makeAttrs(node, ctx)
       const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
 
-      // Parse :folded-levels attribute
-      // Supports array syntax: :folded-levels[2,3] -> {2: true, 3: true}
+      // Parse :folded-levels attribute. Supports both forms:
+      //   :folded-levels[2,3]          -> {2: true, 3: true}     (every listed level folded)
+      //   :folded-levels{2=>1, 3=>0}   -> {2: true, 3: false}    (per-level folding state)
       let foldedLevels: Record<number, boolean> | undefined
       if (conf.exists('folded-levels')) {
-        const values = conf.getAllValues('folded-levels')
-        if (Array.isArray(values) && values.length > 0) {
+        const mapValue = conf.getMapValue('folded-levels')
+        if (mapValue) {
           foldedLevels = {}
-          for (const v of values) {
-            const level = Number(v)
+          for (const [k, v] of Object.entries(mapValue)) {
+            const level = Number(k)
             if (!isNaN(level)) {
-              foldedLevels[level] = true
+              foldedLevels[level] = Number(v) !== 0
+            }
+          }
+        } else {
+          const values = conf.getAllValues('folded-levels')
+          if (Array.isArray(values) && values.length > 0) {
+            foldedLevels = {}
+            for (const v of values) {
+              const level = Number(v)
+              if (!isNaN(level)) {
+                foldedLevels[level] = true
+              }
             }
           }
         }

@@ -55,6 +55,39 @@ head1, head2
     expect(tocNode!.foldedLevels).toEqual({ 1: true })
   })
 
+  it(':folded-levels{2=>1, 3=>0} sets per-level folding state', () => {
+    const pod = `
+=begin pod
+=for toc :folded-levels{2=>1, 3=>0}
+head1, head2, head3
+
+=head1 Title
+=head2 Subtitle
+=head3 Sub-sub
+=end pod`
+    const tree = parse(pod)
+    const tocNode = findTocNode(tree)
+    expect(tocNode).not.toBeNull()
+    expect(tocNode!.foldedLevels).toEqual({ 2: true, 3: false })
+  })
+
+  it(':folded-levels{2=>1, 4=>1, 3=>0} matches spec example', () => {
+    const pod = `
+=begin pod
+=for toc :folded-levels{ 2=>1, 4 => 1, 3=>0 }
+head1, head2, head3, item1, item2
+
+=head1 Title
+=head2 Subtitle
+=head3 Sub-sub
+=head4 Sub-sub-sub
+=end pod`
+    const tree = parse(pod)
+    const tocNode = findTocNode(tree)
+    expect(tocNode).not.toBeNull()
+    expect(tocNode!.foldedLevels).toEqual({ 2: true, 3: false, 4: true })
+  })
+
   it('without :folded-levels foldedLevels is undefined', () => {
     const pod = `
 =begin pod

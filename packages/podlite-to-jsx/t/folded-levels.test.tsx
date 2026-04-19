@@ -63,6 +63,25 @@ head1, head2
     expect(root.innerHTML).toContain('toc-list')
   })
 
+  it(':folded-levels{2=>1, 3=>0} folds only level 2, level 3 stays as plain list', () => {
+    render(
+      <Podlite>
+        {`
+=begin pod
+=for toc :folded-levels{2=>1, 3=>0}
+head1, head2, head3
+
+=head1 Title
+=head2 Subtitle
+=head3 Sub-sub
+=end pod`}
+      </Podlite>,
+    )
+    // level 2 folded → <details>. level 3 has value 0 → plain <ul>, no details for it.
+    expect(root.innerHTML).toContain('<details class="toc-fold">')
+    expect(root.innerHTML).toContain('listlevel3')
+  })
+
   it('full document with :folded-levels[2,3] renders correctly (snapshot)', () => {
     render(
       <Podlite>
