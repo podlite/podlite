@@ -113,6 +113,16 @@ export const plugin: Plugin = {
       const conf = makeAttrs(node, ctx)
       const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
 
+      // Parse :folded (bare) — wraps entire TOC in <details>.
+      //   :folded      -> folded: true  (collapsed)
+      //   :!folded     -> folded: false (expanded disclosure)
+      //   :folded(0)   -> folded: false
+      let folded: boolean | undefined
+      if (conf.exists('folded')) {
+        const raw = conf.getFirstValue('folded')
+        folded = !(raw === false || raw === 0 || raw === '0')
+      }
+
       // Parse :folded-levels attribute. Supports both forms:
       //   :folded-levels[2,3]          -> {2: true, 3: true}     (every listed level folded)
       //   :folded-levels{2=>1, 3=>0}   -> {2: true, 3: false}    (per-level folding state)
@@ -142,7 +152,7 @@ export const plugin: Plugin = {
       }
 
       const makeToc = (tocTree: any, title): Toc => {
-        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels)
+        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels, folded)
       }
 
       return makeToc(tocTree, tocTitle)

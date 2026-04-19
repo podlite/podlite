@@ -64,8 +64,16 @@ export const mkToc = (
   title?: string,
   location?: Location,
   foldedLevels?: Record<number, boolean>,
+  folded?: boolean,
 ): Toc => {
-  return mkNode({ type: 'toc', title, content, location, ...(foldedLevels ? { foldedLevels } : {}) })
+  return mkNode({
+    type: 'toc',
+    title,
+    content,
+    location,
+    ...(foldedLevels ? { foldedLevels } : {}),
+    ...(folded !== undefined ? { folded } : {}),
+  })
 }
 export const mkTocList = (content: Array<TocItem | TocList>, level: number): TocList => {
   return mkNode({ type: 'toc-list', level, content })

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`:folded-levels rendering in JSX full document with :folded-levels[2,3] renders correctly (snapshot) 1`] = `
+exports[`:folded-levels rendering in JSX (per-item conditional fold) full document with :folded-levels[2,3] renders correctly (snapshot) 1`] = `
 <div id="id">
   <div class="toc">
     <div class="toctitle">
@@ -12,17 +12,13 @@ exports[`:folded-levels rendering in JSX full document with :folded-levels[2,3] 
           Introduction
         </a>
       </li>
-      <details class="toc-fold">
-        <summary class="toc-list-summary listlevel2">
-        </summary>
-        <ul class="toc-list listlevel2">
-          <li class="toc-item">
-            <a href="#Background">
-              Background
-            </a>
-          </li>
+      <ul class="toc-list listlevel2">
+        <li class="toc-item toc-item-foldable">
           <details class="toc-fold">
-            <summary class="toc-list-summary listlevel3">
+            <summary class="toc-list-summary listlevel2">
+              <a href="#Background">
+                Background
+              </a>
             </summary>
             <ul class="toc-list listlevel3">
               <li class="toc-item">
@@ -32,8 +28,8 @@ exports[`:folded-levels rendering in JSX full document with :folded-levels[2,3] 
               </li>
             </ul>
           </details>
-        </ul>
-      </details>
+        </li>
+      </ul>
       <li class="toc-item">
         <a href="#Conclusion">
           Conclusion

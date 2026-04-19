@@ -2688,6 +2688,9 @@
                 "title": {
                     "type": "string"
                 },
+                "folded": {
+                    "type": "boolean"
+                },
                 "foldedLevels": {
                     "type": "object",
                     "additionalProperties": false,

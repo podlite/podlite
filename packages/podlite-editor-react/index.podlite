@@ -11,7 +11,7 @@
 =end React
 =end comment
 
-=begin PodLite :height<300px> :caption("Headings") :size<tiny> 
+=begin PodLite :height<300px> :caption("Headings") :size<medium> 
  
 =end PodLite
 

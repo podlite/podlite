@@ -88,6 +88,51 @@ head1, head2, head3, item1, item2
     expect(tocNode!.foldedLevels).toEqual({ 2: true, 3: false, 4: true })
   })
 
+  it(':folded bare on =toc sets folded=true', () => {
+    const pod = `
+=begin pod
+=for toc :folded
+head1, head2
+
+=head1 Title
+=head2 Subtitle
+=end pod`
+    const tree = parse(pod)
+    const tocNode = findTocNode(tree)
+    expect(tocNode).not.toBeNull()
+    expect(tocNode!.folded).toBe(true)
+  })
+
+  it(':!folded on =toc sets folded=false', () => {
+    const pod = `
+=begin pod
+=for toc :!folded
+head1, head2
+
+=head1 Title
+=head2 Subtitle
+=end pod`
+    const tree = parse(pod)
+    const tocNode = findTocNode(tree)
+    expect(tocNode).not.toBeNull()
+    expect(tocNode!.folded).toBe(false)
+  })
+
+  it('without :folded attribute folded is undefined', () => {
+    const pod = `
+=begin pod
+=for toc :caption('TOC')
+head1, head2
+
+=head1 Title
+=head2 Subtitle
+=end pod`
+    const tree = parse(pod)
+    const tocNode = findTocNode(tree)
+    expect(tocNode).not.toBeNull()
+    expect(tocNode!.folded).toBeUndefined()
+  })
+
   it('without :folded-levels foldedLevels is undefined', () => {
     const pod = `
 =begin pod

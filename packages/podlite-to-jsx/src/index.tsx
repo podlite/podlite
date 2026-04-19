@@ -80,6 +80,58 @@ export const Podlite: React.FC<{
   const result: any = podlite(children, options)
   return result
 }
+// `:folded` on a heading folds the whole section — the heading plus every
+// following node up to the next same-or-higher-level heading. Detect the
+// attribute on =head nodes in a container's content array and wrap that
+// range in a synthetic `_folded_section` block so the JSX renderer can emit
+// <details> around it.
+const getFoldedAttr = (node: any): boolean | number | string | null => {
+  const config = node && node.config
+  if (!Array.isArray(config)) return null
+  const entry = config.find((c: any) => c && c.name === 'folded')
+  return entry ? entry.value : null
+}
+
+const isHeadBlock = (node: any): boolean =>
+  node && node.type === 'block' && node.name === 'head' && node.level !== undefined && node.level !== null
+
+const headLevel = (node: any): number => Number(node.level)
+
+const groupFoldedSections = (content: any[]): any[] => {
+  if (!Array.isArray(content)) return content
+  const result: any[] = []
+  let i = 0
+  while (i < content.length) {
+    const node = content[i]
+    if (isHeadBlock(node)) {
+      const folded = getFoldedAttr(node)
+      if (folded !== null) {
+        const level = headLevel(node)
+        const sectionNodes: any[] = [node]
+        let j = i + 1
+        while (j < content.length) {
+          const next = content[j]
+          if (isHeadBlock(next) && headLevel(next) <= level) break
+          sectionNodes.push(next)
+          j++
+        }
+        result.push({
+          type: 'block',
+          name: '_folded_section',
+          content: sectionNodes,
+          foldedState: folded,
+          location: node.location,
+        })
+        i = j
+        continue
+      }
+    }
+    result.push(node)
+    i++
+  }
+  return result
+}
+
 const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
     // prepare extraProps for createElement
@@ -196,7 +248,24 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
   }
 
   return {
-    pod: mkComponent('div'),
+    pod: (writer, processor) => (node, ctx, interator) => {
+      const id = getSafeNodeId(node, ctx)
+      const grouped = 'content' in node ? groupFoldedSections((node as any).content) : []
+      return makeComponent('div', node, interator(grouped, { ...ctx }), { id }, ctx)
+    },
+    _folded_section: (writer, processor) => (node: any, ctx, interator) => {
+      const [heading, ...rest] = node.content as any[]
+      const isExpanded = node.foldedState === false || node.foldedState === 0 || node.foldedState === '0'
+      const headingJsx = interator([heading], { ...ctx })
+      const bodyJsx = interator(rest, { ...ctx })
+      const key = getSafeNodeId(node, ctx)
+      return (
+        <details className="folded-section" key={key} open={isExpanded || undefined}>
+          <summary className="folded-section-summary">{headingJsx}</summary>
+          <div className="folded-section-content">{bodyJsx}</div>
+        </details>
+      )
+    },
     root: nodeContent,
     data: emptyContent(),
     ':ambient': emptyContent(),
@@ -236,19 +305,17 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
       return node.value
     },
-    'head:block': handleFolded(
-      subUse(
-        {
-          // inside head don't wrap into <p>
-          ':para': nodeContent,
-        },
-        setFn((node, ctx) => {
-          const { level } = node
-          // TODO: refactor linking for blocks
-          const id = getSafeNodeId(node, ctx)
-          return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
-        }),
-      ),
+    'head:block': subUse(
+      {
+        // inside head don't wrap into <p>
+        ':para': nodeContent,
+      },
+      setFn((node, ctx) => {
+        const { level } = node
+        // TODO: refactor linking for blocks
+        const id = getSafeNodeId(node, ctx)
+        return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
+      }),
     ),
 
     ':blankline': emptyContent(),
@@ -644,6 +711,16 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
       if (node.foldedLevels) {
         ctx._tocFoldedLevels = node.foldedLevels
       }
+      const folded = node.folded
+      if (folded !== undefined) {
+        const isExpanded = folded === false
+        return mkComponent(({ children, key }) => (
+          <details className="toc toc-fold-all" key={key} open={isExpanded || undefined}>
+            <summary className="toctitle">{tocTitle || 'Contents'}</summary>
+            {children}
+          </details>
+        ))
+      }
       return mkComponent(({ children, key }) => (
         <div className="toc" key={key}>
           {tocTitle ? <div className="toctitle">{tocTitle}</div> : ''}
@@ -651,23 +728,63 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         </div>
       ))
     }),
-    ':toc-list': setFn((node, ctx) => {
-      const { level } = node
+    ':toc-list': (writer, processor) => (node: any, ctx: any, interator: any) => {
+      const level = node.level
       const foldedLevels = ctx._tocFoldedLevels as Record<number, boolean> | undefined
-      if (foldedLevels && foldedLevels[level] === true) {
-        return mkComponent(({ children, key }) => (
-          <details className="toc-fold" key={key}>
-            <summary className={`toc-list-summary listlevel${level}`}></summary>
-            <ul className={`toc-list listlevel${level}`}>{children}</ul>
-          </details>
-        ))
+      const content: any[] = Array.isArray(node.content) ? node.content : []
+      const key = getSafeNodeId(node, ctx)
+      const shouldFold = foldedLevels ? foldedLevels[level] === true : false
+
+      if (!shouldFold) {
+        return (
+          <ul className={`toc-list listlevel${level}`} key={key}>
+            {interator(content, { ...ctx })}
+          </ul>
+        )
       }
-      return mkComponent(({ children, key }) => (
+
+      // Per-item conditional fold: a toc-item becomes a disclosure only when it
+      // is immediately followed by a nested toc-list (i.e. has sub-headings).
+      // Leaf items render as plain <li> without a fold marker. Summary contains
+      // the rendered link of the item itself — no duplication, no bare triangle.
+      const rendered: any[] = []
+      let i = 0
+      while (i < content.length) {
+        const it = content[i]
+        const next = content[i + 1]
+        const isItem = it && it.type === 'toc-item'
+        const hasChildren = next && next.type === 'toc-list'
+
+        if (isItem && hasChildren) {
+          // Extract inline content of the item's heading para (skip the <p>
+          // wrapper) so the link renders on the same line as the disclosure
+          // triangle. `it.node` is the para built by podlite-toc; its content
+          // is the L<> fcode + text.
+          const innerContent = it.node && Array.isArray(it.node.content) ? it.node.content : it.content
+          const itemLinkJsx = interator(innerContent, { ...ctx })
+          const childrenJsx = interator([next], { ...ctx })
+          rendered.push(
+            <li className="toc-item toc-item-foldable" key={`${key}-fold-${i}`}>
+              <details className="toc-fold">
+                <summary className={`toc-list-summary listlevel${level}`}>{itemLinkJsx}</summary>
+                {childrenJsx}
+              </details>
+            </li>,
+          )
+          i += 2
+          continue
+        }
+
+        rendered.push(interator([it], { ...ctx }))
+        i++
+      }
+
+      return (
         <ul className={`toc-list listlevel${level}`} key={key}>
-          {children}
+          {rendered}
         </ul>
-      ))
-    }),
+      )
+    },
     ':toc-item': subUse(
       {
         // inside head don't wrap into <p>
@@ -681,7 +798,7 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         ))
       }),
     ),
-  }
+  } as unknown as Partial<RulesStrict>
 }
 function podlite(
   children: string,

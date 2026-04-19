@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item added C<type: "map"> on config items parsed from C<:attr{k=>v, ...}> key-value syntax — previously the hash form returned the map value without a type annotation, making it indistinguishable from other value kinds
+=item added C<makeAttrs().getMapValue(name)> helper — returns the first map-typed value as a plain object, or undefined when the attribute is absent or not a map
 =item added guillemet bracket support («...») for formatting codes A, V, S, Z, D, X — previously only angle brackets (<...>) worked for these codes
 =item refactored grammarfc to use parametric rules — unified simple codes via C<FCodeSimple> template, D/X via C<FCodeWithArray>
 =item bumped Pegmill dependency from 0.1.0 to 0.1.2

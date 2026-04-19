@@ -222,6 +222,90 @@ details.folded > .folded-content {
     padding: 1em;
 }
 
+/* Folded heading sections — =for head L :folded wraps the whole section */
+details.folded-section {
+    margin: 1em 0;
+}
+
+details.folded-section > summary.folded-section-summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+details.folded-section > summary.folded-section-summary::-webkit-details-marker {
+    display: none;
+}
+
+details.folded-section > summary.folded-section-summary::before {
+    content: '▶ ';
+    display: inline-block;
+    margin-right: 0.25em;
+    transition: transform 0.2s ease;
+}
+
+details.folded-section[open] > summary.folded-section-summary::before {
+    transform: rotate(90deg);
+}
+
+/* Render the heading inline with the disclosure marker so the summary stays
+   on one line. Preserves <h1>..<h6> semantics (heading level announced to
+   assistive tech) while fixing the visual break caused by block-level h*.
+   The `.line-src` selector handles the case where the editor wraps each
+   node for live preview line-sync. */
+details.folded-section > summary.folded-section-summary h1,
+details.folded-section > summary.folded-section-summary h2,
+details.folded-section > summary.folded-section-summary h3,
+details.folded-section > summary.folded-section-summary h4,
+details.folded-section > summary.folded-section-summary h5,
+details.folded-section > summary.folded-section-summary h6,
+details.folded-section > summary.folded-section-summary > .line-src {
+    display: inline;
+    margin: 0;
+}
+
+details.folded-section > .folded-section-content {
+    padding: 0.5em 0 0 1em;
+}
+
+/* TOC per-item fold — single-line disclosure + link for toc items that have
+   nested children (leaf items render as plain li without a marker).
+   A left gutter (padding-left) on every toc item reserves space for the
+   disclosure marker so that text at the same level starts on the same
+   x-position regardless of whether an item is foldable. The marker sits
+   in that gutter via absolute positioning. */
+li.toc-item,
+li.toc-item-foldable {
+    position: relative;
+    padding-left: 1.2em;
+    list-style: none;
+}
+
+li.toc-item-foldable > details.toc-fold > summary.toc-list-summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+li.toc-item-foldable > details.toc-fold > summary.toc-list-summary::-webkit-details-marker {
+    display: none;
+}
+
+li.toc-item-foldable > details.toc-fold > summary.toc-list-summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+li.toc-item-foldable > details.toc-fold[open] > summary.toc-list-summary::before {
+    transform: rotate(90deg);
+}
+
+/* Keep summary content inline when editor preview wraps nodes in .line-src */
+li.toc-item-foldable > details.toc-fold > summary.toc-list-summary > .line-src {
+    display: inline;
+}
+
 /* Folded notification blocks */
 details.notify.folded {
     border-left-width: 4px;

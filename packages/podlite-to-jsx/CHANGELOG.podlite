@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item C<:folded> on C<=head> blocks now folds the whole section — heading plus every following node up to the next same-or-higher-level heading. Previously this attribute was ignored on headings
+=item per-item conditional fold for C<:folded-levels> — only TOC items that have nested children become collapsible; leaf items render as plain list entries with no disclosure marker. Previously the entire level was wrapped as a single group
+=item bare C<:folded> on C<=toc> wraps the entire TOC in a C<<details>>; summary shows the caption or "Contents" fallback
+=item C<:folded-levels{k=>v}> key-value syntax is now rendered (value C<1> folds that level, C<0> keeps it open)
+=item CSS: disclosure markers for folded headings and foldable TOC items sit in a left gutter so that text at the same level starts on the same x-coordinate regardless of whether the item has a marker. Heading and inline content stay on one line with the triangle
+
 =head1 0.0.39
 
 =item added C<:folded-levels> rendering for C<=toc> block -- folded levels wrapped in C<< <details> >> element
