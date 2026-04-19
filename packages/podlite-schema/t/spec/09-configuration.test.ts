@@ -1066,6 +1066,7 @@ foo
         "config": Array [
           Object {
             "name": "k1",
+            "type": "map",
             "value": Object {
               "2": "b",
               "a": 1,
@@ -1134,6 +1135,7 @@ foo
         "config": Array [
           Object {
             "name": "k1",
+            "type": "map",
             "value": Object {
               "2": "b => ?",
               "c": ",",

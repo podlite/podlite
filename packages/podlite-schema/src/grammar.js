@@ -216,7 +216,7 @@ function peg$parse(input, options) {
       peg$c67 = peg$literalExpectation("{", false),
       peg$c68 = "}",
       peg$c69 = peg$literalExpectation("}", false),
-      peg$c70 = function(isFalse, key, hash) { return { value:hash } },
+      peg$c70 = function(isFalse, key, hash) { return { value:hash, type:"map" } },
       peg$c71 = "[",
       peg$c72 = peg$literalExpectation("[", false),
       peg$c73 = function(isFalse, key, array) { return array },

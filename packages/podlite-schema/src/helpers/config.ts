@@ -4,6 +4,7 @@ export type Context = {
 export interface Attr {
   getAllValues: (name: any) => any
   getFirstValue: (name: any) => any
+  getMapValue: (name: string) => Record<string, string | number | boolean> | undefined
   asHash: () => {}
   (): {}
   exists(name: string): boolean
@@ -51,6 +52,15 @@ export const makeAttrs = (node, ctx: Context = {}): Attr => {
    */
   resfn.getFirstValue = name => {
     return resfn.exists(name) ? resfn.getAllValues(name)[0] : undefined
+  }
+
+  /**
+   * return first map-typed value (from `:attr{ k=>v, ... }` syntax) or
+   * undefined when the attribute is absent or not a map value
+   */
+  resfn.getMapValue = name => {
+    const first = resfn.getFirstValue(name)
+    return first && typeof first === 'object' && !Array.isArray(first) ? first : undefined
   }
 
   /**
