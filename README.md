@@ -77,10 +77,6 @@ Extensibility is a core feature — define domain-specific blocks and expand the
 </td></tr></table>
 </div>
 
-<p align="center">
-  <a href="https://podlite.org"><img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-mono.svg" width="80" alt="Podlite"></a>
-</p>
-
 ## Author
 
 Copyright (c) 2021–2026 Aliaksandr Zahatski

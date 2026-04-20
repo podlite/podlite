@@ -230,6 +230,9 @@ details.folded-section {
 details.folded-section > summary.folded-section-summary {
     cursor: pointer;
     list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
 }
 
 details.folded-section > summary.folded-section-summary::-webkit-details-marker {
@@ -237,9 +240,8 @@ details.folded-section > summary.folded-section-summary::-webkit-details-marker 
 }
 
 details.folded-section > summary.folded-section-summary::before {
-    content: '▶ ';
-    display: inline-block;
-    margin-right: 0.25em;
+    content: '▶';
+    flex-shrink: 0;
     transition: transform 0.2s ease;
 }
 
@@ -278,6 +280,17 @@ li.toc-item-foldable {
     position: relative;
     padding-left: 1.2em;
     list-style: none;
+}
+
+/* Normalise nested toc-list indentation — browser default padding-left (40px)
+   stacks with the per-item gutter, producing exaggerated indent for deeper
+   levels. Use a predictable 1.5em step per level. */
+ul.toc-list {
+    padding-left: 1.5em;
+    list-style: none;
+}
+.toc > ul.toc-list {
+    padding-left: 0;
 }
 
 li.toc-item-foldable > details.toc-fold > summary.toc-list-summary {
@@ -378,8 +391,15 @@ li.task-list-item {
     margin-left: -1em;
     padding-left: 0;
     display: flex;
-    align-items: baseline;
+    align-items: flex-start;
     gap: 0.35em;
+}
+
+li.task-list-item > input[type='checkbox'] {
+    /* nudge the checkbox down so its centre aligns roughly with the cap-height
+       of the first line of text rather than sitting at its top edge */
+    margin-top: 0.25em;
+    flex-shrink: 0;
 }
 
 li.task-list-item p {

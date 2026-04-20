@@ -77,6 +77,26 @@
 .podlite-editor .podlite-editor-preview .line-src {
   contain: layout paint style;
 }
+/* wrapFunction wraps every node (including <li>, <summary> and their
+   content) in <div class="line-src">. Containment on those wrappers
+   creates new layout contexts that break:
+   1. Outer wrapper inside <ul>/<ol> — invalid HTML, kills flex layout so
+      task-list checkbox becomes invisible.
+   2. Inner wrapper around item content — breaks first-baseline sharing
+      with the flex parent, so checkbox aligns with last line of wrapped
+      text instead of the first.
+   3. Wrapper inside <summary> — becomes containing block for the
+      disclosure ::before marker, relocating or clipping the triangle.
+   Remove containment for .line-src nodes that participate in list and
+   disclosure layout. Minor perf cost since these structures are a small
+   fraction of content. */
+.podlite-editor .podlite-editor-preview ul > .line-src,
+.podlite-editor .podlite-editor-preview ol > .line-src,
+.podlite-editor .podlite-editor-preview li > .line-src,
+.podlite-editor .podlite-editor-preview details > .line-src,
+.podlite-editor .podlite-editor-preview summary > .line-src {
+  contain: none;
+}
 .podlite-editor .podlite-editor-preview {
   contain: layout paint;
 }
