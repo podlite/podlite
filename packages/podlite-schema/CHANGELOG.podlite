@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.38
+
 =item added C<type: "map"> on config items parsed from C<:attr{k=>v, ...}> key-value syntax — previously the hash form returned the map value without a type annotation, making it indistinguishable from other value kinds
 =item added C<makeAttrs().getMapValue(name)> helper — returns the first map-typed value as a plain object, or undefined when the attribute is absent or not a map
 =item added guillemet bracket support («...») for formatting codes A, V, S, Z, D, X — previously only angle brackets (<...>) worked for these codes

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.31
+
 =item added C<:folded-levels{k=>v}> key-value syntax — each level can now be marked folded (C<1>) or not (C<0>) independently, e.g. C<{2=>1, 3=>0}>. Array syntax C<[2,3]> still works as before
 =item added bare C<:folded> attribute on C<=toc> — wraps the entire TOC in a collapsible C<<details>>. Accepts C<:!folded>/C<:folded(0)> for a disclosure that opens by default
 

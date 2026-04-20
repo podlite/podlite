@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.44
+
 =item add C<onSaveAsset> prop — paste/drop image handler. Clipboard paste (PNG/JPEG/GIF/WebP) and drag-drop (same plus SVG) are routed through the callback, which returns a relative path; the editor inserts C<=picture path> at the cursor. No-op when prop is absent
 =item fix performance: in full-preview mode skip C<view.dispatch({scrollIntoView:true})> and C<getBoundingClientRect> calls on the hidden CodeMirror view; coalesce preview scroll tracking to one C<getScrollMap> pass per frame via C<requestAnimationFrame>; apply the recorded line in a single dispatch on mode exit
 =item fix UX: entering full-preview scrolls the preview to the editor's current top visible line (was always line 1); leaving full-preview places the cursor on the last visible preview line and centers it at ~1/4 from the top of the editor

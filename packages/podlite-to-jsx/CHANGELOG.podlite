@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.42
+
 =item C<:folded> on C<=head> blocks now folds the whole section — heading plus every following node up to the next same-or-higher-level heading. Previously this attribute was ignored on headings
 =item per-item conditional fold for C<:folded-levels> — only TOC items that have nested children become collapsible; leaf items render as plain list entries with no disclosure marker. Previously the entire level was wrapped as a single group
 =item bare C<:folded> on C<=toc> wraps the entire TOC in a C<<details>>; summary shows the caption or "Contents" fallback
