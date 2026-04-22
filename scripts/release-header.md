@@ -2,7 +2,7 @@
 
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core-dark.svg">
-<img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="200" alt="Podlite">
+<img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="350" alt="Podlite">
 </picture>
 
 **Podlite — lightweight block-based markup language**
