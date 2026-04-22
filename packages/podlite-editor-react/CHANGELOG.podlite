@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item fix Enter in C<=item> list and Tab/Shift-Tab level change now scroll the cursor into view — previously the caret could move past the viewport bottom without scrolling. Same fix applied to image paste/drop insertion
+
 =head1 0.0.44
 
 =item add C<onSaveAsset> prop — paste/drop image handler. Clipboard paste (PNG/JPEG/GIF/WebP) and drag-drop (same plus SVG) are routed through the callback, which returns a relative path; the editor inserts C<=picture path> at the cursor. No-op when prop is absent

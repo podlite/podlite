@@ -18,6 +18,8 @@ function insertPicture(view: EditorView, path: string): void {
   view.dispatch({
     changes: { from: pos, to: pos, insert },
     selection: { anchor: pos + insert.length },
+    scrollIntoView: true,
+    userEvent: 'input',
   })
 }
 

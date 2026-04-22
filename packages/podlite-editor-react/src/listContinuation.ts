@@ -79,6 +79,8 @@ export const listContinuationKeymap: Extension = keymap.of([
         view.dispatch({
           changes: { from: line.from, to: line.to, insert: '' },
           selection: { anchor: line.from },
+          scrollIntoView: true,
+          userEvent: 'input',
         })
         return true
       }
@@ -99,6 +101,8 @@ export const listContinuationKeymap: Extension = keymap.of([
         selection: {
           anchor: head + newItem.length,
         },
+        scrollIntoView: true,
+        userEvent: 'input',
       })
       return true
     },
@@ -142,7 +146,7 @@ function changeItemLevel(view: EditorView, delta: LevelDelta): boolean {
 
   if (changes.length === 0) return false
 
-  view.dispatch({ changes })
+  view.dispatch({ changes, scrollIntoView: true, userEvent: 'input' })
   return true
 }
 
