@@ -846,18 +846,22 @@ function PodliteEditorInternal(
     return { result }
   }
 
-  const previewContent = () => {
+  // Memoise the preview by source text and the converter identity. Without
+  // this, every parent re-render (theme toggle, unrelated state) triggers a
+  // full Podlite re-parse + JSX tree rebuild because previewContent() runs
+  // on every render. Consumers should wrap makePreviewComponent in
+  // React.useCallback so the identity stays stable across renders.
+  const previewJsx = React.useMemo(() => {
     if (!enablePreview) return null
     const preview = makePreviewComponent ? makePreviewComponent(value) : defaultPreview(value)
-    if (preview) {
-      return isElement(preview.result) ? (
-        <div className="content">{preview.result}</div>
-      ) : (
-        <div dangerouslySetInnerHTML={{ __html: preview.result as string }} className="content"></div>
-      )
-    }
-    return null
-  }
+    if (!preview) return null
+    return isElement(preview.result) ? (
+      <div className="content">{preview.result}</div>
+    ) : (
+      <div dangerouslySetInnerHTML={{ __html: preview.result as string }} className="content"></div>
+    )
+  }, [enablePreview, value, makePreviewComponent])
+  const previewContent = () => previewJsx
   const conentView = (
     <div className={`podlite-editor-content`} style={{ height: codemirrorProps?.height }}>
       <div className={`podlite-editor-content-editor`} ref={containerEditor}>
