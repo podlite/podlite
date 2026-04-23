@@ -8,10 +8,8 @@
 <p align="center">lightweight block-based markup language with parser, AST and renderers</p>
 
 <p align="center">
-
-[![npm](https://img.shields.io/npm/v/podlite)](https://www.npmjs.com/package/podlite)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
+  <a href="https://www.npmjs.com/package/podlite"><img src="https://img.shields.io/npm/v/podlite" alt="npm"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
 </p>
 
 ---
