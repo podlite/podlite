@@ -30,15 +30,17 @@ const plugin = (): PodliteWebPlugin => {
         const selector = getTextContentFromNode(content).trim()
         console.warn(`[include] start resolve selector: ${selector}`)
         if (selector) {
-          // try to resolve selector
-          const [block] = runSelector(selector, recs)
-          if (typeof block === 'object' && !('file' in block)) {
-            const updated = { content: block }
-            return { ...node, ...updated }
+          const result = runSelector(selector, recs)
+          const blocks: PodNode[] = []
+          for (const item of result) {
+            if (typeof item === 'object' && item !== null && !('file' in item)) {
+              blocks.push(item as PodNode)
+            }
           }
-          if (!block) {
-            console.warn(`[plugin: resolve ] selector ${selector} not found`)
+          if (blocks.length > 0) {
+            return { ...node, content: blocks }
           }
+          console.warn(`[plugin: resolve ] selector ${selector} not found`)
         }
         return node
       },

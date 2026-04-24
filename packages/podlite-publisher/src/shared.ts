@@ -182,23 +182,59 @@ export const addUrl = (items: publishRecord[]) => {
 ///  Support for Selectors
 
 type ParsedSelector = {
-  scheme: string
-  document: string
+  scheme?: string
+  document?: string
   anchor?: string
+  blockFilters: string[]
 }
 
-const parseSelector = (selector: string): ParsedSelector => {
-  // doc:File1#data1
-  const docWithAnchorPattern = /^([^:]+):([^#]+)(?:#(.+))?$/
-  // Try doc:name#anchor pattern first
-  const anchorMatch = selector.match(docWithAnchorPattern)
-  if (anchorMatch) {
+// Selector grammar (spec §Selectors):
+//   SELECTOR := [EXTERNAL_SOURCE '|'] BLOCKS_SELECTOR?
+//   EXTERNAL_SOURCE := scheme:path[#anchor]
+//   BLOCKS_SELECTOR := blockname (',' blockname)*
+const parseSelector = (selector: string): ParsedSelector | undefined => {
+  const trimmed = selector.trim()
+  if (!trimmed) return undefined
+
+  // Split on the first '|' — left is source, right is blocks selector
+  const pipeIdx = trimmed.indexOf('|')
+  const sourcePart = (pipeIdx === -1 ? trimmed : trimmed.slice(0, pipeIdx)).trim()
+  const filterPart = pipeIdx === -1 ? '' : trimmed.slice(pipeIdx + 1).trim()
+
+  const blockFilters = filterPart
+    ? filterPart
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+    : []
+
+  // Source: scheme:path or scheme:path#anchor
+  const sourceMatch = sourcePart.match(/^([^:]+):([^#]+)(?:#(.+))?$/)
+  if (sourceMatch) {
     return {
-      scheme: anchorMatch[1],
-      document: anchorMatch[2],
-      anchor: anchorMatch[3],
+      scheme: sourceMatch[1],
+      document: sourceMatch[2].trim(),
+      anchor: sourceMatch[3],
+      blockFilters,
     }
   }
+
+  if (blockFilters.length > 0) {
+    // Filters-only selector (current document scope — source-less)
+    return { blockFilters }
+  }
+
+  return undefined
+}
+
+// Normalize a path for loose suffix comparison:
+//   'src/foo.podlite'      ~= 'foo.podlite'
+//   './includes/x.podlite' ~= 'includes/x.podlite'
+const normalizePath = (p: string): string => p.replace(/\\/g, '/').replace(/^\.\//, '')
+const filePathMatches = (docFile: string, target: string): boolean => {
+  const a = normalizePath(docFile)
+  const b = normalizePath(target)
+  return a === b || a.endsWith('/' + b) || b.endsWith('/' + a)
 }
 const getDocIDs = (doc: publishRecord): string[] => {
   const ids = []
@@ -231,29 +267,44 @@ function getMapIDsBlocks<T extends PodNode>(srcNode: T): Map<string, T> {
 }
 
 export const runSelector = (selector: string, docs: publishRecord[]): publishRecord[] | PodNode[] => {
-  const paresedSelector = parseSelector(selector)
-  if (paresedSelector) {
-    const { scheme, document, anchor } = paresedSelector
-    const filters = []
-    if (scheme === 'doc') {
-      filters.push((doc: publishRecord) => {
-        return getDocIDs(doc).includes(document)
-      })
-    }
-    // Return documents that successfully pass all the filters.
-    const subdocs = docs.filter(item => !filters.some(fn => !fn(item)))
-    if (anchor) {
-      const collected_blocks = []
-      for (const d of subdocs) {
-        const idsMap = getMapIDsBlocks(d.node)
-        const block = idsMap.get(anchor)
-        if (block) {
-          collected_blocks.push(block)
-        }
-      }
-      return collected_blocks
-    }
-    return subdocs.map(d => d.node)
+  const parsed = parseSelector(selector)
+  if (!parsed) return []
+
+  const { scheme, document, anchor, blockFilters } = parsed
+
+  // Filter docs by source scheme
+  let matchedDocs: publishRecord[] = docs
+  if (scheme === 'doc' && document) {
+    matchedDocs = docs.filter(doc => getDocIDs(doc).includes(document))
+  } else if (scheme === 'file' && document) {
+    matchedDocs = docs.filter(doc => filePathMatches(doc.file, document))
+  } else if (scheme && scheme !== 'doc' && scheme !== 'file') {
+    // Unknown scheme
+    return []
   }
-  return []
+
+  // Anchor takes precedence — single-block-by-id lookup
+  if (anchor) {
+    const collectedBlocks: PodNode[] = []
+    for (const d of matchedDocs) {
+      const idsMap = getMapIDsBlocks(d.node)
+      const block = idsMap.get(anchor)
+      if (block) collectedBlocks.push(block)
+    }
+    return collectedBlocks
+  }
+
+  // Block filters — extract blocks by name across matched docs
+  if (blockFilters.length > 0) {
+    const collectedBlocks: PodNode[] = []
+    for (const d of matchedDocs) {
+      for (const name of blockFilters) {
+        collectedBlocks.push(...getFromTree(d.node, name))
+      }
+    }
+    return collectedBlocks
+  }
+
+  // No anchor, no filter — return whole docs
+  return matchedDocs.map(d => d.node)
 }
