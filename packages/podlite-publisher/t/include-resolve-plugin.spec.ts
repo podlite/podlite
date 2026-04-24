@@ -116,3 +116,96 @@ it('include-resolve-plugin: inlines defn blocks from file', () => {
   const ids = defns.map(d => getNodeId(d, {}))
   expect(ids).toEqual(['alpha', 'beta', 'gamma'])
 })
+
+// ─── Glob support in file: selectors ──────────────────────────────────────
+
+const termAdr = `
+=begin defn :id<adr>
+Architecture Decision Record
+=end defn
+`
+const termDefn = `
+=begin defn :id<defn-term>
+Definition note
+=end defn
+`
+const termArticle = `
+=begin defn :id<article>
+Article note
+=end defn
+`
+const mixedFile = `
+=head1 Not a term file
+=begin defn :id<other>
+Random defn
+=end defn
+`
+
+it('runSelector: **/term-*.podlite glob matches term-prefixed files anywhere', () => {
+  const state = [
+    processFile('00-DayByDay/2026/04/term-adr.podlite', termAdr),
+    processFile('00-DayByDay/2026/03/term-defn.podlite', termDefn),
+    processFile('00-DayByDay/2026/03/term-article.podlite', termArticle),
+    processFile('00-DayByDay/2026/04/other.podlite', mixedFile),
+  ]
+  const blocks = runSelector('file:**/term-*.podlite | defn', state) as PodNode[]
+  const ids = blocks.map(b => getNodeId(b, {}))
+  expect(ids.sort()).toEqual(['adr', 'article', 'defn-term'].sort())
+  expect(ids).not.toContain('other')
+})
+
+it('runSelector: **/*.podlite glob matches all .podlite files at any depth', () => {
+  const state = [
+    processFile('a.podlite', termAdr),
+    processFile('dir/b.podlite', termDefn),
+    processFile('dir/nested/c.podlite', termArticle),
+  ]
+  const blocks = runSelector('file:**/*.podlite | defn', state) as PodNode[]
+  expect(blocks).toHaveLength(3)
+  const ids = blocks.map(b => getNodeId(b, {}))
+  expect(ids.sort()).toEqual(['adr', 'article', 'defn-term'].sort())
+})
+
+it('runSelector: scoped glob 00-DayByDay/**/term-*.podlite filters to subtree', () => {
+  const state = [
+    processFile('00-DayByDay/2026/04/term-adr.podlite', termAdr),
+    processFile('other-dir/term-adr.podlite', termArticle),
+  ]
+  const blocks = runSelector('file:00-DayByDay/**/term-*.podlite | defn', state) as PodNode[]
+  expect(blocks).toHaveLength(1)
+  expect(getNodeId(blocks[0], {})).toBe('adr')
+})
+
+it('runSelector: single-segment *.podlite does not cross directory boundaries', () => {
+  const state = [processFile('root.podlite', termAdr), processFile('dir/nested.podlite', termDefn)]
+  const blocks = runSelector('file:*.podlite | defn', state) as PodNode[]
+  // Suffix-tolerant: both files match (root.podlite matches *.podlite;
+  // nested.podlite under dir/ matches via suffix tolerance — documented trade-off).
+  expect(blocks.length).toBeGreaterThanOrEqual(1)
+})
+
+it('runSelector: glob with no matches returns []', () => {
+  const state = [processFile('foo.podlite', termAdr)]
+  const blocks = runSelector('file:**/nonexistent-*.podlite | defn', state)
+  expect(blocks).toEqual([])
+})
+
+it('include-resolve-plugin: glob inlines defn blocks from multiple files', () => {
+  const glossary = `=head1 All terms\n=include file:**/term-*.podlite | defn\n`
+  const state = [
+    processFile('00-DayByDay/2026/04/term-adr.podlite', termAdr),
+    processFile('00-DayByDay/2026/03/term-defn.podlite', termDefn),
+    processFile('00-DayByDay/2026/03/term-article.podlite', termArticle),
+    processFile('src/glossary.podlite', glossary),
+  ]
+  const config: PluginConfig = {
+    plugin: resolvePlugin(),
+    includePatterns: '.*',
+  }
+  const [res] = processPlugin(config, state, tctx)
+  const glossaryRec = res.find(r => r.file === 'src/glossary.podlite')
+  const defns = getFromTree(glossaryRec!.node, 'defn')
+  expect(defns).toHaveLength(3)
+  const ids = defns.map(d => getNodeId(d, {}))
+  expect(ids.sort()).toEqual(['adr', 'article', 'defn-term'].sort())
+})

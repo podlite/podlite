@@ -231,9 +231,63 @@ const parseSelector = (selector: string): ParsedSelector | undefined => {
 //   'src/foo.podlite'      ~= 'foo.podlite'
 //   './includes/x.podlite' ~= 'includes/x.podlite'
 const normalizePath = (p: string): string => p.replace(/\\/g, '/').replace(/^\.\//, '')
+
+const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
+
+// Convert a glob pattern to an anchored RegExp.
+//   **/   →  (?:.*/)?   zero or more directory segments (lets **/foo match root-level foo)
+//   **    →  .*         any characters, crosses /
+//   *     →  [^/]*      any characters within a single segment
+//   ?     →  [^/]       single character within a segment
+// Other regex meta characters are escaped.
+const globRegexCache = new Map<string, RegExp>()
+const globToRegex = (glob: string): RegExp => {
+  const cached = globRegexCache.get(glob)
+  if (cached) return cached
+  let re = ''
+  let i = 0
+  while (i < glob.length) {
+    const c = glob[i]
+    const next = glob[i + 1]
+    if (c === '*' && next === '*' && glob[i + 2] === '/') {
+      re += '(?:.*/)?'
+      i += 3
+    } else if (c === '*' && next === '*') {
+      re += '.*'
+      i += 2
+    } else if (c === '*') {
+      re += '[^/]*'
+      i += 1
+    } else if (c === '?') {
+      re += '[^/]'
+      i += 1
+    } else if (/[\\^$.()+|{}[\]]/.test(c)) {
+      re += '\\' + c
+      i += 1
+    } else {
+      re += c
+      i += 1
+    }
+  }
+  const compiled = new RegExp(`^${re}$`)
+  globRegexCache.set(glob, compiled)
+  return compiled
+}
+
 const filePathMatches = (docFile: string, target: string): boolean => {
   const a = normalizePath(docFile)
   const b = normalizePath(target)
+
+  if (isGlobPattern(b)) {
+    const rx = globToRegex(b)
+    if (rx.test(a)) return true
+    // Suffix-tolerant match: allow any parent prefix (consistent with
+    // non-glob suffix matching, so 'src/00-foo/x.pod' matches '00-foo/x.pod').
+    const body = rx.source.slice(1, -1)
+    const rxSuffix = new RegExp(`^(?:.*/)${body}$`)
+    return rxSuffix.test(a)
+  }
+
   return a === b || a.endsWith('/' + b) || b.endsWith('/' + a)
 }
 const getDocIDs = (doc: publishRecord): string[] => {
