@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item resolve C<=table data:<key>> as CSV from a C<=data :mime-type<text/csv>> block (spec §1672) — table content is replaced with C<=row>/C<=cell> structure parsed per RFC 4180 (comma delimiter, C<"...">  quoted fields with C<""> escape). C<:header> on C<=table> marks the first CSV row as a header row. Missing C<=data> block or non-CSV mime-type leaves the table unchanged with a warning. C<file:<path>> scheme is left unresolved for host-driven readers
+
 =head1 0.0.38
 
 =item added C<type: "map"> on config items parsed from C<:attr{k=>v, ...}> key-value syntax — previously the hash form returned the map value without a type annotation, making it indistinguishable from other value kinds
