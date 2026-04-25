@@ -157,6 +157,102 @@ function csvToTableContent(csvRows, headerFirst) {
     return buildRowBlock(cells, headerFirst && i === 0)
   })
 }
+
+// ─── Error recovery (design notes Rules 2-4) ───────────────────────────────
+
+// Rule 2 — table-level cell count validation. Pad short rows with empty
+// cells; truncate long rows. Emit a warning whenever a row is changed.
+// Expected count is taken from the `:header` row if present, otherwise from
+// the row with the maximum cell count.
+//
+// Skipped when any cell uses `:colspan` or `:rowspan`: a spanning cell
+// occupies multiple columns, so naive cell counting would misreport row
+// width and drop legitimate spanned cells.
+function normalizeCellCounts(tableNode, source = 'table') {
+  if (!tableNode || !Array.isArray(tableNode.content)) return tableNode
+  const rows = tableNode.content.filter(c => c && c.type === 'block' && c.name === 'row')
+  if (rows.length === 0) return tableNode
+
+  const cellsOf = row => (Array.isArray(row.content) ? row.content.filter(c => c && c.name === 'cell') : [])
+  const isHeaderRow = row => Array.isArray(row.config) && row.config.some(a => a.name === 'header' && a.value === true)
+  const cellHasSpan = cell =>
+    Array.isArray(cell.config) && cell.config.some(a => a.name === 'colspan' || a.name === 'rowspan')
+  const rowHasSpan = row => cellsOf(row).some(cellHasSpan)
+  if (rows.some(rowHasSpan)) return tableNode
+
+  const headerRow = rows.find(isHeaderRow)
+  const expected = headerRow ? cellsOf(headerRow).length : Math.max(...rows.map(r => cellsOf(r).length))
+  if (expected === 0) return tableNode
+
+  let mutated = false
+  const newContent = tableNode.content.map(child => {
+    if (!child || child.type !== 'block' || child.name !== 'row') return child
+    const cells = cellsOf(child)
+    if (cells.length === expected) return child
+
+    if (cells.length < expected) {
+      const padding = []
+      for (let i = cells.length; i < expected; i++) padding.push(buildCellBlock(''))
+      console.warn(
+        `[${source}] row has ${cells.length} cells, expected ${expected} — padded with ${padding.length} empty`,
+      )
+      mutated = true
+      return { ...child, content: [...child.content, ...padding] }
+    }
+
+    // cells.length > expected → truncate
+    const dropped = cells.length - expected
+    console.warn(`[${source}] row has ${cells.length} cells, expected ${expected} — truncated ${dropped}`)
+    mutated = true
+    // Keep non-cell entries (e.g. blanklines) and the first `expected` cells
+    let keepCells = expected
+    const trimmed = []
+    for (const c of child.content || []) {
+      if (c && c.type === 'block' && c.name === 'cell') {
+        if (keepCells > 0) {
+          trimmed.push(c)
+          keepCells--
+        }
+      } else {
+        trimmed.push(c)
+      }
+    }
+    return { ...child, content: trimmed }
+  })
+
+  return mutated ? { ...tableNode, content: newContent } : tableNode
+}
+
+// Rule 3 — mixed separator detection (text-mode only). Inspects each line
+// for visible separators (`|` / `+`) surrounded by whitespace; lines without
+// any visible separator fall back to whitespace separation. Warns when more
+// than one separator type is observed within a single table.
+function detectMixedSeparators(lines) {
+  const seen = new Set<string>()
+  for (const line of lines) {
+    if (!line || typeof line !== 'string') continue
+    if (/\s\|\s/.test(line)) seen.add('pipe')
+    else if (/\s\+\s/.test(line)) seen.add('plus')
+    else if (line.trim().length > 0) seen.add('whitespace')
+    if (seen.size > 1) break
+  }
+  if (seen.size > 1) {
+    console.warn(`[table] mixed separator types detected: ${Array.from(seen).join(', ')} — recommend a single style`)
+  }
+}
+
+// Rule 4 — replace =table with =code block. Used when a referenced =data
+// source has a non-CSV mime type: the spec mandates the source be rendered
+// as a code block so the user can still see the underlying content.
+function buildCodeFromDataBlock(tableNode, dataBlock) {
+  return {
+    type: 'block',
+    name: 'code',
+    margin: tableNode.margin || '',
+    content: Array.isArray(dataBlock.content) ? dataBlock.content : [],
+    config: Array.isArray(tableNode.config) ? tableNode.config : [],
+  }
+}
 /**
  *  Helpers section
  */
@@ -258,30 +354,37 @@ export default () => tree => {
       const ref = detectSourceReference(node)
       if (ref && ref.scheme === 'data') {
         const dataBlock = findDataBlockByKey(tree, ref.target)
-        if (dataBlock) {
-          const mimeType = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
-          if (mimeType === 'text/csv') {
-            const csvRows = parseCsv(extractDataText(dataBlock))
-            if (csvRows.length > 0) {
-              const headerFirst = makeAttrs(node, {}).getFirstValue('header') === true
-              return { ...node, content: csvToTableContent(csvRows, headerFirst) }
-            }
-          } else {
-            console.warn(`[table] =data :key<${ref.target}> has unsupported mime-type: ${mimeType || '(none)'}`)
-          }
-        } else {
-          console.warn(`[table] no =data block found for data:${ref.target}`)
+        if (!dataBlock) {
+          // Rule 4: source not found → empty table (still a =table block)
+          console.warn(`[table] no =data block found for data:${ref.target} — rendered as empty`)
+          return { ...node, content: [] }
         }
-        // Fall through to normal processing if resolution failed
+        const mimeType = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+        if (mimeType === 'text/csv') {
+          const csvRows = parseCsv(extractDataText(dataBlock))
+          if (csvRows.length === 0) {
+            console.warn(`[table] CSV parse produced no rows for data:${ref.target} — rendered as empty`)
+            return { ...node, content: [] }
+          }
+          const headerFirst = makeAttrs(node, {}).getFirstValue('header') === true
+          const csvNode = { ...node, content: csvToTableContent(csvRows, headerFirst) }
+          return normalizeCellCounts(csvNode, `table data:${ref.target}`)
+        }
+        // Rule 4: source not CSV → render as code block so content remains visible
+        console.warn(
+          `[table] =data :key<${ref.target}> has non-CSV mime-type ${mimeType || '(none)'} — rendered as =code`,
+        )
+        return buildCodeFromDataBlock(node, dataBlock)
       }
 
-      // structured mode: transform row children (wrap implicit cells)
+      // structured mode: transform row children (wrap implicit cells), then
+      // apply Rule 2 cell count normalization.
       if (isStructured(node)) {
         const transformedContent = (node.content || []).map(c => {
           if (c && c.name === 'row') return wrapImplicitCells(c)
           return c
         })
-        return { ...node, content: transformedContent }
+        return normalizeCellCounts({ ...node, content: transformedContent }, 'table')
       }
       let rows = []
       const collectValues = row => {
@@ -308,6 +411,9 @@ export default () => tree => {
       // split each row into lines
       const lines = flattenDeep(rows.map(splitToLines))
       const separators = flattenDeep(seps.map(splitToLines))
+
+      // Rule 3: warn on mixed separator types within a single table
+      detectMixedSeparators(lines)
 
       // collect text rows
       let textRows = []
@@ -345,7 +451,7 @@ export default () => tree => {
         },
       })(node)
 
-      return res
+      return normalizeCellCounts(res, 'table')
     },
   })
   return transformer(tree, {})
