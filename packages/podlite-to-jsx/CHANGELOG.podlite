@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item fix C<wrapElement> no longer wraps C<=row>/C<=cell> nodes — those always render as C<<tr>>/C<<td>>, and HTML disallows arbitrary elements as children of C<<table>>/C<<tbody>>/C<<tr>>. Previously consumers that wrapped every node (e.g. an editor's line tracker injecting C<<div class="line-src">>) produced invalid HTML; browsers extracted the wrappers out of the table and collapsed cells into a vertical column. The outer C<=table> block is still wrappable
+
 =head1 0.0.42
 
 =item C<:folded> on C<=head> blocks now folds the whole section — heading plus every following node up to the next same-or-higher-level heading. Previously this attribute was ignored on headings

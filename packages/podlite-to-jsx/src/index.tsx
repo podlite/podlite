@@ -59,6 +59,13 @@ const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHel
     // }
 
     if (typeof wrapElement === 'function') {
+      // Skip wrapping for table-internal nodes. `row` and `cell` always
+      // render as <tr> and <th>/<td>; HTML disallows arbitrary elements as
+      // children of <table>/<tbody>/<tr>, and browsers extract any wrapping
+      // <div> out of the table — collapsing the whole layout. Outer <table>
+      // can still be wrapped for line tracking.
+      const skipName = (node as { name?: string }).name
+      if (skipName === 'row' || skipName === 'cell') return result
       return wrapElement(node, result, ctx)
     }
     return result
