@@ -70,6 +70,15 @@ function parseCsv(text) {
   return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
 }
 
+// Parse a TSV (tab-separated values) blob. Unlike CSV, TSV has no quoting
+// mechanism — fields are split strictly on tabs and `"` is a literal
+// character. Tabs and newlines inside fields are not representable in TSV.
+function parseTsv(text) {
+  const lines = text.split(/\r?\n/)
+  const rows = lines.map(line => line.split('\t'))
+  return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
+}
+
 // Locate the first `=data` block with a matching `:key` attribute anywhere
 // in the document tree.
 function findDataBlockByKey(tree, key) {
@@ -149,12 +158,15 @@ function buildRowBlock(cells, isHeader) {
   return block
 }
 
-// Convert parsed CSV rows to `=row`/`=cell` blocks. If `headerFirst` is set,
-// the first row is marked `:header`.
-function csvToTableContent(csvRows, headerFirst) {
-  return csvRows.map((row, i) => {
+// Convert parsed CSV/TSV rows to plain `=row`/`=cell` blocks. The spec is
+// silent on how to mark a header row in `=table data:<key>` references, so
+// no row receives `:header` here. Authors who need a header row can use a
+// structured table with explicit `=begin row :header`, or a Markdown GFM
+// table with a separator line.
+function csvToTableContent(csvRows) {
+  return csvRows.map(row => {
     const cells = row.map(v => buildCellBlock(v.trim()))
-    return buildRowBlock(cells, headerFirst && i === 0)
+    return buildRowBlock(cells, false)
   })
 }
 
@@ -360,19 +372,23 @@ export default () => tree => {
           return { ...node, content: [] }
         }
         const mimeType = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
-        if (mimeType === 'text/csv') {
-          const csvRows = parseCsv(extractDataText(dataBlock))
-          if (csvRows.length === 0) {
-            console.warn(`[table] CSV parse produced no rows for data:${ref.target} — rendered as empty`)
+        const isCsv = mimeType === 'text/csv'
+        const isTsv = mimeType === 'text/tab-separated-values'
+        if (isCsv || isTsv) {
+          const text = extractDataText(dataBlock)
+          const rows = isCsv ? parseCsv(text) : parseTsv(text)
+          if (rows.length === 0) {
+            console.warn(
+              `[table] ${isCsv ? 'CSV' : 'TSV'} parse produced no rows for data:${ref.target} — rendered as empty`,
+            )
             return { ...node, content: [] }
           }
-          const headerFirst = makeAttrs(node, {}).getFirstValue('header') === true
-          const csvNode = { ...node, content: csvToTableContent(csvRows, headerFirst) }
-          return normalizeCellCounts(csvNode, `table data:${ref.target}`)
+          const filledNode = { ...node, content: csvToTableContent(rows) }
+          return normalizeCellCounts(filledNode, `table data:${ref.target}`)
         }
-        // Rule 4: source not CSV → render as code block so content remains visible
+        // Rule 4: source not tabular → render as code block so content remains visible
         console.warn(
-          `[table] =data :key<${ref.target}> has non-CSV mime-type ${mimeType || '(none)'} — rendered as =code`,
+          `[table] =data :key<${ref.target}> has non-tabular mime-type ${mimeType || '(none)'} — rendered as =code`,
         )
         return buildCodeFromDataBlock(node, dataBlock)
       }

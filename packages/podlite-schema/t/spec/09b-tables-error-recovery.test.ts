@@ -193,7 +193,7 @@ data:rawjson
     expect(findNodeByName(tree, 'table')).toBeNull()
     const code = findNodeByName(tree, 'code') as { content: unknown[] }
     expect(code).toBeTruthy()
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/non-CSV mime-type.*rendered as =code/))
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/non-tabular mime-type.*rendered as =code/))
   })
 
   it('Rule 4: well-formed CSV produces table without warnings', () => {
