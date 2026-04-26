@@ -67,7 +67,15 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   /** Save a pasted or dropped image file. Return the path to insert in
       `=picture`, or `null` to cancel (e.g. buffer not yet saved to disk). */
   onSaveAsset?: SaveAssetCallback
+  /** Resolve `=include file:X` at preview render time. Receives the path
+      from the selector and an optional base directory. Return the source
+      text to inline, or `null` to leave the directive unresolved. */
+  includeReader?: IncludeReader
+  /** Base directory for relative `file:` paths inside `=include`. */
+  includeBaseDir?: string
 }
+
+export type IncludeReader = (path: string, baseDir?: string) => string | null
 
 export interface PodliteEditorRef {
   editor: React.RefObject<ReactCodeMirrorRef>
@@ -104,6 +112,8 @@ function PodliteEditorInternal(
     initialEditorState,
     onEditorStateChange,
     onSaveAsset,
+    includeReader,
+    includeBaseDir,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -842,7 +852,15 @@ function PodliteEditorInternal(
         code: hcode,
       }
     }
-    const result = <Podlite wrapElement={wrapFunction} plugins={plugins} tree={getTree(source)} />
+    const result = (
+      <Podlite
+        wrapElement={wrapFunction}
+        plugins={plugins}
+        tree={getTree(source)}
+        includeReader={includeReader}
+        includeBaseDir={includeBaseDir}
+      />
+    )
     return { result }
   }
 

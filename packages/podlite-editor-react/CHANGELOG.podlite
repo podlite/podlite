@@ -3,6 +3,7 @@
 =head1 Upcoming
 
 =item fix Enter in C<=item> list and Tab/Shift-Tab level change now scroll the cursor into view — previously the caret could move past the viewport bottom without scrolling. Same fix applied to image paste/drop insertion
+=item add C<includeReader> and C<includeBaseDir> props — forwarded to the default preview C<<Podlite>> renderer so C<=include file:X> resolves at preview time. Hosts that supply a custom C<makePreviewComponent> are responsible for forwarding these themselves. Without C<includeReader> the directive renders as nothing (preserves the prior behaviour). Type C<IncludeReader> is re-exported for type-safe usage
 
 =head1 0.0.44
 
