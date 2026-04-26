@@ -269,7 +269,9 @@ function buildCodeFromDataBlock(tableNode, dataBlock) {
  *  Helpers section
  */
 
-// run cb in symbols pair
+// Bit-mask helper used by the positional column extractor for multi-line
+// rows. Compares two same-length digit strings character by character via
+// `cb`, returning the joined result.
 const strbin = (str1, str2, cb) => {
   let res = []
   for (let i = 0; str1.length > i; i++) {
@@ -278,63 +280,158 @@ const strbin = (str1, str2, cb) => {
   return res.join('')
 }
 
-// Create mask for extract columns
-const makeMask = (lines, separators) => {
-  // calculate template length
+// Build a unified column-position mask across a set of lines. Used as a
+// fallback when a row spans multiple lines (continuation lines that align
+// content by character position rather than by separator). Returns a binary
+// string where `0` runs mark column ranges and `1` runs mark gaps.
+const makeMask = (lines: string[], separators: string[]): string => {
   const tmplLength = Math.max(...[...lines, ...separators].map(s => s.length))
-  // make bin mask for each string
   const masks = lines.map(str => {
-    /** make mask for each line
-                '        The Shoveller | Eddie Stevens   | King Arthur\'s singing shovel', 
-                '0000000011111111111110001111111111111000001111111111111111111111111111' ] 
-                then  not(mask) ... then  & masks
-               */
-    // enlarge string to tmplLength
-    let tstr = str + ' '.repeat(tmplLength - str.length)
-    let mask = []
+    const tstr = str + ' '.repeat(tmplLength - str.length)
+    const mask: string[] = []
     const re = /\s+[+|\s]\s/g
     let match
     while ((match = re.exec(tstr)) != null) {
       const tmpMask = '1'.repeat(match.index) + '0'.repeat(match[0].length)
       mask.push(tmpMask + '1'.repeat(tmplLength - tmpMask.length))
     }
-    return mask.reduce((a, b) => {
-      return strbin(a, b, (i1, i2) => i1 & i2)
-    }, '1'.repeat(tmplLength))
+    return mask.reduce((a, b) => strbin(a, b, (i1, i2) => i1 & i2), '1'.repeat(tmplLength))
   })
-  // make result mask
   const inverted = masks.map(m => strbin(m, '', i1 => (i1 == 0 ? 1 : 0)))
-  const columnTemplate = inverted.reduce((a, b) => {
-    return strbin(a, b, (i1, i2) => i1 & i2)
-  }, '1'.repeat(tmplLength))
-  return columnTemplate
+  return inverted.reduce((a, b) => strbin(a, b, (i1, i2) => i1 & i2), '1'.repeat(tmplLength))
 }
 
-const extractColumnsByTemplate = (text, template) => {
-  const lines = flattenDeep(
-    text
-      .split(/\n/) // split each row by eol
-      .filter(str => str.length > 0), // filter empty strings ( after slit )
-  )
+// Apply a column-position template to a multi-line text block, extracting
+// per-column substrings and aggregating across lines (continuation lines
+// append to the cell at the same column position).
+const extractColumnsByTemplate = (text: string, template: string): string[] => {
+  const lines = flattenDeep(text.split(/\n/).filter(s => s.length > 0))
   const cols = lines.map(line => {
     const re = /((1+|0+))/g
-    let columns = []
+    const columns: string[] = []
     let match
     while ((match = re.exec(template)) != null) {
-      if (match[0][0] == 1) continue
-      const s = line.substring(match.index, match.index + match[0].length)
-      columns.push(s)
+      if (match[0][0] == '1') continue
+      columns.push(line.substring(match.index, match.index + match[0].length))
     }
     return columns
   })
-  let result = []
-  result = cols.reduce((a, b) => {
+  const result: string[] = []
+  cols.reduce((a, b) => {
     for (let i = 0; i < b.length; i++) {
       a[i] = (a[i] === undefined ? '' : a[i]) + ' ' + b[i]
     }
     return a
-  }, [])
+  }, result)
   return result
+}
+
+/*
+=begin pod
+
+=head2 Scenario 2 — header with C<|>, data rows with whitespace
+
+Authors sometimes mark the header row with C<|> for visual emphasis and
+align data rows by whitespace alone. The two row styles disagree on
+column boundaries.
+
+=begin code
+=begin table
+Name | Age | City
+Alice  30    London
+Bob    25    Paris
+=end table
+=end code
+
+A unified positional mask collapses this table because the header's pipe
+positions and the whitespace runs in data rows do not intersect to
+meaningful columns. Per-line detection treats each line on its own:
+
+=begin code
+Name | Age | City    →  pipe split        →  ["Name", "Age", "City"]
+Alice  30    London  →  whitespace split  →  ["Alice", "30", "London"]
+Bob    25    Paris   →  whitespace split  →  ["Bob", "25", "Paris"]
+=end code
+
+Three rows, three cells each. Rule 3 still warns about mixed separator
+types so the author can normalise the source if they want; parsing
+succeeds either way.
+
+This routing activates when at least one line uses a visible separator
+(C<|> or C<+>) and at least one uses whitespace. Tables with a single
+separator type, or with both visible separators mixed in one table
+(the shared mask handles those), go through the legacy positional path
+so continuation lines in multi-line rows keep their column alignment.
+
+=end pod
+*/
+
+// Per-line column-separator detection (spec §Tables Rule 1).
+// Each line in a text-mode table independently determines its column
+// separator: visible `|` or `+` surrounded by whitespace, otherwise two or
+// more consecutive whitespace characters. Lines in the same row may use
+// different visible separators (Rule 3 warns); per-line splitting still
+// produces consistent cell counts because each line is parsed in isolation.
+
+type SeparatorKind = 'pipe' | 'plus' | 'whitespace'
+
+const detectLineSeparator = (line: string): SeparatorKind => {
+  if (/(?:^|\s)\|(?:\s|$)/.test(line)) return 'pipe'
+  if (/(?:^|\s)\+(?:\s|$)/.test(line)) return 'plus'
+  return 'whitespace'
+}
+
+const trimEdgeEmpty = (cells: string[]): string[] => {
+  // A leading `|` produces an empty cell at index 0; a trailing `|` does the
+  // same at the end. Drop those edge artifacts. Empty cells in the middle of
+  // the row are preserved.
+  let start = 0
+  let end = cells.length
+  if (cells[start] === '') start++
+  if (end > start && cells[end - 1] === '') end--
+  return cells.slice(start, end)
+}
+
+const splitLineByPipe = (line: string): string[] => trimEdgeEmpty(line.split(/\s*\|\s*/).map(c => c.trim()))
+
+const splitLineByPlus = (line: string): string[] => trimEdgeEmpty(line.split(/\s*\+\s*/).map(c => c.trim()))
+
+const splitLineByWhitespace = (line: string): string[] =>
+  line
+    .trim()
+    .split(/\s{2,}/)
+    .filter(c => c !== '')
+
+const splitLineCells = (line: string): string[] => {
+  const trimmed = line.trim()
+  if (trimmed === '') return []
+  const kind = detectLineSeparator(line)
+  if (kind === 'pipe') return splitLineByPipe(line)
+  if (kind === 'plus') return splitLineByPlus(line)
+  return splitLineByWhitespace(line)
+}
+
+// Convert a row's raw text (which may span multiple lines) to cell values.
+// Multi-line rows: take the separator kind from the first non-blank line and
+// apply it to every line of the row, then aggregate column-wise so that a
+// continuation line (e.g. wrapped cell content) appends to the cell from the
+// previous line in the same column.
+const rowToCells = (rowValue: string): string[] => {
+  const lines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
+  if (lines.length === 0) return []
+  if (lines.length === 1) return splitLineCells(lines[0])
+
+  const kind = detectLineSeparator(lines[0])
+  const splitFn = kind === 'pipe' ? splitLineByPipe : kind === 'plus' ? splitLineByPlus : splitLineByWhitespace
+  const lineCells = lines.map(splitFn)
+
+  const maxCols = Math.max(...lineCells.map(c => c.length))
+  const merged: string[] = []
+  for (let i = 0; i < maxCols; i++) {
+    const parts = lineCells.map(line => line[i] ?? '').filter(p => p !== '')
+    merged.push(parts.join(' '))
+  }
+  return merged
 }
 
 /**
@@ -439,7 +536,6 @@ export default () => tree => {
         },
       })(node)
 
-      const columnTemplate = makeMask(lines, separators)
       const makeBlock = (name, content, extra = {}) => {
         return { ...extra, name, type: 'block', content: Array.isArray(content) ? content : [content] }
       }
@@ -447,24 +543,39 @@ export default () => tree => {
       const makeHeaderRow = cells =>
         makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
       const makeCell = text => makeBlock('cell', { type: 'text', value: text })
-      // make columns
+      // Routing: per-line separator detection (Rule 1) is used only when a
+      // line with a visible separator (`|` or `+`) coexists with one that
+      // has only whitespace separation — the Scenario 2 case where the
+      // legacy positional mask collapses columns. Tables with a uniform
+      // separator, or with both visible kinds (pipe + plus) handled by the
+      // shared mask, fall back to the legacy positional template, which
+      // preserves continuation-line alignment in multi-line rows and keeps
+      // byte-for-byte AST/HTML output stable.
+      const columnTemplate = makeMask(lines, separators)
+      const seenSeparatorKinds = new Set(lines.map(detectLineSeparator))
+      const hasVisible = seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')
+      const hasWhitespace = seenSeparatorKinds.has('whitespace')
+      const useMixedSplitting = hasVisible && hasWhitespace
+      const splitToCells = (rowValue: string): string[] => {
+        if (useMixedSplitting) {
+          const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
+          if (rowLines.length <= 1) return rowToCells(rowValue)
+        }
+        return extractColumnsByTemplate(rowValue, columnTemplate)
+      }
       const res = makeTransformer({
         'row:text': row => {
           if (textRows.length == 1) {
-            // split each text row into lines
+            // No separator blocks: each line of the only text row becomes its own row
             const textRowsLines = flattenDeep([row.value].map(splitToLines))
-            return textRowsLines.map(rowValue => {
-              const cols = extractColumnsByTemplate(rowValue, columnTemplate)
-              return makeRow(cols.map(makeCell))
-            })
+            if (useMixedSplitting) {
+              return textRowsLines.map(line => makeRow(splitLineCells(line).map(makeCell)))
+            }
+            return textRowsLines.map(line => makeRow(extractColumnsByTemplate(line, columnTemplate).map(makeCell)))
           }
-          const cols = extractColumnsByTemplate(row.value, columnTemplate)
-          return makeRow(cols.map(makeCell))
+          return makeRow(splitToCells(row.value).map(makeCell))
         },
-        'head:text': head => {
-          const cols = extractColumnsByTemplate(head.value, columnTemplate)
-          return makeHeaderRow(cols.map(makeCell))
-        },
+        'head:text': head => makeHeaderRow(splitToCells(head.value).map(makeCell)),
       })(node)
 
       return normalizeCellCounts(res, 'table')
