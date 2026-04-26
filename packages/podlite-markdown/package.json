@@ -17,6 +17,13 @@
     "type": "opencollective",
     "url": "https://opencollective.com/podlite"
   },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "clean": "rm -rf dist lib esm tsconfig.tsbuildinfo",
     "test": "yarn g:jest  --passWithNoTests",
