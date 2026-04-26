@@ -73,9 +73,14 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   includeReader?: IncludeReader
   /** Base directory for relative `file:` paths inside `=include`. */
   includeBaseDir?: string
+  /** Expand a glob pattern in `=include file:**...` to a concrete list of
+      paths. Required when authors use globs; without it glob targets read
+      as literal paths and resolve to nothing. */
+  expandPaths?: ExpandPaths
 }
 
 export type IncludeReader = (path: string, baseDir?: string) => string | null
+export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
 
 export interface PodliteEditorRef {
   editor: React.RefObject<ReactCodeMirrorRef>
@@ -114,6 +119,7 @@ function PodliteEditorInternal(
     onSaveAsset,
     includeReader,
     includeBaseDir,
+    expandPaths,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -859,6 +865,7 @@ function PodliteEditorInternal(
         tree={getTree(source)}
         includeReader={includeReader}
         includeBaseDir={includeBaseDir}
+        expandPaths={expandPaths}
       />
     )
     return { result }

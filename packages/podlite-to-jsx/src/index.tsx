@@ -86,6 +86,7 @@ export const Podlite: React.FC<{
   mode?: 'pod' | 'md'
   includeReader?: IncludeReader
   includeBaseDir?: string
+  expandPaths?: ExpandPaths
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
   return result
@@ -144,11 +145,16 @@ const groupFoldedSections = (content: any[]): any[] => {
 
 type IncludeReader = (path: string, baseDir?: string) => string | null
 
+type ExpandPaths = (pattern: string, baseDir?: string) => string[]
+
 type MapToReactOptions = {
   includeReader?: IncludeReader
   includeBaseDir?: string
+  expandPaths?: ExpandPaths
   parser?: any
 }
+
+const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
 
 const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
@@ -363,7 +369,10 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // Resolve =include via injected ctx.includeReader. Without a reader the
     // directive renders as nothing — preserves the previous emptyContent
     // behaviour for hosts that don't supply file access (e.g. browser
-    // playground without virtual FS).
+    // playground without virtual FS). Glob patterns in the source path
+    // (e.g. `file:**/*.podlite`) require an `expandPaths` callback that
+    // resolves the pattern to a concrete list of file paths; without it
+    // the path is read literally and globs go unresolved.
     include: (writer, processor) => (node, ctx, interator) => {
       if (!opts.includeReader || !opts.parser) return null
       const selector = getTextContentFromNode(node.content as any)
@@ -373,18 +382,29 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const parsed = parseSelector(selector)
       if (!parsed || parsed.scheme !== 'file' || !parsed.document) return null
 
-      // Anti-loop guard: track visited paths along the current include chain
+      // Resolve target paths: glob is expanded via the host callback (when
+      // present); a literal path is used directly. Hosts without
+      // `expandPaths` get one-file behaviour for everything.
       const stack: string[] = (ctx.includeStack as string[]) ?? []
-      if (stack.includes(parsed.document)) return null
+      const paths =
+        isGlobPattern(parsed.document) && opts.expandPaths
+          ? opts.expandPaths(parsed.document, opts.includeBaseDir)
+          : [parsed.document]
 
-      const source = opts.includeReader(parsed.document, opts.includeBaseDir)
-      if (source == null) return null
+      const docs: { file: string; node: any }[] = []
+      for (const p of paths) {
+        if (stack.includes(p)) continue
+        const source = opts.includeReader(p, opts.includeBaseDir)
+        if (source == null) continue
+        const subAst = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
+        docs.push({ file: p, node: subAst })
+      }
+      if (docs.length === 0) return null
 
-      const subAst = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
-      const blocks = runSelector(selector, [{ file: parsed.document, node: subAst }]) as PodNode[]
+      const blocks = runSelector(selector, docs) as PodNode[]
       if (!blocks || blocks.length === 0) return null
 
-      return interator(blocks, { ...ctx, includeStack: [...stack, parsed.document] })
+      return interator(blocks, { ...ctx, includeStack: [...stack, ...paths] })
     },
 
     // Directives
@@ -852,6 +872,7 @@ function podlite(
     mode = 'pod',
     includeReader,
     includeBaseDir,
+    expandPaths,
   }: {
     file?: string
     plugins?: any
@@ -860,6 +881,7 @@ function podlite(
     mode?: 'pod' | 'md'
     includeReader?: IncludeReader
     includeBaseDir?: string
+    expandPaths?: ExpandPaths
   },
   ...args
 ) {
@@ -881,7 +903,7 @@ function podlite(
   )
 
   const rules: Rules = {
-    ...mapToReact(makeComponent, { includeReader, includeBaseDir, parser: podliteParser }),
+    ...mapToReact(makeComponent, { includeReader, includeBaseDir, expandPaths, parser: podliteParser }),
     ...plugins(makeComponent),
     ...jsxPluginInited,
   }
