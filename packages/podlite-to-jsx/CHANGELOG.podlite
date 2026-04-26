@@ -3,6 +3,7 @@
 =head1 Upcoming
 
 =item fix C<wrapElement> no longer wraps C<=row>/C<=cell> nodes — those always render as C<<tr>>/C<<td>>, and HTML disallows arbitrary elements as children of C<<table>>/C<<tbody>>/C<<tr>>. Previously consumers that wrapped every node (e.g. an editor's line tracker injecting C<<div class="line-src">>) produced invalid HTML; browsers extracted the wrappers out of the table and collapsed cells into a vertical column. The outer C<=table> block is still wrappable
+=item add C<includeReader> prop on C<<Podlite>> for resolving C<=include file:X> at render time. The reader receives a path and an optional base directory; it returns the included source as a string, or C<null> to leave the directive unresolved. The renderer parses the source, applies the selector (e.g. C<| defn>), and splices resolved blocks inline. C<ctx.includeStack> guards against include cycles. Without the prop the directive renders as nothing — preserves the previous behaviour for hosts without filesystem access
 
 =head1 0.0.42
 

@@ -24,6 +24,7 @@ import {
   getSafeNodeId,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
+import { parseSelector, runSelector, getTextContentFromNode } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
@@ -83,6 +84,8 @@ export const Podlite: React.FC<{
   wrapElement?: WrapElement
   tree?: PodliteExport
   mode?: 'pod' | 'md'
+  includeReader?: IncludeReader
+  includeBaseDir?: string
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
   return result
@@ -139,7 +142,15 @@ const groupFoldedSections = (content: any[]): any[] => {
   return result
 }
 
-const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
+type IncludeReader = (path: string, baseDir?: string) => string | null
+
+type MapToReactOptions = {
+  includeReader?: IncludeReader
+  includeBaseDir?: string
+  parser?: any
+}
+
+const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
     // prepare extraProps for createElement
     // add id attribute if exists
@@ -349,8 +360,32 @@ const mapToReact = (makeComponent: JSXHelper): Partial<RulesStrict> => {
         <kbd>{children}</kbd>
       </pre>
     )),
-    // TODO: add support for selectors, something like "data provider"
-    include: emptyContent(),
+    // Resolve =include via injected ctx.includeReader. Without a reader the
+    // directive renders as nothing — preserves the previous emptyContent
+    // behaviour for hosts that don't supply file access (e.g. browser
+    // playground without virtual FS).
+    include: (writer, processor) => (node, ctx, interator) => {
+      if (!opts.includeReader || !opts.parser) return null
+      const selector = getTextContentFromNode(node.content as any)
+        ?.toString()
+        .trim()
+      if (!selector) return null
+      const parsed = parseSelector(selector)
+      if (!parsed || parsed.scheme !== 'file' || !parsed.document) return null
+
+      // Anti-loop guard: track visited paths along the current include chain
+      const stack: string[] = (ctx.includeStack as string[]) ?? []
+      if (stack.includes(parsed.document)) return null
+
+      const source = opts.includeReader(parsed.document, opts.includeBaseDir)
+      if (source == null) return null
+
+      const subAst = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
+      const blocks = runSelector(selector, [{ file: parsed.document, node: subAst }]) as PodNode[]
+      if (!blocks || blocks.length === 0) return null
+
+      return interator(blocks, { ...ctx, includeStack: [...stack, parsed.document] })
+    },
 
     // Directives
     ':config': setFn((node, ctx) => {
@@ -815,31 +850,38 @@ function podlite(
     wrapElement,
     tree,
     mode = 'pod',
-  }: { file?: string; plugins?: any; wrapElement?: WrapElement; tree?: PodliteExport; mode?: 'pod' | 'md' },
+    includeReader,
+    includeBaseDir,
+  }: {
+    file?: string
+    plugins?: any
+    wrapElement?: WrapElement
+    tree?: PodliteExport
+    mode?: 'pod' | 'md'
+    includeReader?: IncludeReader
+    includeBaseDir?: string
+  },
   ...args
 ) {
+  const podliteParser = podlite_core({ importPlugins: true })
   const ast = (tree => {
     if (tree) return tree.interator
-    let podlite = podlite_core({ importPlugins: true })
-    let treeAfterParsed = podlite.parse(children || file, { podMode: mode === 'pod' ? 1 : 0 })
-    return podlite.toAst(treeAfterParsed)
+    let treeAfterParsed = podliteParser.parse(children || file, { podMode: mode === 'pod' ? 1 : 0 })
+    return podliteParser.toAst(treeAfterParsed)
   })(tree)
 
   // const   ast = parse( children || content )
   let i_key_i = 10000
   const makeComponent = helperMakeReact({ wrapElement })
 
-  const jsxPlugins: { [name: string]: Plugin['toJSX'] } = toAnyRules(
-    'toJSX',
-    podlite_core({ importPlugins: true }).getPlugins(),
-  )
+  const jsxPlugins: { [name: string]: Plugin['toJSX'] } = toAnyRules('toJSX', podliteParser.getPlugins())
   // initialize each plugin
   const jsxPluginInited = Object.fromEntries(
     Object.entries(jsxPlugins).map(([key, value]) => [key, value(makeComponent)]),
   )
 
   const rules: Rules = {
-    ...mapToReact(makeComponent),
+    ...mapToReact(makeComponent, { includeReader, includeBaseDir, parser: podliteParser }),
     ...plugins(makeComponent),
     ...jsxPluginInited,
   }

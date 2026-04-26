@@ -4,6 +4,7 @@
 
 =item extend Selector parsing: C<file:> scheme with suffix-match against C<publishRecord.file>, and pipe-separated block-name filters (e.g. C<file:terms.podlite | defn, para>). C<include-resolve-plugin> now inlines every matched block at the C<=include> location, not just the first
 =item add glob support in C<file:> selectors: C<**> (any depth), C<*> (within segment), C<?> (single char). Enables patterns like C<=include file:00-DayByDay/**/term-*.podlite | defn> for full auto-aggregation across a directory tree
+=item move C<parseSelector> and C<runSelector> implementation to C<@podlite/schema>. These names are still re-exported from this package, so downstream consumers that import them from C<@podlite/publisher> keep working without changes. The move breaks a circular-dependency risk for renderer-side packages that need selector mechanics (e.g. live-preview C<=include> resolution)
 
 =head1 0.0.11
 

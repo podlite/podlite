@@ -8,6 +8,7 @@
 =item warn on mixed column separator types within a single text-mode C<=table> (e.g. C<|> in one row, whitespace in another) — does not block parsing
 =item improve CSV/TSV error recovery — missing C<=data> block leaves the table empty; a non-tabular mime-type is rendered as a C<=code> block so the underlying content remains visible
 =item add per-line separator detection for text-mode C<=table> when lines disagree about separator type. A common pattern — header with C<|> for visual emphasis and data rows aligned by whitespace alone — used to collapse columns under the unified positional mask; each line is now parsed on its own and produces the expected cells. Tables with a single separator type, or with both visible kinds (C<|>+C<+>) handled by the shared mask, still go through the legacy positional path so continuation lines in multi-line rows keep their column alignment
+=item move C<parseSelector> and C<runSelector> here from C<@podlite/publisher>. These are pure AST queries (no I/O, no filesystem) and belong in C<@podlite/schema>. C<runSelector> is now generic over a C<SelectorDoc> shape (C<{ file, node }>), so consumers without the publisher's richer C<publishRecord> type can use it directly. The publisher re-exports from C<@podlite/schema> for backward compatibility
 
 =head1 0.0.38
 
