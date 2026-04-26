@@ -2,6 +2,37 @@
 
 =head1 Upcoming
 
+=head1 0.0.59
+
+
+=head2 @podlite/editor-react
+
+=item fix Enter in C<=item> list and Tab/Shift-Tab level change now scroll the cursor into view — previously the caret could move past the viewport bottom without scrolling. Same fix applied to image paste/drop insertion
+=item add C<includeReader> and C<includeBaseDir> props — forwarded to the default preview C<<Podlite>> renderer so C<=include file:X> resolves at preview time. Hosts that supply a custom C<makePreviewComponent> are responsible for forwarding these themselves. Without C<includeReader> the directive renders as nothing (preserves the prior behaviour). Type C<IncludeReader> is re-exported for type-safe usage
+=item add C<expandPaths> prop — forwarded to the default preview C<<Podlite>> renderer for glob-pattern resolution in C<=include file:**/*.podlite>. Type C<ExpandPaths> is re-exported
+
+=head2 @podlite/publisher
+
+=item extend Selector parsing: C<file:> scheme with suffix-match against C<publishRecord.file>, and pipe-separated block-name filters (e.g. C<file:terms.podlite | defn, para>). C<include-resolve-plugin> now inlines every matched block at the C<=include> location, not just the first
+=item add glob support in C<file:> selectors: C<**> (any depth), C<*> (within segment), C<?> (single char). Enables patterns like C<=include file:00-DayByDay/**/term-*.podlite | defn> for full auto-aggregation across a directory tree
+=item move C<parseSelector> and C<runSelector> implementation to C<@podlite/schema>. These names are still re-exported from this package, so downstream consumers that import them from C<@podlite/publisher> keep working without changes. The move breaks a circular-dependency risk for renderer-side packages that need selector mechanics (e.g. live-preview C<=include> resolution)
+
+=head2 @podlite/schema
+
+=item resolve C<=table data:<key>> as CSV from a C<=data :mime-type<text/csv>> block (spec §1672) — table content is replaced with C<=row>/C<=cell> structure parsed per RFC 4180 (comma delimiter, C<"...">  quoted fields with C<""> escape). Spec §1672 does not define how to mark a header in CSV-sourced tables; authors who need a header row should use a structured table with C<=begin row :header> or a Markdown GFM table. C<file:<path>> scheme is left unresolved for host-driven readers
+=item resolve C<=table data:<key>> as TSV when the C<=data> block carries C<:mime-type<text/tab-separated-values>> — split on tabs only, no quoting (C<"> is a literal character, unlike CSV)
+=item add table error recovery — pad short rows with empty cells, truncate over-long rows; expected cell count is taken from a C<:header> row when present, otherwise from the row with the maximum cell count. Warn on each adjustment. Tables containing C<:colspan>/C<:rowspan> cells are skipped (naive count would mis-handle spanning)
+=item warn on mixed column separator types within a single text-mode C<=table> (e.g. C<|> in one row, whitespace in another) — does not block parsing
+=item improve CSV/TSV error recovery — missing C<=data> block leaves the table empty; a non-tabular mime-type is rendered as a C<=code> block so the underlying content remains visible
+=item add per-line separator detection for text-mode C<=table> when lines disagree about separator type. A common pattern — header with C<|> for visual emphasis and data rows aligned by whitespace alone — used to collapse columns under the unified positional mask; each line is now parsed on its own and produces the expected cells. Tables with a single separator type, or with both visible kinds (C<|>+C<+>) handled by the shared mask, still go through the legacy positional path so continuation lines in multi-line rows keep their column alignment
+=item move C<parseSelector> and C<runSelector> here from C<@podlite/publisher>. These are pure AST queries (no I/O, no filesystem) and belong in C<@podlite/schema>. C<runSelector> is now generic over a C<SelectorDoc> shape (C<{ file, node }>), so consumers without the publisher's richer C<publishRecord> type can use it directly. The publisher re-exports from C<@podlite/schema> for backward compatibility
+
+=head2 @podlite/to-jsx
+
+=item fix C<wrapElement> no longer wraps C<=row>/C<=cell> nodes — those always render as C<<tr>>/C<<td>>, and HTML disallows arbitrary elements as children of C<<table>>/C<<tbody>>/C<<tr>>. Previously consumers that wrapped every node (e.g. an editor's line tracker injecting C<<div class="line-src">>) produced invalid HTML; browsers extracted the wrappers out of the table and collapsed cells into a vertical column. The outer C<=table> block is still wrappable
+=item add C<includeReader> prop on C<<Podlite>> for resolving C<=include file:X> at render time. The reader receives a path and an optional base directory; it returns the included source as a string, or C<null> to leave the directive unresolved. The renderer parses the source, applies the selector (e.g. C<| defn>), and splices resolved blocks inline. C<ctx.includeStack> guards against include cycles. Without the prop the directive renders as nothing — preserves the previous behaviour for hosts without filesystem access
+=item add C<expandPaths> prop on C<<Podlite>> for resolving glob patterns in C<=include file:X> (e.g. C<file:**/*.podlite>). The callback receives the pattern and an optional base directory; it returns a concrete list of paths. The renderer reads each path via C<includeReader>, builds a corpus, and applies the selector across all matching files. Without the prop, glob characters are read as literal path segments and resolve to nothing
+
 =head1 0.0.58
 
 

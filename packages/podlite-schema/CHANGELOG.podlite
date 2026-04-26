@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.39
+
 =item resolve C<=table data:<key>> as CSV from a C<=data :mime-type<text/csv>> block (spec §1672) — table content is replaced with C<=row>/C<=cell> structure parsed per RFC 4180 (comma delimiter, C<"...">  quoted fields with C<""> escape). Spec §1672 does not define how to mark a header in CSV-sourced tables; authors who need a header row should use a structured table with C<=begin row :header> or a Markdown GFM table. C<file:<path>> scheme is left unresolved for host-driven readers
 =item resolve C<=table data:<key>> as TSV when the C<=data> block carries C<:mime-type<text/tab-separated-values>> — split on tabs only, no quoting (C<"> is a literal character, unlike CSV)
 =item add table error recovery — pad short rows with empty cells, truncate over-long rows; expected cell count is taken from a C<:header> row when present, otherwise from the row with the maximum cell count. Warn on each adjustment. Tables containing C<:colspan>/C<:rowspan> cells are skipped (naive count would mis-handle spanning)
