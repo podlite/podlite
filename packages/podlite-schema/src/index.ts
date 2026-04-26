@@ -211,6 +211,8 @@ export { parse as parse }
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
+export { parseSelector, runSelector } from './selectors'
+export type { SelectorDoc, ParsedSelector } from './selectors'
 // Cannot be `import` as it's not under TS root dir
 // https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
 
