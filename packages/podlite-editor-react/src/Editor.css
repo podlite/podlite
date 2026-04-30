@@ -103,8 +103,14 @@
 /* Defer layout/paint of off-screen blocks in full-preview mode. The browser
    skips rendering work for elements outside the viewport, using
    contain-intrinsic-size as a placeholder. `auto 2em` lets the browser
-   remember the actual rendered size after first paint. */
-.podlite-editor .podlite-editor-preview[data-full-preview='true'] .line-src {
+   remember the actual rendered size after first paint.
+   Scope to direct children of `.content`: `content-visibility: auto`
+   implies `contain: size layout paint`, which would re-introduce the
+   containment the carve-out above removes from `.line-src` inside
+   ul/ol/li/details/summary — hiding task-list checkboxes and misaligning
+   disclosure markers. Top-level blocks are the bulk of content, so the
+   defer stays effective without touching list/disclosure interiors. */
+.podlite-editor .podlite-editor-preview[data-full-preview='true'] .content > .line-src {
   content-visibility: auto;
   contain-intrinsic-size: auto 2em;
 }
