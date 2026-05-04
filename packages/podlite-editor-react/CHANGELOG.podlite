@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.46
+
 =item fix task-list checkboxes invisible in full-preview mode — the C<content-visibility: auto> rule added in 0.0.44 was scoped to all C<.line-src> descendants, which re-introduced C<contain: size layout paint> on inner wrappers inside C<< <li> >> and broke the flex layout of C<.task-list-item>. Scoped the rule to direct children of C<.content> only; nested wrappers inside ul/ol/li/details/summary keep C<contain: none> from the existing carve-out, and the off-screen defer stays effective on top-level blocks
 
 =head1 0.0.45

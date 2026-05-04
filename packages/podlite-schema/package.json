@@ -1,6 +1,6 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "description": "AST tools and schema for Podlite markup language — validate, traverse, and transform document trees",
   "main": "./src/index.ts",
   "homepage": "https://podlite.org",

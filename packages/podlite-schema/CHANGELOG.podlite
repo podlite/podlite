@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.40
+
 =item recognise the C<header> MIME parameter (RFC 4180 §3) on C<:mime-type> for CSV/TSV C<=data> blocks. When the C<=data> block declares C<:mime-type<'text/csv; header=present'>> (or the same with C<text/tab-separated-values>), C<=table data:X> marks the first row as C<:header>, which renders as C<<th>>/C<<thead>> in HTML and JSX. Default C<absent> preserves the previous behaviour. The MIME-type parser also accepts other parameters (e.g. C<charset>) without disturbing type matching. Spec: podlite-specs#25
 
 =head1 0.0.39

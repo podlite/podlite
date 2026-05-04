@@ -2,6 +2,22 @@
 
 =head1 Upcoming
 
+=head1 0.0.60
+
+
+=head2 @podlite/editor-react
+
+=item fix task-list checkboxes invisible in full-preview mode — the C<content-visibility: auto> rule added in 0.0.44 was scoped to all C<.line-src> descendants, which re-introduced C<contain: size layout paint> on inner wrappers inside C<< <li> >> and broke the flex layout of C<.task-list-item>. Scoped the rule to direct children of C<.content> only; nested wrappers inside ul/ol/li/details/summary keep C<contain: none> from the existing carve-out, and the off-screen defer stays effective on top-level blocks
+
+=head2 @podlite/schema
+
+=item recognise the C<header> MIME parameter (RFC 4180 §3) on C<:mime-type> for CSV/TSV C<=data> blocks. When the C<=data> block declares C<:mime-type<'text/csv; header=present'>> (or the same with C<text/tab-separated-values>), C<=table data:X> marks the first row as C<:header>, which renders as C<<th>>/C<<thead>> in HTML and JSX. Default C<absent> preserves the previous behaviour. The MIME-type parser also accepts other parameters (e.g. C<charset>) without disturbing type matching. Spec: podlite-specs#25
+
+=head2 @podlite/to-jsx
+
+=item C<:folded> on C<=head> now folds correctly when the heading is nested inside a named block, C<=begin nested>, C<=defn>, etc. — not only at the top level of C<=begin pod>. Previously the synthetic C<_folded_section> wrapper was created only for direct children of C<pod>, so folded headings inside other containers silently rendered as plain headings. The grouping pass now walks the AST recursively, so the spec's hierarchical-fold semantics (C<:folded> on a heading governs the heading and all associated lower-level content) apply uniformly
+=item replaced C<margin: 1em 0> shorthand on C<details.folded> and C<details.folded-section> with long-hand C<margin-top>/C<margin-bottom>. The shorthand zeroed horizontal margins explicitly and (because of higher selector specificity) overrode host stylesheets that center block elements via C<details { margin-left: auto }>, pinning folded sections to the parent's left edge instead of aligning with surrounding headings. Long-hand vertical-only margins let horizontal margins flow through the cascade
+
 =head1 0.0.59
 
 
