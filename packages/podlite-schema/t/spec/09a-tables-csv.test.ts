@@ -55,11 +55,10 @@ sugar,1,cups
     expect(dataRowCells.map(cellText)).toEqual(['flour', '2', 'cups'])
   })
 
-  it('CSV-sourced table never marks a row as :header (spec is silent on this)', () => {
-    // The spec section "Table from CSV files or data blocks" (§1672) does
-    // not define how to mark a header in CSV-sourced tables. Authors who
-    // need a header row should use a structured table or a Markdown GFM
-    // table.
+  it('without `header` MIME parameter, no row is marked :header (default `absent`)', () => {
+    // Per RFC 4180 §3 (recognised on :mime-type by podlite-specs PR #25),
+    // header indication defaults to `absent`. Authors who need a header
+    // row must declare `header=present` in the MIME type.
     const src = `=for table
 data:people
 
@@ -75,6 +74,132 @@ Alice,30
     const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
       Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
     expect(rows.every(r => !isHeader(r))).toBe(true)
+  })
+
+  it('CSV with `header=present` MIME parameter marks first row as :header', () => {
+    // Spec example §1830: the planets data block declares header=present,
+    // so the first row (name,radius_km,moons) becomes a header row.
+    const src = `=for table :caption('Inner planets')
+data:planets
+
+=begin data :key<planets> :mime-type<'text/csv; header=present'>
+name,radius_km,moons
+Mercury,2440,0
+Venus,6052,0
+Earth,6371,1
+Mars,3390,2
+=end data
+`
+    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row') as Array<{
+      config?: Array<{ name: string; value: unknown }>
+      content: unknown[]
+    }>
+    const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
+      Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
+    expect(rows).toHaveLength(5)
+    expect(isHeader(rows[0])).toBe(true)
+    expect(rows.slice(1).every(r => !isHeader(r))).toBe(true)
+    const cellText = (cell: { content: unknown[] }) => {
+      const first = cell.content[0] as string | { value: string }
+      return typeof first === 'string' ? first : first.value
+    }
+    const headerCells = collectNodesByName(rows[0], 'cell') as Array<{ content: unknown[] }>
+    expect(headerCells.map(cellText)).toEqual(['name', 'radius_km', 'moons'])
+  })
+
+  it('CSV with explicit `header=absent` is treated as no header (default behaviour)', () => {
+    const src = `=for table
+data:people
+
+=begin data :key<people> :mime-type<'text/csv; header=absent'>
+name,age
+Alice,30
+=end data
+`
+    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row') as Array<{
+      config?: Array<{ name: string; value: unknown }>
+    }>
+    const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
+      Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
+    expect(rows.every(r => !isHeader(r))).toBe(true)
+  })
+
+  it('CSV with unrecognised header value falls back to absent (lenient parsing)', () => {
+    const src = `=for table
+data:people
+
+=begin data :key<people> :mime-type<'text/csv; header=maybe'>
+name,age
+Alice,30
+=end data
+`
+    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row') as Array<{
+      config?: Array<{ name: string; value: unknown }>
+    }>
+    const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
+      Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
+    expect(rows.every(r => !isHeader(r))).toBe(true)
+  })
+
+  it('TSV with `header=present` MIME parameter marks first row as :header', () => {
+    const src = `=for table
+data:metrics
+
+=begin data :key<metrics> :mime-type<'text/tab-separated-values; header=present'>
+metric\tvalue\tunit
+latency\t120\tms
+throughput\t850\trps
+=end data
+`
+    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row') as Array<{
+      config?: Array<{ name: string; value: unknown }>
+    }>
+    const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
+      Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
+    expect(rows).toHaveLength(3)
+    expect(isHeader(rows[0])).toBe(true)
+    expect(rows.slice(1).every(r => !isHeader(r))).toBe(true)
+  })
+
+  it('header parameter is ignored on non-CSV/TSV mime types', () => {
+    // header=present on text/html has no effect — the data is not tabular,
+    // so the table falls back to =code rendering (Rule 4) regardless.
+    const src = `=for table
+data:raw
+
+=begin data :key<raw> :mime-type<'text/html; header=present'>
+<p>not a table</p>
+=end data
+`
+    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row') as Array<{ content: unknown[] }>
+    const cellText = (cell: { content: unknown[] }) => {
+      const first = cell.content[0] as string | { value: string }
+      return typeof first === 'string' ? first : first.value
+    }
+    const flatCells = rows.flatMap(r => collectNodesByName(r, 'cell') as Array<{ content: unknown[] }>)
+    expect(flatCells.some(c => cellText(c) === '<p>not a table</p>')).toBe(false)
+  })
+
+  it('renders header row as <th> in HTML when header=present', () => {
+    const src = `=for table
+data:planets
+
+=begin data :key<planets> :mime-type<'text/csv; header=present'>
+name,radius_km,moons
+Mercury,2440,0
+Earth,6371,1
+=end data
+`
+    const html = toHtml({}).run(src).toString()
+    expect(html).toMatch(/<table[\s>]/)
+    expect(html).toMatch(/<th[\s>]/)
+    expect(html).toMatch(/name/)
+    expect(html).toMatch(/Mercury/)
   })
 
   it('RFC 4180 quoted fields and embedded quotes', () => {

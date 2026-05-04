@@ -79,6 +79,33 @@ function parseTsv(text) {
   return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
 }
 
+// Parse a MIME type value into the bare type and a map of parameters
+// (RFC 6838 / RFC 7231 §3.1.1.1). Used to recognise the `header` parameter
+// (RFC 4180 §3) on `:mime-type` of CSV/TSV =data blocks.
+//
+// Examples:
+//   "text/csv"                          → { type: 'text/csv', params: {} }
+//   "text/csv; header=present"          → { type: 'text/csv', params: { header: 'present' } }
+//   "text/csv;charset=utf-8;header=absent" → { ..., params: { charset: 'utf-8', header: 'absent' } }
+function parseMimeType(raw): { type: string; params: Record<string, string> } {
+  if (!raw || typeof raw !== 'string') return { type: '', params: {} }
+  const parts = raw.split(';').map(s => s.trim())
+  const type = (parts.shift() || '').toLowerCase()
+  const params: Record<string, string> = {}
+  for (const p of parts) {
+    if (!p) continue
+    const eq = p.indexOf('=')
+    if (eq < 0) continue
+    const key = p.slice(0, eq).trim().toLowerCase()
+    let value = p.slice(eq + 1).trim()
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1)
+    }
+    if (key) params[key] = value
+  }
+  return { type, params }
+}
+
 // Locate the first `=data` block with a matching `:key` attribute anywhere
 // in the document tree.
 function findDataBlockByKey(tree, key) {
@@ -158,15 +185,16 @@ function buildRowBlock(cells, isHeader) {
   return block
 }
 
-// Convert parsed CSV/TSV rows to plain `=row`/`=cell` blocks. The spec is
-// silent on how to mark a header row in `=table data:<key>` references, so
-// no row receives `:header` here. Authors who need a header row can use a
-// structured table with explicit `=begin row :header`, or a Markdown GFM
-// table with a separator line.
-function csvToTableContent(csvRows) {
-  return csvRows.map(row => {
+// Convert parsed CSV/TSV rows to plain `=row`/`=cell` blocks. When
+// `hasHeader` is true (signalled by the `header=present` MIME parameter on
+// the source `=data` block, per RFC 4180 §3), the first row is marked with
+// `:header`. Default behaviour leaves all rows unmarked, matching authors
+// who use a structured table with explicit `=begin row :header` or a
+// Markdown GFM table.
+function csvToTableContent(csvRows, hasHeader = false) {
+  return csvRows.map((row, i) => {
     const cells = row.map(v => buildCellBlock(v.trim()))
-    return buildRowBlock(cells, false)
+    return buildRowBlock(cells, hasHeader && i === 0)
   })
 }
 
@@ -468,7 +496,8 @@ export default () => tree => {
           console.warn(`[table] no =data block found for data:${ref.target} — rendered as empty`)
           return { ...node, content: [] }
         }
-        const mimeType = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+        const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+        const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
         const isCsv = mimeType === 'text/csv'
         const isTsv = mimeType === 'text/tab-separated-values'
         if (isCsv || isTsv) {
@@ -480,12 +509,13 @@ export default () => tree => {
             )
             return { ...node, content: [] }
           }
-          const filledNode = { ...node, content: csvToTableContent(rows) }
+          const hasHeader = mimeParams.header === 'present'
+          const filledNode = { ...node, content: csvToTableContent(rows, hasHeader) }
           return normalizeCellCounts(filledNode, `table data:${ref.target}`)
         }
         // Rule 4: source not tabular → render as code block so content remains visible
         console.warn(
-          `[table] =data :key<${ref.target}> has non-tabular mime-type ${mimeType || '(none)'} — rendered as =code`,
+          `[table] =data :key<${ref.target}> has non-tabular mime-type ${rawMime || '(none)'} — rendered as =code`,
         )
         return buildCodeFromDataBlock(node, dataBlock)
       }
