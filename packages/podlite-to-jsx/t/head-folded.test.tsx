@@ -140,4 +140,108 @@ Body B.
     expect(before).toContain('Body A')
     expect(before).not.toContain('Body B')
   })
+
+  it(':folded on =head inside a named block also folds (not only at pod level)', () => {
+    render(
+      <Podlite>
+        {`
+=begin pod
+=begin CHANGES
+
+=head2 v2.0
+
+=head3 Added
+
+New stuff.
+
+=for head2 :folded
+v1.0
+
+=head3 Added
+
+Old stuff.
+
+=end CHANGES
+=end pod`}
+      </Podlite>,
+    )
+    const html = root.innerHTML
+    expect(html).toContain('<details class="folded-section"')
+    expect(html).toMatch(/<summary[^>]*>[\s\S]*v1\.0[\s\S]*<\/summary>/)
+    expect(html).toContain('Old stuff')
+    expect(html).toContain('v2.0')
+    expect(html).toContain('New stuff')
+    const detailsCount = (html.match(/<details class="folded-section"/g) || []).length
+    expect(detailsCount).toBe(1)
+  })
+
+  it(':folded on =head inside =begin nested also folds', () => {
+    render(
+      <Podlite>
+        {`
+=begin pod
+=begin nested
+
+=for head1 :folded
+Inside Nested
+
+Inner body.
+
+=end nested
+=end pod`}
+      </Podlite>,
+    )
+    const html = root.innerHTML
+    expect(html).toContain('<details class="folded-section"')
+    expect(html).toContain('Inside Nested')
+    expect(html).toContain('Inner body')
+  })
+
+  it('nested folds: outer head1:folded contains inner head2:folded — both wrap, no double-wrap', () => {
+    render(
+      <Podlite>
+        {`
+=begin pod
+=for head1 :folded
+Outer
+
+Outer body.
+
+=for head2 :folded
+Inner
+
+Inner body.
+=end pod`}
+      </Podlite>,
+    )
+    const html = root.innerHTML
+    const outerCount = (html.match(/<details class="folded-section"/g) || []).length
+    expect(outerCount).toBe(2)
+    expect(html).toContain('Outer')
+    expect(html).toContain('Inner')
+    expect(html).toContain('Outer body')
+    expect(html).toContain('Inner body')
+    // outer summary contains "Outer", and inside outer's content the inner <details> appears
+    const outerOpen = html.indexOf('<details class="folded-section"')
+    const innerOpen = html.indexOf('<details class="folded-section"', outerOpen + 1)
+    expect(innerOpen).toBeGreaterThan(outerOpen)
+  })
+
+  it('regression: pod-level :folded head still works after recursive pre-pass', () => {
+    render(
+      <Podlite>
+        {`
+=begin pod
+=for head1 :folded
+Section A
+
+Body.
+=end pod`}
+      </Podlite>,
+    )
+    const html = root.innerHTML
+    expect(html).toContain('<details class="folded-section"')
+    const detailsCount = (html.match(/<details class="folded-section"/g) || []).length
+    expect(detailsCount).toBe(1)
+  })
 })

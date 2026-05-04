@@ -143,6 +143,29 @@ const groupFoldedSections = (content: any[]): any[] => {
   return result
 }
 
+// Walk the AST and apply `groupFoldedSections` to every block's `content`
+// array, so :folded heads inside named blocks, defn, nested etc. fold the
+// same way they do at the pod-level. Inside an already-built
+// `_folded_section`, the first element is the heading the wrapper belongs
+// to — skip it when grouping the rest, otherwise the same head would be
+// re-wrapped on every recursion. Nested folds (a folded heading inside a
+// folded section's body) are still picked up by grouping the remainder.
+const applyFoldedSectionsRecursively = (node: any): any => {
+  if (!node || typeof node !== 'object') return node
+  if (Array.isArray(node)) return node.map(applyFoldedSectionsRecursively)
+  if (!Array.isArray(node.content)) return node
+  if (node.name === '_folded_section') {
+    const [head, ...rest] = node.content
+    const grouped = groupFoldedSections(rest)
+    return {
+      ...node,
+      content: [applyFoldedSectionsRecursively(head), ...grouped.map(applyFoldedSectionsRecursively)],
+    }
+  }
+  const grouped = groupFoldedSections(node.content)
+  return { ...node, content: grouped.map(applyFoldedSectionsRecursively) }
+}
+
 type IncludeReader = (path: string, baseDir?: string) => string | null
 
 type ExpandPaths = (pattern: string, baseDir?: string) => string[]
@@ -274,8 +297,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
   return {
     pod: (writer, processor) => (node, ctx, interator) => {
       const id = getSafeNodeId(node, ctx)
-      const grouped = 'content' in node ? groupFoldedSections((node as any).content) : []
-      return makeComponent('div', node, interator(grouped, { ...ctx }), { id }, ctx)
+      return makeComponent('div', node, interator(node.content, { ...ctx }), { id }, ctx)
     },
     _folded_section: (writer, processor) => (node: any, ctx, interator) => {
       const [heading, ...rest] = node.content as any[]
@@ -886,11 +908,12 @@ function podlite(
   ...args
 ) {
   const podliteParser = podlite_core({ importPlugins: true })
-  const ast = (tree => {
+  const astRaw = (tree => {
     if (tree) return tree.interator
     let treeAfterParsed = podliteParser.parse(children || file, { podMode: mode === 'pod' ? 1 : 0 })
     return podliteParser.toAst(treeAfterParsed)
   })(tree)
+  const ast = applyFoldedSectionsRecursively(astRaw)
 
   // const   ast = parse( children || content )
   let i_key_i = 10000

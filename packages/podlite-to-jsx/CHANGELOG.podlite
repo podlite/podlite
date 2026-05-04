@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<:folded> on C<=head> now folds correctly when the heading is nested inside a named block, C<=begin nested>, C<=defn>, etc. — not only at the top level of C<=begin pod>. Previously the synthetic C<_folded_section> wrapper was created only for direct children of C<pod>, so folded headings inside other containers silently rendered as plain headings. The grouping pass now walks the AST recursively, so the spec's hierarchical-fold semantics (C<:folded> on a heading governs the heading and all associated lower-level content) apply uniformly
+
 =head1 0.0.43
 
 =item fix C<wrapElement> no longer wraps C<=row>/C<=cell> nodes — those always render as C<<tr>>/C<<td>>, and HTML disallows arbitrary elements as children of C<<table>>/C<<tbody>>/C<<tr>>. Previously consumers that wrapped every node (e.g. an editor's line tracker injecting C<<div class="line-src">>) produced invalid HTML; browsers extracted the wrappers out of the table and collapsed cells into a vertical column. The outer C<=table> block is still wrappable
