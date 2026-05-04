@@ -186,7 +186,8 @@ aside.notify.caution .notify-title {
 details.folded {
     border: 1px solid var(--color-border-default, #d0d7de);
     border-radius: 6px;
-    margin: 1em 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 details.folded > summary {
@@ -222,9 +223,14 @@ details.folded > .folded-content {
     padding: 1em;
 }
 
-/* Folded heading sections — =for head L :folded wraps the whole section */
+/* Folded heading sections — =for head L :folded wraps the whole section.
+   Use long-hand vertical margins so horizontal margins fall through the
+   cascade (e.g. host stylesheets that center block elements with
+   `details { margin-left: auto }` keep working — shorthand `margin: 1em 0`
+   would clobber that with margin-left:0 due to specificity). */
 details.folded-section {
-    margin: 1em 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 details.folded-section > summary.folded-section-summary {
