@@ -16,10 +16,16 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(({ node, chil
   const conf = makeAttrs(node, ctx)
   const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
   const lang = conf.getFirstValue('lang') || 'txt'
+  // Per spec, :allow<...> is a list of fcode names recognized inside the
+  // block. Any value flips fcode parsing on, so shiki would flatten the
+  // resulting nodes to plain text. Skip highlighting and let the fallback
+  // render children with their fcode wrappers intact.
+  const allowsFormattingCodes = conf.getAllValues('allow').length > 0
 
   const [html, setHtml] = useState<string | null>(null)
 
   useEffect(() => {
+    if (allowsFormattingCodes) return
     let cancelled = false
 
     const highlight = async () => {
@@ -40,7 +46,7 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(({ node, chil
     return () => {
       cancelled = true
     }
-  }, [lang, node.content])
+  }, [lang, node.content, allowsFormattingCodes])
 
   return html ? (
     <>

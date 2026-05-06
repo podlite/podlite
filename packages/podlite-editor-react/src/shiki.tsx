@@ -1,11 +1,12 @@
-import {
-  type BundledLanguage,
-  type BundledTheme,
-  createHighlighter,
-  type Highlighter,
-  bundledLanguages,
-  bundledThemes,
-} from 'shiki'
+import type { BundledLanguage, BundledTheme, Highlighter } from 'shiki'
+
+// shiki ships as ESM-only. Under module:commonjs TS down-levels both
+// `import 'shiki'` and `await import('shiki')` to `require('shiki')`,
+// which webpack/Next.js refuses (and would fail at runtime). Hide the
+// dynamic import from the TS compiler via Function so the emit stays
+// a native `import()` call that bundlers and Node ≥12.20 handle.
+type ShikiModule = typeof import('shiki')
+const loadShiki: () => Promise<ShikiModule> = new Function('return import("shiki")') as () => Promise<ShikiModule>
 
 // Configuration
 const CONFIG = {
@@ -72,10 +73,11 @@ const state = {
 }
 
 // Normalize language to valid Shiki language
-export function normalizeLanguage(language?: string): ExtendedLanguage {
+export async function normalizeLanguage(language?: string): Promise<ExtendedLanguage> {
   if (!language) return 'txt'
 
   const normalized = language.toLowerCase()
+  const { bundledLanguages } = await loadShiki()
 
   if (normalized in bundledLanguages) {
     return normalized as BundledLanguage
@@ -96,15 +98,16 @@ export function normalizeLanguage(language?: string): ExtendedLanguage {
 // Get or create highlighter instance
 async function getHighlighterInstance(): Promise<Highlighter> {
   if (!state.initPromise) {
-    state.initPromise = createHighlighter({
-      // themes: Object.keys(bundledThemes) as BundledTheme[],
-      themes: Object.values(CONFIG.themes) as BundledTheme[],
-      langs: CONFIG.initialLanguages,
-    }).then(instance => {
+    state.initPromise = (async () => {
+      const { createHighlighter } = await loadShiki()
+      const instance = await createHighlighter({
+        themes: Object.values(CONFIG.themes) as BundledTheme[],
+        langs: CONFIG.initialLanguages,
+      })
       state.instance = instance
       CONFIG.initialLanguages.forEach(lang => state.loadedLanguages.add(lang))
       return instance
-    })
+    })()
   }
   return state.initPromise
 }
@@ -128,7 +131,7 @@ async function ensureLanguageLoaded(instance: Highlighter, lang: ExtendedLanguag
 
 // Main API: get highlighter with language loaded
 export async function getHighlighter(language?: string): Promise<Highlighter> {
-  const lang = normalizeLanguage(language)
+  const lang = await normalizeLanguage(language)
   const instance = await getHighlighterInstance()
   await ensureLanguageLoaded(instance, lang)
   return instance
@@ -136,7 +139,7 @@ export async function getHighlighter(language?: string): Promise<Highlighter> {
 
 // Convenience: convert code to HTML with dual themes (CSS-based switching)
 export async function codeToHtml({ code, language }: { code: string; language: string }): Promise<string> {
-  const lang = normalizeLanguage(language)
+  const lang = await normalizeLanguage(language)
   const highlighter = await getHighlighter(language)
 
   return highlighter.codeToHtml(code, {
@@ -155,10 +158,9 @@ export async function codeToThemedHtml({
   language: string
   theme?: 'light' | 'dark' | 'auto'
 }): Promise<string> {
-  const lang = normalizeLanguage(language)
+  const lang = await normalizeLanguage(language)
   const highlighter = await getHighlighter(language)
 
-  // Single theme mode (for runtime detection)
   if (theme === 'light' || theme === 'dark') {
     return highlighter.codeToHtml(code, {
       lang,
@@ -166,14 +168,13 @@ export async function codeToThemedHtml({
     })
   }
 
-  // Dual theme mode (CSS-based switching)
   return highlighter.codeToHtml(code, {
     lang,
     themes: CONFIG.themes,
   })
 }
 
-// Check if a language is loaded
-export const isLanguageLoaded = (language: string): boolean => {
-  return state.loadedLanguages.has(normalizeLanguage(language))
+// Check if a language is loaded (sync — only meaningful after a prior async normalize)
+export const isLanguageLoaded = (language: ExtendedLanguage): boolean => {
+  return state.loadedLanguages.has(language)
 }
