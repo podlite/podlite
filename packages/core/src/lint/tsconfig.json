@@ -5,7 +5,12 @@
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "composite": false,
-    "rootDir": "."
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@podlite/schema": ["../../../podlite-schema/lib/index.d.ts"]
+    }
   },
   "include": ["./**/*"]
 }
