@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { parse, toMarkdown, toHtml } from '@podlite/schema'
+import { runLint } from './lint'
 
 const FORMATS: Record<string, string> = {
   md: '.md',
@@ -9,10 +10,13 @@ const FORMATS: Record<string, string> = {
 }
 
 function usage() {
-  console.log(`Usage: podlite convert <files...> --to <format> [-o <output>]
+  console.log(`Usage:
+  podlite convert <files...> --to <format> [-o <output>]
+  podlite lint <files...>
 
 Commands:
   convert    Convert Podlite files to another format
+  lint       Check Podlite/Markdown files for issues (work in progress)
 
 Options:
   --to       Output format: md (markdown), html
@@ -22,7 +26,8 @@ Options:
 Examples:
   podlite convert doc.pod6 --to md
   podlite convert *.pod6 --to md -o output/
-  podlite convert README.pod6 --to md -o README.md`)
+  podlite convert README.pod6 --to md -o README.md
+  podlite lint docs/*.podlite`)
 }
 
 function parseArgs(argv: string[]) {
@@ -101,6 +106,15 @@ function main() {
   if (!args) {
     usage()
     process.exit(0)
+  }
+
+  if (args.command === 'lint') {
+    if (args.files.length === 0) {
+      console.error('No input files specified')
+      usage()
+      process.exit(1)
+    }
+    process.exit(runLint(args.files))
   }
 
   if (args.command !== 'convert') {

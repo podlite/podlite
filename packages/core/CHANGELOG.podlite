@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<< podlite lint <files...> >> subcommand (stub; rules land in upcoming releases)
+
 =head1 0.0.47
 
 =item added CLI entrypoint C<bin/podlite.js>
