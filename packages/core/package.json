@@ -16,6 +16,7 @@
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
     "build": "yarn g:build",
+    "typecheck:lint": "tsc -p src/lint/tsconfig.json --noEmit",
     "watch": "run-p -r watch:*",
     "watch:ts": "tsc -w --pretty",
     "watch:tests": "jest --watch -t \"test\""
