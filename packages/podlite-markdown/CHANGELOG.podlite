@@ -4,7 +4,7 @@
 
 =head1 0.0.34
 
-=item parse fenced code block attributes into structured config items (Specification.pod6 §2327-2407). C<```python :line-numbers :highlight<2,5-7> :caption<Example>> now produces an AST equivalent to C<=code :lang<python> :line-numbers :highlight<2,5-7> :caption<Example>>, replacing the previous raw C<:meta<string>> storage. Malformed attribute strings degrade gracefully — only C<:lang> survives (per spec §2380-2383). All seven configuration value types (Boolean, Integer, String, List, Hash) are accepted via the shared C<parseAttributes()> helper from C<@podlite/schema>
+=item parse fenced code attributes into structured config items. C<```python :line-numbers :highlight<2,5-7> :caption<Example>> now produces the same AST as C<=code :lang<python> :line-numbers :highlight<2,5-7> :caption<Example>>, replacing raw C<:meta<string>> storage. Malformed attrs degrade gracefully — only C<:lang> survives. All value types (Bool/Int/String/List/Hash) supported via C<parseAttributes()> from C<@podlite/schema>
 
 =head1 0.0.16
 

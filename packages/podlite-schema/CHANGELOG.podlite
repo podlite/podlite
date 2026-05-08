@@ -4,8 +4,8 @@
 
 =head1 0.0.41
 
-=item expose C<attributesOnly> as an additional PEG start rule for parsing a stand-alone configuration-info fragment (e.g. C< :line-numbers :caption<Example>>). Reuses the existing C<attributes> grammar rule — no shadow parser
-=item add C<parseAttributes(src)> helper that returns an array of config items from a configuration-info string. Empty or malformed input returns an empty array (graceful degradation per Specification.pod6 §2380-2383). Primary consumer: C<@podlite/markdown> fenced-code-attribute parsing
+=item expose C<attributesOnly> PEG start rule for parsing stand-alone attribute fragments (e.g. C< :line-numbers :caption<Example>>). Reuses existing C<attributes> rule
+=item add C<parseAttributes(src)> helper — returns config items from an attribute string; empty or malformed input returns C<[]>. Used by C<@podlite/markdown> for fenced-code attrs
 
 =head1 0.0.40
 
