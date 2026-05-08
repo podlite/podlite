@@ -15,6 +15,7 @@ export { makeInterator } from './ast-inerator'
 export { makeTransformer, isNamedBlock, isSemanticBlock } from './helpers/makeTransformer'
 export { toAny } from './exportAny'
 export { makeAttrs } from './helpers/config'
+export { parseAttributes } from './helpers/parseAttributes'
 export { pluginCleanLocation } from './plugin-clean-location'
 export { toAnyRules } from './helpers/plugins'
 

@@ -40,7 +40,7 @@
     "build": "run-s build:pegjs build_lib build:ast ",
     "build_lib": "yarn g:build",
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
-    "build:pegjs": "pegmill -o src/grammar.js src/grammar.pegjs && pegmill -o src/grammarfc.js src/grammarfc.pegjs",
+    "build:pegjs": "pegmill --allowed-start-rules Document,attributesOnly -o src/grammar.js src/grammar.pegjs && pegmill -o src/grammarfc.js src/grammarfc.pegjs",
     "watch": "npx nodemon -e js,ts --exec 'yarn' build",
     "watch:pegjs": "npx nodemon -e pegmill --exec 'yarn' build:pegjs",
     "test": "yarn g:jest  --passWithNoTests"

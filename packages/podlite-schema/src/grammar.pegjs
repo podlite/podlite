@@ -61,6 +61,8 @@
 
 Document = nodes:Element*  { return nodes }
 
+attributesOnly = _ attrs:attributes* _ { return attrs }
+
 Element =  delimitedBlockRaw
          / delimitedBlockTableStructured
          / delimitedBlockTable
