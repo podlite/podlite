@@ -27,12 +27,11 @@ function thisFunc(rules) {
       const nextRuleIndex = nextRuleSet.findIndex(rule => rule.isFor(node))
       const defaultFn = (n = node, ctx = context, localInterator = interator) => {
         if (nextRuleIndex !== -1) {
-          nextRuleSet[nextRuleIndex].fn(n, ctx, localInterator, () => {
+          return nextRuleSet[nextRuleIndex].fn(n, ctx, localInterator, () => {
             /* empty default action */
           })
-        } else {
-          return
         }
+        return
       }
 
       if (typeof reversed[ruleIndex].fn !== 'function') {

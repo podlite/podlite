@@ -347,10 +347,10 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {
-      return node.value
+      return ctx?.maskMode ? maskText(node.value) : node.value
     },
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
-      return node.value
+      return ctx?.maskMode ? maskText(node.value) : node.value
     },
     'head:block': subUse(
       {
@@ -988,6 +988,14 @@ function podlite(
       },
     })
     .use(rules)
+    .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
+      if (!node || node.type !== 'block') return defaultFn()
+      if (ctx?.maskMode) return defaultFn()
+      const conf = makeAttrs(node, ctx || {})
+      if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
+      if (ctx?.renderMode === 'draft') return defaultFn()
+      return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+    })
     .run(ast, writer)
   // union main react elements and post processed via onEnd event
   return new Array().concat(res.interator, writer.postInterator)

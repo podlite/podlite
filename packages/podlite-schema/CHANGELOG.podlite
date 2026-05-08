@@ -3,8 +3,10 @@
 =head1 Upcoming
 
 =item add C<G<>> guarded markup code. Production mode masks non-whitespace characters with U+2588; draft mode renders content visibly. Mode via C<toHtml({renderMode})> / C<toMarkdown({renderMode})>, default C<production>
+=item add C<:masked> block attribute. Marks any block as guarded — content masked recursively in production mode, visible in draft. Idempotent with C<G<>>
 =item add C<context> option to C<toAny>/C<toHtml>/C<toMarkdown> for passing initial render context to handlers
 =item add C<maskText(s)> and C<collectText(content)> helpers
+=item C<makeInterator>'s C<defaultFn> now returns the inner rule's result, enabling rule-chaining patterns (used by the masking interceptor)
 
 =head1 0.0.41
 

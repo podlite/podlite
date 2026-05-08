@@ -18,7 +18,7 @@ import { getNodeId } from './ast-helpers'
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value) {
-      writer.write(node.value)
+      writer.write(ctx?.maskMode ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
     }
@@ -138,13 +138,13 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
-    // inside code blocks, write text without escaping
+    const masked = ctx?.maskMode
     if (node.content) {
       node.content.forEach(child => {
         if (typeof child === 'string') {
-          writer.writeRaw(child)
+          writer.writeRaw(masked ? maskText(child) : child)
         } else if (child.type === 'verbatim') {
-          writer.writeRaw(child.value)
+          writer.writeRaw(masked ? maskText(child.value) : child.value)
         } else {
           interator([child], ctx)
         }
@@ -156,12 +156,13 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
+    const masked = ctx?.maskMode
     if (node.content) {
       node.content.forEach(child => {
         if (typeof child === 'string') {
-          writer.writeRaw(child)
+          writer.writeRaw(masked ? maskText(child) : child)
         } else if (child.type === 'verbatim') {
-          writer.writeRaw(child.value)
+          writer.writeRaw(masked ? maskText(child.value) : child.value)
         } else {
           interator([child], ctx)
         }
@@ -174,7 +175,7 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    writer.writeRaw(node.value)
+    writer.writeRaw(ctx?.maskMode ? maskText(node.value) : node.value)
   },
   ':blankline': emptyContent,
   ':ambient': emptyContent,
@@ -407,5 +408,13 @@ const toMarkdown = opt =>
       }
     })
     .use(rules)
+    .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
+      if (!node || node.type !== 'block') return defaultFn()
+      if (ctx?.maskMode) return defaultFn()
+      const conf = makeAttrs(node, ctx || {})
+      if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
+      if (ctx?.renderMode === 'draft') return defaultFn()
+      return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+    })
 
 export default toMarkdown

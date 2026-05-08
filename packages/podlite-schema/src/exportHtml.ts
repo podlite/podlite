@@ -18,7 +18,7 @@ const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     // handle text with content
     if (node.value) {
-      writer.write(node.value)
+      writer.write(ctx?.maskMode ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
     }
@@ -177,7 +177,11 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    interator(node.value)
+    if (ctx?.maskMode) {
+      writer.write(maskText(node.value))
+      return
+    }
+    interator(node.value, ctx)
   },
   ':blankline': emptyContent,
   ':ambient': emptyContent,
@@ -364,5 +368,13 @@ const toHtml = opt =>
       }
     })
     .use(rules)
+    .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
+      if (!node || node.type !== 'block') return defaultFn()
+      if (ctx?.maskMode) return defaultFn()
+      const conf = makeAttrs(node, ctx || {})
+      if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
+      if (ctx?.renderMode === 'draft') return defaultFn()
+      return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+    })
 
 export default toHtml
