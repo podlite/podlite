@@ -17,6 +17,32 @@ export const wrapContent =
  * emptyContent - skip any child node
  */
 export const emptyContent = (): RuleHandler => () => () => {}
+
+const MASK_CHAR = '█'
+
+/**
+ * Replace each non-whitespace character with the mask character.
+ * Whitespace (spaces, tabs, newlines) is preserved.
+ */
+export const maskText = (s: string): string => s.replace(/\S/g, MASK_CHAR)
+
+/**
+ * Walk a content array (strings or fcode/text nodes) and return concatenated
+ * text content for masking. Nested formatting codes are flattened — masked
+ * output drops formatting structure by design.
+ */
+export const collectText = (content: unknown): string => {
+  if (typeof content === 'string') return content
+  if (!Array.isArray(content)) {
+    if (content && typeof content === 'object') {
+      const node = content as { type?: string; value?: string; content?: unknown }
+      if (node.type === 'text' || node.type === 'verbatim') return node.value || ''
+      return collectText(node.content)
+    }
+    return ''
+  }
+  return content.map(collectText).join('')
+}
 /**
  * content - process childs as regular content
  */

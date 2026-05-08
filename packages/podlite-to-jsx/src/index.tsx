@@ -24,7 +24,7 @@ import {
   getSafeNodeId,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
-import { parseSelector, runSelector, getTextContentFromNode } from '@podlite/schema'
+import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
@@ -87,6 +87,7 @@ export const Podlite: React.FC<{
   includeReader?: IncludeReader
   includeBaseDir?: string
   expandPaths?: ExpandPaths
+  renderMode?: 'production' | 'draft'
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
   return result
@@ -644,6 +645,29 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       return interator(node.content, ctx)
     },
     'O<>': mkComponent('del'),
+    'G<>': (_writer, _processor) => (node, ctx, interator) => {
+      if (ctx.renderMode === 'draft') {
+        return makeComponent(
+          ({ key, children }) => (
+            <span key={key} className="masked-draft">
+              {children}
+            </span>
+          ),
+          node,
+          interator(node.content, ctx),
+        )
+      }
+      const masked = maskText(collectText(node.content))
+      return makeComponent(
+        ({ key }) => (
+          <span key={key} className="masked">
+            {masked}
+          </span>
+        ),
+        node,
+        [],
+      )
+    },
     // table section
     table: (writer, processor) => (node, ctx, interator) => {
       const conf = makeAttrs(node, ctx)
@@ -895,6 +919,7 @@ function podlite(
     includeReader,
     includeBaseDir,
     expandPaths,
+    renderMode = 'production',
   }: {
     file?: string
     plugins?: any
@@ -904,6 +929,7 @@ function podlite(
     includeReader?: IncludeReader
     includeBaseDir?: string
     expandPaths?: ExpandPaths
+    renderMode?: 'production' | 'draft'
   },
   ...args
 ) {
@@ -934,7 +960,7 @@ function podlite(
     postInterator?: any
   }
   const writer = new Writer(s => {}) as WriterPostinterator
-  const res = toAny({ processor: parse })
+  const res = toAny({ processor: parse, context: { renderMode } })
     .use({
       '*:*': () => (node, ctx, interator) => {
         // skip named blocks

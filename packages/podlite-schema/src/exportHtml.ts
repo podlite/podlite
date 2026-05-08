@@ -1,5 +1,14 @@
 import toAny from './exportAny'
-import { subUse, wrapContent, emptyContent, content, setFn, handleNested } from './helpers/handlers'
+import {
+  subUse,
+  wrapContent,
+  emptyContent,
+  content,
+  setFn,
+  handleNested,
+  maskText,
+  collectText,
+} from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import htmlWriter from './writerHtml'
@@ -55,6 +64,17 @@ const rules = {
   'R<>': wrapContent('<var>', '</var>'),
   'K<>': wrapContent('<kbd>', '</kbd>'),
   'O<>': wrapContent('<del>', '</del>'),
+  'G<>': (writer, processor) => (node, ctx, interator) => {
+    if (ctx.renderMode === 'draft') {
+      writer.writeRaw('<span class="masked-draft">')
+      interator(node.content, ctx)
+      writer.writeRaw('</span>')
+      return
+    }
+    writer.writeRaw('<span class="masked">')
+    writer.write(maskText(collectText(node.content)))
+    writer.writeRaw('</span>')
+  },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
   'L<>': setFn((node, ctx) => {
@@ -308,7 +328,11 @@ const rules = {
 }
 
 const toHtml = opt =>
-  toAny({ writer: htmlWriter, ...opt })
+  toAny({
+    writer: htmlWriter,
+    ...opt,
+    context: { renderMode: opt?.renderMode || 'production', ...(opt?.context || {}) },
+  })
     .use('*', (writer, processor) => {
       return (node, ctx, interator) => {
         // skip warnings for semantic blocks

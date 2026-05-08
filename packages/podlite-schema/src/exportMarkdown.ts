@@ -1,5 +1,14 @@
 import toAny from './exportAny'
-import { subUse, wrapContent, emptyContent, content, setFn, handleNested } from './helpers/handlers'
+import {
+  subUse,
+  wrapContent,
+  emptyContent,
+  content,
+  setFn,
+  handleNested,
+  maskText,
+  collectText,
+} from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import writerMarkdown from './writerMarkdown'
@@ -45,6 +54,13 @@ const rules = {
   'R<>': wrapContent('*', '*'),
   'K<>': wrapContent('`', '`'),
   'O<>': wrapContent('~~', '~~'),
+  'G<>': (writer, processor) => (node, ctx, interator) => {
+    if (ctx.renderMode === 'draft') {
+      interator(node.content, ctx)
+      return
+    }
+    writer.write(maskText(collectText(node.content)))
+  },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
   'L<>': setFn((node, ctx) => {
@@ -362,7 +378,11 @@ const rules = {
 }
 
 const toMarkdown = opt =>
-  toAny({ writer: writerMarkdown, ...opt })
+  toAny({
+    writer: writerMarkdown,
+    ...opt,
+    context: { renderMode: opt?.renderMode || 'production', ...(opt?.context || {}) },
+  })
     .use('*', (writer, processor) => {
       return (node, ctx, interator) => {
         const isSemanticBlock = node => {

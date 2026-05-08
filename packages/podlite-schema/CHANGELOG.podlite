@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item add C<G<>> guarded markup code. Production mode masks non-whitespace characters with U+2588; draft mode renders content visibly. Mode via C<toHtml({renderMode})> / C<toMarkdown({renderMode})>, default C<production>
+=item add C<context> option to C<toAny>/C<toHtml>/C<toMarkdown> for passing initial render context to handlers
+=item add C<maskText(s)> and C<collectText(content)> helpers
+
 =head1 0.0.41
 
 =item expose C<attributesOnly> PEG start rule for parsing stand-alone attribute fragments (e.g. C< :line-numbers :caption<Example>>). Reuses existing C<attributes> rule

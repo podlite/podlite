@@ -7,6 +7,7 @@ import { parse } from './'
 export type Options = {
   processor?: any
   writer?: any
+  context?: Record<string, unknown>
 }
 
 export const toAny = (options: Options = {}, plugins = []) => {
@@ -60,7 +61,7 @@ export const toAny = (options: Options = {}, plugins = []) => {
     let newFns = fns.slice()
     newFns.reverse()
     const interator = makeInterator(newFns.map(rule => makeRule(rule.rule, rule.fn(writer, processor, tree))).reverse())
-    const context = {}
+    const context = { ...(options.context || {}) }
     writer.startWrite(tree)
     const result = interator(tree, context)
     writer.endWrite()

@@ -1,6 +1,8 @@
-=TITLE CHANGES 
+=TITLE CHANGES
 
 =head1 Upcoming
+
+=item render C<G<>> guarded markup code. Production mode replaces content with U+2588 chars wrapped in C<<span class="masked">>; draft mode shows content in C<<span class="masked-draft">>. Mode via C<<Podlite renderMode="draft">>, default C<production>
 
 =head1 0.0.44
 
