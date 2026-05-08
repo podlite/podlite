@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.47
+
 =item fix C<=code> blocks with C<:allow<...>> losing fcode formatting
 
 =item fix Next.js / webpack build error on shiki ESM import

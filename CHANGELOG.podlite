@@ -2,6 +2,28 @@
 
 =head1 Upcoming
 
+=head1 0.0.61
+
+
+=head2 podlite
+
+=item add C<< podlite lint <files...> >> subcommand (stub; rules land in upcoming releases)
+
+=head2 @podlite/editor-react
+
+=item fix C<=code> blocks with C<:allow<...>> losing fcode formatting
+
+=item fix Next.js / webpack build error on shiki ESM import
+
+=head2 @podlite/markdown
+
+=item parse fenced code block attributes into structured config items (Specification.pod6 §2327-2407). C<```python :line-numbers :highlight<2,5-7> :caption<Example>> now produces an AST equivalent to C<=code :lang<python> :line-numbers :highlight<2,5-7> :caption<Example>>, replacing the previous raw C<:meta<string>> storage. Malformed attribute strings degrade gracefully — only C<:lang> survives (per spec §2380-2383). All seven configuration value types (Boolean, Integer, String, List, Hash) are accepted via the shared C<parseAttributes()> helper from C<@podlite/schema>
+
+=head2 @podlite/schema
+
+=item expose C<attributesOnly> as an additional PEG start rule for parsing a stand-alone configuration-info fragment (e.g. C< :line-numbers :caption<Example>>). Reuses the existing C<attributes> grammar rule — no shadow parser
+=item add C<parseAttributes(src)> helper that returns an array of config items from a configuration-info string. Empty or malformed input returns an empty array (graceful degradation per Specification.pod6 §2380-2383). Primary consumer: C<@podlite/markdown> fenced-code-attribute parsing
+
 =head1 0.0.60
 
 
