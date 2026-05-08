@@ -14,6 +14,7 @@ import {
   Location,
   mkMarkupCodeF,
   mkFormulaBlock,
+  parseAttributes,
 } from '@podlite/schema'
 import { mkRootBlock } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
@@ -165,8 +166,8 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
           config.push({ name: 'lang', value: lang, type: 'string' })
         }
         if (meta) {
-          config.push({ name: 'meta', value: meta, type: 'string' })
-        } //  filled as is from markdown
+          config.push(...parseAttributes(meta))
+        }
         return mkBlock({ type: 'block', name: 'code', config, location: applyLineOffset(position) }, [
           mkVerbatim(node.value),
         ])

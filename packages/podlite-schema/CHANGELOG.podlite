@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item expose C<attributesOnly> as an additional PEG start rule for parsing a stand-alone configuration-info fragment (e.g. C< :line-numbers :caption<Example>>). Reuses the existing C<attributes> grammar rule — no shadow parser
+=item add C<parseAttributes(src)> helper that returns an array of config items from a configuration-info string. Empty or malformed input returns an empty array (graceful degradation per Specification.pod6 §2380-2383). Primary consumer: C<@podlite/markdown> fenced-code-attribute parsing
+
 =head1 0.0.40
 
 =item recognise the C<header> MIME parameter (RFC 4180 §3) on C<:mime-type> for CSV/TSV C<=data> blocks. When the C<=data> block declares C<:mime-type<'text/csv; header=present'>> (or the same with C<text/tab-separated-values>), C<=table data:X> marks the first row as C<:header>, which renders as C<<th>>/C<<thead>> in HTML and JSX. Default C<absent> preserves the previous behaviour. The MIME-type parser also accepts other parameters (e.g. C<charset>) without disturbing type matching. Spec: podlite-specs#25

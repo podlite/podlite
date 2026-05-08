@@ -626,6 +626,67 @@ var documentation = require('documentation');
   `)
 })
 
+it('[markdown]: parse fenced code with boolean attribute', () => {
+  const pod = `
+\`\`\`python :line-numbers
+print("hi")
+\`\`\`
+`
+  const tree = process(pod) as any
+  expect(validateAstTree([tree])).toEqual([])
+  const codeBlock = tree.content[0]
+  expect(codeBlock.name).toBe('code')
+  expect(codeBlock.config).toEqual([
+    { name: 'lang', value: 'python', type: 'string' },
+    { name: 'line-numbers', value: true, type: 'boolean' },
+  ])
+})
+
+it('[markdown]: parse fenced code with string attribute', () => {
+  const pod = `
+\`\`\`python :caption<Example>
+print("hi")
+\`\`\`
+`
+  const tree = process(pod) as any
+  expect(validateAstTree([tree])).toEqual([])
+  const codeBlock = tree.content[0]
+  expect(codeBlock.config).toEqual([
+    { name: 'lang', value: 'python', type: 'string' },
+    { name: 'caption', value: 'Example', type: 'string' },
+  ])
+})
+
+it('[markdown]: parse fenced code with mixed attributes (spec §2357 example)', () => {
+  const pod = `
+\`\`\`python :line-numbers :highlight<2,5-7> :caption<Example>
+def fibonacci(n):
+    return n
+\`\`\`
+`
+  const tree = process(pod) as any
+  expect(validateAstTree([tree])).toEqual([])
+  const codeBlock = tree.content[0]
+  expect(codeBlock.config).toEqual([
+    { name: 'lang', value: 'python', type: 'string' },
+    { name: 'line-numbers', value: true, type: 'boolean' },
+    { name: 'highlight', value: '2,5-7', type: 'string' },
+    { name: 'caption', value: 'Example', type: 'string' },
+  ])
+})
+
+it('[markdown]: parse fenced code with malformed attributes degrades gracefully', () => {
+  const pod = `
+\`\`\`python :broken<<<
+print("hi")
+\`\`\`
+`
+  const tree = process(pod) as any
+  expect(validateAstTree([tree])).toEqual([])
+  const codeBlock = tree.content[0]
+  expect(codeBlock.config).toEqual([{ name: 'lang', value: 'python', type: 'string' }])
+})
+
 it('[markdown]: inline_code', () => {
   const pod = `
 *This text will be italic*
