@@ -50,6 +50,10 @@ export const mkFomattingCodeO = content => {
   return mkNode({ type: 'fcode', name: 'O', content: filterNulls(content) })
 }
 
+export const mkFomattingCodeG = content => {
+  return mkNode({ type: 'fcode', name: 'G', content: filterNulls(content) })
+}
+
 export const mkMarkupCodeF = (formula: string): FormattingCodeF => {
   return mkNode({ type: 'fcode', name: 'F', content: [{ type: 'text', value: formula }] })
 }
