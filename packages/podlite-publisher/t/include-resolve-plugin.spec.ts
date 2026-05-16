@@ -209,3 +209,68 @@ it('include-resolve-plugin: glob inlines defn blocks from multiple files', () =>
   const ids = defns.map(d => getNodeId(d, {}))
   expect(ids.sort()).toEqual(['adr', 'article', 'defn-term'].sort())
 })
+
+// ─── Predicate selectors ──────────────────────────────────────────────────
+
+const ruleN001N004 = `
+=begin defn :id<r1> :applies-nfr<N001 N004 N007>
+Rule one
+=end defn
+`
+const ruleN002 = `
+=begin defn :id<r2> :applies-nfr<N002>
+Rule two
+=end defn
+`
+const ruleN004 = `
+=begin defn :id<r3> :applies-nfr<N004>
+Rule three
+=end defn
+`
+const ruleNoNfr = `
+=begin defn :id<r4> :status<draft>
+Rule four
+=end defn
+`
+
+it('runSelector: *[:applies-nfr~<N004>] matches blocks whose list attr contains N004', () => {
+  const state = [
+    processFile('rules/a.podlite', ruleN001N004),
+    processFile('rules/b.podlite', ruleN002),
+    processFile('rules/c.podlite', ruleN004),
+    processFile('rules/d.podlite', ruleNoNfr),
+  ]
+  const blocks = runSelector('file:./**/*.podlite | *[:applies-nfr~<N004>]', state) as PodNode[]
+  const ids = blocks.map(b => getNodeId(b, {}))
+  expect(ids.sort()).toEqual(['r1', 'r3'].sort())
+})
+
+it('include-resolve-plugin: predicate selector inlines only matching blocks', () => {
+  const index = `=head1 NFR N004 rules\n=include file:./rules/*.podlite | *[:applies-nfr~<N004>]\n`
+  const state = [
+    processFile('rules/a.podlite', ruleN001N004),
+    processFile('rules/b.podlite', ruleN002),
+    processFile('rules/c.podlite', ruleN004),
+    processFile('rules/d.podlite', ruleNoNfr),
+    processFile('src/index.podlite', index),
+  ]
+  const config: PluginConfig = {
+    plugin: resolvePlugin(),
+    includePatterns: '.*',
+  }
+  const [res] = processPlugin(config, state, tctx)
+  const indexRec = res.find(r => r.file === 'src/index.podlite')
+  const defns = getFromTree(indexRec!.node, 'defn')
+  const ids = defns.map(d => getNodeId(d, {}))
+  expect(ids.sort()).toEqual(['r1', 'r3'].sort())
+})
+
+it('runSelector: defn[:!?applies-nfr] picks blocks without the attribute', () => {
+  const state = [
+    processFile('rules/a.podlite', ruleN001N004),
+    processFile('rules/d.podlite', ruleNoNfr),
+  ]
+  const blocks = runSelector('file:./rules/*.podlite | defn[:!?applies-nfr]', state) as PodNode[]
+  expect(blocks).toHaveLength(1)
+  expect(getNodeId(blocks[0], {})).toBe('r4')
+})
