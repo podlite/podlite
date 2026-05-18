@@ -178,6 +178,94 @@ Alice,30
   })
 })
 
+describe('=data-table :src deferred schemes', () => {
+  it('preserves node unchanged for :src<file:X.csv>', () => {
+    const src = `=begin pod
+=for data-table :src<file:./planets.csv>
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const dt = findBlock(tree, 'data-table')
+    expect(dt).toBeDefined()
+    expect(dt.name).toBe('data-table')
+  })
+
+  it('preserves node unchanged for :src<https://...>', () => {
+    const src = `=begin pod
+=for data-table :src<https://example.com/data.csv>
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const dt = findBlock(tree, 'data-table')
+    expect(dt).toBeDefined()
+    expect(dt.name).toBe('data-table')
+  })
+
+  it('preserves node unchanged for :src<file:X.tsv>', () => {
+    const src = `=begin pod
+=for data-table :src<file:./planets.tsv>
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const dt = findBlock(tree, 'data-table')
+    expect(dt).toBeDefined()
+    expect(dt.name).toBe('data-table')
+  })
+})
+
+describe('=data-table :caption propagation', () => {
+  it('preserves :caption attribute through plugin', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present') :caption('Inner planets')
+name,radius
+Mercury,2440
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const table = findBlock(tree, 'table')
+    expect(table).toBeDefined()
+    expect(table.config).toBeDefined()
+    const caption = table.config.find((c: any) => c.name === 'caption')
+    expect(caption).toBeDefined()
+    expect(caption.value).toBe('Inner planets')
+  })
+})
+
+describe('=data-table error recovery', () => {
+  it('malformed CSV with unequal cells produces padded table + warning', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present')
+name,age,city
+Alice,30
+Bob,25,Paris,Extra
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const table = findBlock(tree, 'table')
+    expect(table).toBeDefined()
+    const cells = extractCellTexts(table)
+    expect(cells.length).toBe(3)
+    expect(cells[0]).toEqual(['name', 'age', 'city'])
+    expect(warnSpy).toHaveBeenCalled()
+    warnSpy.mockRestore()
+  })
+})
+
+describe('=data-table :allow cell markup', () => {
+  it(':allow<B> on =data-table preserves :allow on output =table', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present') :allow<B>
+name,description
+Alice,B<Important>
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const table = findBlock(tree, 'table')
+    expect(table).toBeDefined()
+    expect(table.config).toBeDefined()
+    const allow = table.config.find((c: any) => c.name === 'allow')
+    expect(allow).toBeDefined()
+  })
+})
+
 describe('=data-table :rename overrides', () => {
   it('renames header columns via sparse hash', () => {
     const src = `=begin pod
