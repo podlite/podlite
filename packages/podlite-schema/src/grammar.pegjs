@@ -20,9 +20,10 @@
 
   function isSupportedBlockName(name) {
       return [
-        'code', 
+        'code',
         'comment',
         'data',
+        'data-table',
         'defn',
         'formula',
         'head',

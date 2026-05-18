@@ -6255,9 +6255,10 @@ function peg$parse(input, options) {
 
     function isSupportedBlockName(name) {
         return [
-          'code', 
+          'code',
           'comment',
           'data',
+          'data-table',
           'defn',
           'formula',
           'head',

@@ -13,7 +13,7 @@ function flattenDeep(arr) {
 // Parse CSV content per RFC 4180: comma delimiter, `"`-quoted fields with
 // `""` as embedded-quote escape. Supports LF or CRLF line endings. Leading
 // indentation typical of =data block bodies is stripped from each line.
-function parseCsv(text) {
+export function parseCsv(text) {
   const rows = []
   let field = ''
   let row = []
@@ -73,7 +73,7 @@ function parseCsv(text) {
 // Parse a TSV (tab-separated values) blob. Unlike CSV, TSV has no quoting
 // mechanism — fields are split strictly on tabs and `"` is a literal
 // character. Tabs and newlines inside fields are not representable in TSV.
-function parseTsv(text) {
+export function parseTsv(text) {
   const lines = text.split(/\r?\n/)
   const rows = lines.map(line => line.split('\t'))
   return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
@@ -87,7 +87,7 @@ function parseTsv(text) {
 //   "text/csv"                          → { type: 'text/csv', params: {} }
 //   "text/csv; header=present"          → { type: 'text/csv', params: { header: 'present' } }
 //   "text/csv;charset=utf-8;header=absent" → { ..., params: { charset: 'utf-8', header: 'absent' } }
-function parseMimeType(raw): { type: string; params: Record<string, string> } {
+export function parseMimeType(raw): { type: string; params: Record<string, string> } {
   if (!raw || typeof raw !== 'string') return { type: '', params: {} }
   const parts = raw.split(';').map(s => s.trim())
   const type = (parts.shift() || '').toLowerCase()
@@ -108,7 +108,7 @@ function parseMimeType(raw): { type: string; params: Record<string, string> } {
 
 // Locate the first `=data` block with a matching `:key` attribute anywhere
 // in the document tree.
-function findDataBlockByKey(tree, key) {
+export function findDataBlockByKey(tree, key) {
   let found = null
   const walk = node => {
     if (found) return
@@ -130,7 +130,7 @@ function findDataBlockByKey(tree, key) {
   return found
 }
 
-function extractDataText(dataNode) {
+export function extractDataText(dataNode) {
   if (!dataNode || !Array.isArray(dataNode.content)) return ''
   const verbatim = dataNode.content.find(c => c && c.type === 'verbatim')
   return verbatim && typeof verbatim.value === 'string' ? verbatim.value : ''
@@ -191,7 +191,7 @@ function buildRowBlock(cells, isHeader) {
 // `:header`. Default behaviour leaves all rows unmarked, matching authors
 // who use a structured table with explicit `=begin row :header` or a
 // Markdown GFM table.
-function csvToTableContent(csvRows, hasHeader = false) {
+export function csvToTableContent(csvRows, hasHeader = false) {
   return csvRows.map((row, i) => {
     const cells = row.map(v => buildCellBlock(v.trim()))
     return buildRowBlock(cells, hasHeader && i === 0)
@@ -208,7 +208,7 @@ function csvToTableContent(csvRows, hasHeader = false) {
 // Skipped when any cell uses `:colspan` or `:rowspan`: a spanning cell
 // occupies multiple columns, so naive cell counting would misreport row
 // width and drop legitimate spanned cells.
-function normalizeCellCounts(tableNode, source = 'table') {
+export function normalizeCellCounts(tableNode, source = 'table') {
   if (!tableNode || !Array.isArray(tableNode.content)) return tableNode
   const rows = tableNode.content.filter(c => c && c.type === 'block' && c.name === 'row')
   if (rows.length === 0) return tableNode

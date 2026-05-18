@@ -30,6 +30,7 @@ import defnGroup_plug from './plugin-group-defn'
 import itemsGroup_plug from './plugin-group-items'
 import defnTerms_plug from './plugin-defn-fill-term'
 import table_plug from './plugin-tables'
+import data_table_plug from './plugin-data-table'
 
 export function toAst() {
   return {}
@@ -170,6 +171,7 @@ function makeTree() {
   chain.use(heading_plug)
   chain.use(defnTerms_plug)
   chain.use(table_plug)
+  chain.use(data_table_plug)
   chain.use(formattingCodes_plug)
 
   // save order for the next two plugins
