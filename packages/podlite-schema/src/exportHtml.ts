@@ -242,6 +242,16 @@ const rules = {
     writer.writeRaw('</li>')
   },
   'comment:block': emptyContent,
+  'boundary:block': (writer, processor) => (node, ctx) => {
+    const conf = makeAttrs(node, ctx)
+    if (conf.exists('caption')) {
+      writer.writeRaw('<hr title="')
+      writer.write(conf.getFirstValue('caption'))
+      writer.writeRaw('">')
+    } else {
+      writer.writeRaw('<hr>')
+    }
+  },
   defn: wrapContent('', '</dd>'),
   'term:para': wrapContent('<dt>', '</dt><dd>'),
   nested: handleNested(content, 1),

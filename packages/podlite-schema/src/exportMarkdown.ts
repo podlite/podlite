@@ -240,6 +240,9 @@ const rules = {
     if (node.content) interator(node.content, ctx)
   },
   'comment:block': emptyContent,
+  'boundary:block': (writer, processor) => (node, ctx) => {
+    writer.writeRaw('\n---\n')
+  },
   defn: (writer, processor) => (node, ctx, interator) => {
     if (node.content) interator(node.content, ctx)
     writer.writeRaw('\n')

@@ -369,6 +369,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ':para': mkComponent('p'),
     para: handleNested(mkComponent('div')),
     'comment:block': emptyContent(),
+    'boundary:block': mkComponent('hr'),
     defn: subUse(
       [
         // to avoid overlap para blocks handlers

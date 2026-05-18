@@ -20,6 +20,7 @@
 
   function isSupportedBlockName(name) {
       return [
+        'boundary',
         'code',
         'comment',
         'data',
@@ -73,6 +74,7 @@ Element =  delimitedBlockRaw
          / paragraphBlock
          / aliasDirective
          / configDirective
+         / boundaryDirective
          / abbreviatedBlockRaw
          / abbreviatedBlockTable
          / abbreviatedBlock
@@ -424,6 +426,7 @@ delimitedBlock =
           / paragraphBlock
           / aliasDirective
           / configDirective
+          / boundaryDirective
           / abbreviatedBlockRaw
           / abbreviatedBlockTable
           / abbreviatedBlock
@@ -574,8 +577,8 @@ aliasDirective =
       }
   }
 
-configDirective = 
-  vmargin:$(_) 
+configDirective =
+  vmargin:$(_)
   marker:'=config' _  name:$(strictIdentifier / [A-Z]'<>') _ config:pod_configuration
   {
       return {
@@ -583,6 +586,20 @@ configDirective =
           type:'config',
           config,
           margin:vmargin
+      }
+  }
+
+boundaryDirective =
+  vmargin:$(_)
+  marker:'=boundary' _ config:pod_configuration
+  {
+      return {
+          name: 'boundary',
+          type: 'block',
+          content: [],
+          config,
+          margin: vmargin,
+          location: location()
       }
   }
 

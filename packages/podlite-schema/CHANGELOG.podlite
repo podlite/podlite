@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<=boundary> directive for marking structural section transitions. Optional C<:caption> attribute renders as C<title> on HTML C<<hr>>; Markdown outputs C<--->; JSX outputs C<hr> element
+=item add C<=data-table> block for CSV/TSV rendering with C<:src>, C<:columns>, C<:rename>. Inline body and C<:src<data:KEY>> resolved at parse; C<file:>/C<http:>/C<https:> deferred to renderer
 =item add predicate grammar to C<parseSelector>/C<runSelector>. Patterns are C<block-type[ :attr<value> ]> with wildcard C<*>, modifiers C<!>/C<?>/C<!?>, exact-match C<<v>>, list-contains C<~<v>>, AND via whitespace, OR via comma. C<ParsedSelector.blockFilters: string[]> becomes C<patterns: Pattern[]>
 =item tighten C<parseSelector> scheme detection to identifier-shaped names so bare predicates like C<*[:attr<v>]> aren't consumed as a scheme
 =item add C<G<>> guarded markup code. Production mode masks non-whitespace characters with U+2588; draft mode renders content visibly. Mode via C<toHtml({renderMode})> / C<toMarkdown({renderMode})>, default C<production>
