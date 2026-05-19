@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.55
+
 =item add C<< podlite query <selector> <files...> >> subcommand. Extracts blocks matching a selector. C<--to> selects C<podlite> (default, raw source), C<md>, C<html>, C<json>. C<--fail-on-empty> sets exit 1 on empty result. Match count on stderr unless C<--quiet>. Reads stdin when piped or when C<-> is given as a file argument
 =item C<parseSelector> accepts bare pattern-list without a leading pipe (e.g. C<head1, code[:lang<python>]>); behaviour unchanged when the selector contains a C<|>
 

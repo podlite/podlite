@@ -2,6 +2,31 @@
 
 =head1 Upcoming
 
+=head1 0.0.62
+
+
+=head2 podlite
+
+=item add C<< podlite query <selector> <files...> >> subcommand. Extracts blocks matching a selector. C<--to> selects C<podlite> (default, raw source), C<md>, C<html>, C<json>. C<--fail-on-empty> sets exit 1 on empty result. Match count on stderr unless C<--quiet>. Reads stdin when piped or when C<-> is given as a file argument
+=item C<parseSelector> accepts bare pattern-list without a leading pipe (e.g. C<head1, code[:lang<python>]>); behaviour unchanged when the selector contains a C<|>
+
+=head2 @podlite/schema
+
+=item add C<=boundary> directive for marking structural section transitions. Optional C<:caption> attribute renders as C<title> on HTML C<<hr>>; Markdown outputs C<--->; JSX outputs C<hr> element
+=item add C<=data-table> block for CSV/TSV rendering with C<:src>, C<:columns>, C<:rename>. Inline body and C<:src<data:KEY>> resolved at parse; C<file:>/C<http:>/C<https:> deferred to renderer
+=item add predicate grammar to C<parseSelector>/C<runSelector>. Patterns are C<block-type[ :attr<value> ]> with wildcard C<*>, modifiers C<!>/C<?>/C<!?>, exact-match C<<v>>, list-contains C<~<v>>, AND via whitespace, OR via comma. C<ParsedSelector.blockFilters: string[]> becomes C<patterns: Pattern[]>
+=item tighten C<parseSelector> scheme detection to identifier-shaped names so bare predicates like C<*[:attr<v>]> aren't consumed as a scheme
+=item add C<G<>> guarded markup code. Production mode masks non-whitespace characters with U+2588; draft mode renders content visibly. Mode via C<toHtml({renderMode})> / C<toMarkdown({renderMode})>, default C<production>
+=item add C<:masked> block attribute. Marks any block as guarded — content masked recursively in production mode, visible in draft. Idempotent with C<G<>>
+=item add C<context> option to C<toAny>/C<toHtml>/C<toMarkdown> for passing initial render context to handlers
+=item add C<maskText(s)> and C<collectText(content)> helpers
+=item C<makeInterator>'s C<defaultFn> now returns the inner rule's result, enabling rule-chaining patterns (used by the masking interceptor)
+
+=head2 @podlite/to-jsx
+
+=item render C<G<>> guarded markup code. Production mode replaces content with U+2588 chars wrapped in C<<span class="masked">>; draft mode shows content in C<<span class="masked-draft">>. Mode via C<<Podlite renderMode="draft">>, default C<production>
+=item render C<:masked> block attribute. Block content masked recursively in production mode, visible in draft
+
 =head1 0.0.61
 
 
