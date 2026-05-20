@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<runSelector> predicates match attributes inherited from C<=config> defaults, resolved in source order
+
 =head1 0.0.42
 
 =item add C<=boundary> directive for marking structural section transitions. Optional C<:caption> attribute renders as C<title> on HTML C<<hr>>; Markdown outputs C<--->; JSX outputs C<hr> element

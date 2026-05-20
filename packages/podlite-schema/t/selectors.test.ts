@@ -216,10 +216,7 @@ Rule four
   })
 
   it('AND of conditions within one predicate', () => {
-    const blocks = runSelector(
-      'file:./**/*.podlite | defn[:?applies-nfr :applies-nfr~<N004>]',
-      corpus(),
-    ) as any[]
+    const blocks = runSelector('file:./**/*.podlite | defn[:?applies-nfr :applies-nfr~<N004>]', corpus()) as any[]
     expect(blocks.length).toBe(2)
   })
 
@@ -260,5 +257,56 @@ about python
   it('silent miss when attribute is absent (no error)', () => {
     const blocks = runSelector('file:./**/*.podlite | defn[:nonexistent<x>]', corpus()) as any[]
     expect(blocks).toEqual([])
+  })
+})
+
+describe('runSelector — =config inheritance', () => {
+  const idsOf = (blocks: any[]) => blocks.map(b => b.config?.find((c: any) => c.name === 'id')?.value)
+
+  it('matches a block by an attribute supplied only via =config', () => {
+    const src = `
+=config pod :level<where>
+
+=begin pod :id<L1> :status<active>
+=para body
+=end pod
+`
+    const docs = [makeDoc('x.podlite', src)]
+    const blocks = runSelector('file:x.podlite | pod[:level<where>]', docs) as any[]
+    expect(idsOf(blocks)).toEqual(['L1'])
+  })
+
+  it('applies =config forward only — a block before it does not inherit', () => {
+    const src = `
+=begin pod :id<before>
+=para a
+=end pod
+
+=config pod :level<where>
+
+=begin pod :id<after>
+=para b
+=end pod
+`
+    const docs = [makeDoc('x.podlite', src)]
+    const blocks = runSelector('file:x.podlite | pod[:level<where>]', docs) as any[]
+    expect(idsOf(blocks)).toEqual(['after'])
+  })
+
+  it('combines a per-block attribute with a =config default in an AND predicate', () => {
+    const src = `
+=config pod :level<where>
+
+=begin pod :id<L1> :status<active>
+=para a
+=end pod
+
+=begin pod :id<L2> :status<draft>
+=para b
+=end pod
+`
+    const docs = [makeDoc('x.podlite', src)]
+    const blocks = runSelector('file:x.podlite | pod[:level<where> :status<active>]', docs) as any[]
+    expect(idsOf(blocks)).toEqual(['L1'])
   })
 })

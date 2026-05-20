@@ -1,4 +1,5 @@
 import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, PodliteDocument, PodNode } from './index'
+import { ConfigItem } from './types'
 
 /*
 =begin pod
@@ -275,8 +276,10 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
 
 // --- predicate matcher --------------------------------------------------
 
-const matchCondition = (node: PodNode, cond: Condition): boolean => {
-  const attrs = makeAttrs(node, {})
+type SelectorContext = { config?: Record<string, ConfigItem[]> }
+
+const matchCondition = (node: PodNode, cond: Condition, ctx: SelectorContext): boolean => {
+  const attrs = makeAttrs(node, ctx)
   const exists = attrs.exists(cond.attrName)
 
   if (!cond.valueSpec) {
@@ -336,10 +339,37 @@ const blockTypeMatches = (node: PodNode, blockType: string): boolean => {
   return false
 }
 
-const matchesPattern = (node: PodNode, pattern: Pattern): boolean => {
+const matchesPattern = (node: PodNode, pattern: Pattern, ctx: SelectorContext): boolean => {
   if (!blockTypeMatches(node, pattern.blockType)) return false
   if (!pattern.predicate) return true
-  return pattern.predicate.every(c => matchCondition(node, c))
+  return pattern.predicate.every(c => matchCondition(node, c, ctx))
+}
+
+// Walk one document in source order, accumulating =config defaults forward
+// (last-wins, shared across the subtree) so a block matches against the same
+// effective attributes the renderer would apply.
+const collectMatches = (
+  node: PodNode,
+  patterns: Pattern[],
+  config: Record<string, ConfigItem[]>,
+  seen: Set<PodNode>,
+  out: PodNode[],
+): void => {
+  if (Array.isArray(node)) {
+    for (const child of node) collectMatches(child as PodNode, patterns, config, seen, out)
+    return
+  }
+  if (!node || typeof node !== 'object') return
+  const anyNode = node as { type?: string; name?: string; config?: ConfigItem[]; content?: unknown }
+  if (anyNode.type === 'config' && typeof anyNode.name === 'string' && anyNode.config) {
+    config[anyNode.name] = anyNode.config
+  } else if (anyNode.type === 'block' && !seen.has(node) && patterns.some(p => matchesPattern(node, p, { config }))) {
+    out.push(node)
+    seen.add(node)
+  }
+  if (anyNode.content !== undefined) {
+    collectMatches(anyNode.content as PodNode, patterns, config, seen, out)
+  }
 }
 
 // Normalize a path for loose suffix comparison:
@@ -456,19 +486,12 @@ export const runSelector = <T extends SelectorDoc>(selector: string, docs: T[]):
     return collectedBlocks
   }
 
-  // Patterns — full-tree traversal, apply each pattern, dedupe across patterns
+  // Patterns — source-order traversal, apply each pattern, dedupe across patterns
   if (patterns.length > 0) {
     const collectedBlocks: PodNode[] = []
     const seen = new Set<PodNode>()
     for (const d of matchedDocs) {
-      const allBlocks = getFromTree(d.node, { type: 'block' })
-      for (const block of allBlocks) {
-        if (seen.has(block)) continue
-        if (patterns.some(p => matchesPattern(block, p))) {
-          collectedBlocks.push(block)
-          seen.add(block)
-        }
-      }
+      collectMatches(d.node, patterns, {}, seen, collectedBlocks)
     }
     return collectedBlocks
   }
