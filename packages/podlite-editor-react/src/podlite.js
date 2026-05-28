@@ -479,7 +479,7 @@ export const podlite = simpleMode({
       sol: true,
     },
     {
-      regex: /^(\s*)(=\w+)(\s*)(\w*)(.*)$/,
+      regex: /^(\s*)(=alias)(\s*)(\w*)(.*)$/,
       token: [null, 'keyword', null, 'variable-3', 'content'],
       sol: true,
     },

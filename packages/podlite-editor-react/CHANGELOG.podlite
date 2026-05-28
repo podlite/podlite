@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item fix syntax highlighting state leak from C<=alias> into following blocks (@schueani in podlite/podlite-desktop#53)
+
 =head1 0.0.47
 
 =item fix C<=code> blocks with C<:allow<...>> losing fcode formatting
