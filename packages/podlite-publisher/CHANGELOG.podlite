@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<stateVersionPlugin> accepts optional C<appVersion> parameter; appended to C<stateVersion> as C<+app<v>>
+
 =head1 0.0.20
 
 =item extend Selector parsing: C<file:> scheme with suffix-match against C<publishRecord.file>, and pipe-separated block-name filters (e.g. C<file:terms.podlite | defn, para>). C<include-resolve-plugin> now inlines every matched block at the C<=include> location, not just the first

@@ -2,11 +2,11 @@ import * as CRC32 from 'crc-32'
 import { getTextContentFromNode } from '@podlite/schema'
 import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
 const version = require('../package.json').version
-const plugin = (): PodliteWebPlugin => {
+const plugin = (appVersion?: string): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
   let crc_sum = ''
   const onExit = ctx => {
-    outCtx.stateVersion = CRC32.str(crc_sum) + '+v' + version
+    outCtx.stateVersion = CRC32.str(crc_sum) + '+v' + version + (appVersion ? '+app' + appVersion : '')
     return { ...ctx, ...outCtx }
   }
   const getStateVersion = (allREcords): string => {

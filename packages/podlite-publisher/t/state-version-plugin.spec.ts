@@ -31,3 +31,19 @@ it('linksPlugin: linking', () => {
   expect(getVersion(sate1)).not.toEqual(getVersion(sate4))
   expect(getVersion(sate3)).not.toEqual(getVersion(sate4))
 })
+
+it('stateVersionPlugin: appVersion appended to stateVersion', () => {
+  const state = [processFile('virtual/src.pod6', makeAbstactDocument('test1', 'abstract content'))]
+  const getVersion = (appVersion?: string) => {
+    const config: PluginConfig = {
+      plugin: stateVersionPlugin(appVersion),
+      includePatterns: '.*',
+    }
+    const [, { stateVersion }] = processPlugin(config, state, tctx)
+    return stateVersion
+  }
+  expect(getVersion()).not.toEqual(getVersion('0.10.2'))
+  expect(getVersion('0.10.2')).toEqual(getVersion('0.10.2'))
+  expect(getVersion('0.10.2')).not.toEqual(getVersion('0.10.3'))
+  expect(getVersion('0.10.2')).toMatch(/\+app0\.10\.2$/)
+})
