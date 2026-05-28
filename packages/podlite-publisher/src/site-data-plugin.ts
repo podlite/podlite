@@ -3,6 +3,15 @@ import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
 import { PodliteWebPlugin, PodliteWebPluginContext, processFile, publishRecord, streamWriteArray } from '.'
 import pathFs from 'path'
+
+export function buildStylesContent(theme: string | undefined, globalStylesPath: string | undefined): string {
+  const imports: string[] = []
+  if (theme) imports.push(`@import '@Styles/themes/${theme}.css';`)
+  if (globalStylesPath) imports.push(`@import '${globalStylesPath}';`)
+  if (!theme && !globalStylesPath) imports.push(`@import '@Styles/default';`)
+  return imports.map(i => `\n            ${i}\n        `).join('')
+}
+
 export interface SiteInfo {
   redirects: { source: string; destination: string; statusCode: number }[]
   postsPerPage: number
@@ -11,6 +20,7 @@ export interface SiteInfo {
   node: any
   title: string
   globalStyles: string
+  theme?: string
   footer: string
   gtmId: string
   item: publishRecord
@@ -42,7 +52,7 @@ const plugin = ({
     const [pod] = getFromTree(indexPage.node, 'pod')
     const attr = makeAttrs(pod, {})
     const pageAttr = Object.fromEntries(Object.keys(attr.asHash()).map(k => [k, attr.getFirstValue(k)]))
-    const { postsPerPage, favicon, puburl, url, globalStyles, gtmId, templateFile } = pageAttr
+    const { postsPerPage, favicon, puburl, url, globalStyles, theme, gtmId, templateFile } = pageAttr
 
     // process favicon file
 
@@ -77,6 +87,7 @@ const plugin = ({
       node: pageNode,
       title,
       globalStyles,
+      ...(theme && { theme }),
       redirects,
       footer,
       gtmId,
@@ -108,21 +119,14 @@ const plugin = ({
       fs.writeFileSync(`${built_path}/imagesMap.json`, JSON.stringify(imagesMap, null, 2))
     }
 
-    // process GlobalStyles
-    let stylesContent = ''
-    if (siteData.globalStyles) {
-      const pathFs = require('path')
-      const docDirPath = pathFs.dirname(`${built_path}/styles.css`)
-      const path = pathFs.relative(docDirPath, pathFs.join(pathFs.dirname(indexFilePath), siteData.globalStyles))
-      stylesContent += `
-            @import '${path}';
-        `
-    } else {
-      const path = '@Styles/default'
-      stylesContent += `
-            @import '${path}';
-        `
-    }
+    // process styles: theme layer + globalStyles layer + default fallback
+    const globalStylesPath = siteData.globalStyles
+      ? pathFs.relative(
+          pathFs.dirname(`${built_path}/styles.css`),
+          pathFs.join(pathFs.dirname(indexFilePath), siteData.globalStyles),
+        )
+      : undefined
+    const stylesContent = buildStylesContent(siteData.theme, globalStylesPath)
     if (!ctx.testing) {
       // /built/styles.css
       fs.writeFileSync(`${built_path}/styles.css`, stylesContent, 'utf8')
