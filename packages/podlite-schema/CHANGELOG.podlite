@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.43
+
 =item C<runSelector> predicates match attributes inherited from C<=config> defaults, resolved in source order
 
 =head1 0.0.42
