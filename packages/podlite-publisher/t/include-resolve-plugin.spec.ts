@@ -266,10 +266,7 @@ it('include-resolve-plugin: predicate selector inlines only matching blocks', ()
 })
 
 it('runSelector: defn[:!?applies-nfr] picks blocks without the attribute', () => {
-  const state = [
-    processFile('rules/a.podlite', ruleN001N004),
-    processFile('rules/d.podlite', ruleNoNfr),
-  ]
+  const state = [processFile('rules/a.podlite', ruleN001N004), processFile('rules/d.podlite', ruleNoNfr)]
   const blocks = runSelector('file:./rules/*.podlite | defn[:!?applies-nfr]', state) as PodNode[]
   expect(blocks).toHaveLength(1)
   expect(getNodeId(blocks[0], {})).toBe('r4')

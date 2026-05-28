@@ -208,3 +208,53 @@ A<  TERER >
     ]
   `)
 })
+
+it('spec: 10-alias 2', () => {
+  const pod = `
+=alias X foo
+A<X>
+`
+  const tree = toTree().parse(pod, { podMode: 1, skipChain: 0 })
+  expect(tree).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "type": "blankline",
+      },
+      Object {
+        "margin": "",
+        "name": "X",
+        "replacement": Array [
+          "foo",
+        ],
+        "type": "alias",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "content": "X",
+            "name": "A",
+            "type": "fcode",
+          },
+          "
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 4,
+            "offset": 19,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 3,
+            "offset": 14,
+          },
+        },
+        "margin": "",
+        "text": "A<X>
+    ",
+        "type": "para",
+      },
+    ]
+  `)
+})

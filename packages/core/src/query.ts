@@ -36,12 +36,13 @@ const renderViaRoot = (block: PodNode, serializer: 'md' | 'html'): string => {
   return out.toString()
 }
 
-const formatBlocks = (
-  format: QueryFormat,
-  matches: Array<{ source: Source; block: PodNode }>,
-): string => {
+const formatBlocks = (format: QueryFormat, matches: Array<{ source: Source; block: PodNode }>): string => {
   if (format === 'json') {
-    return JSON.stringify(matches.map(m => m.block), null, 2)
+    return JSON.stringify(
+      matches.map(m => m.block),
+      null,
+      2,
+    )
   }
   if (format === 'podlite') {
     return matches
@@ -50,7 +51,10 @@ const formatBlocks = (
       .join('\n\n')
   }
   if (format === 'md' || format === 'html') {
-    return matches.map(m => renderViaRoot(m.block, format).trimEnd()).filter(Boolean).join('\n\n')
+    return matches
+      .map(m => renderViaRoot(m.block, format).trimEnd())
+      .filter(Boolean)
+      .join('\n\n')
   }
   throw new Error(`Unknown output format: ${format}`)
 }

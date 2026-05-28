@@ -14,7 +14,7 @@ Expression
 
 allowed_rules = code_A / code_S / code_C / code_D / code_E / code_V / code_L / code_X / code_Z 
 allpossible_codes = ( 'A' / 'V' / 'R' / 'B' / 'I' / 'C' / 'D' / 'E' / 'F' / 'G' / 'H' / 'J' / 'K' / 'L' / 'O' / 'S' / 'T' / 'U' / 'Z' / 'N' / 'X' )
-identifier = $([a-zA-Z][a-zA-Z0-9_-]+)
+identifier = $([a-zA-Z][a-zA-Z0-9_-]*)
 _ = [ \t\u000C]*
 allowed_code = 
             char:allpossible_codes

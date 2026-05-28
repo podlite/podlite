@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item allow single-letter identifiers (@schueani in podlite/podlite-desktop#53)
+
 =head1 0.0.43
 
 =item C<runSelector> predicates match attributes inherited from C<=config> defaults, resolved in source order

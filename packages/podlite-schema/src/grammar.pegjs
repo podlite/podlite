@@ -579,7 +579,7 @@ aliasDirective =
 
 configDirective =
   vmargin:$(_)
-  marker:'=config' _  name:$(strictIdentifier / [A-Z]'<>') _ config:pod_configuration
+  marker:'=config' _  name:$([A-Z]'<>' / strictIdentifier) _ config:pod_configuration
   {
       return {
           name,
@@ -672,7 +672,7 @@ paragraphBlock =
             }
   } 
 
-identifier = $([a-zA-Z][a-zA-Z0-9_-]+)
+identifier = $([a-zA-Z][a-zA-Z0-9_-]*)
 
 ___ "whitespace"
   = [\r\n \t\u000C]*
