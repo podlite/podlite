@@ -93,7 +93,7 @@ function getContentState(token = 'content') {
 }
 function getDefaultContentState(token = 'content') {
   const getStateForMarkupCodes = ({ token }) => {
-    const allcodes = ['A', 'B', 'C', 'F', 'I', 'L', 'O', 'U', 'Z'].join('|')
+    const allcodes = ['A', 'B', 'C', 'F', 'G', 'I', 'L', 'O', 'U', 'Z'].join('|')
     const handler = token => matches => {
       const code = matches?.groups?.code || 'NONEXISTS'
       const mapCodeToToken = {
@@ -101,6 +101,7 @@ function getDefaultContentState(token = 'content') {
         B: `strong ${token}`,
         C: `monospace ${token}`,
         F: `${token}`,
+        G: `comment ${token}`,
         I: `em ${token}`,
         L: `link ${token}`,
         O: `strikethrough ${token}`,
@@ -367,6 +368,10 @@ function attributesContent(attr = {}) {
     },
     {
       regex: /[<(].*?[>)]/,
+      token: 'string',
+    },
+    {
+      regex: /\{[^}]*\}/,
       token: 'string',
     },
   ]

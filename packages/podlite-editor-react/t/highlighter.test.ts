@@ -170,3 +170,26 @@ it('=set non-greedy — =head1 after =set pops state', () => {
   const lines = tokenizeDoc(['=set :id<x>', '', '=head1 Title'])
   expect(findText(lines[2], 'head1')?.token).toMatch(/variable-2/)
 })
+
+it('G<> fcode — dimmed comment token signals concealed content', () => {
+  const [line] = tokenizeDoc(['The password is G<hunter2> here.'])
+  const g = line.find(t => t.text === 'hunter2')
+  expect(g?.token).toMatch(/comment/)
+})
+
+it(':masked attribute — recognized as attribute token', () => {
+  const [line] = tokenizeDoc(['=for para :masked'])
+  expect(findText(line, ':masked')?.token).toMatch(/attribute/)
+})
+
+it(':rename{a=>b} hash form — string token on {...}', () => {
+  const [line] = tokenizeDoc(['=for data-table :rename{a=>b}'])
+  expect(findText(line, ':rename')?.token).toMatch(/attribute/)
+  expect(findText(line, '{a=>b}')?.token).toMatch(/string/)
+})
+
+it(':src<file:./x.csv> and :columns<a,b> on data-table — attribute + string tokens', () => {
+  const [line] = tokenizeDoc(['=for data-table :src<file:./x.csv> :columns<name,age>'])
+  expect(findText(line, ':src')?.token).toMatch(/attribute/)
+  expect(findText(line, ':columns')?.token).toMatch(/attribute/)
+})

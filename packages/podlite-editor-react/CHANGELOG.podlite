@@ -10,6 +10,8 @@
 
 =item recognize C<=boundary> directive (single-line, accepts C<:caption>) and C<=set> directive (multiline continuation analogous to C<=alias>); state machines apply non-greedy keyword match to prevent state leak into subsequent directives
 
+=item recognize C<G<>> guard fcode (dim/comment-style token, signals content concealed in production) and hash form C<{...}> in block attributes (e.g. C<:rename{a=>b}>)
+
 =head1 0.0.47
 
 =item fix C<=code> blocks with C<:allow<...>> losing fcode formatting
