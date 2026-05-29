@@ -143,3 +143,30 @@ it('=end data-table — recognized hyphenated end marker', () => {
   const lines = tokenizeDoc(['=begin data-table', 'a,b', '=end data-table'])
   expect(findText(lines[2], 'data-table')?.token).toMatch(/variable-2/)
 })
+
+it('=boundary — keyword highlighted', () => {
+  const [first] = tokenizeDoc(['=boundary'])
+  expect(findText(first, '=boundary')?.token).toMatch(/keyword/)
+})
+
+it('=boundary :caption<End> — keyword + attribute', () => {
+  const [first] = tokenizeDoc(['=boundary :caption<End>'])
+  expect(findText(first, '=boundary')?.token).toMatch(/keyword/)
+  expect(findText(first, ':caption')?.token).toMatch(/attribute/)
+})
+
+it('=set :caption<Title> — keyword highlighted', () => {
+  const [first] = tokenizeDoc(['=set :caption<Title>'])
+  expect(findText(first, '=set')?.token).toMatch(/keyword/)
+})
+
+it('=set multiline with continuation — keyword + continuation marker', () => {
+  const lines = tokenizeDoc(['=set :caption Multi', '=    line two'])
+  expect(findText(lines[0], '=set')?.token).toMatch(/keyword/)
+  expect(findText(lines[1], '=')?.token).toMatch(/keyword/)
+})
+
+it('=set non-greedy — =head1 after =set pops state', () => {
+  const lines = tokenizeDoc(['=set :id<x>', '', '=head1 Title'])
+  expect(findText(lines[2], 'head1')?.token).toMatch(/variable-2/)
+})

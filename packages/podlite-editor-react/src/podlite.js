@@ -217,6 +217,8 @@ function getStatesForBlock(blockName, contentToken) {
     [`${blockName}_content_Delim`]: [
       ...ifNextAliasDirective('beginAliasDirective'),
       ...ifNextConfigDirective('beginConfigDirective'),
+      ...ifNextSetDirective('beginSetDirective'),
+      ...ifNextBoundaryDirective('beginBoundaryDirective'),
       ...ifBeginParaBlock('beginParaBlock'),
       ...ifBeginAbbrBlock('beginAbbrBlock'),
       ...ifBeginDelimBlock('beginDelimBlock'),
@@ -424,11 +426,33 @@ function ifNextConfigDirective(ifOk) {
     },
   ]
 }
+function ifNextSetDirective(ifOk) {
+  return [
+    {
+      regex: /(?=\s*=set\b)/,
+      token: null,
+      sol: true,
+      push: ifOk,
+    },
+  ]
+}
+function ifNextBoundaryDirective(ifOk) {
+  return [
+    {
+      regex: /(?=\s*=boundary\b)/,
+      token: null,
+      sol: true,
+      push: ifOk,
+    },
+  ]
+}
 
 export const podlite = simpleMode({
   start: [
     ...ifNextAliasDirective('beginAliasDirective'),
     ...ifNextConfigDirective('beginConfigDirective'),
+    ...ifNextSetDirective('beginSetDirective'),
+    ...ifNextBoundaryDirective('beginBoundaryDirective'),
     ...ifBeginParaBlock('beginParaBlock'),
     ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...ifBeginDelimBlock('beginDelimBlock'),
@@ -457,6 +481,8 @@ export const podlite = simpleMode({
     ...attributesContent({ next: 'contentDelimBlock' }),
   ],
   contentDelimBlock: [
+    ...ifNextSetDirective('beginSetDirective'),
+    ...ifNextBoundaryDirective('beginBoundaryDirective'),
     ...ifBeginParaBlock('beginParaBlock'),
     ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...ifBeginDelimBlock('beginDelimBlock'),
@@ -514,6 +540,33 @@ export const podlite = simpleMode({
     },
   ],
   config_attr: [...ifNextStartAnyBlock({ pop: true }), ...attributesContent({ pop: true })],
+  beginSetDirective: [
+    {
+      regex: /(\s*)(=)(\s+)(.*)$/,
+      token: [null, 'keyword', null, 'content'],
+      sol: true,
+    },
+    {
+      regex: /^(\s*)(=set)(\s*)(.*)$/,
+      token: [null, 'keyword', null, 'content'],
+      sol: true,
+    },
+    {
+      regex: /(?!\s*=\s+)/,
+      token: null,
+      sol: true,
+      pop: true,
+    },
+  ],
+  beginBoundaryDirective: [
+    {
+      regex: /^(\s*)(=boundary)(\s*)/,
+      token: [null, 'keyword', null],
+      sol: true,
+      next: 'boundary_attr',
+    },
+  ],
+  boundary_attr: [...ifNextStartAnyBlock({ pop: true }), ...attributesContent({ pop: true })],
   beginParaBlock: [
     ...ifBlockName('Para'),
     {
