@@ -22,6 +22,8 @@ const tokenTable = {
   monospace: tags.monospace,
   'variable-3': tags.variableName,
   'variable-2': tags.operator,
+  'semantic-block': tags.constant(tags.variableName),
+  'custom-block': tags.className,
   pod: Tag.define(),
   header: tags.heading,
   'header-1': tags.heading1,
@@ -30,6 +32,12 @@ const tokenTable = {
   strikethrough: tags.strikethrough,
   underline: Tag.define(),
   link: tags.link,
+}
+
+function classifyBlockName(blockName) {
+  if (/^[A-Z][A-Z][A-Z0-9_-]*$/.test(blockName)) return 'semantic-block'
+  if (/^[A-Z][a-z][a-zA-Z0-9_-]*$/.test(blockName)) return 'custom-block'
+  return 'variable-3'
 }
 
 function ifBeginAbbrBlock(ifOk) {
@@ -434,8 +442,10 @@ export const podlite = simpleMode({
     ...ifBlockName('Delim'),
 
     {
-      regex: /(\w+)(\s*)/,
-      token: [`variable-3`, null],
+      regex: /(?<blockName>[\w-]+)(\s*)/,
+      token: function (matches) {
+        return [classifyBlockName(matches?.groups?.blockName || ''), null]
+      },
       next: 'attributes_delim',
     },
   ],
@@ -466,8 +476,10 @@ export const podlite = simpleMode({
       pop: true,
     },
     {
-      regex: /(\s*)(=end)(\s*)(\w+)/,
-      token: [null, 'keyword', null, 'variable-3'],
+      regex: /(\s*)(=end)(\s*)(?<blockName>[\w-]+)/,
+      token: function (matches) {
+        return [null, 'keyword', null, classifyBlockName(matches?.groups?.blockName || '')]
+      },
       sol: true,
       pop: true,
     },
@@ -502,8 +514,10 @@ export const podlite = simpleMode({
   beginParaBlock: [
     ...ifBlockName('Para'),
     {
-      regex: /(\w+)(\s*)/,
-      token: ['variable-3', null],
+      regex: /(?<blockName>[\w-]+)(\s*)/,
+      token: function (matches) {
+        return [classifyBlockName(matches?.groups?.blockName || ''), null]
+      },
       next: 'attributes',
     },
   ],
