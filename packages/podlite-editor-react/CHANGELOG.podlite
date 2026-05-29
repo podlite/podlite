@@ -6,6 +6,8 @@
 
 =item editor highlighter distinguishes semantic uppercase blocks (C<SYNOPSIS>, C<AUTHOR>, C<SEE-ALSO>) and custom mixed-case blocks (C<Image>, C<Diagram>, C<Mermaid>) from standard blocks via new tokens C<semantic-block> and C<custom-block>
 
+=item recognize C<=row>, C<=cell>, C<=data-table> blocks in highlighter; C<=data-table> body treated as verbatim like C<=data>
+
 =head1 0.0.47
 
 =item fix C<=code> blocks with C<:allow<...>> losing fcode formatting

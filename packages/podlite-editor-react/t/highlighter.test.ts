@@ -122,3 +122,24 @@ it('SEE-ALSO with hyphen — semantic-block (hyphen in uppercase ident)', () => 
   const [first] = tokenizeDoc(['=begin SEE-ALSO'])
   expect(findText(first, 'SEE-ALSO')?.token).toMatch(/semantic-block/)
 })
+
+it('=begin data-table — recognized as standard block with hyphen', () => {
+  const [first] = tokenizeDoc(['=begin data-table'])
+  expect(findText(first, 'data-table')?.token).toMatch(/variable-2/)
+  expect(findText(first, 'data-table')?.token).toMatch(/data-table/)
+})
+
+it('=begin row — recognized as standard block', () => {
+  const [first] = tokenizeDoc(['=begin row'])
+  expect(findText(first, 'row')?.token).toMatch(/variable-2/)
+})
+
+it('=begin cell — recognized as standard block', () => {
+  const [first] = tokenizeDoc(['=begin cell'])
+  expect(findText(first, 'cell')?.token).toMatch(/variable-2/)
+})
+
+it('=end data-table — recognized hyphenated end marker', () => {
+  const lines = tokenizeDoc(['=begin data-table', 'a,b', '=end data-table'])
+  expect(findText(lines[2], 'data-table')?.token).toMatch(/variable-2/)
+})

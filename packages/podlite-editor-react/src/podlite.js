@@ -44,7 +44,7 @@ function ifBeginAbbrBlock(ifOk) {
   const res = [
     {
       regex:
-        /\s*(=)(?=head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
+        /\s*(=)(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
       token: 'keyword',
       sol: true,
       push: ifOk,
@@ -58,6 +58,7 @@ function getBlockNames() {
     'code',
     'comment',
     'data',
+    'data-table',
     'defn',
     'formula',
     'input',
@@ -67,6 +68,8 @@ function getBlockNames() {
     'para',
     'picture',
     'pod',
+    'row',
+    'cell',
     'table',
     'toc',
     'include',
@@ -163,7 +166,7 @@ function isBlankLine(attr = {}) {
 }
 
 function getStatesForBlock(blockName, contentToken) {
-  if (blockName.match(/^(?:code|comment|data)$/)) {
+  if (blockName.match(/^(?:code|comment|data|data-table)$/)) {
     return {
       [`${blockName}_content_Abbr`]: [
         ...isBlankLine({ pop: true }),
@@ -252,7 +255,7 @@ function ifBlockName(ifOk = 'content', attr = {}) {
   if (ifOk === 'Para') {
     const res = {
       regex:
-        /(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
+        /(?<blockName>head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
         return [`variable-2 ${blockName}`]
@@ -267,7 +270,7 @@ function ifBlockName(ifOk = 'content', attr = {}) {
   if (ifOk === 'Abbr') {
     const res = {
       regex:
-        /(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
+        /(?<blockName>head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
         return [`variable-2 ${blockName}`]
@@ -282,7 +285,7 @@ function ifBlockName(ifOk = 'content', attr = {}) {
   if (ifOk === 'Delim') {
     const res = {
       regex:
-        /(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
+        /(?<blockName>head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
         return [blockName === 'comment' ? 'comment' : `variable-2 ${blockName}`]
@@ -300,7 +303,7 @@ function ifNextBeginDelimBlock(attr = {}) {
   return [
     {
       regex:
-        /(?=\s*=begin\s*(?:head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include|\w+))/,
+        /(?=\s*=begin\s*(?:head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|\w+))/,
       token: null,
       sol: true,
       ...attr,
@@ -312,7 +315,7 @@ function ifNextEndDelimBlock(attr = {}) {
   return [
     {
       regex:
-        /(?=\s*=end\s*(?:head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include|\w+))/,
+        /(?=\s*=end\s*(?:head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|\w+))/,
       token: null,
       sol: true,
       ...attr,
@@ -324,7 +327,7 @@ function ifNextBeginAbbrBlock(attr = {}) {
   return [
     {
       regex:
-        /(?=\s*=(?:head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include))/,
+        /(?=\s*=(?:head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include))/,
       token: null,
       sol: true,
       ...attr,
@@ -336,7 +339,7 @@ function ifNextBeginParaBlock(attr = {}) {
   return [
     {
       regex:
-        /(?=\s*=for\s*(?=head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include|\w+))/,
+        /(?=\s*=for\s*(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|\w+))/,
       token: 'keyword',
       sol: true,
       ...attr,
@@ -382,7 +385,7 @@ function ifBeginDelimBlock(ifOk) {
   return [
     {
       regex:
-        /\s*(=begin)\s*(?=head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include|\w+)/,
+        /\s*(=begin)\s*(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|\w+)/,
       token: 'keyword',
       sol: true,
       push: ifOk,
@@ -394,7 +397,7 @@ function ifBeginParaBlock(ifOk) {
   return [
     {
       regex:
-        /\s*(=for)\s*(?=head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include|\w+)/,
+        /\s*(=for)\s*(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|\w+)/,
       token: 'keyword',
       sol: true,
       push: ifOk,
@@ -467,7 +470,7 @@ export const podlite = simpleMode({
   endDelimBlock: [
     {
       regex:
-        /(\s*)(=end)(\s*)(?<blockName>head\d*|item\d*|code|comment|data|defn|formula|input|markdown|nested|output|para|picture|pod|table|toc|include)/,
+        /(\s*)(=end)(\s*)(?<blockName>head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
       token: function (matches) {
         const blockName = matches?.groups?.blockName || 'default'
         return [null, 'keyword', null, blockName === 'comment' ? 'comment' : `variable-2 ${blockName}`]
