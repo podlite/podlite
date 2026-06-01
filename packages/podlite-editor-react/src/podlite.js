@@ -44,7 +44,7 @@ function ifBeginAbbrBlock(ifOk) {
   const res = [
     {
       regex:
-        /\s*(=)(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include)/,
+        /\s*(=)(?=head\d*|item\d*|code|comment|data-table|data|defn|formula|input|markdown|nested|output|para|picture|pod|row|cell|table|toc|include|[A-Za-z][\w-]*)/,
       token: 'keyword',
       sol: true,
       push: ifOk,
@@ -221,9 +221,9 @@ function getStatesForBlock(blockName, contentToken) {
       ...ifNextSetDirective('beginSetDirective'),
       ...ifNextBoundaryDirective('beginBoundaryDirective'),
       ...ifBeginParaBlock('beginParaBlock'),
-      ...ifBeginAbbrBlock('beginAbbrBlock'),
       ...ifBeginDelimBlock('beginDelimBlock'),
       ...ifNextEndDelimBlock({ next: 'endDelimBlock' }),
+      ...ifBeginAbbrBlock('beginAbbrBlock'),
       ...getDefaultContentState(contentToken),
       {
         regex: /.*/,
@@ -459,8 +459,8 @@ export const podlite = simpleMode({
     ...ifNextSetDirective('beginSetDirective'),
     ...ifNextBoundaryDirective('beginBoundaryDirective'),
     ...ifBeginParaBlock('beginParaBlock'),
-    ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...ifBeginDelimBlock('beginDelimBlock'),
+    ...ifBeginAbbrBlock('beginAbbrBlock'),
     //   added if brocken sequence
     //   ...ifNextEndDelimBlock({ push: 'endDelimBlock' }),
     ...getDefaultContentState(),
@@ -489,9 +489,9 @@ export const podlite = simpleMode({
     ...ifNextSetDirective('beginSetDirective'),
     ...ifNextBoundaryDirective('beginBoundaryDirective'),
     ...ifBeginParaBlock('beginParaBlock'),
-    ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...ifBeginDelimBlock('beginDelimBlock'),
     ...ifNextEndDelimBlock({ next: 'endDelimBlock' }),
+    ...ifBeginAbbrBlock('beginAbbrBlock'),
     ...getDefaultContentState(),
     {
       regex: /.*/,
@@ -584,7 +584,17 @@ export const podlite = simpleMode({
   ],
 
   attributes: [...ifNextStartAnyBlock({ pop: true }), ...attributesContent({ next: 'content' })],
-  beginAbbrBlock: [...ifBlockName('Abbr')],
+  beginAbbrBlock: [
+    ...ifBlockName('Abbr'),
+    {
+      regex: /(?<blockName>[\w-]+)(\s*)/,
+      token: function (matches) {
+        return [classifyBlockName(matches?.groups?.blockName || ''), null]
+      },
+      next: 'customAbbrContent',
+    },
+  ],
+  customAbbrContent: [...isBlankLine({ pop: true }), ...ifNextStartAnyBlock({ pop: true }), ...getContentState()],
   content: [...getContentState()],
   ...getContentStates(),
   languageData: {

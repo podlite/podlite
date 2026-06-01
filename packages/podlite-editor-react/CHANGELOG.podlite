@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item highlighter recognises semantic and custom blocks in abbreviated form (C<=TITLE>, C<=NAME>, C<=SEE-ALSO>, C<=Diagram>). Previously only C<=begin>/C<=for> forms classified non-standard block names
+
 =head1 0.0.50
 
 =item fix syntax highlighting state leak from C<=alias> into following blocks (@schueani in podlite/podlite-desktop#53)

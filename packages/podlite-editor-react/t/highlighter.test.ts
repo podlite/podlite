@@ -193,3 +193,39 @@ it(':src<file:./x.csv> and :columns<a,b> on data-table — attribute + string to
   expect(findText(line, ':src')?.token).toMatch(/attribute/)
   expect(findText(line, ':columns')?.token).toMatch(/attribute/)
 })
+
+it('=TITLE — semantic-block on abbreviated form', () => {
+  const [first] = tokenizeDoc(['=TITLE'])
+  expect(findText(first, 'TITLE')?.token).toMatch(/semantic-block/)
+})
+
+it('=NAME — semantic-block on abbreviated form', () => {
+  const [first] = tokenizeDoc(['=NAME'])
+  expect(findText(first, 'NAME')?.token).toMatch(/semantic-block/)
+})
+
+it('=SEE-ALSO — semantic-block on hyphenated abbreviated form', () => {
+  const [first] = tokenizeDoc(['=SEE-ALSO'])
+  expect(findText(first, 'SEE-ALSO')?.token).toMatch(/semantic-block/)
+})
+
+it('=Diagram — custom-block on abbreviated form', () => {
+  const [first] = tokenizeDoc(['=Diagram'])
+  expect(findText(first, 'Diagram')?.token).toMatch(/custom-block/)
+})
+
+it('=foo — lowercase keeps variable-3 (abbreviated regression)', () => {
+  const [first] = tokenizeDoc(['=foo'])
+  expect(findText(first, 'foo')?.token).toMatch(/variable-3/)
+})
+
+it('=head1 Title — known abbreviated block keeps variable-2 (regression)', () => {
+  const [first] = tokenizeDoc(['=head1 Title'])
+  expect(findText(first, 'head1')?.token).toMatch(/variable-2/)
+})
+
+it('=begin SYNOPSIS after abbreviated reorder — still delim path', () => {
+  const lines = tokenizeDoc(['=begin SYNOPSIS', 'body', '=end SYNOPSIS'])
+  expect(findText(lines[0], 'SYNOPSIS')?.token).toMatch(/semantic-block/)
+  expect(findText(lines[2], 'SYNOPSIS')?.token).toMatch(/semantic-block/)
+})
