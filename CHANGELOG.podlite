@@ -2,6 +2,31 @@
 
 =head1 Upcoming
 
+=head1 0.0.64
+
+
+=head2 @podlite/editor-react
+
+=item fix syntax highlighting state leak from C<=alias> into following blocks (@schueani in podlite/podlite-desktop#53)
+
+=item editor highlighter distinguishes semantic uppercase blocks (C<SYNOPSIS>, C<AUTHOR>, C<SEE-ALSO>) and custom mixed-case blocks (C<Image>, C<Diagram>, C<Mermaid>) from standard blocks via new tokens C<semantic-block> and C<custom-block>
+
+=item recognize C<=row>, C<=cell>, C<=data-table> blocks in highlighter; C<=data-table> body treated as verbatim like C<=data>
+
+=item recognize C<=boundary> directive (single-line, accepts C<:caption>) and C<=set> directive (multiline continuation analogous to C<=alias>); state machines apply non-greedy keyword match to prevent state leak into subsequent directives
+
+=item recognize C<G<>> guard fcode (dim/comment-style token, signals content concealed in production) and hash form C<{...}> in block attributes (e.g. C<:rename{a=>b}>)
+
+=head2 @podlite/publisher
+
+=item C<stateVersionPlugin> accepts optional C<appVersion> parameter; appended to C<stateVersion> as C<+app<v>>
+
+=item C<site-data-plugin> reads C<:theme> from root pod and emits C<@import '@Styles/themes/<name>.css'>; layered before C<:globalStyles> override
+
+=head2 @podlite/schema
+
+=item allow single-letter identifiers (@schueani in podlite/podlite-desktop#53)
+
 =head1 0.0.63
 
 

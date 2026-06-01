@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.25
+
 =item C<stateVersionPlugin> accepts optional C<appVersion> parameter; appended to C<stateVersion> as C<+app<v>>
 
 =item C<site-data-plugin> reads C<:theme> from root pod and emits C<@import '@Styles/themes/<name>.css'>; layered before C<:globalStyles> override
