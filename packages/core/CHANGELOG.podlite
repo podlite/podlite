@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<< podlite lint >> accepts C<--strict>, C<--format text|json>, C<--config <path>>. C<runLint(files, options)> signature in C<@podlite/core>
+
 =head1 0.0.55
 
 =item add C<< podlite query <selector> <files...> >> subcommand. Extracts blocks matching a selector. C<--to> selects C<podlite> (default, raw source), C<md>, C<html>, C<json>. C<--fail-on-empty> sets exit 1 on empty result. Match count on stderr unless C<--quiet>. Reads stdin when piped or when C<-> is given as a file argument

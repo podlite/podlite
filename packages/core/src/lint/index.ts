@@ -1,12 +1,14 @@
-/* =begin pod
-=head2 C<runLint>
+export type LintFormat = 'text' | 'json'
 
-Stub entry point for the C<podlite lint> subcommand. Returns the exit code
-the CLI should propagate. Until rules land (Track 7 phase 2), it logs a
-placeholder and exits cleanly.
+export type LintOptions = {
+  strict: boolean
+  format: LintFormat
+  configPath?: string
+}
 
-=end pod */
-export function runLint(files: string[]): number {
-  console.log(`lint: stub — received ${files.length} file(s); rules not yet implemented`)
+export function runLint(files: string[], options: LintOptions): number {
+  console.log(
+    `lint: stub — received ${files.length} file(s); rules not yet implemented (format=${options.format}, strict=${options.strict})`,
+  )
   return 0
 }

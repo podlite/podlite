@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { parse, toMarkdown, toHtml } from '@podlite/schema'
-import { runLint } from './lint'
+import { runLint, LintFormat } from './lint'
 import { runQuery, QueryFormat } from './query'
 
 const FORMATS: Record<string, string> = {
@@ -11,11 +11,12 @@ const FORMATS: Record<string, string> = {
 }
 
 const QUERY_FORMATS: QueryFormat[] = ['podlite', 'md', 'html', 'json']
+const LINT_FORMATS: LintFormat[] = ['text', 'json']
 
 function usage() {
   console.log(`Usage:
   podlite convert <files...> --to <format> [-o <output>]
-  podlite lint <files...>
+  podlite lint <files...> [--strict] [--format <text|json>] [--config <path>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
 
 Commands:
@@ -27,6 +28,9 @@ Options:
   --to       Output format
                convert: md (markdown), html
                query:   podlite (default), md, html, json
+  --format   lint output format: text (default), json
+  --strict   lint: promote warnings to errors
+  --config   lint: path to .podlitelintrc.{json,js}
   -o         Output file or directory (default: same dir, new extension)
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
@@ -41,7 +45,8 @@ Examples:
   podlite query '*[:applies-nfr~<N004>]' rules/*.podlite --fail-on-empty
   cat doc.podlite | podlite query 'head1'
   podlite query 'table' --to json - < report.podlite
-  podlite lint docs/*.podlite`)
+  podlite lint docs/*.podlite
+  podlite lint docs/ --strict --format json`)
 }
 
 function parseArgs(argv: string[]) {
@@ -52,6 +57,9 @@ function parseArgs(argv: string[]) {
     output: '',
     failOnEmpty: false,
     quiet: false,
+    strict: false,
+    format: '',
+    configPath: '',
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
@@ -71,6 +79,12 @@ function parseArgs(argv: string[]) {
       args.failOnEmpty = true
     } else if (arg === '--quiet') {
       args.quiet = true
+    } else if (arg === '--strict') {
+      args.strict = true
+    } else if (arg === '--format') {
+      args.format = argv[++i] || ''
+    } else if (arg === '--config') {
+      args.configPath = argv[++i] || ''
     } else if (arg === '--help' || arg === '-h') {
       return null
     } else if (!arg.startsWith('-')) {
@@ -207,7 +221,18 @@ function main() {
       usage()
       process.exit(1)
     }
-    process.exit(runLint(args.files))
+    const format = (args.format || 'text') as LintFormat
+    if (!LINT_FORMATS.includes(format)) {
+      console.error(`podlite lint: unknown --format "${format}". Supported: ${LINT_FORMATS.join(', ')}`)
+      process.exit(1)
+    }
+    process.exit(
+      runLint(args.files, {
+        strict: args.strict,
+        format,
+        configPath: args.configPath || undefined,
+      }),
+    )
   }
 
   if (args.command !== 'convert') {
