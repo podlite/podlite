@@ -3,6 +3,7 @@
 =head1 Upcoming
 
 =item C<< podlite lint >> accepts C<--strict>, C<--format text|json>, C<--config <path>>. C<runLint(files, options)> signature in C<@podlite/core>
+=item C<< podlite lint >> adds C<syntax-valid> rule — catches parse exceptions, reports C<file:line:column: error: <msg> (syntax-valid)>. Text and JSON output. Missing files report C<io> error
 
 =head1 0.0.55
 

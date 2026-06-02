@@ -1,0 +1,7 @@
+=head1 Title
+
+Some prose.
+
+=begin code
+print "ok"
+=end code
