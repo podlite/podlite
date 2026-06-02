@@ -42,6 +42,16 @@ describe('runLint', () => {
     const out = stdout.mock.calls.map(c => c[0]).join('')
     expect(JSON.parse(out)).toEqual([])
   })
+
+  it('strict mode with clean file still returns 0', () => {
+    const code = runLint([path.join(FIXTURES, 'valid.podlite')], { strict: true, format: 'text' })
+    expect(code).toBe(0)
+  })
+
+  it('strict mode with errors still returns 1', () => {
+    const code = runLint([path.join(FIXTURES, 'nonexistent.podlite')], { strict: true, format: 'text' })
+    expect(code).toBe(1)
+  })
 })
 
 describe('syntax-valid rule', () => {

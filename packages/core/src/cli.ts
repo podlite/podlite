@@ -217,14 +217,14 @@ function main() {
 
   if (args.command === 'lint') {
     if (args.files.length === 0) {
-      console.error('No input files specified')
+      console.error('podlite lint: no input files specified')
       usage()
-      process.exit(1)
+      process.exit(2)
     }
     const format = (args.format || 'text') as LintFormat
     if (!LINT_FORMATS.includes(format)) {
       console.error(`podlite lint: unknown --format "${format}". Supported: ${LINT_FORMATS.join(', ')}`)
-      process.exit(1)
+      process.exit(2)
     }
     process.exit(
       runLint(args.files, {
