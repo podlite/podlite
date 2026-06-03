@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@podlite/schema": ["../../../podlite-schema/lib/index.d.ts"]
+      "@podlite/schema": ["../../../podlite-schema/lib/index.d.ts"],
+      "@podlite/markdown": ["../../../podlite-markdown/lib/index.d.ts"]
     }
   },
   "include": ["./**/*"]

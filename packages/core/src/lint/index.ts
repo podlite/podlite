@@ -1,8 +1,6 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import { parse } from '@podlite/schema'
-import type { Violation, FileType } from './types'
+import type { Violation } from './types'
 import { makeSyntaxViolation } from './rules/syntax-valid'
+import { detectFileType, readFile, parseContent } from './loader'
 
 export type LintFormat = 'text' | 'json'
 
@@ -10,10 +8,6 @@ export type LintOptions = {
   strict: boolean
   format: LintFormat
   configPath?: string
-}
-
-function detectFileType(filePath: string): FileType {
-  return path.extname(filePath).toLowerCase() === '.md' ? 'md' : 'podlite'
 }
 
 function formatTextLine(filePath: string, v: Violation): string {
@@ -26,7 +20,7 @@ function lintFile(filePath: string): Violation[] {
   const violations: Violation[] = []
   let content: string
   try {
-    content = fs.readFileSync(filePath, 'utf-8')
+    content = readFile(filePath)
   } catch (e) {
     violations.push({
       rule: 'io',
@@ -36,9 +30,8 @@ function lintFile(filePath: string): Violation[] {
     return violations
   }
   const fileType = detectFileType(filePath)
-  const podMode = fileType === 'md' ? 0 : 1
   try {
-    parse(content, { podMode })
+    parseContent(content, fileType)
   } catch (e) {
     violations.push(makeSyntaxViolation(e, filePath))
   }

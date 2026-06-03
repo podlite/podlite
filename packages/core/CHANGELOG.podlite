@@ -5,6 +5,7 @@
 =item C<< podlite lint >> accepts C<--strict>, C<--format text|json>, C<--config <path>>. C<runLint(files, options)> signature in C<@podlite/core>
 =item C<< podlite lint >> adds C<syntax-valid> rule — catches parse exceptions, reports C<file:line:column: error: <msg> (syntax-valid)>. Text and JSON output. Missing files report C<io> error
 =item C<< podlite lint >> exit codes: 0 clean, 1 violations found (or warnings under C<--strict>), 2 CLI/setup error (no files, unknown C<--format>)
+=item C<< podlite lint >> file loader centralized — auto-detects C<.md> → markdown mode, C<.podlite>/C<.pod6> → pod mode. Markdown content expanded via plugin chain so rules see the unified AST
 
 =head1 0.0.55
 
