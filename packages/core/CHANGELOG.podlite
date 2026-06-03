@@ -7,6 +7,7 @@
 =item C<< podlite lint >> exit codes: 0 clean, 1 violations found (or warnings under C<--strict>), 2 CLI/setup error (no files, unknown C<--format>)
 =item C<< podlite lint >> file loader centralized — auto-detects C<.md> → markdown mode (via C<parseMd> from C<@podlite/markdown>), C<.podlite>/C<.pod6> → pod mode. Both produce the unified AST so rules apply uniformly
 =item C<< podlite lint >> adds C<heading-hierarchy> rule (warning) — flags non-monotonic level jumps like C<head1> → C<head3>. Descending and equal levels allowed. Applies to both Markdown and Podlite headings via unified AST
+=item C<< podlite lint >> adds C<id-unique> rule (error) — flags duplicate explicit C<:id<>> attributes in file scope. Auto-generated node ids ignored. Silent skip when the file declares no explicit ids
 
 =head1 0.0.55
 
