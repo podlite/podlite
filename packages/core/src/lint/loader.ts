@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { podlitePluggable, PodliteDocument } from '@podlite/schema'
-import { PluginRegister as MarkdownRegister } from '@podlite/markdown'
+import { parseMd } from '@podlite/markdown'
 import type { FileType } from './types'
 
-const lintParser = podlitePluggable({ plugins: { ...MarkdownRegister } })
+const podliteParser = podlitePluggable()
 
 export function detectFileType(filePath: string): FileType {
   const ext = path.extname(filePath).toLowerCase()
@@ -16,5 +16,8 @@ export function readFile(filePath: string): string {
 }
 
 export function parseContent(content: string, fileType: FileType): PodliteDocument {
-  return lintParser.parse(content, { podMode: fileType === 'md' ? 0 : 1 })
+  if (fileType === 'md') {
+    return parseMd(content) as unknown as PodliteDocument
+  }
+  return podliteParser.parse(content, { podMode: 1 })
 }

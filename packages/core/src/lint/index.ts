@@ -1,5 +1,7 @@
-import type { Violation } from './types'
+import type { Violation, LintContext } from './types'
 import { makeSyntaxViolation } from './rules/syntax-valid'
+import { DEFAULT_RULES } from './rules'
+import { runRules } from './engine'
 import { detectFileType, readFile, parseContent } from './loader'
 
 export type LintFormat = 'text' | 'json'
@@ -31,7 +33,9 @@ function lintFile(filePath: string): Violation[] {
   }
   const fileType = detectFileType(filePath)
   try {
-    parseContent(content, fileType)
+    const ast = parseContent(content, fileType)
+    const ctx: LintContext = { filePath, fileType, config: {} }
+    violations.push(...runRules(ast, DEFAULT_RULES, ctx))
   } catch (e) {
     violations.push(makeSyntaxViolation(e, filePath))
   }
