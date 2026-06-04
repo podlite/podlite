@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item extend C<parseOpt> with optional C<mode: 'pod' | 'md'> field. Consumers (e.g. C<@podlite/core>) can dispatch to a Markdown parser when C<mode === 'md'>. Pure type extension; schema's own parse unchanged
+
 =head1 0.0.44
 
 =item allow single-letter identifiers (@schueani in podlite/podlite-desktop#53)

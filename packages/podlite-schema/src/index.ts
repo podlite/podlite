@@ -161,6 +161,7 @@ export type ParserPlugin = (opt: parseOpt) => (param: AST) => AST
 export type parseOpt = {
   skipChain?: number
   podMode?: number
+  mode?: 'pod' | 'md'
 }
 function makeTree() {
   var plugins: Array<ParserPlugin> = []
