@@ -1,0 +1,8 @@
+=for defn :id<jacobs> :summary<plain text without nested markers>
+The definition body.
+
+=for defn :id<murch> :summary«contains B<bold> via guillemets»
+Another body.
+
+=for defn :id<lynch> :summary('contains B<bold> via parens')
+A third body.

@@ -25,3 +25,8 @@ export type Rule = {
   severity: Severity
   check: (ast: PodliteDocument, ctx: LintContext) => Violation[]
 }
+
+export type SourceRule = {
+  id: string
+  severity: Severity
+}

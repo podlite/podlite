@@ -5,6 +5,7 @@ import { runRules } from './engine'
 import { detectFileType, readFile, parseContent } from './loader'
 import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
+import { scanSourceRules } from './grammar/scan'
 
 export type LintFormat = 'text' | 'json'
 
@@ -27,6 +28,8 @@ function lintFile(filePath: string): Violation[] {
     })
     return violations
   }
+  violations.push(...scanSourceRules(content))
+
   const fileType = detectFileType(filePath)
   try {
     const ast = parseContent(content, fileType)
