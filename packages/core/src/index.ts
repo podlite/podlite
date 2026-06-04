@@ -1,12 +1,19 @@
-import { podlitePluggable, Podlite } from '@podlite/schema'
+import { podlitePluggable, Podlite, PodliteDocument, parseOpt } from '@podlite/schema'
+import { parseMd } from '@podlite/markdown'
 import externalPlugins from './plugins/extrnal'
 export interface PodliteOpt {
   importPlugins?: boolean
 }
 
 export const podlite = ({ importPlugins = true }: PodliteOpt): Podlite => {
-  let plugins = importPlugins ? externalPlugins : {}
-  return podlitePluggable({ plugins })
+  const plugins = importPlugins ? externalPlugins : {}
+  const instance = podlitePluggable({ plugins })
+  const baseParse = instance.parse
+  instance.parse = (text: string, opt: parseOpt = {}): PodliteDocument => {
+    if (opt.mode === 'md') return parseMd(text) as unknown as PodliteDocument
+    return baseParse(text, opt)
+  }
+  return instance
 }
 
 // Cannot be `import` as it's not under TS root dir
