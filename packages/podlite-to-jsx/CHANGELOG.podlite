@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<<Podlite mode='md'>> now routes through the core front-door with C<{mode: 'md'}>, dispatching to C<md2ast> from C<@podlite/markdown>. Previously it set C<{podMode: 0}>, which ran the pod grammar in lenient mode and left top-level Markdown headings/blockquotes unparsed
+
 =head1 0.0.46
 
 =item render C<G<>> guarded markup code. Production mode replaces content with U+2588 chars wrapped in C<<span class="masked">>; draft mode shows content in C<<span class="masked-draft">>. Mode via C<<Podlite renderMode="draft">>, default C<production>

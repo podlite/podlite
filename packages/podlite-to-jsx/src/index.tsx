@@ -23,7 +23,7 @@ import {
   JSXHelper,
   getSafeNodeId,
 } from '@podlite/schema'
-import { Toc, Plugin, pluginCleanLocation as clean_plugin } from '@podlite/schema'
+import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 
@@ -937,7 +937,8 @@ function podlite(
   const podliteParser = podlite_core({ importPlugins: true })
   const astRaw = (tree => {
     if (tree) return tree.interator
-    let treeAfterParsed = podliteParser.parse(children || file, { podMode: mode === 'pod' ? 1 : 0 })
+    const parseOptions: parseOpt = mode === 'md' ? { mode: 'md' } : { podMode: 1 }
+    const treeAfterParsed = podliteParser.parse(children || file, parseOptions)
     return podliteParser.toAst(treeAfterParsed)
   })(tree)
   const ast = applyFoldedSectionsRecursively(astRaw)
