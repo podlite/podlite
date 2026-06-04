@@ -8,6 +8,7 @@
 =item C<< podlite lint >> file loader centralized — auto-detects C<.md> → markdown mode (via C<parseMd> from C<@podlite/markdown>), C<.podlite>/C<.pod6> → pod mode. Both produce the unified AST so rules apply uniformly
 =item C<< podlite lint >> adds C<heading-hierarchy> rule (warning) — flags non-monotonic level jumps like C<head1> → C<head3>. Descending and equal levels allowed. Applies to both Markdown and Podlite headings via unified AST
 =item C<< podlite lint >> adds C<id-unique> rule (error) — flags duplicate explicit C<:id<>> attributes in file scope. Auto-generated node ids ignored. Silent skip when the file declares no explicit ids
+=item C<< podlite lint >> output split into C<src/lint/formatters/{text,json}.ts> modules. Text format emits a trailing summary C<N files checked, M errors, K warnings> and colours C<error>/C<warning> tokens with native ANSI when stdout is a TTY. JSON format unchanged (array of diagnostic objects)
 
 =head1 0.0.55
 

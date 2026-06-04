@@ -68,10 +68,11 @@ describe('runLint id-unique integration', () => {
     expect(out).toMatch(/error: Duplicate :id<intro>.*\(id-unique\)/)
   })
 
-  it('clean fixture → exit 0', () => {
+  it('clean fixture → exit 0, only summary emitted', () => {
     const code = runLint([path.join(FIXTURES, 'id-unique-clean.podlite')], { strict: false, format: 'text' })
     expect(code).toBe(0)
-    expect(stdout).not.toHaveBeenCalled()
+    const out = stdout.mock.calls.map(c => c[0]).join('')
+    expect(out).toBe('1 file checked, 0 errors, 0 warnings\n')
   })
 
   it('markdown without ids → exit 0', () => {

@@ -62,9 +62,10 @@ describe('runLint heading-hierarchy integration', () => {
     expect(code).toBe(1)
   })
 
-  it('clean fixture → exit 0, no output', () => {
+  it('clean fixture → exit 0, only summary emitted', () => {
     const code = runLint([path.join(FIXTURES, 'heading-ok.podlite')], { strict: true, format: 'text' })
     expect(code).toBe(0)
-    expect(stdout).not.toHaveBeenCalled()
+    const out = stdout.mock.calls.map(c => c[0]).join('')
+    expect(out).toBe('1 file checked, 0 errors, 0 warnings\n')
   })
 })

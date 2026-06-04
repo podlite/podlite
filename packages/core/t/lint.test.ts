@@ -14,10 +14,11 @@ describe('runLint', () => {
     stdout.mockRestore()
   })
 
-  it('valid file returns 0 and emits no violations', () => {
+  it('valid file returns 0 and emits only summary line', () => {
     const code = runLint([path.join(FIXTURES, 'valid.podlite')], { strict: false, format: 'text' })
     expect(code).toBe(0)
-    expect(stdout).not.toHaveBeenCalled()
+    const out = stdout.mock.calls.map(c => c[0]).join('')
+    expect(out).toBe('1 file checked, 0 errors, 0 warnings\n')
   })
 
   it('missing file emits io error and returns 1', () => {
