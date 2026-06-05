@@ -11,6 +11,7 @@
 =item C<< podlite lint >> output split into C<src/lint/formatters/{text,json}.ts> modules. Text format emits a trailing summary C<N files checked, M errors, K warnings> and colours C<error>/C<warning> tokens with native ANSI when stdout is a TTY. JSON format unchanged (array of diagnostic objects)
 =item C<< podlite lint >> adds C<attr-nested-angle> rule (error) — flags angle-delimited attributes whose value contains a nested C<E<lt>...E<gt>> (formatting code or raw angle) before the closing C<E<gt>>, which silently closes the attribute early under PEG tolerance. Suggests multi-angle / guillemet / parenthesis / bracket delimiters. Source-level scan via Pegmill C<grammar-lint.pegjs>; runs before AST parse so the rule is independent of parser tolerance
 =item C<podlite().parse(text, opt)> dispatches to C<md2ast> from C<@podlite/markdown> when C<opt.mode === 'md'>. Default and C<opt.mode === 'pod'> use the pod grammar unchanged. Enables a single parse front-door for full-document Markdown input across consumers (C<@podlite/to-jsx>, C<@podlite/to-html>, C<@podlite/publisher>, C<@podlite/editor-react>)
+=item C<< podlite lint >> adds C<delimited-block-balance> rule (error) — flags orphan C<=end>, mismatched C<=begin>/C<=end> pairs, C<=begin X> nested inside C<=begin X> (verbatim trap), and C<=begin> blocks left unclosed at end of file. Source-level scan via the same Pegmill grammar that hosts C<attr-nested-angle>; stack tracked through C<options._blockStack>, EOF check flushes remaining items
 
 =head1 0.0.55
 

@@ -1,0 +1,11 @@
+=begin pod
+
+=begin code
+print("hello")
+=end code
+
+=begin nested
+inner text
+=end nested
+
+=end pod

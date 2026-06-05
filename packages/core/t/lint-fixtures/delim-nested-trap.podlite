@@ -1,0 +1,8 @@
+=begin code :allow<B>
+Example:
+
+=begin code :lang<python>
+print("hello")
+=end code
+
+=end code
