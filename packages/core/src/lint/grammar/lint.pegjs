@@ -1,6 +1,7 @@
 {
   options.diagnostics = options.diagnostics || [];
   options._blockStack = options._blockStack || [];
+  if (typeof options._inDirective !== 'boolean') options._inDirective = false;
 }
 
 start
@@ -10,6 +11,10 @@ rule_match
   = attr_nested_angle
   / delim_begin
   / delim_end
+  / paragraph_directive
+  / continuation_attr
+  / blank_line_marker
+  / line_marker
 
 // === attr-nested-angle ===
 attr_nested_angle
@@ -40,6 +45,7 @@ delim_begin
         });
       }
       options._blockStack.push({ name: name, location: location() });
+      options._inDirective = true;
       return null;
     }
 
@@ -65,6 +71,43 @@ delim_end
       } else {
         options._blockStack.pop();
       }
+      options._inDirective = false;
+      return null;
+    }
+
+// === attr-continuation-dropped ===
+paragraph_directive
+  = sol "=for" __ identifier
+    {
+      options._inDirective = true;
+      return null;
+    }
+
+continuation_attr
+  = sol __ ":" name:identifier "<"
+    {
+      if (options._inDirective) {
+        options.diagnostics.push({
+          rule: 'attr-continuation-dropped',
+          severity: 'warning',
+          message: "attribute :" + name + "<…> on continuation line is silently dropped; flatten onto the directive line",
+          location: location()
+        });
+      }
+      return null;
+    }
+
+blank_line_marker
+  = sol [ \t]* "\n"
+    {
+      options._inDirective = false;
+      return null;
+    }
+
+line_marker
+  = sol .
+    {
+      options._inDirective = false;
       return null;
     }
 

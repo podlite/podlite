@@ -1,0 +1,6 @@
+=begin pod :id<L003>
+
+  :tag<not-a-continuation>
+content body
+
+=end pod

@@ -1,0 +1,5 @@
+=begin pod :id<L003>
+some text on the next line
+  :tag<not-a-continuation>
+
+=end pod
