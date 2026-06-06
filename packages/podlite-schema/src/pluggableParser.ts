@@ -2,6 +2,7 @@ import { Plugins, PodliteDocument, mkRootBlock, parseOpt, toAny, toAnyRules, toH
 import toMarkdown from './exportMarkdown'
 import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
+import { propagateConfigDefaults } from './helpers/configPropagation'
 export { cleanIds, frozenIds } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -82,9 +83,11 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         })
         .use(toAstAfterPlugins)
         .run(ast)
+      if (resultAfter && resultAfter.interator) propagateConfigDefaults(resultAfter.interator)
       return resultAfter
     }
 
+    if (result && result.interator) propagateConfigDefaults(result.interator)
     return result
   }
 
