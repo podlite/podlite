@@ -204,8 +204,10 @@ const rules = {
     setFn((node, ctx) => {
       const { level } = node
       const prefix = '#'.repeat(level) + ' '
+      const numberPrefix = node.numberPrefix ? `${node.numberPrefix} ` : ''
       return (writer, processor) => (node, ctx, interator) => {
         writer.writeRaw(prefix)
+        if (numberPrefix) writer.writeRaw(numberPrefix)
         if (node.content) interator(node.content, ctx)
         writer.writeRaw('\n')
       }

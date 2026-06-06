@@ -3,6 +3,7 @@ import toMarkdown from './exportMarkdown'
 import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
 import { propagateConfigDefaults } from './helpers/configPropagation'
+import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 export { cleanIds, frozenIds } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -83,11 +84,17 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         })
         .use(toAstAfterPlugins)
         .run(ast)
-      if (resultAfter && resultAfter.interator) propagateConfigDefaults(resultAfter.interator)
+      if (resultAfter && resultAfter.interator) {
+        propagateConfigDefaults(resultAfter.interator)
+        attachHeadingNumberPrefix(resultAfter.interator)
+      }
       return resultAfter
     }
 
-    if (result && result.interator) propagateConfigDefaults(result.interator)
+    if (result && result.interator) {
+      propagateConfigDefaults(result.interator)
+      attachHeadingNumberPrefix(result.interator)
+    }
     return result
   }
 

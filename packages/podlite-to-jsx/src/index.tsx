@@ -361,7 +361,16 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         const { level } = node
         // TODO: refactor linking for blocks
         const id = getSafeNodeId(node, ctx)
-        return mkComponent(({ level, children, key }) => createElement(`h${level}`, { key, id }, children))
+        const numberPrefix = node.numberPrefix
+        return mkComponent(({ level, children, key }) =>
+          createElement(
+            `h${level}`,
+            { key, id },
+            numberPrefix
+              ? [createElement('span', { key: `${key}-num`, className: 'head-number' }, numberPrefix), ' ', children]
+              : children,
+          ),
+        )
       }),
     ),
 

@@ -212,7 +212,10 @@ const rules = {
     setFn((node, ctx) => {
       const { level } = node
       const id = getNodeId(node, ctx)
-      return wrapContent(`<h${level}${id ? ` id="${id}"` : ''}>`, `</h${level}>`)
+      const open = `<h${level}${id ? ` id="${id}"` : ''}>${
+        node.numberPrefix ? `<span class="head-number">${node.numberPrefix}</span> ` : ''
+      }`
+      return wrapContent(open, `</h${level}>`)
     }),
   ),
   ':list': setFn((node, ctx) =>
