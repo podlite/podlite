@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.45
+
 =item extend C<parseOpt> with optional C<mode: 'pod' | 'md'> field. Consumers (e.g. C<@podlite/core>) can dispatch to a Markdown parser when C<mode === 'md'>. Pure type extension; schema's own parse unchanged
 
 =item C<=config> block defaults are merged into matching blocks' C<node.config> during C<toAst>. Own attributes still override inherited ones. Renderers and pre-render passes that read C<node.config> directly (e.g. folded-section grouping in C<@podlite/to-jsx>) now see attributes inherited from C<=config>. For C<=head1>..C<=head6> the lookup matches by C<head{level}> (@schueani in podlite/podlite-desktop#53)

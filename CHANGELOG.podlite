@@ -2,6 +2,41 @@
 
 =head1 Upcoming
 
+=head1 0.0.65
+
+
+=head2 podlite
+
+=item C<< podlite lint >> accepts C<--strict>, C<--format text|json>, C<--config <path>>. C<runLint(files, options)> signature in C<@podlite/core>
+=item C<< podlite lint >> adds C<syntax-valid> rule — catches parse exceptions, reports C<file:line:column: error: <msg> (syntax-valid)>. Text and JSON output. Missing files report C<io> error
+=item C<< podlite lint >> exit codes: 0 clean, 1 violations found (or warnings under C<--strict>), 2 CLI/setup error (no files, unknown C<--format>)
+=item C<< podlite lint >> file loader centralized — auto-detects C<.md> → markdown mode (via C<parseMd> from C<@podlite/markdown>), C<.podlite>/C<.pod6> → pod mode. Both produce the unified AST so rules apply uniformly
+=item C<< podlite lint >> adds C<heading-hierarchy> rule (warning) — flags non-monotonic level jumps like C<head1> → C<head3>. Descending and equal levels allowed. Applies to both Markdown and Podlite headings via unified AST
+=item C<< podlite lint >> adds C<id-unique> rule (error) — flags duplicate explicit C<:id<>> attributes in file scope. Auto-generated node ids ignored. Silent skip when the file declares no explicit ids
+=item C<< podlite lint >> output split into C<src/lint/formatters/{text,json}.ts> modules. Text format emits a trailing summary C<N files checked, M errors, K warnings> and colours C<error>/C<warning> tokens with native ANSI when stdout is a TTY. JSON format unchanged (array of diagnostic objects)
+=item C<< podlite lint >> adds C<attr-nested-angle> rule (error) — flags angle-delimited attributes whose value contains a nested C<E<lt>...E<gt>> (formatting code or raw angle) before the closing C<E<gt>>, which silently closes the attribute early under PEG tolerance. Suggests multi-angle / guillemet / parenthesis / bracket delimiters. Source-level scan via Pegmill C<grammar-lint.pegjs>; runs before AST parse so the rule is independent of parser tolerance
+=item C<podlite().parse(text, opt)> dispatches to C<md2ast> from C<@podlite/markdown> when C<opt.mode === 'md'>. Default and C<opt.mode === 'pod'> use the pod grammar unchanged. Enables a single parse front-door for full-document Markdown input across consumers (C<@podlite/to-jsx>, C<@podlite/to-html>, C<@podlite/publisher>, C<@podlite/editor-react>)
+=item C<< podlite lint >> adds C<delimited-block-balance> rule (error) — flags orphan C<=end>, mismatched C<=begin>/C<=end> pairs, C<=begin X> nested inside C<=begin X> (verbatim trap), and C<=begin> blocks left unclosed at end of file. Source-level scan via the same Pegmill grammar that hosts C<attr-nested-angle>; stack tracked through C<options._blockStack>, EOF check flushes remaining items
+=item C<< podlite lint >> adds C<attr-continuation-dropped> rule (warning) — flags indented C<:attr<…>> lines following C<=begin X>/C<=for X> that get silently dropped by the parser (queryable only on the directive line itself). State machine clears on blank line, content line, or C<=end>. Suggests flattening attributes onto the directive line
+
+=head2 @podlite/editor-react
+
+=item highlighter recognises semantic and custom blocks in abbreviated form (C<=TITLE>, C<=NAME>, C<=SEE-ALSO>, C<=Diagram>). Previously only C<=begin>/C<=for> forms classified non-standard block names
+
+=head2 @podlite/schema
+
+=item extend C<parseOpt> with optional C<mode: 'pod' | 'md'> field. Consumers (e.g. C<@podlite/core>) can dispatch to a Markdown parser when C<mode === 'md'>. Pure type extension; schema's own parse unchanged
+
+=item C<=config> block defaults are merged into matching blocks' C<node.config> during C<toAst>. Own attributes still override inherited ones. Renderers and pre-render passes that read C<node.config> directly (e.g. folded-section grouping in C<@podlite/to-jsx>) now see attributes inherited from C<=config>. For C<=head1>..C<=head6> the lookup matches by C<head{level}> (@schueani in podlite/podlite-desktop#53)
+
+=item C<:numbered> on a heading attaches an auto-numbered prefix to the head node as C<numberPrefix>. The pre-pass walks the document in source order, increments a per-level counter on each C<:numbered> head, and resets deeper levels on every head encountered. Renderers consume C<node.numberPrefix> and emit it before the heading text; C<exportHtml> wraps it in C<<span class="head-number">>, C<exportMarkdown> writes it inline. C<:!numbered> on a head overrides an inherited C<:numbered> default (@schueani in podlite/podlite-desktop#53)
+
+=head2 @podlite/to-jsx
+
+=item C<<Podlite mode='md'>> now routes through the core front-door with C<{mode: 'md'}>, dispatching to C<md2ast> from C<@podlite/markdown>. Previously it set C<{podMode: 0}>, which ran the pod grammar in lenient mode and left top-level Markdown headings/blockquotes unparsed
+
+=item C<:numbered> on a heading renders a number prefix inside the C<<hN>> element as C<<span class="head-number">N.M.K</span>>. Numbering counter is shared with C<exportHtml> via the C<numberPrefix> field attached during C<toAst>
+
 =head1 0.0.64
 
 
