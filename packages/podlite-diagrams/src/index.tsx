@@ -39,7 +39,7 @@ export const plugin: Plugin = {
   toAst: writer => node => {
     if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
       const content = node.content[0]
-      if (typeof content !== 'string' && 'location' in node && 'value' in content) {
+      if (content && typeof content !== 'string' && 'location' in node && 'value' in content) {
         // get link and alt text
         const data = content.value
         try {
@@ -79,7 +79,9 @@ export const plugin: Plugin = {
     const id = getSafeNodeId(node, ctx)
     return helper(
       ({ children, key }) => {
-        return <Diagram key={key} id={id} isError={node.custom} caption={caption} chart={node.content[0].value} />
+        return (
+          <Diagram key={key} id={id} isError={node.custom} caption={caption} chart={node.content[0]?.value ?? ''} />
+        )
       },
       node,
       interator(node.content, { ...ctx }),

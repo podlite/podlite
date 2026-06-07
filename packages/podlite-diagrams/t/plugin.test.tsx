@@ -128,3 +128,22 @@ it('accepts =Mermaid', () => {
     </div>
   `)
 })
+
+it('handles empty =begin Mermaid body without throwing', () => {
+  const empty = `
+=begin pod
+=begin Mermaid
+=end Mermaid
+=end pod`
+  expect(() => parse(empty)).not.toThrow()
+  expect(() => parseToHtml(empty)).not.toThrow()
+})
+
+it('handles bare =Mermaid keyword without throwing', () => {
+  const bare = `
+=begin pod
+=Mermaid
+=end pod`
+  expect(() => parse(bare)).not.toThrow()
+  expect(() => parseToHtml(bare)).not.toThrow()
+})
