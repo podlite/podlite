@@ -4,6 +4,7 @@ import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
 import { propagateConfigDefaults } from './helpers/configPropagation'
 import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
+import { promoteOrderedLists } from './helpers/itemNumbering'
 export { cleanIds, frozenIds } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -86,6 +87,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         .run(ast)
       if (resultAfter && resultAfter.interator) {
         propagateConfigDefaults(resultAfter.interator)
+        promoteOrderedLists(resultAfter.interator)
         attachHeadingNumberPrefix(resultAfter.interator)
       }
       return resultAfter
@@ -93,6 +95,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
 
     if (result && result.interator) {
       propagateConfigDefaults(result.interator)
+      promoteOrderedLists(result.interator)
       attachHeadingNumberPrefix(result.interator)
     }
     return result

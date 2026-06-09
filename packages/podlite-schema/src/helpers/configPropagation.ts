@@ -16,6 +16,9 @@ const lookupKeys = (node: { name?: string; level?: string | number }): string[] 
   if (node.name === 'head' && node.level !== undefined && node.level !== null) {
     keys.push(`head${node.level}`)
   }
+  if (node.name === 'item' && node.level !== undefined && node.level !== null) {
+    keys.push(`item${node.level}`)
+  }
   keys.push(node.name)
   return keys
 }
