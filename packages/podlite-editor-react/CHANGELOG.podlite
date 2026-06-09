@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<HighlightedCode> now combines syntax highlight with inline formatting codes. When C<:allow<...>> permits fcodes inside C<=code>, B/I/C/U/K wrap their respective spans (C<<strong>>/C<<em>>/C<<code>>/C<<u>>/C<<kbd>> + C<fc-X> class) layered over shiki's syntax colors via the decorations API
+
+=item shiki module loader uses a direct dynamic C<import('shiki')> so the bundler code-splits it into a separate chunk. Previously the loader was wrapped in C<new Function>, which is opaque to webpack and resulted in a runtime «Failed to resolve module specifier» in browser builds
+
 =head1 0.0.51
 
 =item highlighter recognises semantic and custom blocks in abbreviated form (C<=TITLE>, C<=NAME>, C<=SEE-ALSO>, C<=Diagram>). Previously only C<=begin>/C<=for> forms classified non-standard block names

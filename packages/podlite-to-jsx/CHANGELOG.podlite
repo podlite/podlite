@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<=code> blocks with C<:lang<...>> attribute now render syntax-highlighted via shiki. Inline formatting codes inside C<=code> (when C<:allow<...>> is set) layer on top of the highlight as wrapper elements (C<B<>> = C<<strong>>, C<I<>> = C<<em>>, C<C<>> = C<<code>>, C<U<>> = C<<u>>, others get C<span class="fc-X">), so bold and italic compose with syntax colors
+
+=item shiki loaded via dynamic C<import('shiki')> so the bundler code-splits it into a separate chunk
+
 =head1 0.0.49
 
 =item C<<Podlite mode='md'>> now routes through the core front-door with C<{mode: 'md'}>, dispatching to C<md2ast> from C<@podlite/markdown>. Previously it set C<{podMode: 0}>, which ran the pod grammar in lenient mode and left top-level Markdown headings/blockquotes unparsed

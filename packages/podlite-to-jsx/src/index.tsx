@@ -26,6 +26,7 @@ import {
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
+import HighlightedCode from './HighlightedCode'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
@@ -319,26 +320,17 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ':code': setFn((node, ctx) => {
       const id = getSafeNodeId(node, ctx)
       return mkComponent(({ children, key }) => (
-        <pre key={key} id={id}>
-          <code>{children}</code>
-        </pre>
+        <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="pre-code">
+          {children}
+        </HighlightedCode>
       ))
     }),
     code: setFn((node, ctx) => {
       const id = getSafeNodeId(node, ctx)
-      const conf = makeAttrs(node, ctx)
-      const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
       return mkComponent(({ children, key }) => (
-        <div className="code-block" key={`${key}-code-div`}>
-          <pre key={key} id={id}>
-            <code>{children}</code>
-          </pre>
-          {caption ? (
-            <div key={`${key}-caption`} className="caption">
-              {caption}
-            </div>
-          ) : null}
-        </div>
+        <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="block">
+          {children}
+        </HighlightedCode>
       ))
     }),
     image: nodeContent,
