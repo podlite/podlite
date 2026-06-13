@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.47
+
 =item C<=config item1>..C<=config item6> defaults now propagate to matching C<=item> blocks. The C<=config> propagation pass already handled C<=head1>..C<=head6>; the same C<item{level}> lookup is extended to items (plugin-items renames C<=item1> to a block with C<name=item, level=1>, mirroring the head case)
 
 =item C<:numbered> inherited from C<=config> on items now promotes the wrapping list to ordered. When every item in a synthesized C<:list> has effective C<numbered: true> (either own or inherited), the list discriminator switches from C<itemized> to C<ordered>; an C<:!numbered> override on any item keeps it itemized

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.51
+
 =item C<=code> blocks with C<:lang<...>> attribute now render syntax-highlighted via shiki. Inline formatting codes inside C<=code> (when C<:allow<...>> is set) layer on top of the highlight as wrapper elements (C<B<>> = C<<strong>>, C<I<>> = C<<em>>, C<C<>> = C<<code>>, C<U<>> = C<<u>>, others get C<span class="fc-X">), so bold and italic compose with syntax colors
 
 =item shiki loaded via dynamic C<import('shiki')> so the bundler code-splits it into a separate chunk
