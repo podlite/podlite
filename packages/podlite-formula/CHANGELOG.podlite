@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<exports> map (with C<./default.css> subpath), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
+
 =head1 0.0.1
 
 =item initial import

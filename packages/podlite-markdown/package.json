@@ -2,7 +2,17 @@
   "name": "@podlite/markdown",
   "version": "0.0.40",
   "description": "Bidirectional Markdown support for Podlite — parse .md files, embed Markdown blocks",
-  "main": "./src/index.tsx",
+  "main": "./lib/index.cjs",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.esm.js",
+      "require": "./lib/index.cjs",
+      "default": "./lib/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "homepage": "https://podlite.org",
   "bugs": {
     "url": "https://github.com/podlite/podlite/issues"
@@ -32,10 +42,7 @@
     "build:esm": "ts-node ./scripts/build_esm.ts"
   },
   "publishConfig": {
-    "access": "public",
-    "main": "./lib/index.cjs",
-    "types": "./lib/index.d.ts",
-    "module": "lib/index.esm.js"
+    "access": "public"
   },
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0 || ^18",
@@ -66,5 +73,7 @@
   "devDependencies": {
     "esbuild": "^0.15.16",
     "npm-run-all": "^4.1.5"
-  }
+  },
+  "module": "./lib/index.esm.js",
+  "types": "./lib/index.d.ts"
 }

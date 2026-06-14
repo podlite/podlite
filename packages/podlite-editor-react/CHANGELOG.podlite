@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<exports> map (with CSS subpath conditions), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
+
 =head1 0.0.53
 
 =item C<HighlightedCode> now combines syntax highlight with inline formatting codes. When C<:allow<...>> permits fcodes inside C<=code>, B/I/C/U/K wrap their respective spans (C<<strong>>/C<<em>>/C<<code>>/C<<u>>/C<<kbd>> + C<fc-X> class) layered over shiki's syntax colors via the decorations API

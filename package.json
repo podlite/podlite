@@ -20,6 +20,8 @@
     "post_plugin": "yarn podlite_post_plugin",
     "release": "bash scripts/release.sh",
     "release-packages": "yarn workspaces foreach -pt --all --no-private npm publish --tolerate-republish",
+    "check:packages": "node scripts/check-package-exports.mjs",
+    "prepublishOnly": "yarn check:packages",
     "watch:changed": " yarn build && yarn test",
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed",
     "g:watch": "cd $INIT_CWD && npx nodemon -e js,ts --exec 'yarn' watch:update",

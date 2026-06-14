@@ -2,7 +2,10 @@
   "name": "@podlite/to-jsx",
   "version": "0.0.51",
   "description": "Render Podlite markup as React JSX components",
-  "main": "./src/index.tsx",
+  "main": "./lib/index.js",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "homepage": "https://podlite.org",
   "bugs": {
     "url": "https://github.com/podlite/podlite/issues"
@@ -30,16 +33,19 @@
     "shiki": "^3.21.0"
   },
   "exports": {
-    "./lib/podlite.css": "./lib/podlite.css",
     ".": {
-      "import": "./esm/index.js",
       "types": "./lib/index.d.ts",
-      "require": "./lib/index.js"
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
     },
     "./index": {
       "import": "./esm/index.js",
       "require": "./lib/index.js"
-    }
+    },
+    "./podlite.css": "./lib/podlite.css",
+    "./lib/podlite.css": "./lib/podlite.css",
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
@@ -61,15 +67,14 @@
     "component"
   ],
   "publishConfig": {
-    "access": "public",
-    "main": "lib/index.js",
-    "types": "./lib/index.d.ts",
-    "module": "./esm/index.js"
+    "access": "public"
   },
   "peerDependencies": {
     "@podlite/diagram": "*",
     "@podlite/schema": "*",
     "react": "^16.0.0 || ^17.0.0 || ^18",
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"
-  }
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }

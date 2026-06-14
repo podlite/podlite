@@ -2,9 +2,26 @@
   "name": "@podlite/editor-react",
   "version": "0.0.53",
   "description": "Rich text editor React component for Podlite — syntax highlighting, live preview, CodeMirror 6",
-  "main": "./src/index.tsx",
-  "types": "lib/index.d.ts",
-  "typings": "./lib/index.d.ts",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./index": {
+      "import": "./esm/index.js",
+      "require": "./lib/index.js"
+    },
+    "./Editor.css": "./lib/Editor.css",
+    "./podlite-vars.css": "./lib/podlite-vars.css",
+    "./lib/Editor.css": "./lib/Editor.css",
+    "./lib/podlite-vars.css": "./lib/podlite-vars.css",
+    "./lib/Editor.old.css": "./lib/Editor.old.css",
+    "./demo/Components": "./demo/Components",
+    "./package.json": "./package.json"
+  },
   "homepage": "https://podlite.org",
   "bugs": {
     "url": "https://github.com/podlite/podlite/issues"
@@ -32,7 +49,9 @@
     "type": "opencollective",
     "url": "https://opencollective.com/podlite"
   },
-  "sideEffects": true,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "lib",
     "esm",
@@ -47,25 +66,7 @@
     ]
   },
   "publishConfig": {
-    "access": "public",
-    "module": "./esm/index.js",
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts"
-  },
-  "_exports_": {
-    "./lib/podlite-vars.css": "./lib/podlite-vars.css",
-    "./lib/editor.css": "./lib/Editor.css",
-    "./index.css": "./lib/Editor.old.css",
-    "./demo/Components": "./demo/Components",
-    ".": {
-      "import": "./esm/index.js",
-      "types": "./lib/index.d.ts",
-      "require": "./lib/index.js"
-    },
-    "./index": {
-      "import": "./esm/index.js",
-      "require": "./lib/index.js"
-    }
+    "access": "public"
   },
   "scripts": {
     "clean": "rm -rf dist lib tsconfig.tsbuildinfo esm",
@@ -87,5 +88,7 @@
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0 || ^18",
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"
-  }
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }

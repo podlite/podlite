@@ -8,7 +8,17 @@
     "url": "https://github.com/podlite/podlite.git",
     "directory": "packages/core"
   },
-  "main": "./src/index.ts",
+  "main": "./lib/index.js",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "funding": {
     "type": "opencollective",
     "url": "https://opencollective.com/podlite"
@@ -72,9 +82,8 @@
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   },
   "publishConfig": {
-    "access": "public",
-    "main": "lib/index.js",
-    "types": "./lib/index.d.ts",
-    "module": "./esm/index.js"
-  }
+    "access": "public"
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }

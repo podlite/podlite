@@ -2,7 +2,21 @@
   "name": "@podlite/formula",
   "version": "0.0.29",
   "description": "Render LaTeX math formulas in Podlite documents — MathJax-powered",
-  "main": "./src/index.tsx",
+  "main": "./lib/index.js",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./default.css": "./lib/default.css",
+    "./lib/default.css": "./lib/default.css",
+    "./package.json": "./package.json"
+  },
   "homepage": "https://podlite.org",
   "bugs": {
     "url": "https://github.com/podlite/podlite/issues"
@@ -43,10 +57,7 @@
     "LICENSE"
   ],
   "publishConfig": {
-    "access": "public",
-    "main": "./lib/index.js",
-    "types": "./lib/index.d.ts",
-    "module": "./esm/index.js"
+    "access": "public"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
@@ -56,5 +67,7 @@
     "react": "^16.0.0 || ^17.0.0 || ^18",
     "react-dom": "^16.0.0 || ^17.0.0 || ^18",
     "react-is": "*"
-  }
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }

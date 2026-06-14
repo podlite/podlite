@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+=item declare C<podlite> and C<@podlite/markdown> runtime dependencies (previously imported without being listed)
+
 =head1 0.0.25
 
 =item C<stateVersionPlugin> accepts optional C<appVersion> parameter; appended to C<stateVersion> as C<+app<v>>

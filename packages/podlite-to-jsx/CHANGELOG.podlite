@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest. C<exports> conditions reordered with C<types> first
+
 =head1 0.0.51
 
 =item C<=code> blocks with C<:lang<...>> attribute now render syntax-highlighted via shiki. Inline formatting codes inside C<=code> (when C<:allow<...>> is set) layer on top of the highlight as wrapper elements (C<B<>> = C<<strong>>, C<I<>> = C<<em>>, C<C<>> = C<<code>>, C<U<>> = C<<u>>, others get C<span class="fc-X">), so bold and italic compose with syntax colors

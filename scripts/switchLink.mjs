@@ -8,60 +8,66 @@ const fse = {
 }
 
 const packagePath = process.cwd()
-const buildPath = path.join(packagePath, './lib')
 const srcPath = path.join(packagePath, './src')
 
+const CJS_BUILD_RE = /build:cjs|index\.cjs/
+
+function canonicalRoot(pkg) {
+  const cjs = CJS_BUILD_RE.test(pkg.scripts?.build || '')
+  const main = cjs ? './lib/index.cjs' : './lib/index.js'
+  const module = cjs ? './lib/index.esm.js' : './esm/index.js'
+  const types = './lib/index.d.ts'
+  return { main, module, types }
+}
+
+function srcEntry() {
+  return fse.existsSync(path.resolve(srcPath, './index.tsx')) ? './src/index.tsx' : './src/index.ts'
+}
+
+async function readManifest() {
+  return JSON.parse(await fse.readFile(path.resolve(packagePath, './package.json'), 'utf8'))
+}
+
 async function updateLinkedPackage() {
-  const packageData = await fse.readFile(path.resolve(packagePath, './package.json'), 'utf8')
-  const { ...packageDataOther } = JSON.parse(packageData)
+  const pkg = await readManifest()
+  const c = canonicalRoot(pkg)
 
-  const newPackageData = {
-    ...packageDataOther,
-    ...(packageDataOther.main
-      ? {
-          main: fse.existsSync(path.resolve(buildPath, './index.js')) ? './lib/index.js' : './lib/index.cjs',
-        }
-      : {}),
-  }
-  if (fse.existsSync(path.resolve(packagePath, './esm/index.js'))) {
-    newPackageData.module = './esm/index.js'
-  }
+  if (pkg.main) pkg.main = c.main
+  pkg.module = c.module
+  pkg.types = c.types
 
-  if (fse.existsSync(path.resolve(buildPath, './index.esm.js'))) {
-    newPackageData.module = './lib/index.esm.js'
+  if (pkg.exports && typeof pkg.exports === 'object' && pkg.exports['.']) {
+    pkg.exports['.'] = {
+      types: c.types,
+      import: c.module,
+      require: c.main,
+      default: c.main,
+    }
   }
 
-  if (newPackageData.publishConfig && newPackageData.publishConfig.module) {
-    newPackageData.module = newPackageData.publishConfig.module
-  }
-  return newPackageData
+  return pkg
 }
 
 async function updateUnLinkedPackage() {
-  const packageData = await fse.readFile(path.resolve(packagePath, './package.json'), 'utf8')
-  const { module, ...packageDataOther } = JSON.parse(packageData)
+  const pkg = await readManifest()
+  const src = srcEntry()
 
-  const newPackageData = {
-    ...packageDataOther,
-    ...(packageDataOther.main
-      ? {
-          main: fse.existsSync(path.resolve(srcPath, './index.tsx')) ? './src/index.tsx' : './src/index.ts',
-        }
-      : {}),
+  delete pkg.module
+  delete pkg.types
+
+  if (pkg.main) pkg.main = src
+
+  if (pkg.exports && typeof pkg.exports === 'object' && pkg.exports['.']) {
+    pkg.exports['.'] = src
   }
 
-  return newPackageData
+  return pkg
 }
 
 async function upVersionPackage() {
-  const packageData = await fse.readFile(path.resolve(packagePath, './package.json'), 'utf8')
-  const newPackageData = JSON.parse(packageData)
-
-  const newVersion = incrementVersion(newPackageData.version)
-
-  newPackageData.version = newVersion
-
-  return newPackageData
+  const pkg = await readManifest()
+  pkg.version = incrementVersion(pkg.version)
+  return pkg
 }
 
 function incrementVersion(version) {
@@ -79,21 +85,20 @@ async function run() {
     const isLinked = args.includes('--set-linked')
     const isUnLinked = args.includes('--set-unlinked')
     const isUpVersion = args.includes('--set-upversion')
+    const targetPath = path.resolve(packagePath, './package.json')
+
     if (isLinked) {
       const packageData = await updateLinkedPackage()
-      const targetPath = path.resolve(packagePath, './package.json')
       console.log(`[isLinked] Writing to ${targetPath}`)
       await fse.writeFile(targetPath, JSON.stringify(packageData, null, 2), 'utf8')
     }
     if (isUnLinked) {
       const packageData = await updateUnLinkedPackage()
-      const targetPath = path.resolve(packagePath, './package.json')
       console.log(`[isUnLinked] Writing to ${targetPath}`)
       await fse.writeFile(targetPath, JSON.stringify(packageData, null, 2), 'utf8')
     }
     if (isUpVersion) {
       const packageData = await upVersionPackage()
-      const targetPath = path.resolve(packagePath, './package.json')
       console.log(`[UpVersion] Writing to ${targetPath}`)
       await fse.writeFile(targetPath, JSON.stringify(packageData, null, 2), 'utf8')
     }

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item lift C<types> to top-level package field (was only in C<publishConfig>), add C<exports> map and explicit C<sideEffects>. Consumers can now resolve types without an ambient declaration
+
 =head1 0.0.34
 
 =item parse fenced code attributes into structured config items. C<```python :line-numbers :highlight<2,5-7> :caption<Example>> now produces the same AST as C<=code :lang<python> :line-numbers :highlight<2,5-7> :caption<Example>>, replacing raw C<:meta<string>> storage. Malformed attrs degrade gracefully — only C<:lang> survives. All value types (Bool/Int/String/List/Hash) supported via C<parseAttributes()> from C<@podlite/schema>

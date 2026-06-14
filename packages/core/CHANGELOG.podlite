@@ -1,6 +1,8 @@
-=TITLE CHANGES 
+=TITLE CHANGES
 
 =head1 Upcoming
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
 
 =head1 0.0.58
 

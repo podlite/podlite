@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
 =head1 0.0.47
 
 =item C<=config item1>..C<=config item6> defaults now propagate to matching C<=item> blocks. The C<=config> propagation pass already handled C<=head1>..C<=head6>; the same C<item{level}> lookup is extended to items (plugin-items renames C<=item1> to a block with C<name=item, level=1>, mirroring the head case)

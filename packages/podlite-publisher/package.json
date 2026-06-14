@@ -2,7 +2,17 @@
   "name": "@podlite/publisher",
   "version": "0.0.28",
   "description": "Publishing toolkit for Podlite — transform documents to HTML, generate sites",
-  "main": "./src/index.ts",
+  "main": "./lib/index.js",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "homepage": "https://podlite.org",
   "bugs": {
     "url": "https://github.com/podlite/podlite/issues"
@@ -29,10 +39,7 @@
   },
   "engineStrict": true,
   "publishConfig": {
-    "access": "public",
-    "main": "lib/index.js",
-    "types": "./lib/index.d.ts",
-    "module": "./esm/index.js"
+    "access": "public"
   },
   "scripts": {
     "clean": "rm -rf lib esm *.tsbuildinfo",
@@ -68,6 +75,6 @@
     "ts-node": "^9.1.1",
     "typescript": "4.5.5"
   },
-  "types": "./lib/index.d.ts",
-  "modules": "./esm/index.js"
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }
