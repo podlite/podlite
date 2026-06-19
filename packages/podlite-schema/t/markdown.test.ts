@@ -166,4 +166,47 @@ Quoted text
       expect(result).toContain('> ')
     })
   })
+
+  describe('unknown named blocks', () => {
+    it('renders verbatim content of a Mixed-case wrapper block', () => {
+      const pod = `=begin pod
+=begin Changeset :released-in<0.8.4>
+release notes line one
+release notes line two
+=end Changeset
+=end pod
+`
+      const result = render(pod)
+      expect(result).toContain('release notes line one')
+      expect(result).toContain('release notes line two')
+    })
+
+    it('renders structured AST children of a Mixed-case wrapper', () => {
+      const ast = [
+        {
+          type: 'block',
+          name: 'pod',
+          margin: '',
+          config: [],
+          content: [
+            {
+              type: 'block',
+              name: 'Foo',
+              margin: '',
+              config: [],
+              content: [
+                {
+                  type: 'para',
+                  margin: '',
+                  content: [{ type: 'text', value: 'inner paragraph' }],
+                },
+              ],
+            },
+          ],
+        },
+      ]
+      const result = toMarkdown({}).run(ast).toString()
+      expect(result).toContain('inner paragraph')
+    })
+  })
 })

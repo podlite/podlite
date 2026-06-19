@@ -9,7 +9,6 @@ import {
   maskText,
   collectText,
 } from './helpers/handlers'
-import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
@@ -395,10 +394,6 @@ const toMarkdown = opt =>
           const name = node.name || ''
           const isTypeBlock = (node.type || '') === 'block'
           return isTypeBlock && name === name.toUpperCase()
-        }
-
-        if (isNamedBlock(node.name)) {
-          return true
         }
 
         if (isSemanticBlock(node)) {
