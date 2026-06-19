@@ -77,10 +77,19 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
       paths. Required when authors use globs; without it glob targets read
       as literal paths and resolve to nothing. */
   expandPaths?: ExpandPaths
+  /** Resolve image `src` at preview render time. Receives the path from
+      `=picture file:X` or markdown `![](X)` and an optional base directory.
+      Return a resolved URL (string) or a Promise — sandboxed hosts (Tauri,
+      Mac App Store) can map relative paths to allowed URIs (data: URLs,
+      `convertFileSrc`, etc.). */
+  imageSrc?: ImageSrcResolver
+  /** Base directory for relative paths passed to `imageSrc`. */
+  imageBaseDir?: string
 }
 
 export type IncludeReader = (path: string, baseDir?: string) => string | null
 export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
+export type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
 
 export interface PodliteEditorRef {
   editor: React.RefObject<ReactCodeMirrorRef>
@@ -120,6 +129,8 @@ function PodliteEditorInternal(
     includeReader,
     includeBaseDir,
     expandPaths,
+    imageSrc,
+    imageBaseDir,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -866,6 +877,8 @@ function PodliteEditorInternal(
         includeReader={includeReader}
         includeBaseDir={includeBaseDir}
         expandPaths={expandPaths}
+        imageSrc={imageSrc}
+        imageBaseDir={imageBaseDir}
       />
     )
     return { result }

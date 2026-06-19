@@ -17,9 +17,7 @@ const fcodeToTag: Record<string, string> = {
   K: 'kbd',
 }
 
-export const extractPlainAndDecorations = (
-  nodes: unknown,
-): { plain: string; decorations: Decoration[] } => {
+export const extractPlainAndDecorations = (nodes: unknown): { plain: string; decorations: Decoration[] } => {
   const decorations: Decoration[] = []
   let plain = ''
 

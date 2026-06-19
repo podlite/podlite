@@ -4,6 +4,8 @@
 
 =item add C<exports> map (with CSS subpath conditions), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
 
+=item add C<imageSrc> and C<imageBaseDir> props — forwarded to the default preview C<<Podlite>> renderer so image paths in C<=picture file:X> and markdown C<![](X)> resolve at preview time. Hosts that supply a custom C<makePreviewComponent> are responsible for forwarding these themselves. Type C<ImageSrcResolver> is re-exported for type-safe usage
+
 =head1 0.0.53
 
 =item C<HighlightedCode> now combines syntax highlight with inline formatting codes. When C<:allow<...>> permits fcodes inside C<=code>, B/I/C/U/K wrap their respective spans (C<<strong>>/C<<em>>/C<<code>>/C<<u>>/C<<kbd>> + C<fc-X> class) layered over shiki's syntax colors via the decorations API

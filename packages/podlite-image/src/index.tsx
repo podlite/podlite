@@ -12,6 +12,35 @@ import {
   setFn,
   wrapContent,
 } from '@podlite/schema'
+
+type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
+
+const HookedImage: React.FC<{
+  src: string
+  alt?: string
+  hook: ImageSrcResolver
+  baseDir?: string
+  render?: (resolved: string) => React.ReactElement
+}> = ({ src, alt, hook, baseDir, render }) => {
+  const initial = React.useMemo(() => {
+    const r = hook(src, baseDir)
+    return typeof r === 'string' ? r : null
+  }, [src, baseDir, hook])
+  const [resolved, setResolved] = React.useState<string | null>(initial)
+  React.useEffect(() => {
+    if (initial !== null) return
+    let alive = true
+    Promise.resolve(hook(src, baseDir)).then(
+      v => alive && setResolved(v),
+      () => alive && setResolved(null),
+    )
+    return () => {
+      alive = false
+    }
+  }, [src, baseDir, hook, initial])
+  if (resolved == null) return null
+  return render ? render(resolved) : <img src={resolved} alt={alt} />
+}
 const Image: Plugin = {
   toAst: (_, processor) => (node, ctx) => {
     if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
@@ -82,14 +111,23 @@ const Image: Plugin = {
         // inside head don't wrap into <p>
         ':image': setFn((node: Image, ctx) => {
           const linkTo = ctx.link
-          return mkComponent(({ children, key }) => {
-            const Img = node.src.match(/(mp4|mov)$/) ? (
-              <video controls key={key}>
-                {' '}
-                <source src={node.src} type="video/mp4" />{' '}
-              </video>
+          const hook = ctx.imageSrc as ImageSrcResolver | undefined
+          const baseDir = ctx.imageBaseDir as string | undefined
+          const isVideo = node.src.match(/(mp4|mov)$/)
+          return mkComponent(({ key }) => {
+            const renderInner = (src: string) =>
+              isVideo ? (
+                <video controls key={key}>
+                  {' '}
+                  <source src={src} type="video/mp4" />{' '}
+                </video>
+              ) : (
+                <img key={key} src={src} alt={node.alt} />
+              )
+            const Img = hook ? (
+              <HookedImage key={key} src={node.src} alt={node.alt} hook={hook} baseDir={baseDir} render={renderInner} />
             ) : (
-              <img key={key} src={node.src} alt={node.alt} />
+              renderInner(node.src)
             )
             return linkTo ? (
               <a key={key} href={linkTo}>

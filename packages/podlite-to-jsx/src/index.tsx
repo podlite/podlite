@@ -88,6 +88,8 @@ export const Podlite: React.FC<{
   includeReader?: IncludeReader
   includeBaseDir?: string
   expandPaths?: ExpandPaths
+  imageSrc?: ImageSrcResolver
+  imageBaseDir?: string
   renderMode?: 'production' | 'draft'
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
@@ -172,11 +174,42 @@ type IncludeReader = (path: string, baseDir?: string) => string | null
 
 type ExpandPaths = (pattern: string, baseDir?: string) => string[]
 
+export type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
+
 type MapToReactOptions = {
   includeReader?: IncludeReader
   includeBaseDir?: string
   expandPaths?: ExpandPaths
+  imageSrc?: ImageSrcResolver
+  imageBaseDir?: string
   parser?: any
+}
+
+export const HookedImage: React.FC<{
+  src: string
+  alt?: string
+  hook: ImageSrcResolver
+  baseDir?: string
+  render?: (resolved: string) => React.ReactElement
+}> = ({ src, alt, hook, baseDir, render }) => {
+  const initial = React.useMemo(() => {
+    const r = hook(src, baseDir)
+    return typeof r === 'string' ? r : null
+  }, [src, baseDir, hook])
+  const [resolved, setResolved] = React.useState<string | null>(initial)
+  React.useEffect(() => {
+    if (initial !== null) return
+    let alive = true
+    Promise.resolve(hook(src, baseDir)).then(
+      v => alive && setResolved(v),
+      () => alive && setResolved(null),
+    )
+    return () => {
+      alive = false
+    }
+  }, [src, baseDir, hook, initial])
+  if (resolved == null) return null
+  return render ? render(resolved) : <img src={resolved} alt={alt} />
 }
 
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
@@ -335,6 +368,12 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }),
     image: nodeContent,
     ':image': setFn((node, ctx) => {
+      const hook = opts.imageSrc
+      if (hook) {
+        return mkComponent(({ key }) => (
+          <HookedImage key={key} src={node.src} alt={node.alt} hook={hook} baseDir={opts.imageBaseDir} />
+        ))
+      }
       return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={node.alt} />)
     }),
 
@@ -921,6 +960,8 @@ function podlite(
     includeReader,
     includeBaseDir,
     expandPaths,
+    imageSrc,
+    imageBaseDir,
     renderMode = 'production',
   }: {
     file?: string
@@ -931,6 +972,8 @@ function podlite(
     includeReader?: IncludeReader
     includeBaseDir?: string
     expandPaths?: ExpandPaths
+    imageSrc?: ImageSrcResolver
+    imageBaseDir?: string
     renderMode?: 'production' | 'draft'
   },
   ...args
@@ -955,7 +998,14 @@ function podlite(
   )
 
   const rules: Rules = {
-    ...mapToReact(makeComponent, { includeReader, includeBaseDir, expandPaths, parser: podliteParser }),
+    ...mapToReact(makeComponent, {
+      includeReader,
+      includeBaseDir,
+      expandPaths,
+      imageSrc,
+      imageBaseDir,
+      parser: podliteParser,
+    }),
     ...plugins(makeComponent),
     ...jsxPluginInited,
   }
@@ -963,7 +1013,7 @@ function podlite(
     postInterator?: any
   }
   const writer = new Writer(s => {}) as WriterPostinterator
-  const res = toAny({ processor: parse, context: { renderMode } })
+  const res = toAny({ processor: parse, context: { renderMode, imageSrc, imageBaseDir } })
     .use({
       '*:*': () => (node, ctx, interator) => {
         // skip named blocks
