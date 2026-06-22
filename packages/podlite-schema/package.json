@@ -44,7 +44,8 @@
   },
   "scripts": {
     "clean": "rm -rf lib esm *.tsbuildinfo",
-    "build": "run-s build:pegjs build_lib build:ast ",
+    "build": "run-s inject-version build:pegjs build_lib build:ast ",
+    "inject-version": "yarn g:inject-version",
     "build_lib": "yarn g:build",
     "build:ast": "ts-node scripts/make-ast-scheme.ts",
     "build:pegjs": "pegmill --allowed-start-rules Document,attributesOnly -o src/grammar.js src/grammar.pegjs && pegmill -o src/grammarfc.js src/grammarfc.pegjs",

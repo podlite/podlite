@@ -25,7 +25,9 @@
   },
   "scripts": {
     "test": "yarn g:jest --passWithNoTests",
-    "build": "yarn g:build",
+    "build": "run-s inject-version build:tsc",
+    "inject-version": "yarn g:inject-version",
+    "build:tsc": "yarn g:build",
     "build:lint-grammar": "pegmill -o src/lint/grammar/lint.js src/lint/grammar/lint.pegjs",
     "typecheck:lint": "tsc -p src/lint/tsconfig.json --noEmit",
     "watch": "run-p -r watch:*",

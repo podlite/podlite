@@ -217,9 +217,4 @@ export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
 export { parseSelector, runSelector } from './selectors'
 export type { SelectorDoc, ParsedSelector } from './selectors'
-// Cannot be `import` as it's not under TS root dir
-// https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
-
-const { version: VERSION } = require('../package.json')
-// const {version: VERSION} = {version:'0.1.0'};
-export { VERSION as version }
+export { version } from './version'

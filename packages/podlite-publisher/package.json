@@ -43,7 +43,9 @@
   },
   "scripts": {
     "clean": "rm -rf lib esm *.tsbuildinfo",
-    "build": "yarn g:build",
+    "build": "run-s inject-version build:tsc",
+    "inject-version": "yarn g:inject-version",
+    "build:tsc": "yarn g:build",
     "test": "yarn g:jest  --passWithNoTests"
   },
   "keywords": [

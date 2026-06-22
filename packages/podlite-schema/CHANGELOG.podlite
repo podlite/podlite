@@ -6,6 +6,8 @@
 
 =item C<toMarkdown> iterates into unknown Mixed-case named blocks instead of dropping them. The wrapper renders as a transparent container, its children pass through their own rules. C<exportHtml> behaviour unchanged
 
+=item replace top-level C<require('../package.json')> with a build-injected C<version> module. The published ESM no longer carries a C<require> call, so browser bundlers (Vite/Rollup) can lazy-load the package without C<require is not defined> at runtime
+
 =head1 0.0.47
 
 =item C<=config item1>..C<=config item6> defaults now propagate to matching C<=item> blocks. The C<=config> propagation pass already handled C<=head1>..C<=head6>; the same C<item{level}> lookup is extended to items (plugin-items renames C<=item1> to a block with C<name=item, level=1>, mirroring the head case)

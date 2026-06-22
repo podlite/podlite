@@ -16,8 +16,4 @@ export const podlite = ({ importPlugins = true }: PodliteOpt): Podlite => {
   return instance
 }
 
-// Cannot be `import` as it's not under TS root dir
-// https://stackoverflow.com/questions/51070138/how-to-import-package-json-into-typescript-file-without-including-it-in-the-comp
-
-const { version: VERSION } = require('../package.json')
-export { VERSION as version }
+export { version } from './version'

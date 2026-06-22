@@ -4,6 +4,7 @@
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
 =item declare C<podlite> and C<@podlite/markdown> runtime dependencies (previously imported without being listed)
+=item replace top-level C<require('../package.json')> in C<state-version-plugin> with a build-injected C<version> module. The published ESM no longer carries a C<require> call, so browser bundlers (Vite/Rollup) can lazy-load the package without C<require is not defined> at runtime
 
 =head1 0.0.25
 
