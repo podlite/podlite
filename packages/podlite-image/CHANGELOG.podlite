@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.47
+
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
 
 =item C<:image> renders through C<ctx.imageSrc> hook when the host provides one. Hosts pass the resolver via C<<Podlite imageSrc={fn}>>; C<=Image>/C<=picture> blocks and markdown images both flow through the same hook before C<<img>>/C<<video>>. Without the hook C<src> stays raw — preserves the previous behaviour

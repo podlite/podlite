@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.41
+
 =item lift C<types> to top-level package field (was only in C<publishConfig>), add C<exports> map and explicit C<sideEffects>. Consumers can now resolve types without an ambient declaration
 
 =head1 0.0.34

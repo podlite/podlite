@@ -2,6 +2,63 @@
 
 =head1 Upcoming
 
+=head1 0.0.68
+
+
+=head2 podlite
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
+=item replace top-level C<require('../package.json')> with a build-injected C<version> module. The published ESM no longer carries a C<require> call, so browser bundlers (Vite/Rollup) can lazy-load the package without C<require is not defined> at runtime
+
+=head2 @podlite/diagram
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
+=head2 @podlite/editor-react
+
+=item add C<exports> map (with CSS subpath conditions), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
+
+=item add C<imageSrc> and C<imageBaseDir> props — forwarded to the default preview C<<Podlite>> renderer so image paths in C<=picture file:X> and markdown C<![](X)> resolve at preview time. Hosts that supply a custom C<makePreviewComponent> are responsible for forwarding these themselves. Type C<ImageSrcResolver> is re-exported for type-safe usage
+
+=head2 @podlite/formula
+
+=item add C<exports> map (with C<./default.css> subpath), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
+
+=head2 @podlite/image
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
+=item C<:image> renders through C<ctx.imageSrc> hook when the host provides one. Hosts pass the resolver via C<<Podlite imageSrc={fn}>>; C<=Image>/C<=picture> blocks and markdown images both flow through the same hook before C<<img>>/C<<video>>. Without the hook C<src> stays raw — preserves the previous behaviour
+
+=head2 @podlite/markdown
+
+=item lift C<types> to top-level package field (was only in C<publishConfig>), add C<exports> map and explicit C<sideEffects>. Consumers can now resolve types without an ambient declaration
+
+=head2 @podlite/publisher
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+=item declare C<podlite> and C<@podlite/markdown> runtime dependencies (previously imported without being listed)
+=item replace top-level C<require('../package.json')> in C<state-version-plugin> with a build-injected C<version> module. The published ESM no longer carries a C<require> call, so browser bundlers (Vite/Rollup) can lazy-load the package without C<require is not defined> at runtime
+
+=head2 @podlite/schema
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
+=item C<toMarkdown> iterates into unknown Mixed-case named blocks instead of dropping them. The wrapper renders as a transparent container, its children pass through their own rules. C<exportHtml> behaviour unchanged
+
+=item replace top-level C<require('../package.json')> with a build-injected C<version> module. The published ESM no longer carries a C<require> call, so browser bundlers (Vite/Rollup) can lazy-load the package without C<require is not defined> at runtime
+
+=head2 @podlite/to-jsx
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest. C<exports> conditions reordered with C<types> first
+
+=item add C<imageSrc> prop on C<<Podlite>> for resolving image C<src> at render time. The hook receives a path and an optional base directory; it returns a resolved URL string or a Promise. C<:image> nodes (from C<=picture file:X>, C<=Image>, and markdown C<![](X)>) pass through the hook before C<<img>>/C<<video>>. Without the prop C<src> renders raw — preserves the previous behaviour. C<imageBaseDir> sets the base directory passed to the hook. Type C<ImageSrcResolver> and helper C<HookedImage> are exported
+
+=head2 @podlite/toc
+
+=item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
+
 =head1 0.0.67
 
 

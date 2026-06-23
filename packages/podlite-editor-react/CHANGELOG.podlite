@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.54
+
 =item add C<exports> map (with CSS subpath conditions), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
 
 =item add C<imageSrc> and C<imageBaseDir> props — forwarded to the default preview C<<Podlite>> renderer so image paths in C<=picture file:X> and markdown C<![](X)> resolve at preview time. Hosts that supply a custom C<makePreviewComponent> are responsible for forwarding these themselves. Type C<ImageSrcResolver> is re-exported for type-safe usage

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.52
+
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest. C<exports> conditions reordered with C<types> first
 
 =item add C<imageSrc> prop on C<<Podlite>> for resolving image C<src> at render time. The hook receives a path and an optional base directory; it returns a resolved URL string or a Promise. C<:image> nodes (from C<=picture file:X>, C<=Image>, and markdown C<![](X)>) pass through the hook before C<<img>>/C<<video>>. Without the prop C<src> renders raw — preserves the previous behaviour. C<imageBaseDir> sets the base directory passed to the hook. Type C<ImageSrcResolver> and helper C<HookedImage> are exported
