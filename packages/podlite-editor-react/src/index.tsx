@@ -1,3 +1,5 @@
+import './Editor.css'
+import './podlite-vars.css'
 import Editor2 from './Editor'
 import WindowWrapper from './Wrapper'
 import HighlightedCode from './HighlightedCode'

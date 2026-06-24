@@ -1,3 +1,5 @@
+const path = require('path')
+
 const transformIgnores = [
   '.*remark-parse',
   '.*mdast.*',
@@ -25,6 +27,9 @@ const transformIgnores = [
 module.exports = {
   moduleDirectories: ['node_modules'],
   snapshotSerializers: ['jest-serializer-html'],
+  moduleNameMapper: {
+    '\\.css$': path.resolve(__dirname, 'jest-css-stub.js'),
+  },
   transform: {
     '\\.(t|j)sx?$': 'ts-jest',
     //   "\\.jsx?$": "ts-jest",

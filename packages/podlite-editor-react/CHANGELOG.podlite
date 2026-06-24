@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item entry now imports C<Editor.css> and C<podlite-vars.css> as a side effect. Consumers get styled output from C<import Editor2 from '@podlite/editor-react'> without a separate CSS import. C<sideEffects> manifest already lists C<**/*.css>, so tree-shaking is unaffected
+
 =head1 0.0.54
 
 =item add C<exports> map (with CSS subpath conditions), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
