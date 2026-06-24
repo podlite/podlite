@@ -222,6 +222,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // check if node.content defined
     return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], { id }, ctx)
   }
+  // React forbids children on void HTML elements (hr, br, img, ...)
+  const mkVoidComponent = src => (writer, processor) => (node, ctx, interator) => {
+    const id = getSafeNodeId(node, ctx)
+    return makeComponent(src, node, undefined, { id }, ctx)
+  }
   // Handle nested block and :nested block attribute
   const handleNested = (defaultHandler, implicitLevel?: number) => {
     return (writer, processor) => {
@@ -409,7 +414,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ':para': mkComponent('p'),
     para: handleNested(mkComponent('div')),
     'comment:block': emptyContent(),
-    'boundary:block': mkComponent('hr'),
+    'boundary:block': mkVoidComponent('hr'),
     defn: subUse(
       [
         // to avoid overlap para blocks handlers

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=boundary> renders as a void C<<hr/>> without children. Previously the renderer passed an empty children array, which React 18+ rejects on void-element tags and crashes the preview pane
+
 =head1 0.0.52
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest. C<exports> conditions reordered with C<types> first
