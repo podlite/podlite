@@ -18,19 +18,20 @@ const provenance = (originalName: string, chain: string[]): ConfigItem[] => [
 
 export const deriveFallbackNode = (node: any, map: Map<string, string>, opts: MaterializeOptions = {}): any | null => {
   if (!node || !isCustomBlock(node)) return null
-  // a per-instance :fallback overrides the type-level map for the first hop;
-  // propagateConfigDefaults has already merged the =config default onto the node
+  // resolve from the node's own name so depth counts every hop; a per-instance
+  // :fallback overrides the type-level entry for the first hop
   const own = makeAttrs(node).getFirstValue('fallback')
-  const start = typeof own === 'string' ? own : map.get(node.name)
-  if (typeof start !== 'string') return null
+  const hasOwn = typeof own === 'string'
+  if (!hasOwn && !map.has(node.name)) return null
+  const effectiveMap = hasOwn && map.get(node.name) !== own ? new Map(map).set(node.name, own) : map
   let result
   try {
-    result = resolveFallback(start, map, { maxDepth: opts.maxDepth })
+    result = resolveFallback(node.name, effectiveMap, { maxDepth: opts.maxDepth })
   } catch {
     return null
   }
-  const chain = [node.name, ...result.chain]
-  const config = [...(Array.isArray(node.config) ? node.config : []), ...provenance(node.name, chain)]
+  if (result.resolved === node.name) return null
+  const config = [...(Array.isArray(node.config) ? node.config : []), ...provenance(node.name, result.chain)]
   return { ...node, name: result.resolved, config }
 }
 
