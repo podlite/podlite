@@ -11,6 +11,8 @@ import {
 } from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
+import { collectFallbackMap } from './fallback-resolver'
+import { deriveFallbackNode } from './materialize-fallback'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId } from './ast-helpers'
@@ -350,8 +352,12 @@ const toHtml = opt =>
     ...opt,
     context: { renderMode: opt?.renderMode || 'production', ...(opt?.context || {}) },
   })
-    .use('*', (writer, processor) => {
+    .use('*', (writer, processor, tree) => {
+      const fallbackMap = collectFallbackMap(tree)
       return (node, ctx, interator) => {
+        const derived = deriveFallbackNode(node, fallbackMap)
+        if (derived) return interator(derived, ctx)
+
         // skip warnings for semantic blocks
         const isSemanticBlock = node => {
           const name = node.name || ''

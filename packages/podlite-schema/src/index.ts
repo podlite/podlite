@@ -225,4 +225,6 @@ export {
   FallbackMissingTargetError,
 } from './fallback-resolver'
 export type { FallbackResolveResult, ResolveOptions } from './fallback-resolver'
+export { materializeFallback, deriveFallbackNode } from './materialize-fallback'
+export type { MaterializeOptions } from './materialize-fallback'
 export { version } from './version'

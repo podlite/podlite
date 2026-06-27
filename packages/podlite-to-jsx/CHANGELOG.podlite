@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item render unknown Mixed-case blocks through their C<:fallback> target type
+
 =head1 0.0.53
 
 =item C<=boundary> renders as a void C<<hr/>> without children. Previously the renderer passed an empty children array, which React 18+ rejects on void-element tags and crashes the preview pane

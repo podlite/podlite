@@ -4,6 +4,10 @@
 
 =item add fallback chain resolver with cycle and depth detection
 
+=item add C<materializeFallback> producing a derived view where a resolved block carries C<:original-name> and C<:resolved-via> provenance and the source tree stays unchanged
+
+=item render unknown Mixed-case blocks through their C<:fallback> target type in the Markdown and HTML exporters
+
 =head1 0.0.48
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
