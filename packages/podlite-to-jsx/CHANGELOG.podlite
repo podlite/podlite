@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.53
+
 =item C<=boundary> renders as a void C<<hr/>> without children. Previously the renderer passed an empty children array, which React 18+ rejects on void-element tags and crashes the preview pane
 
 =item entry now imports C<podlite.css> as a side effect. Consumers get styled output from C<import Podlite from '@podlite/to-jsx'> without a separate CSS import. C<sideEffects> manifest already lists C<**/*.css>, so tree-shaking is unaffected
