@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint C<syntax-valid> flags directive-like lines that fail to parse and are recovered as text
+
 =head1 0.0.61
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest

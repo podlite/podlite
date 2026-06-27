@@ -1,4 +1,4 @@
-import type { PodliteDocument } from '@podlite/schema'
+import { getFromTree, PodliteDocument } from '@podlite/schema'
 import type { Rule, Violation, LintContext } from '../types'
 
 export const SYNTAX_VALID_RULE_ID = 'syntax-valid'
@@ -27,8 +27,29 @@ export function makeSyntaxViolation(err: unknown, filePath: string): Violation {
   }
 }
 
+export function collectRecoveredErrors(ast: PodliteDocument): Violation[] {
+  const nodes = getFromTree(ast, () => true) as Array<{
+    error?: boolean
+    value?: unknown
+    location?: Violation['location']
+  }>
+  const violations: Violation[] = []
+  for (const node of nodes) {
+    if (node && node.error === true) {
+      const snippet = String(node.value ?? '').trim()
+      violations.push({
+        rule: SYNTAX_VALID_RULE_ID,
+        severity: 'warning',
+        message: `Line could not be parsed as a directive or block: ${snippet}`,
+        location: node.location,
+      })
+    }
+  }
+  return violations
+}
+
 export const syntaxValidRule: Rule = {
   id: SYNTAX_VALID_RULE_ID,
   severity: 'error',
-  check: (_ast: PodliteDocument, _ctx: LintContext): Violation[] => [],
+  check: (ast: PodliteDocument, _ctx: LintContext): Violation[] => collectRecoveredErrors(ast),
 }

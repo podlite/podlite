@@ -1,0 +1,5 @@
+=config recipe :fallback<para>
+
+=begin para
+ok
+=end para
