@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { parse, toMarkdown, toHtml } from '@podlite/schema'
+import { toMarkdown, toHtml } from '@podlite/schema'
+import { podlite } from './index'
 import { runLint, LintFormat } from './lint'
 import { runQuery, QueryFormat } from './query'
 
@@ -107,7 +108,8 @@ function convertFile(inputPath: string, format: string, outputPath?: string, bas
   }
 
   const content = fs.readFileSync(inputPath, 'utf-8')
-  const tree = parse(content)
+  const p = podlite({ importPlugins: true })
+  const tree = p.toAst(p.parse(content, { podMode: 1 }))
 
   let result: string
   if (format === 'md' || format === 'markdown') {

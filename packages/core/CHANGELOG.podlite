@@ -6,6 +6,8 @@
 
 =item podlite convert accepts C<--base> (and env C<PODLITE_BASE>) to prefix relative C<file:> image paths
 
+=item podlite convert renders plugin blocks (pictures, diagrams, formulas) through the full plugin pipeline
+
 =head1 0.0.61
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest

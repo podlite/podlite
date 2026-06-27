@@ -343,7 +343,7 @@ const rules = {
   ':toc-list': setFn((node, ctx) => wrapContent(`<ul class="toc-list listlevel${node.level}">`, '</ul>')),
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw(`<img src="${applyImageBase(node.src, ctx?.base)}" alt="${node.alt}"/>`)
+    writer.writeRaw(`<img src="${applyImageBase(node.src, ctx?.base)}" alt="${node.alt || ''}"/>`)
   },
 }
 
