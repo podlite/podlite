@@ -8,6 +8,8 @@
 
 =item render unknown Mixed-case blocks through their C<:fallback> target type in the Markdown and HTML exporters
 
+=item resolve relative C<file:> image sources against a C<base> option in the Markdown and HTML exporters; absolute paths and C<https:>/C<data:> sources pass through
+
 =head1 0.0.48
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest

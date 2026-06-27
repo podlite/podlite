@@ -13,6 +13,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import { collectFallbackMap } from './fallback-resolver'
 import { deriveFallbackNode } from './materialize-fallback'
+import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId } from './ast-helpers'
@@ -342,7 +343,7 @@ const rules = {
   ':toc-list': setFn((node, ctx) => wrapContent(`<ul class="toc-list listlevel${node.level}">`, '</ul>')),
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw(`<img src="${node.src}" alt="${node.alt}"/>`)
+    writer.writeRaw(`<img src="${applyImageBase(node.src, ctx?.base)}" alt="${node.alt}"/>`)
   },
 }
 
@@ -350,7 +351,7 @@ const toHtml = opt =>
   toAny({
     writer: htmlWriter,
     ...opt,
-    context: { renderMode: opt?.renderMode || 'production', ...(opt?.context || {}) },
+    context: { renderMode: opt?.renderMode || 'production', base: opt?.base, ...(opt?.context || {}) },
   })
     .use('*', (writer, processor, tree) => {
       const fallbackMap = collectFallbackMap(tree)

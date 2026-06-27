@@ -12,6 +12,7 @@ import {
 import makeAttrs from './helpers/config'
 import { collectFallbackMap } from './fallback-resolver'
 import { deriveFallbackNode } from './materialize-fallback'
+import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId } from './ast-helpers'
@@ -380,7 +381,7 @@ const rules = {
   ':toc-list': emptyContent,
   ':toc-item': emptyContent,
   ':image': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw(`![${node.alt || ''}](${node.src})`)
+    writer.writeRaw(`![${node.alt || ''}](${applyImageBase(node.src, ctx?.base)})`)
   },
 }
 
@@ -388,7 +389,7 @@ const toMarkdown = opt =>
   toAny({
     writer: writerMarkdown,
     ...opt,
-    context: { renderMode: opt?.renderMode || 'production', ...(opt?.context || {}) },
+    context: { renderMode: opt?.renderMode || 'production', base: opt?.base, ...(opt?.context || {}) },
   })
     .use('*', (writer, processor, tree) => {
       const fallbackMap = collectFallbackMap(tree)

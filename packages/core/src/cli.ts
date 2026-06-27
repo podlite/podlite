@@ -31,6 +31,7 @@ Options:
   --format   lint output format: text (default), json
   --strict   lint: promote warnings to errors
   --config   lint: path to .podlitelintrc.{json,js}
+  --base     convert: prefix for relative file: image paths (or env PODLITE_BASE)
   -o         Output file or directory (default: same dir, new extension)
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
@@ -60,6 +61,7 @@ function parseArgs(argv: string[]) {
     strict: false,
     format: '',
     configPath: '',
+    base: '',
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
@@ -85,6 +87,8 @@ function parseArgs(argv: string[]) {
       args.format = argv[++i] || ''
     } else if (arg === '--config') {
       args.configPath = argv[++i] || ''
+    } else if (arg === '--base') {
+      args.base = argv[++i] || ''
     } else if (arg === '--help' || arg === '-h') {
       return null
     } else if (!arg.startsWith('-')) {
@@ -95,7 +99,7 @@ function parseArgs(argv: string[]) {
   return args
 }
 
-function convertFile(inputPath: string, format: string, outputPath?: string): void {
+function convertFile(inputPath: string, format: string, outputPath?: string, base?: string): void {
   const ext = FORMATS[format]
   if (!ext) {
     console.error(`Unknown format: ${format}. Supported: ${Object.keys(FORMATS).join(', ')}`)
@@ -107,9 +111,9 @@ function convertFile(inputPath: string, format: string, outputPath?: string): vo
 
   let result: string
   if (format === 'md' || format === 'markdown') {
-    result = toMarkdown({}).run(tree).toString()
+    result = toMarkdown({ base }).run(tree).toString()
   } else if (format === 'html') {
-    result = toHtml({}).run(tree).toString()
+    result = toHtml({ base }).run(tree).toString()
   } else {
     console.error(`Format "${format}" not implemented yet`)
     process.exit(1)
@@ -262,7 +266,7 @@ function main() {
       console.error(`File not found: ${file}`)
       process.exit(1)
     }
-    convertFile(file, args.to, args.output || undefined)
+    convertFile(file, args.to, args.output || undefined, args.base || process.env.PODLITE_BASE)
   }
 }
 
