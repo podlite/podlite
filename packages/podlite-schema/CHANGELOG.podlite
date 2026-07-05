@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.50
+
 =item add fallback chain resolver with cycle and depth detection
 
 =item add C<materializeFallback> producing a derived view where a resolved block carries C<:original-name> and C<:resolved-via> provenance and the source tree stays unchanged

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.54
+
 =item render unknown Mixed-case blocks through their C<:fallback> target type
 
 =head1 0.0.53

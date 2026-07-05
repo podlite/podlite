@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.63
+
 =item podlite lint C<syntax-valid> flags directive-like lines that fail to parse and are recovered as text
 
 =item podlite convert accepts C<--base> (and env C<PODLITE_BASE>) to prefix relative C<file:> image paths

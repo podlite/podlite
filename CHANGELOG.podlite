@@ -2,6 +2,35 @@
 
 =head1 Upcoming
 
+=head1 0.0.70
+
+
+=head2 podlite
+
+=item podlite lint C<syntax-valid> flags directive-like lines that fail to parse and are recovered as text
+
+=item podlite convert accepts C<--base> (and env C<PODLITE_BASE>) to prefix relative C<file:> image paths
+
+=item podlite convert renders plugin blocks (pictures, diagrams, formulas) through the full plugin pipeline
+
+=item podlite lint C<media-absolute-file> flags absolute local image paths that a published site cannot resolve
+
+=head2 @podlite/schema
+
+=item add fallback chain resolver with cycle and depth detection
+
+=item add C<materializeFallback> producing a derived view where a resolved block carries C<:original-name> and C<:resolved-via> provenance and the source tree stays unchanged
+
+=item render unknown Mixed-case blocks through their C<:fallback> target type in the Markdown and HTML exporters
+
+=item resolve relative C<file:> image sources against a C<base> option in the Markdown and HTML exporters; absolute paths and C<https:>/C<data:> sources pass through
+
+=item omit an empty C<alt> value in the HTML image tag instead of rendering C<alt="undefined">
+
+=head2 @podlite/to-jsx
+
+=item render unknown Mixed-case blocks through their C<:fallback> target type
+
 =head1 0.0.69
 
 
