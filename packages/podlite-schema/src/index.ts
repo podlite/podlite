@@ -217,15 +217,5 @@ export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
 export { parseSelector, runSelector } from './selectors'
 export type { SelectorDoc, ParsedSelector } from './selectors'
-export {
-  collectFallbackMap,
-  resolveFallback,
-  FallbackCycleError,
-  FallbackDepthError,
-  FallbackMissingTargetError,
-} from './fallback-resolver'
-export type { FallbackResolveResult, ResolveOptions } from './fallback-resolver'
-export { materializeFallback, deriveFallbackNode } from './materialize-fallback'
-export type { MaterializeOptions } from './materialize-fallback'
 export { applyImageBase } from './image-base'
 export { version } from './version'

@@ -17,8 +17,6 @@ import {
   toAny,
   isNamedBlock,
   isSemanticBlock,
-  collectFallbackMap,
-  deriveFallbackNode,
   Writer,
   toAnyRules,
   PodliteExport,
@@ -1023,34 +1021,29 @@ function podlite(
   const writer = new Writer(s => {}) as WriterPostinterator
   const res = toAny({ processor: parse, context: { renderMode, imageSrc, imageBaseDir } })
     .use({
-      '*:*': (writer, processor, tree) => {
-        const fallbackMap = collectFallbackMap(tree)
-        return (node, ctx, interator) => {
-          const derived = deriveFallbackNode(node, fallbackMap)
-          if (derived) return interator(derived, ctx)
-          // skip named blocks
-          if (isNamedBlock(node.name)) {
-            return null
-          }
-          if (isSemanticBlock(node)) {
-            return makeComponent(
-              ({ key, children }) => {
-                return (
-                  <div key={key}>
-                    <h1 className={node.name} key={key}>
-                      {node.name}
-                    </h1>
-                    {interator(node.content, { ...ctx })}
-                  </div>
-                )
-              },
-              node,
-              interator(node.content, { ...ctx }),
-            )
-          }
-          console.warn('[to-jsx] Not supported: ' + JSON.stringify(node, null, 2))
-          return createElement('code', { key: ++i_key_i }, `not supported node:${JSON.stringify(node, null, 2)}`)
+      '*:*': () => (node, ctx, interator) => {
+        // skip named blocks
+        if (isNamedBlock(node.name)) {
+          return null
         }
+        if (isSemanticBlock(node)) {
+          return makeComponent(
+            ({ key, children }) => {
+              return (
+                <div key={key}>
+                  <h1 className={node.name} key={key}>
+                    {node.name}
+                  </h1>
+                  {interator(node.content, { ...ctx })}
+                </div>
+              )
+            },
+            node,
+            interator(node.content, { ...ctx }),
+          )
+        }
+        console.warn('[to-jsx] Not supported: ' + JSON.stringify(node, null, 2))
+        return createElement('code', { key: ++i_key_i }, `not supported node:${JSON.stringify(node, null, 2)}`)
       },
     })
     .use(rules)
