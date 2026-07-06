@@ -4,6 +4,8 @@
 
 =item podlite CLI bin uses a node shebang so C<npx podlite> and C<pnpm exec podlite> run without Bun
 
+=item podlite convert resolves C<=include> file references and applies the trailing C<| selector> filter
+
 =head1 0.0.63
 
 =item podlite lint C<syntax-valid> flags directive-like lines that fail to parse and are recovered as text

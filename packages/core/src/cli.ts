@@ -4,6 +4,7 @@ import { toMarkdown, toHtml } from '@podlite/schema'
 import { podlite } from './index'
 import { runLint, LintFormat } from './lint'
 import { runQuery, QueryFormat } from './query'
+import { resolveIncludes } from './resolve-includes'
 
 const FORMATS: Record<string, string> = {
   md: '.md',
@@ -109,7 +110,15 @@ function convertFile(inputPath: string, format: string, outputPath?: string, bas
 
   const content = fs.readFileSync(inputPath, 'utf-8')
   const p = podlite({ importPlugins: true })
-  const tree = p.toAst(p.parse(content, { podMode: 1 }))
+  const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
+
+  let tree = parseToAst(content)
+  try {
+    tree = resolveIncludes(tree, { baseDir: path.dirname(inputPath), parse: parseToAst })
+  } catch (e) {
+    console.error(`podlite convert: ${(e as Error).message}`)
+    process.exit(1)
+  }
 
   let result: string
   if (format === 'md' || format === 'markdown') {
