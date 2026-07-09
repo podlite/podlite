@@ -1,6 +1,6 @@
 {
   "name": "@podlite/publisher",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Publishing toolkit for Podlite — transform documents to HTML, generate sites",
   "main": "./lib/index.js",
   "sideEffects": false,

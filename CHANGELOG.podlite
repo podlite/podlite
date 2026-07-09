@@ -2,6 +2,23 @@
 
 =head1 Upcoming
 
+=head1 0.0.71
+
+
+=head2 podlite
+
+=item podlite CLI bin uses a node shebang so C<npx podlite> and C<pnpm exec podlite> run without Bun
+
+=item podlite convert resolves C<=include> file references and applies the trailing C<| selector> filter
+
+=head2 @podlite/schema
+
+=item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata
+
+=head2 @podlite/to-jsx
+
+=item remove render-through-C<:fallback> for unknown Mixed-case blocks
+
 =head1 0.0.70
 
 
