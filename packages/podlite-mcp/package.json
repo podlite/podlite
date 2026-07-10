@@ -1,0 +1,48 @@
+{
+  "name": "@podlite/mcp",
+  "version": "0.0.1",
+  "description": "MCP server for Podlite: parse, validate, render, and query tools for AI agents",
+  "keywords": [
+    "podlite",
+    "mcp",
+    "model-context-protocol",
+    "markup",
+    "ast",
+    "lint",
+    "llm-tools"
+  ],
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "bin": {
+    "podlite-mcp": "./bin/podlite-mcp.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-mcp"
+  },
+  "author": "Aliaksandr Zahatski",
+  "license": "MIT",
+  "homepage": "https://podlite.org",
+  "files": [
+    "bin",
+    "lib",
+    "README.md",
+    "CHANGELOG.podlite",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "build": "yarn g:tsc",
+    "test": "yarn g:jest --passWithNoTests"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@podlite/schema": "workspace:*",
+    "podlite": "workspace:*",
+    "zod": "^3.25.0"
+  }
+}
