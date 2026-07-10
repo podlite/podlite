@@ -18,6 +18,7 @@
     "jsx": "react",
     "outDir": "./lib",
     "rootDir": "./src",
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
     "declaration": true,

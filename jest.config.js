@@ -27,9 +27,11 @@ const transformIgnores = [
 module.exports = {
   moduleDirectories: ['node_modules'],
   snapshotSerializers: ['jest-serializer-html'],
+  snapshotFormat: { printBasicPrototype: true, escapeString: true },
   moduleNameMapper: {
     '\\.css$': path.resolve(__dirname, 'jest-css-stub.js'),
     '^mermaid$': path.resolve(__dirname, 'jest-mermaid-stub.js'),
+    '^@podlite/schema/src/(.*)$': path.resolve(__dirname, 'packages/podlite-schema/src/$1'),
   },
   transform: {
     '\\.(t|j)sx?$': 'ts-jest',

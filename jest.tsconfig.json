@@ -2,7 +2,9 @@
   "compilerOptions": {
     "lib": ["dom", "esnext"],
     "module": "esnext",
-    "target": "es5",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "target": "es2020",
     "jsx": "react",
     "esModuleInterop": true,
     "downlevelIteration": true,

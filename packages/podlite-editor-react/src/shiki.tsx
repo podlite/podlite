@@ -1,4 +1,4 @@
-import type { BundledLanguage, BundledTheme, Highlighter } from 'shiki'
+import type { BundledLanguage, BundledTheme, DecorationItem, Highlighter } from 'shiki'
 
 type ShikiModule = typeof import('shiki')
 const loadShiki = (): Promise<ShikiModule> => import('shiki')
@@ -115,10 +115,12 @@ async function ensureLanguageLoaded(instance: Highlighter, lang: ExtendedLanguag
   if (!pending) {
     pending = instance
       .loadLanguage(lang as BundledLanguage)
-      .then(() => state.loadedLanguages.add(lang))
+      .then(() => {
+        state.loadedLanguages.add(lang)
+      })
       .finally(() => state.pendingLoads.delete(lang))
 
-    state.pendingLoads.set(lang, pending as Promise<void>)
+    state.pendingLoads.set(lang, pending)
   }
 
   await pending
@@ -141,13 +143,6 @@ export async function codeToHtml({ code, language }: { code: string; language: s
     lang,
     themes: CONFIG.themes,
   })
-}
-
-type DecorationItem = {
-  start: number
-  end: number
-  tagName?: string
-  properties?: Record<string, unknown>
 }
 
 // Convert code to HTML with explicit theme selection (for runtime theme detection)

@@ -5,8 +5,7 @@
     "jsx": "react",
     "outDir": "./lib",
     "rootDir": "./src",
-    "baseUrl": ".",
-    "skipLibCheck": true
+    "baseUrl": "."
   },
   "references": [
     {

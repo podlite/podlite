@@ -7,6 +7,7 @@ const settings: TJS.PartialArgs = {
 }
 const compilerOptions: TJS.CompilerOptions = {
   strictNullChecks: true,
+  skipLibCheck: true,
 }
 const basePath = path.join(__dirname, '../lib')
 

@@ -5,6 +5,7 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
+    "skipLibCheck": true,
     "target": "ESNext",
     "module": "commonjs",
     // "module": "ESNext",

@@ -2,6 +2,7 @@
     "compilerOptions": {
       "outDir": "./lib",
       "rootDir": "./src",
+      "skipLibCheck": true,
       "allowJs": true,
     //   "target": "es2019",
       "target": "ESNext",

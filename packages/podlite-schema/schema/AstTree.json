@@ -1,114 +1,6 @@
 {
     "$ref": "#/definitions/AstTree",
     "definitions": {
-        "Ambient": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "ambient"
-                    ]
-                },
-                "text": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/Location"
-                }
-            },
-            "required": [
-                "location",
-                "text",
-                "type"
-            ]
-        },
-        "Location": {
-            "type": "object",
-            "properties": {
-                "start": {
-                    "$ref": "#/definitions/Position"
-                },
-                "end": {
-                    "$ref": "#/definitions/Position"
-                }
-            },
-            "required": [
-                "end",
-                "start"
-            ]
-        },
-        "Position": {
-            "type": "object",
-            "properties": {
-                "line": {
-                    "type": "number"
-                },
-                "column": {
-                    "type": "number"
-                },
-                "offset": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "column",
-                "line",
-                "offset"
-            ]
-        },
-        "BlockPod": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "enum": [
-                        "pod"
-                    ]
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "block"
-                    ]
-                },
-                "location": {
-                    "$ref": "#/definitions/Location"
-                },
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/PodNode"
-                    }
-                },
-                "margin": {
-                    "type": "string"
-                },
-                "config": {
-                    "type": "array",
-                    "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/BrokenConfigItem"
-                            },
-                            {
-                                "$ref": "#/definitions/ConfigItem"
-                            }
-                        ]
-                    }
-                },
-                "id": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "content",
-                "location",
-                "margin",
-                "name",
-                "type"
-            ]
-        },
         "PodNode": {
             "anyOf": [
                 {
@@ -257,20 +149,70 @@
                 }
             ]
         },
-        "BlockData": {
+        "Ambient": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "ambient"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                }
+            },
+            "required": [
+                "location",
+                "text",
+                "type"
+            ]
+        },
+        "Location": {
+            "type": "object",
+            "properties": {
+                "start": {
+                    "$ref": "#/definitions/Position"
+                },
+                "end": {
+                    "$ref": "#/definitions/Position"
+                }
+            },
+            "required": [
+                "end",
+                "start"
+            ]
+        },
+        "Position": {
+            "type": "object",
+            "properties": {
+                "line": {
+                    "type": "number"
+                },
+                "column": {
+                    "type": "number"
+                },
+                "offset": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "column",
+                "line",
+                "offset"
+            ]
+        },
+        "BlockPod": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "data"
-                    ]
+                    "const": "pod"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -395,14 +337,60 @@
                 "value"
             ]
         },
+        "BlockData": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "const": "data"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "block"
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "margin": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/BrokenConfigItem"
+                            },
+                            {
+                                "$ref": "#/definitions/ConfigItem"
+                            }
+                        ]
+                    }
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "content",
+                "location",
+                "margin",
+                "name",
+                "type"
+            ]
+        },
         "BlockFormula": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "formula"
-                    ]
+                    "const": "formula"
                 },
                 "content": {
                     "type": "array",
@@ -419,9 +407,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -456,9 +442,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "verbatim"
-                    ]
+                    "const": "verbatim"
                 },
                 "value": {
                     "type": "string"
@@ -474,15 +458,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "code"
-                    ]
+                    "const": "code"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -526,9 +506,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "blankline"
-                    ]
+                    "const": "blankline"
                 }
             },
             "required": [
@@ -540,15 +518,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "nested"
-                    ]
+                    "const": "nested"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -592,15 +566,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "markdown"
-                    ]
+                    "const": "markdown"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -644,15 +614,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "output"
-                    ]
+                    "const": "output"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -696,15 +662,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "input"
-                    ]
+                    "const": "input"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -748,15 +710,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "include"
-                    ]
+                    "const": "include"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -800,15 +758,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "para"
-                    ]
+                    "const": "para"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -852,9 +806,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "head"
-                    ]
+                    "const": "head"
                 },
                 "level": {
                     "type": [
@@ -864,9 +816,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -911,15 +861,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "comment"
-                    ]
+                    "const": "comment"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -963,15 +909,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "defn"
-                    ]
+                    "const": "defn"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1015,9 +957,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "para"
-                    ]
+                    "const": "para"
                 },
                 "text": {
                     "type": "string"
@@ -1193,9 +1133,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "text"
-                    ]
+                    "const": "text"
                 },
                 "value": {
                     "type": "string"
@@ -1211,9 +1149,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "code"
-                    ]
+                    "const": "code"
                 },
                 "text": {
                     "type": "string"
@@ -1297,9 +1233,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1334,9 +1268,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "root"
-                    ]
+                    "const": "root"
                 },
                 "content": {
                     "$ref": "#/definitions/AstTree"
@@ -1346,9 +1278,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "config": {
                     "type": "array",
@@ -1385,9 +1315,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "image"
-                    ]
+                    "const": "image"
                 },
                 "src": {
                     "type": "string"
@@ -1406,9 +1334,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "caption"
-                    ]
+                    "const": "caption"
                 },
                 "content": {
                     "type": "array",
@@ -1418,9 +1344,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 }
             },
             "required": [
@@ -1434,9 +1358,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "table"
-                    ]
+                    "const": "table"
                 },
                 "content": {
                     "type": "array",
@@ -1483,9 +1405,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1520,15 +1440,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "row"
-                    ]
+                    "const": "row"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "content": {
                     "type": "array",
@@ -1548,15 +1464,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "cell"
-                    ]
+                    "const": "cell"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "content": {
                     "type": "array",
@@ -1576,15 +1488,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "row"
-                    ]
+                    "const": "row"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "content": {
                     "type": "array",
@@ -1604,9 +1512,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "separator"
-                    ]
+                    "const": "separator"
                 },
                 "text": {
                     "type": "string"
@@ -1622,9 +1528,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "list"
-                    ]
+                    "const": "list"
                 },
                 "level": {
                     "type": [
@@ -1650,9 +1554,7 @@
                 },
                 "list": {
                     "type": "string",
-                    "enum": [
-                        "itemized"
-                    ]
+                    "const": "itemized"
                 }
             },
             "required": [
@@ -1667,9 +1569,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "item"
-                    ]
+                    "const": "item"
                 },
                 "content": {
                     "type": "array",
@@ -1688,9 +1588,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1732,9 +1630,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "config"
-                    ]
+                    "const": "config"
                 },
                 "config": {
                     "type": "array",
@@ -1761,9 +1657,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "alias"
-                    ]
+                    "const": "alias"
                 },
                 "replacement": {
                     "type": "array",
@@ -1787,15 +1681,11 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "toc"
-                    ]
+                    "const": "toc"
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1839,9 +1729,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "picture"
-                    ]
+                    "const": "picture"
                 },
                 "caption": {
                     "type": "string"
@@ -1867,9 +1755,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1904,9 +1790,7 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "image"
-                    ]
+                    "const": "image"
                 },
                 "caption": {
                     "type": "string"
@@ -1932,9 +1816,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "block"
-                    ]
+                    "const": "block"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1969,9 +1851,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "separator"
-                    ]
+                    "const": "separator"
                 },
                 "text": {
                     "type": "string"
@@ -1987,15 +1867,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "A"
-                    ]
+                    "const": "A"
                 },
                 "content": {
                     "anyOf": [
@@ -2029,15 +1905,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "C"
-                    ]
+                    "const": "C"
                 },
                 "content": {
                     "type": "array",
@@ -2102,15 +1974,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "B"
-                    ]
+                    "const": "B"
                 },
                 "content": {
                     "type": "array",
@@ -2129,15 +1997,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "D"
-                    ]
+                    "const": "D"
                 },
                 "synonyms": {
                     "type": "array",
@@ -2161,15 +2025,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "E"
-                    ]
+                    "const": "E"
                 },
                 "content": {
                     "type": "array",
@@ -2180,9 +2040,7 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": [
-                                            "number"
-                                        ]
+                                        "const": "number"
                                     },
                                     "value": {
                                         "type": "number"
@@ -2198,9 +2056,7 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": [
-                                            "unicode_name"
-                                        ]
+                                        "const": "unicode_name"
                                     },
                                     "value": {
                                         "type": "string"
@@ -2216,9 +2072,7 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": [
-                                            "html_named"
-                                        ]
+                                        "const": "html_named"
                                     },
                                     "value": {
                                         "type": "string"
@@ -2244,15 +2098,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "F"
-                    ]
+                    "const": "F"
                 },
                 "content": {
                     "type": "array",
@@ -2261,9 +2111,7 @@
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "enum": [
-                                    "text"
-                                ]
+                                "const": "text"
                             },
                             "value": {
                                 "type": "string"
@@ -2287,15 +2135,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "I"
-                    ]
+                    "const": "I"
                 },
                 "meta": {
                     "type": "string"
@@ -2323,15 +2167,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "L"
-                    ]
+                    "const": "L"
                 },
                 "meta": {
                     "type": [
@@ -2372,15 +2212,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "N"
-                    ]
+                    "const": "N"
                 },
                 "content": {
                     "type": "array",
@@ -2445,15 +2281,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "X"
-                    ]
+                    "const": "X"
                 },
                 "entry": {
                     "anyOf": [
@@ -2532,15 +2364,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "Z"
-                    ]
+                    "const": "Z"
                 },
                 "content": {
                     "type": "string"
@@ -2556,15 +2384,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "V"
-                    ]
+                    "const": "V"
                 },
                 "content": {
                     "type": "string"
@@ -2580,15 +2404,11 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string",
-                    "enum": [
-                        "S"
-                    ]
+                    "const": "S"
                 },
                 "content": {
                     "anyOf": [
@@ -2611,9 +2431,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "fcode"
-                    ]
+                    "const": "fcode"
                 },
                 "name": {
                     "type": "string"
@@ -2681,9 +2499,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "toc"
-                    ]
+                    "const": "toc"
                 },
                 "title": {
                     "type": "string"
@@ -2714,9 +2530,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "toc-list"
-                    ]
+                    "const": "toc-list"
                 },
                 "level": {
                     "type": "number"
@@ -2746,9 +2560,7 @@
             "properties": {
                 "type": {
                     "type": "string",
-                    "enum": [
-                        "toc-item"
-                    ]
+                    "const": "toc-item"
                 },
                 "node": {
                     "$ref": "#/definitions/PodNode"
