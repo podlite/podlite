@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@podlite/schema": "workspace:*",
-    "mermaid": "8.12.1",
+    "mermaid": "^11.15.0",
     "react-is": "^18.0.0"
   },
   "peerDependencies": {

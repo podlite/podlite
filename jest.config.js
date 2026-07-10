@@ -29,6 +29,7 @@ module.exports = {
   snapshotSerializers: ['jest-serializer-html'],
   moduleNameMapper: {
     '\\.css$': path.resolve(__dirname, 'jest-css-stub.js'),
+    '^mermaid$': path.resolve(__dirname, 'jest-mermaid-stub.js'),
   },
   transform: {
     '\\.(t|j)sx?$': 'ts-jest',

@@ -1,4 +1,4 @@
-import { PodliteDocument, validatePodliteAst, getFromTree, makeAttrs, podlitePluggable } from '@podlite/schema'
+import { PodliteDocument, validatePodliteAst, makeAttrs, podlitePluggable } from '@podlite/schema'
 import Diagram, { plugin as DiagramPlugin } from '../src/index'
 import { TestPodlite as Podlite } from '@podlite/to-jsx'
 import React from 'react'
@@ -35,7 +35,7 @@ const plugins = makeComponent => {
       const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
       return makeComponent(
         ({ children, key }) => {
-          return <Diagram isError={node.custom} key={key} caption={caption} chart={node.content[0].value} />
+          return <Diagram key={key} caption={caption} chart={node.content[0].value} />
         },
         node,
         interator(node.content, { ...ctx }),
@@ -72,20 +72,6 @@ it('=Mermaid: toAst', () => {
   // try to validate Formal AST
   const r = validatePodliteAst(p)
   expect(r).toEqual([])
-})
-
-it('=Mermaid: Error handle', () => {
-  const p = parse(
-    `=Mermaid
-graph EROROROOROR
-A --- B
-B-->C[fa:fa-ban forbidden]
-B-->D(fa:fa-spinner aaaaa);
-`,
-  )
-
-  const diagram = getFromTree(p, 'Mermaid')[0] as Object
-  expect('custom' in diagram).toBeTruthy()
 })
 
 it('=Mermaid: parse to html', () => {

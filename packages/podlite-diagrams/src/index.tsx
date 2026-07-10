@@ -1,87 +1,51 @@
 import React from 'react'
-import { useEffect, useRef } from 'react'
-import { Plugin, Location, Plugins, makeAttrs, getSafeNodeId } from '@podlite/schema'
+import { useEffect, useRef, useState } from 'react'
+import { Plugin, Plugins, makeAttrs, getSafeNodeId } from '@podlite/schema'
 import mermaid from 'mermaid'
+
 let i = 0
-const Diagram = ({ chart, isError, caption, id }: { chart: string; isError: any; caption?: string; id?: string }) => {
-  const inputEl = useRef(null)
-  const config = {
-    securityLevel: 'loose',
-    startOnLoad: false,
-  }
+
+const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?: string }) => {
+  const inputEl = useRef<HTMLDivElement>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    var insertSvg = function (svgCode: any) {
-      inputEl.current!.innerHTML = svgCode
-    }
-    if (isError) {
-      console.log('error')
+    let cancelled = false
+    setError(null)
+    if (!chart.trim()) {
+      if (inputEl.current) inputEl.current.innerHTML = ''
       return
     }
-    try {
-      mermaid.initialize(config)
-      mermaid.init(undefined, inputEl.current)
-      mermaid.render('graph-div' + i++, chart, insertSvg)
-    } catch (e) {
-      console.log({ e })
+    mermaid.initialize({ securityLevel: 'loose', startOnLoad: false })
+    mermaid
+      .render('graph-div' + i++, chart)
+      .then(({ svg }) => {
+        if (!cancelled && inputEl.current) inputEl.current.innerHTML = svg
+      })
+      .catch(e => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+      })
+    return () => {
+      cancelled = true
     }
   }, [chart])
 
   return (
     <div className="diagram" id={id}>
-      <div className={`mermaid${isError ? ' error' : ''}`} ref={inputEl} />
+      {error ? <div className="mermaid error">{error}</div> : <div className="mermaid" ref={inputEl} />}
       {caption ? <div className="caption">{caption}</div> : null}
     </div>
   )
 }
 
 export const plugin: Plugin = {
-  toAst: writer => node => {
-    if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
-      const content = node.content[0]
-      if (content && typeof content !== 'string' && 'location' in node && 'value' in content) {
-        // get link and alt text
-        const data = content.value
-        try {
-          mermaid.parse(data)
-        } catch (err) {
-          // calculate line in relation to node
-          const convert_line_to_absolute = (line: number, location: Location): Location => {
-            const lineoffset = line + location.start.line + 1
-            return {
-              start: {
-                offset: 0,
-                line: lineoffset,
-                column: 1,
-              },
-              end: {
-                offset: 9,
-                line: lineoffset,
-                column: 2,
-              },
-            }
-          }
-          if (typeof window !== 'undefined') {
-            if (!err['hash']) {
-              err['hash'] = { line: 0 }
-            }
-            node.custom = { ...err, location: convert_line_to_absolute(err['hash']['line'], node.location) }
-            writer.emit('errors', node.location)
-          }
-        }
-        return node
-      }
-    }
-  },
   toJSX: helper => () => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
     const id = getSafeNodeId(node, ctx)
     return helper(
       ({ children, key }) => {
-        return (
-          <Diagram key={key} id={id} isError={node.custom} caption={caption} chart={node.content[0]?.value ?? ''} />
-        )
+        return <Diagram key={key} id={id} caption={caption} chart={node.content[0]?.value ?? ''} />
       },
       node,
       interator(node.content, { ...ctx }),

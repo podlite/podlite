@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item upgrade mermaid to 11 (async render API), fixing known security advisories
+
 =head1 0.0.52
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest
