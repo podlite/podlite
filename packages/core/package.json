@@ -17,7 +17,11 @@
       "require": "./lib/index.js",
       "default": "./lib/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./lib/lint/*": {
+      "types": "./lib/lint/*.d.ts",
+      "default": "./lib/lint/*.js"
+    }
   },
   "funding": {
     "type": "opencollective",

@@ -1,11 +1,21 @@
 import { z } from 'zod'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { parseSource, validateSource } from './tools'
 
 const { version } = require('../package.json')
 
 const notImplemented = (tool: string) => {
   throw new Error(`${tool}: not implemented`)
 }
+
+type ToolResult = { content: Array<{ type: 'text'; text: string }>; isError?: boolean }
+
+const textResult = (text: string): ToolResult => ({ content: [{ type: 'text', text }] })
+
+const errorResult = (e: unknown): ToolResult => ({
+  content: [{ type: 'text', text: e instanceof Error ? e.message : String(e) }],
+  isError: true,
+})
 
 export const createServer = (): McpServer => {
   const server = new McpServer({ name: 'podlite', version })
@@ -19,7 +29,13 @@ export const createServer = (): McpServer => {
         text: z.string().describe('Podlite source text'),
       },
     },
-    async () => notImplemented('podlite_parse'),
+    async ({ text }) => {
+      try {
+        return textResult(JSON.stringify(parseSource(text), null, 2))
+      } catch (e) {
+        return errorResult(e)
+      }
+    },
   )
 
   server.registerTool(
@@ -32,7 +48,7 @@ export const createServer = (): McpServer => {
         text: z.string().describe('Podlite source text'),
       },
     },
-    async () => notImplemented('podlite_validate'),
+    async ({ text }) => textResult(JSON.stringify(validateSource(text), null, 2)),
   )
 
   server.registerTool(
