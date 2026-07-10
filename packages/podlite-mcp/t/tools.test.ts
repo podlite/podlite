@@ -1,4 +1,4 @@
-import { parseSource, validateSource } from '../src/tools'
+import { parseSource, renderSource, validateSource } from '../src/tools'
 
 const validDoc = `=begin pod
 =TITLE Notes
@@ -47,5 +47,27 @@ describe('validateSource', () => {
     expect(report.ok).toBe(false)
     const rules = report.problems.map(p => p.rule)
     expect(rules).toContain('attr-nested-angle')
+  })
+})
+
+describe('renderSource', () => {
+  const doc = `=begin pod
+=head1 Introduction
+
+First B<paragraph>
+=end pod
+`
+
+  it('renders html', () => {
+    const html = renderSource(doc, 'html')
+    expect(html).toContain('Introduction')
+    expect(html).toMatch(/<h1[\s>]/)
+    expect(html).toContain('<strong>paragraph</strong>')
+  })
+
+  it('renders markdown', () => {
+    const md = renderSource(doc, 'md')
+    expect(md).toContain('# Introduction')
+    expect(md).toContain('**paragraph**')
   })
 })

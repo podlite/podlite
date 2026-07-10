@@ -1,4 +1,5 @@
-import { parse, validatePodliteAst } from '@podlite/schema'
+import { parse, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
+import { podlite } from 'podlite'
 import { scanSourceRules } from 'podlite/lib/lint/grammar/scan'
 import { DEFAULT_RULES } from 'podlite/lib/lint/rules/index'
 import { runRules } from 'podlite/lib/lint/engine'
@@ -15,6 +16,15 @@ export type ValidateReport = {
 const virtualFile = 'input.podlite'
 
 export const parseSource = (text: string) => parse(text)
+
+export type RenderFormat = 'html' | 'md'
+
+export const renderSource = (text: string, format: RenderFormat): string => {
+  const p = podlite({ importPlugins: true })
+  const tree = p.toAst(p.parse(text, { podMode: 1 }))
+  const out = format === 'md' ? toMarkdown({}).run(tree) : toHtml({}).run(tree)
+  return out.toString()
+}
 
 export const validateSource = (text: string): ValidateReport => {
   const problems: Violation[] = [...scanSourceRules(text)]

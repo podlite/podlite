@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { parseSource, validateSource } from './tools'
+import { parseSource, renderSource, validateSource } from './tools'
 
 const { version } = require('../package.json')
 
@@ -61,7 +61,13 @@ export const createServer = (): McpServer => {
         format: z.enum(['html', 'md']).describe('Output format'),
       },
     },
-    async () => notImplemented('podlite_render'),
+    async ({ text, format }) => {
+      try {
+        return textResult(renderSource(text, format))
+      } catch (e) {
+        return errorResult(e)
+      }
+    },
   )
 
   server.registerTool(
