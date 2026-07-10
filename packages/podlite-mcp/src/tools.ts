@@ -1,4 +1,5 @@
-import { parse, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
+import { parse, parseSelector, runSelector, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
+import type { PodNode, SelectorDoc } from '@podlite/schema'
 import { podlite } from 'podlite'
 import { scanSourceRules } from 'podlite/lib/lint/grammar/scan'
 import { DEFAULT_RULES } from 'podlite/lib/lint/rules/index'
@@ -24,6 +25,55 @@ export const renderSource = (text: string, format: RenderFormat): string => {
   const tree = p.toAst(p.parse(text, { podMode: 1 }))
   const out = format === 'md' ? toMarkdown({}).run(tree) : toHtml({}).run(tree)
   return out.toString()
+}
+
+export type QueryFormat = 'podlite' | 'json' | 'html' | 'md'
+
+export type QueryReport = {
+  matchCount: number
+  output: string
+}
+
+const sliceBlock = (text: string, block: PodNode): string => {
+  const loc = (block as { location?: { start?: { offset?: number }; end?: { offset?: number } } }).location
+  if (typeof loc?.start?.offset !== 'number' || typeof loc?.end?.offset !== 'number') {
+    return ''
+  }
+  return text.slice(loc.start.offset, loc.end.offset)
+}
+
+const renderBlock = (block: PodNode, format: 'html' | 'md'): string => {
+  const root = { type: 'block', name: 'pod', margin: '', content: [block] } as unknown as PodNode
+  const out = format === 'md' ? toMarkdown({}).run(root) : toHtml({}).run(root)
+  return out.toString().trimEnd()
+}
+
+export const querySource = (selector: string, text: string, format: QueryFormat): QueryReport => {
+  if (!parseSelector(selector)) {
+    throw new Error(`Invalid selector: ${selector}`)
+  }
+  const docs: SelectorDoc[] = [{ file: virtualFile, node: parse(text) }]
+  const blocks: PodNode[] = []
+  for (const item of runSelector(selector, docs)) {
+    if (item && typeof item === 'object' && !('file' in (item as object))) {
+      blocks.push(item as PodNode)
+    }
+  }
+  let output: string
+  if (format === 'json') {
+    output = JSON.stringify(blocks, null, 2)
+  } else if (format === 'podlite') {
+    output = blocks
+      .map(b => sliceBlock(text, b).trimEnd())
+      .filter(Boolean)
+      .join('\n\n')
+  } else {
+    output = blocks
+      .map(b => renderBlock(b, format))
+      .filter(Boolean)
+      .join('\n\n')
+  }
+  return { matchCount: blocks.length, output }
 }
 
 export const validateSource = (text: string): ValidateReport => {

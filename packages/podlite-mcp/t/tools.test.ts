@@ -1,4 +1,4 @@
-import { parseSource, renderSource, validateSource } from '../src/tools'
+import { parseSource, querySource, renderSource, validateSource } from '../src/tools'
 
 const validDoc = `=begin pod
 =TITLE Notes
@@ -69,5 +69,45 @@ First B<paragraph>
     const md = renderSource(doc, 'md')
     expect(md).toContain('# Introduction')
     expect(md).toContain('**paragraph**')
+  })
+})
+
+describe('querySource', () => {
+  const doc = `=begin pod
+=head1 First
+
+=begin code :lang<js>
+const x = 1
+=end code
+
+=head1 Second
+
+=head2 Nested
+=end pod
+`
+
+  it('selects blocks by name', () => {
+    const report = querySource('head1', doc, 'podlite')
+    expect(report.matchCount).toBe(2)
+    expect(report.output).toContain('=head1 First')
+    expect(report.output).toContain('=head1 Second')
+    expect(report.output).not.toContain('Nested')
+  })
+
+  it('selects by attribute predicate', () => {
+    const report = querySource('code[:lang<js>]', doc, 'json')
+    expect(report.matchCount).toBe(1)
+    const blocks = JSON.parse(report.output)
+    expect(blocks[0].name).toBe('code')
+  })
+
+  it('returns zero matches without error', () => {
+    const report = querySource('formula', doc, 'podlite')
+    expect(report.matchCount).toBe(0)
+    expect(report.output).toBe('')
+  })
+
+  it('rejects an invalid selector', () => {
+    expect(() => querySource('[[', doc, 'podlite')).toThrow('Invalid selector')
   })
 })

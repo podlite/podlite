@@ -1,12 +1,8 @@
 import { z } from 'zod'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { parseSource, renderSource, validateSource } from './tools'
+import { parseSource, querySource, renderSource, validateSource } from './tools'
 
 const { version } = require('../package.json')
-
-const notImplemented = (tool: string) => {
-  throw new Error(`${tool}: not implemented`)
-}
 
 type ToolResult = { content: Array<{ type: 'text'; text: string }>; isError?: boolean }
 
@@ -82,7 +78,17 @@ export const createServer = (): McpServer => {
         format: z.enum(['podlite', 'json', 'html', 'md']).describe('Output format'),
       },
     },
-    async () => notImplemented('podlite_query'),
+    async ({ selector, text, format }) => {
+      try {
+        const report = querySource(selector, text, format)
+        if (report.matchCount === 0) {
+          return textResult('No matches.')
+        }
+        return textResult(report.output)
+      } catch (e) {
+        return errorResult(e)
+      }
+    },
   )
 
   return server
