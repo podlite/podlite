@@ -9,6 +9,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/podlite"><img src="https://img.shields.io/npm/v/podlite" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/podlite"><img src="https://img.shields.io/npm/dm/podlite" alt="npm downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
 </p>
 
@@ -17,6 +18,19 @@
 Podlite is a universal markup language unbound by any specific domain, programming language, or concept. It supports Markdown as a standard block, allowing familiar syntax alongside structured Podlite blocks.
 
 Extensibility is a core feature — define domain-specific blocks and expand the language to fit your project. Podlite works for documentation, blogs, educational materials, knowledge bases and more.
+
+**What it is:** one spec-defined grammar and one canonical AST — block boundaries and typed attributes that survive regeneration by AI agents and round-trips between tools.
+
+**What it is NOT:** a Markdown replacement for every case. Markdown wins on ubiquity, and your Markdown parses in unchanged. Podlite wins when structure has to be machine-checkable.
+
+### Try it
+
+```bash
+npm i @podlite/schema
+node -e "const {parse}=require('@podlite/schema'); console.dir(parse('=head1 Hello World'), {depth:5})"
+```
+
+Every node comes back typed, with a `location: { line, column }` — a structural break points at a line instead of vanishing into a re-render.
 
 ## Ecosystem
 
