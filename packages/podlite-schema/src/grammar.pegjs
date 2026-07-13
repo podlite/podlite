@@ -160,10 +160,11 @@ array_pairs =
                     { return { ...pair, ...pairs } }
               / code:pair_item { return code }
 
-allow_attribute = _ ':' key:'allow' value:(
+allow_attribute = _ ':' isFalse:[!]? key:'allow' value:(
   
   '<' _ array:array_codes _ '>'  { return { value:array, type:"array"}}
-) _  {return { name:'allow', ...value}}
+  / '<' _ '>'  { return { value:[], type:"array"}}
+) _  {return { name:'allow', ...value, ...(isFalse ? { isFalse: true } : {})}}
 
 array_sp = all:( _ i:item _ {return i})* { return all }/ res:item {return  [res]} / _ {return []}
 
@@ -185,7 +186,9 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   '<' _ array:array_items _ '>'  { return { value:array, type:"array" } }
   /
   '<' _ array: $(!('<'/'>') .)+ _ '>'  { return { value:array, type:"string" } }
-  / 
+  /
+  '<' _ '>'  { return { value:[], type:"array" } }
+  /
   '(' _ res:(array:array_items {
                                 // if one element (23) set type to 'value' 
                                  return  (array.length > 1)
@@ -206,7 +209,7 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
             type:"boolean"
           }
   }
-)  _  {return { name:key, ...value}}
+)  _  {return { name:key, ...value, ...(isFalse && value.type !== 'boolean' ? { isFalse: true } : {})}}
 
 pod_configuration = 
   first:attributes* newline 

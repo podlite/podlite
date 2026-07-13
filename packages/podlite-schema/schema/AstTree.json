@@ -280,6 +280,9 @@
                             ]
                         }
                     ]
+                },
+                "isFalse": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -329,6 +332,9 @@
                 },
                 "type": {
                     "type": "string"
+                },
+                "isFalse": {
+                    "type": "boolean"
                 }
             },
             "required": [

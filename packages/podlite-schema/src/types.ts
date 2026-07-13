@@ -334,6 +334,7 @@ export interface ConfigItem {
   name: string
   value: boolean | string | number | Array<string | number | boolean> | ConfigItemKV
   type: string
+  isFalse?: boolean
 }
 
 //TODO: rename it to Config like Alias ?

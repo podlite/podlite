@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>
+
+=item parse an empty attribute list like C<< :allow<> >> without breaking the block
+
 =head1 0.0.51
 
 =item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata
