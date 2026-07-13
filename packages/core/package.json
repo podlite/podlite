@@ -60,7 +60,10 @@
     "syntax-tree",
     "html",
     "document-parser",
-    "renderer"
+    "renderer",
+    "lint",
+    "canonical-ast",
+    "llm-tools"
   ],
   "author": "Aliaksandr Zahatski",
   "license": "MIT",

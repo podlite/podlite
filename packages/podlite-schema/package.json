@@ -63,7 +63,10 @@
     "visitor",
     "parser",
     "markdown",
-    "tree"
+    "tree",
+    "canonical-ast",
+    "validation",
+    "selectors"
   ],
   "dependencies": {
     "ajv": "^7.2.3",
