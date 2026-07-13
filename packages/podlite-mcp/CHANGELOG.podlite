@@ -1,0 +1,5 @@
+# @podlite/mcp
+
+=head1 Upcoming
+
+=item initial release: MCP stdio server with four tools — C<podlite_parse> (source to AST with locations), C<podlite_validate> (parse errors + lint rules + schema check), C<podlite_render> (HTML/Markdown), C<podlite_query> (structural selector over blocks)
