@@ -514,9 +514,7 @@ it('accepts =Image base', () => {
           >
         </a>
         <div class="caption">
-          <p>
-            A picture of a cat
-          </p>
+          A picture of a cat
         </div>
       </div>
     </div>
@@ -578,9 +576,7 @@ content ignored
           >
         </a>
         <div class="caption">
-          <p>
-            caption
-          </p>
+          caption
         </div>
       </div>
     </div>

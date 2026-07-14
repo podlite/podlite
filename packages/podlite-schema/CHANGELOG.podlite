@@ -8,6 +8,8 @@
 
 =item keep the C<|> url separator in a C<< L<> >> link when the display text opens with guillemet quotes
 
+=item export C<parseFormattingCodes> — parse a string into inline formatting-code nodes without block-directive parsing
+
 =head1 0.0.51
 
 =item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata

@@ -224,9 +224,7 @@ Image Diagram
            alt="undefined"
       >
       <div class="caption">
-        <p>
-          Image caption
-        </p>
+        Image caption
       </div>
     </div>
   `)

@@ -212,6 +212,7 @@ function makeTree() {
 export { makeTree as toTree }
 const parse: Function = makeTree().parse
 export { parse as parse }
+export { parse as parseFormattingCodes } from './grammarfc'
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'

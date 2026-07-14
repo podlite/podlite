@@ -11,6 +11,7 @@ import {
   subUse,
   setFn,
   wrapContent,
+  parseFormattingCodes,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -60,7 +61,7 @@ const Image: Plugin = {
         // make caption
         const captionContent = conf.exists('caption') ? conf.getFirstValue('caption') : captionText
         if (captionContent) {
-          resultContent.push(mkCaption(processor(captionContent)))
+          resultContent.push(mkCaption(parseFormattingCodes(captionContent, {})))
         }
 
         return { ...node, content: resultContent /* content_: node.content */ }

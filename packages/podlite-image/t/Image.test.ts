@@ -57,9 +57,7 @@ test.png
         >
       </a>
       <div class="caption">
-        <p>
-          testCaption
-        </p>
+        testCaption
       </div>
     </div>
   `)
