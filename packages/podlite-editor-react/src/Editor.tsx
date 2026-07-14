@@ -4,10 +4,13 @@ import Podlite from '@podlite/to-jsx'
 import { podlite as podlite_core } from 'podlite'
 import * as events from '@uiw/codemirror-extensions-events'
 import { podliteLang } from './podlite'
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { languages } from '@codemirror/language-data'
 import { defaultTheme } from './theme'
 import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
 import { foldGutter, foldKeymap, foldedRanges, foldEffect, unfoldEffect } from '@codemirror/language'
+import { search } from '@codemirror/search'
 import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
@@ -37,6 +40,8 @@ export interface ConverterResult {
 
 export interface IPodliteEditor extends ReactCodeMirrorProps {
   value?: string
+  /** Source language for editor syntax highlighting @default `podlite` */
+  language?: 'podlite' | 'markdown'
   /** Preview expanded width @default `50%` */
   previewWidth?: string
   /** Whether to enable preview function @default `true` */
@@ -123,6 +128,7 @@ function PodliteEditorInternal(
     onOpenLink,
     enableHighlighting = false,
     enableFolding = true,
+    language = 'podlite',
     initialEditorState,
     onEditorStateChange,
     onSaveAsset,
@@ -615,8 +621,9 @@ function PodliteEditorInternal(
 
   const extensionsData = React.useMemo(() => {
     const exts: IPodliteEditor['extensions'] = [
-      podliteLang(),
+      language === 'markdown' ? markdown({ base: markdownLanguage, codeLanguages: languages }) : podliteLang(),
       EditorView.lineWrapping,
+      search({ top: true }),
       stateChangeListener,
       itemLevelKeymap,
       listContinuationKeymap,
@@ -625,7 +632,8 @@ function PodliteEditorInternal(
     ]
 
     if (enableFolding) {
-      exts.push(podliteFoldService, foldGutter(), keymap.of(foldKeymap))
+      if (language === 'podlite') exts.push(podliteFoldService)
+      exts.push(foldGutter(), keymap.of(foldKeymap))
     }
 
     if (onOpenLink) {
@@ -649,6 +657,7 @@ function PodliteEditorInternal(
     preventToggleComment,
     autocompletionExt,
     enableFolding,
+    language,
     imagePasteDropHandler,
   ])
 

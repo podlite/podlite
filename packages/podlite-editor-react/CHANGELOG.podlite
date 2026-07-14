@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item add a C<language> prop (C<podlite> | C<markdown>) that selects editor syntax highlighting; C<markdown> highlights Markdown source and fenced code by language
+
+=item apply the Podlite fold service only under C<language> C<podlite>; Markdown folds by its own structure
+
+=item add a top-positioned find-and-replace search panel
+
 =head1 0.0.55
 
 =item entry now imports C<Editor.css> and C<podlite-vars.css> as a side effect. Consumers get styled output from C<import Editor2 from '@podlite/editor-react'> without a separate CSS import. C<sideEffects> manifest already lists C<**/*.css>, so tree-shaking is unaffected
