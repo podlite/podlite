@@ -3134,6 +3134,9 @@ function peg$parse(input, options) {
         peg$currPos = s4;
         s4 = peg$FAILED;
       }
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
       if (s4 !== peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 171) {
           s5 = peg$c57;
@@ -3396,6 +3399,9 @@ function peg$parse(input, options) {
           } else {
             peg$currPos = s4;
             s4 = peg$FAILED;
+          }
+          if (s4 === peg$FAILED) {
+            s4 = null;
           }
           if (s4 !== peg$FAILED) {
             if (input.charCodeAt(peg$currPos) === 171) {

@@ -85,7 +85,7 @@ separator = '|'
 text_L = text:$(
         (!'<' !allowed_code .) '<' text_L '>'
     / 
-        (!'«' !allowed_code .) '«' text_L? '»' 
+        (!'«' !allowed_code .)? '«' text_L? '»'
     / 
     !separator !end_code !start_code !looks_like_code . )+ { return text } 
 
