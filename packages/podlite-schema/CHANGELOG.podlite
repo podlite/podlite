@@ -14,6 +14,8 @@
 
 =item resolve C<< E<> >> entities inside an inline C<> code span, so literal angle brackets can be written as C<< E<lt> >> / C<< E<gt> >> without ending the code
 
+=item render a pipe table nested inside a structured C<=begin cell> as a grid instead of collapsing it to inline text
+
 =head1 0.0.51
 
 =item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata

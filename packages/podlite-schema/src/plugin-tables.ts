@@ -484,7 +484,7 @@ const isStructured = tableNode =>
 
 export default () => tree => {
   const transformer = makeTransformer({
-    table: node => {
+    table: (node, ctx, visiter) => {
       // CSV/data source reference (spec §1672):
       //   =table data:<key>      →  resolve =data block with :key<key>
       //   =table file:<path>     →  defer to host reader (not implemented here)
@@ -527,7 +527,10 @@ export default () => tree => {
           if (c && c.name === 'row') return wrapImplicitCells(c)
           return c
         })
-        return normalizeCellCounts({ ...node, content: transformedContent }, 'table')
+        // a matched rule replaces the node without descending, so recurse
+        // here or tables nested inside cells keep their raw text rows
+        const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
+        return normalizeCellCounts({ ...node, content: recursed }, 'table')
       }
       let rows = []
       const collectValues = row => {
