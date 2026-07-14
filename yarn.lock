@@ -2927,6 +2927,7 @@ __metadata:
   dependencies:
     "@types/node": ^17.0.7
     ajv: ^7.2.3
+    entities: ^4.5.0
     events: ^3.1.0
     glob: ^7.2.0
     json-pointer: ^0.6.1

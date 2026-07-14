@@ -10,6 +10,8 @@
 
 =item export C<parseFormattingCodes> — parse a string into inline formatting-code nodes without block-directive parsing
 
+=item resolve C<< E<> >> entities in the HTML exporter, matching the JSX renderer — named, decimal, and hexadecimal forms
+
 =head1 0.0.51
 
 =item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata

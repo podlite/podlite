@@ -15,6 +15,7 @@ import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId } from './ast-helpers'
+import { decodeHTMLStrict } from 'entities'
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     // handle text with content
@@ -43,6 +44,19 @@ const rules = {
     }
   },
   'C<>': wrapContent('<code>', '</code>'),
+  'E<>': (writer, processor) => (node, ctx, interator) => {
+    if ('content' in node && Array.isArray(node.content)) {
+      const decoded = node.content
+        .filter(e => e && e.type)
+        .map(element => {
+          if (element.type === 'number' && 'value' in element) return String.fromCharCode(element.value)
+          if (element.type === 'html_named' && 'value' in element) return decodeHTMLStrict(`&${element.value};`)
+          return ''
+        })
+        .join('')
+      writer.write(decoded)
+    }
+  },
   'D<>': (writer, processor) => (node, ctx, interator) => {
     // @ts-ignore
     let synonyms: Array<any> = { node }
