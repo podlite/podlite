@@ -16,6 +16,8 @@
 
 =item render a pipe table nested inside a structured C<=begin cell> as a grid instead of collapsing it to inline text
 
+=item add the C<=set> directive: assigns attributes to the next block, with delimited and multiline alias value syntaxes, continuation lines, transparency through directives and C<=comment>, per-scope targeting, and a warning when no target follows
+
 =head1 0.0.51
 
 =item remove the C<:fallback> resolver, C<materializeFallback>, and its provenance metadata

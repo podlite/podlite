@@ -39,6 +39,7 @@
         'pod',
         'row',
         'cell',
+        'set',
         'table',
         'toc',
           ].includes(name) 
@@ -72,13 +73,14 @@ Element =  delimitedBlockRaw
          / paragraphBlockRaw 
          / paragraphBlockTable
          / paragraphBlock
+         / setDirective
          / aliasDirective
          / configDirective
          / boundaryDirective
          / abbreviatedBlockRaw
          / abbreviatedBlockTable
          / abbreviatedBlock
-        / &{ return !!options.podMode === true } 
+        / &{ return !!options.podMode === true }
               n:(
                   textBlock
                 / blankline
@@ -427,6 +429,7 @@ delimitedBlock =
           / paragraphBlockRaw
           / paragraphBlockTable 
           / paragraphBlock
+          / setDirective
           / aliasDirective
           / configDirective
           / boundaryDirective
@@ -568,8 +571,44 @@ alias_replacement_text =
   cont:(_"= " _ rest:Text+ _ newline {return rest })*  {return flattenDeep([...first, ...cont])}
 
 
-aliasDirective = 
-  vmargin:$(_) 
+// =set assigns attributes to the next block. Configuration syntax carries
+// complete delimited attributes; alias syntax carries a value that may span
+// `=  ` continuation lines. A continuation starting with `:` holds new
+// attributes, any other continuation extends the current alias value.
+setLineAttrs = attrs:attributes+ _ EOL { return { kind:'attrs', attrs } }
+setLineAlias = _ ':' name:identifier hs+ value:$((!EOL .)+) EOL { return { kind:'alias', name, value } }
+setContLine = '=' hs+ seg:( setLineAttrs / v:$((!EOL .)*) EOL { return { kind:'value', value:v } } ) { return seg }
+
+setDirective =
+  vmargin:$(_)
+  '=set' hs+
+  first:( setLineAttrs / setLineAlias )
+  cont:setContLine*
+  {
+      const items = []
+      let pending = null
+      const flush = () => {
+        if (!pending) return
+        const value = pending.parts.map(s => s.trim()).filter(s => s.length).join(' ')
+        items.push({ name: pending.name, value, type: 'string' })
+        pending = null
+      }
+      for (const seg of [first, ...cont]) {
+        if (seg.kind === 'attrs') { flush(); items.push(...seg.attrs) }
+        else if (seg.kind === 'alias') { flush(); pending = { name: seg.name, parts: [seg.value] } }
+        else if (seg.kind === 'value' && pending) { pending.parts.push(seg.value) }
+      }
+      flush()
+      return {
+          type: 'set',
+          config: items,
+          margin: vmargin,
+          location: location()
+      }
+  }
+
+aliasDirective =
+  vmargin:$(_)
   marker:'=alias' _  name:$(identifier) _ replacement:alias_replacement_text
   {
       return {

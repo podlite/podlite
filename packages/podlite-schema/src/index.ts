@@ -29,6 +29,7 @@ import heading_plug from './plugin-heading'
 import defnGroup_plug from './plugin-group-defn'
 import itemsGroup_plug from './plugin-group-items'
 import defnTerms_plug from './plugin-defn-fill-term'
+import set_plug from './plugin-set'
 import table_plug from './plugin-tables'
 import data_table_plug from './plugin-data-table'
 
@@ -168,6 +169,7 @@ function makeTree() {
   chain.use = use
   chain.parse = parse
   chain.use(vmargin_plug)
+  chain.use(set_plug)
   chain.use(itemsNumbering_plug)
   chain.use(heading_plug)
   chain.use(defnTerms_plug)
