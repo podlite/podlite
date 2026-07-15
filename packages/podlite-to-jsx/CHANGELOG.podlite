@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item survive a crashing block renderer: the failed block degrades to an inline placeholder with a warning while the rest of the page renders; client-side, a per-block boundary keeps the preview alive on render errors
+
 =head1 0.0.55
 
 =item remove render-through-C<:fallback> for unknown Mixed-case blocks

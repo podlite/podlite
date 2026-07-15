@@ -32,6 +32,24 @@ import HighlightedCode from './HighlightedCode'
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }
 export type CreateElement = typeof React.createElement
+
+// Client-side safety net: a crash inside one block leaves the rest of the
+// page alive instead of unmounting the whole preview.
+export class BlockBoundary extends React.Component<{ blockName?: string; children?: React.ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error: Error) {
+    console.warn(`[to-jsx] block '${this.props.blockName || ''}' failed to render: ${error?.message}`)
+  }
+  render() {
+    if (this.state.failed) {
+      return <span className="podlite-render-error">[block {this.props.blockName || ''} failed to render]</span>
+    }
+    return this.props.children
+  }
+}
 const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHelper => {
   let i_key_i = 0
   let mapByType = {}
@@ -1048,12 +1066,32 @@ function podlite(
     })
     .use(rules)
     .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
-      if (!node || node.type !== 'block') return defaultFn()
-      if (ctx?.maskMode) return defaultFn()
-      const conf = makeAttrs(node, ctx || {})
-      if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
-      if (ctx?.renderMode === 'draft') return defaultFn()
-      return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+      // defaultFn chains to a single next rule, so masking and the render
+      // safety net share this one wildcard hook
+      const dispatch = () => {
+        if (!node || node.type !== 'block') return defaultFn()
+        if (ctx?.maskMode) return defaultFn()
+        const conf = makeAttrs(node, ctx || {})
+        if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
+        if (ctx?.renderMode === 'draft') return defaultFn()
+        return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+      }
+      const blockName = node && typeof node === 'object' ? node.name || node.type : undefined
+      let result
+      try {
+        result = dispatch()
+      } catch (error) {
+        console.warn(`[to-jsx] block '${blockName || ''}' failed to render: ${error?.message}`)
+        return createElement(
+          'span',
+          { key: ++i_key_i, className: 'podlite-render-error' },
+          `[block ${blockName || ''} failed to render]`,
+        )
+      }
+      if (node && typeof node === 'object' && node.type === 'block' && React.isValidElement(result)) {
+        return createElement(BlockBoundary, { key: ++i_key_i, blockName }, result)
+      }
+      return result
     })
     .run(ast, writer)
   // union main react elements and post processed via onEnd event
