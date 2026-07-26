@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item declare public npm access so the package publishes to the registry
+
 =head1 0.0.2
 
 =item initial release: MCP stdio server with four tools — C<podlite_parse> (source to AST with locations), C<podlite_validate> (parse errors + lint rules + schema check), C<podlite_render> (HTML/Markdown), C<podlite_query> (structural selector over blocks)
