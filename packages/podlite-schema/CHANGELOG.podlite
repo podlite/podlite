@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.52
+
 =item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>
 
 =item parse an empty attribute list like C<< :allow<> >> without breaking the block

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/toc",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "Auto-generate table of contents from Podlite documents",
   "main": "./lib/index.js",
   "sideEffects": false,

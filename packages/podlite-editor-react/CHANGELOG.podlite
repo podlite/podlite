@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.58
+
 =item add a C<language> prop (C<podlite> | C<markdown>) that selects editor syntax highlighting; C<markdown> highlights Markdown source and fenced code by language
 
 =item apply the Podlite fold service only under C<language> C<podlite>; Markdown folds by its own structure

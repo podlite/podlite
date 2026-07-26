@@ -2,6 +2,51 @@
 
 =head1 Upcoming
 
+=head1 0.0.72
+
+
+=head2 @podlite/diagram
+
+=item upgrade mermaid to 11 (async render API), fixing known security advisories
+
+=head2 @podlite/editor-react
+
+=item add a C<language> prop (C<podlite> | C<markdown>) that selects editor syntax highlighting; C<markdown> highlights Markdown source and fenced code by language
+
+=item apply the Podlite fold service only under C<language> C<podlite>; Markdown folds by its own structure
+
+=item add a top-positioned find-and-replace search panel
+
+=head2 @podlite/image
+
+=item render a picture caption as inline content — formatting codes and entities resolve, and a leading C<=directive> name stays literal instead of swallowing the caption
+
+=head2 @podlite/mcp
+
+=item initial release: MCP stdio server with four tools — C<podlite_parse> (source to AST with locations), C<podlite_validate> (parse errors + lint rules + schema check), C<podlite_render> (HTML/Markdown), C<podlite_query> (structural selector over blocks)
+
+=head2 @podlite/schema
+
+=item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>
+
+=item parse an empty attribute list like C<< :allow<> >> without breaking the block
+
+=item keep the C<|> url separator in a C<< L<> >> link when the display text opens with guillemet quotes
+
+=item export C<parseFormattingCodes> — parse a string into inline formatting-code nodes without block-directive parsing
+
+=item resolve C<< E<> >> entities in the HTML exporter, matching the JSX renderer — named, decimal, and hexadecimal forms
+
+=item resolve C<< E<> >> entities inside an inline C<> code span, so literal angle brackets can be written as C<< E<lt> >> / C<< E<gt> >> without ending the code
+
+=item render a pipe table nested inside a structured C<=begin cell> as a grid instead of collapsing it to inline text
+
+=item add the C<=set> directive: assigns attributes to the next block, with delimited and multiline alias value syntaxes, continuation lines, transparency through directives and C<=comment>, per-scope targeting, and a warning when no target follows
+
+=head2 @podlite/to-jsx
+
+=item survive a crashing block renderer: the failed block degrades to an inline placeholder with a warning while the rest of the page renders; client-side, a per-block boundary keeps the preview alive on render errors
+
 =head1 0.0.71
 
 
