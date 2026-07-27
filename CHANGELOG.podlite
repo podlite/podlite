@@ -2,6 +2,13 @@
 
 =head1 Upcoming
 
+=head1 0.0.73
+
+
+=head2 @podlite/mcp
+
+=item declare public npm access so the package publishes to the registry
+
 =head1 0.0.72
 
 
