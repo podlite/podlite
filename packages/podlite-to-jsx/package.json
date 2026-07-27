@@ -45,7 +45,11 @@
     },
     "./podlite.css": "./lib/podlite.css",
     "./lib/podlite.css": "./lib/podlite.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./lib/*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    }
   },
   "files": [
     "lib",
