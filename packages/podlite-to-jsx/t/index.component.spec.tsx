@@ -1156,3 +1156,13 @@ describe('task lists', () => {
     `)
   })
 })
+
+it('E<> with text content renders the text', () => {
+  render(<Podlite>{`E<foo bar>`}</Podlite>)
+  expect(root.innerHTML).toContain('foo bar')
+})
+
+it('E<> numeric and named entities still resolve', () => {
+  render(<Podlite>{`E<0x41>E<nbsp>`}</Podlite>)
+  expect(root.innerHTML).toContain('A')
+})

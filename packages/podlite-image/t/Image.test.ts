@@ -1,5 +1,14 @@
 // import  * as Image  from '../src';
-import { frozenIds, getFromTree, PodliteDocument, podlitePluggable, validateAstTree } from '@podlite/schema'
+import {
+  frozenIds,
+  getFromTree,
+  mkBlock,
+  mkImage,
+  mkRootBlock,
+  PodliteDocument,
+  podlitePluggable,
+  validateAstTree,
+} from '@podlite/schema'
 import Image from '../src/index'
 
 const parse = (str: string): PodliteDocument => {
@@ -61,4 +70,16 @@ test.png
       </div>
     </div>
   `)
+})
+
+it('Image block wrapping an inline image node keeps the src', () => {
+  let podlite = podlitePluggable().use({ Image, picture: Image })
+  const tree = mkRootBlock({}, [
+    mkBlock(
+      { type: 'block', name: 'Image', location: { start: { line: 1, column: 1 }, end: { line: 1, column: 1 } } },
+      [mkImage('https://example.org/badge.svg', 'build')],
+    ),
+  ])
+  const html = podlite.toHtml(frozenIds()(podlite.toAst(tree))).toString()
+  expect(html).toContain('src="https://example.org/badge.svg"')
 })

@@ -35,7 +35,10 @@ export type CreateElement = typeof React.createElement
 
 // Client-side safety net: a crash inside one block leaves the rest of the
 // page alive instead of unmounting the whole preview.
-export class BlockBoundary extends React.Component<{ blockName?: string; children?: React.ReactNode }, { failed: boolean }> {
+export class BlockBoundary extends React.Component<
+  { blockName?: string; children?: React.ReactNode },
+  { failed: boolean }
+> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
@@ -548,13 +551,19 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     'E<>': (writer, processor) => (node, ctx, interator) => {
       if ('content' in node && Array.isArray(node.content))
         return node.content
-          .filter(e => e && e.type)
+          .filter(Boolean)
           .map(element => {
+            if (typeof element == 'string') {
+              return element
+            }
             if (element.type == 'number' && 'value' in element) {
               return String.fromCharCode(element.value)
             }
             if (element.type == 'html_named' && 'value' in element) {
               return decodeHTMLStrict(`&${element.value};`)
+            }
+            if (element.type == 'text' && 'value' in element) {
+              return element.value
             }
             console.warn(`[jsx] E<> unsupported or unknown element type: ${element.type}`)
             return ''

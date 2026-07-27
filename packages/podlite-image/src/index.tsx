@@ -46,6 +46,9 @@ const Image: Plugin = {
   toAst: (_, processor) => (node, ctx) => {
     if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
       const content = node.content[0]
+      if (content && typeof content !== 'string' && content.type === 'image') {
+        return node
+      }
       if (content && typeof content !== 'string' && 'location' in node && 'value' in content) {
         // get src and alt text
         const lines = content.value.split('\n')

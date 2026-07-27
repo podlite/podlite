@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item Image block keeps the src when its content is an inline image node
+
 =head1 0.0.51
 
 =item render a picture caption as inline content — formatting codes and entities resolve, and a leading C<=directive> name stays literal instead of swallowing the caption
