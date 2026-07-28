@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.61
+
 =item stop importing global css from the entry — import C<@podlite/editor-react/Editor.css> and C<@podlite/editor-react/podlite-vars.css> in your app
 
 =head1 0.0.58

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/mcp",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "MCP server for Podlite: parse, validate, render, and query tools for AI agents",
   "keywords": [
     "podlite",
