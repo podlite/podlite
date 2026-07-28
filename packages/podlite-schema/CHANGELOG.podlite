@@ -6,6 +6,8 @@
 
 =item markdown export keeps the checkbox state of task list items
 
+=item a checkbox or numbering marker at the start of an item no longer drops the formatting codes written on the same line
+
 =head1 0.0.52
 
 =item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>

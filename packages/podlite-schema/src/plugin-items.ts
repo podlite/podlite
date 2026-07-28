@@ -1,3 +1,23 @@
+// At this point the leading content element is still an unparsed text node;
+// formatting codes are built from its value further down the pipeline. Cut the
+// marker out of that value and leave the node in place — replacing the array
+// with a plain string ends the chain early and drops every L<>, C<> and B< >
+// written on the same line.
+const stripMarker = (para, re) => {
+  para.text = para.text.replace(re, '')
+  if (para.type !== 'para') return
+  if (!Array.isArray(para.content)) {
+    para.content = [para.text]
+    return
+  }
+  const first = para.content[0]
+  if (typeof first === 'string') {
+    para.content[0] = first.replace(re, '')
+  } else if (first && typeof first.value === 'string') {
+    first.value = first.value.replace(re, '')
+  }
+}
+
 export default () => tree => {
   const visit = node => {
     if (Array.isArray(node)) {
@@ -26,10 +46,7 @@ export default () => tree => {
                 const checkboxMatch = checkboxRe.exec(startText.text)
                 if (checkboxMatch) {
                   node.checked = checkboxMatch[1] === 'x'
-                  startText.text = startText.text.replace(checkboxRe, '')
-                  if (startText.type === 'para') {
-                    startText.content = [startText.text]
-                  }
+                  stripMarker(startText, checkboxRe)
                   node.config = node.config || []
                   node.config.push({
                     name: 'checked',
@@ -42,10 +59,7 @@ export default () => tree => {
               let re = /^(\s*#\s*)/
               const match = re.exec(startText.text)
               if (match) {
-                startText.text = startText.text.replace(re, '')
-                if (startText.type === 'para') {
-                  startText.content = [startText.text]
-                }
+                stripMarker(startText, re)
                 node.config = node.config || []
                 node.config.push({
                   name: 'numbered',
