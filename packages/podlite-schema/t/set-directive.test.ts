@@ -34,19 +34,42 @@ const attr = (block: any, name: string) => (block?.config || []).find((c: any) =
 
 describe('=set directive', () => {
   it('assigns configuration syntax attributes to the next block', () => {
-    const table = findBlock(parseToAst(`=set :caption('Product comparison') :id<table-1>\n\n=begin table\nA | B\n=end table\n`), 'table')
+    const table = findBlock(
+      parseToAst(`=set :caption('Product comparison') :id<table-1>\n\n=begin table\nA | B\n=end table\n`),
+      'table',
+    )
     expect(attr(table, 'caption')).toMatchObject({ value: 'Product comparison' })
     expect(attr(table, 'id')).toMatchObject({ value: 'table-1' })
   })
 
   it('joins a multiline alias value with single spaces', () => {
-    const src = ['=set :caption Selected B<chemical> elements with their', '=          L<atomic numbers|#elements> and symbols', '', '=begin table', 'A | B', '=end table', ''].join('\n')
+    const src = [
+      '=set :caption Selected B<chemical> elements with their',
+      '=          L<atomic numbers|#elements> and symbols',
+      '',
+      '=begin table',
+      'A | B',
+      '=end table',
+      '',
+    ].join('\n')
     const table = findBlock(parseToAst(src), 'table')
-    expect(attr(table, 'caption').value).toBe('Selected B<chemical> elements with their L<atomic numbers|#elements> and symbols')
+    expect(attr(table, 'caption').value).toBe(
+      'Selected B<chemical> elements with their L<atomic numbers|#elements> and symbols',
+    )
   })
 
   it('mixes configuration and alias continuation lines', () => {
-    const src = ['=set :id<special-table>', '=    :folded<true>', '=set :caption Product Metrics', '=          with detailed analysis', '', '=begin table', 'A | B', '=end table', ''].join('\n')
+    const src = [
+      '=set :id<special-table>',
+      '=    :folded<true>',
+      '=set :caption Product Metrics',
+      '=          with detailed analysis',
+      '',
+      '=begin table',
+      'A | B',
+      '=end table',
+      '',
+    ].join('\n')
     const table = findBlock(parseToAst(src), 'table')
     expect(attr(table, 'id').value).toBe('special-table')
     expect(attr(table, 'folded').value).toBe('true')
@@ -54,13 +77,30 @@ describe('=set directive', () => {
   })
 
   it('passes through directives and comment blocks to the next real block', () => {
-    const src = ['=set :caption Renewable energy', '=config table :width<100%>', '=alias COMPANY Acme Corp', '=comment Approved', '=begin table', 'A | B', '=end table', ''].join('\n')
+    const src = [
+      '=set :caption Renewable energy',
+      '=config table :width<100%>',
+      '=alias COMPANY Acme Corp',
+      '=comment Approved',
+      '=begin table',
+      'A | B',
+      '=end table',
+      '',
+    ].join('\n')
     const table = findBlock(parseToAst(src), 'table')
     expect(attr(table, 'caption').value).toBe('Renewable energy')
   })
 
   it('keeps the last assignment when the same key repeats', () => {
-    const src = ['=set :caption First', '=set :caption Revised version', '', '=begin table', 'A | B', '=end table', ''].join('\n')
+    const src = [
+      '=set :caption First',
+      '=set :caption Revised version',
+      '',
+      '=begin table',
+      'A | B',
+      '=end table',
+      '',
+    ].join('\n')
     expect(attr(findBlock(parseToAst(src), 'table'), 'caption').value).toBe('Revised version')
   })
 
