@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.58
+
 =item E<> renders string and text-node content instead of dropping it
 
 =head1 0.0.56

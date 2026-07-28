@@ -2,6 +2,17 @@
 
 =head1 Upcoming
 
+=head1 0.0.74
+
+
+=head2 @podlite/image
+
+=item Image block keeps the src when its content is an inline image node
+
+=head2 @podlite/to-jsx
+
+=item E<> renders string and text-node content instead of dropping it
+
 =head1 0.0.73
 
 

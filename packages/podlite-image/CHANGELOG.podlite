@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.53
+
 =item Image block keeps the src when its content is an inline image node
 
 =head1 0.0.51
