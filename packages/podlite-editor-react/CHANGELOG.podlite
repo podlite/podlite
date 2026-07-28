@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item stop importing global css from the entry — import C<@podlite/editor-react/Editor.css> and C<@podlite/editor-react/podlite-vars.css> in your app
+
 =head1 0.0.58
 
 =item add a C<language> prop (C<podlite> | C<markdown>) that selects editor syntax highlighting; C<markdown> highlights Markdown source and fenced code by language

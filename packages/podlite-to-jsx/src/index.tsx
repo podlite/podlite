@@ -1,4 +1,3 @@
-import './podlite.css'
 import * as React from 'react'
 import { createElement } from 'react'
 import { podlite as podlite_core } from 'podlite'

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item stop importing global css from the entry — import C<@podlite/to-jsx/podlite.css> in your app (Next.js: in C<_app>)
+
 =head1 0.0.58
 
 =item E<> renders string and text-node content instead of dropping it
