@@ -1,4 +1,4 @@
-import { frozenIds, isValidateError, podlitePluggable } from '@podlite/schema'
+import { frozenIds, isValidateError, podlitePluggable, toMarkdown } from '@podlite/schema'
 import { validateAstTree } from '@podlite/schema'
 import { md2ast } from '../src/tools'
 import { PodliteDocument } from '@podlite/schema'
@@ -1912,4 +1912,17 @@ it('[markdown]: parse images', () => {
       "type": "block",
     }
   `)
+})
+
+it('checkbox state survives a round trip through markdown', () => {
+  const md = toMarkdown({}).run('=pod\n=item [x] done\n=item [ ] open\n').toString()
+  const items: any[] = []
+  const walk = (n: any) => {
+    if (Array.isArray(n)) return n.forEach(walk)
+    if (!n || typeof n !== 'object') return
+    if (n.name === 'item') items.push(n)
+    walk(n.content)
+  }
+  walk(md2ast(md))
+  expect(items.map(i => i.checked)).toEqual([true, false])
 })

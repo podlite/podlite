@@ -4,6 +4,8 @@
 
 =item html export emits C<:id> as an anchor on any block, not only on headings
 
+=item markdown export keeps the checkbox state of task list items
+
 =head1 0.0.52
 
 =item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>

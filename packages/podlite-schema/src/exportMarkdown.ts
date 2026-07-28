@@ -238,6 +238,9 @@ const rules = {
     } else {
       prefix = '- '
     }
+    if (node.checked !== undefined) {
+      prefix += node.checked ? '[x] ' : '[ ] '
+    }
     writer.writeRaw(indent + prefix)
     if (node.content) interator(node.content, ctx)
   },

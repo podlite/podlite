@@ -57,6 +57,19 @@ describe('toMarkdown', () => {
       expect(result).toContain('- Second')
       expect(result).toContain('- Third')
     })
+
+    it('task list keeps checkbox state', () => {
+      const result = render('=pod\n=item [x] done\n=item [ ] open\n=item plain\n')
+      expect(result).toContain('- [x] done')
+      expect(result).toContain('- [ ] open')
+      expect(result).toContain('- plain')
+    })
+
+    it('task list from the checked attribute', () => {
+      const result = render('=pod\n=for item :checked\ndone\n=for item :!checked\nopen\n')
+      expect(result).toContain('- [x] done')
+      expect(result).toContain('- [ ] open')
+    })
   })
 
   describe('tables', () => {
