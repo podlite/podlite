@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item html export emits C<:id> as an anchor on any block, not only on headings
+
 =head1 0.0.52
 
 =item keep the C<!> negation marker on list attributes like C<< :!allow<G> >>

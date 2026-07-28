@@ -14,8 +14,14 @@ import makeAttrs from './helpers/config'
 import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId } from './ast-helpers'
+import { getNodeId, getExplicitNodeId } from './ast-helpers'
 import { decodeHTMLStrict } from 'entities'
+
+const openTag = (tag: string, node, ctx, attrs = '') => {
+  const id = getExplicitNodeId(node, ctx)
+  return `<${tag}${id ? ` id="${id}"` : ''}${attrs}>`
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     // handle text with content
@@ -186,7 +192,7 @@ const rules = {
 
   pod: content,
   ':code': wrapContent('<pre><code>', '</code></pre>'),
-  code: handleNested(wrapContent('<pre><code>', '</code></pre>')),
+  code: handleNested(setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<code>`, '</code></pre>'))),
   data: emptyContent,
   ':verbatim': (writer, processor) => (node, ctx, interator) => {
     if (node.error) {
@@ -217,8 +223,16 @@ const rules = {
   }),
 
   // block =para
-  para: handleNested(content),
-  ':para': wrapContent('<p>', '</p>'),
+  // With an :id the block owns the <p> so the anchor lands on it; without one
+  // the inner paragraph renders as before.
+  para: handleNested(
+    setFn((node, ctx) =>
+      getExplicitNodeId(node, ctx)
+        ? subUse({ ':para': content }, wrapContent(openTag('p', node, ctx), '</p>'))
+        : content,
+    ),
+  ),
+  ':para': setFn((node, ctx) => wrapContent(openTag('p', node, ctx), '</p>')),
   'head:block': subUse(
     {
       // inside head don't wrap into <p>
@@ -235,12 +249,12 @@ const rules = {
   ),
   ':list': setFn((node, ctx) =>
     node.list === 'ordered'
-      ? wrapContent('<ol>', '</ol>')
+      ? wrapContent(openTag('ol', node, ctx), '</ol>')
       : node.list === 'variable'
-      ? wrapContent('<dl>', '</dl>')
+      ? wrapContent(openTag('dl', node, ctx), '</dl>')
       : node.list === 'task'
-      ? wrapContent('<ul class="task-list">', '</ul>')
-      : wrapContent('<ul>', '</ul>'),
+      ? wrapContent(openTag('ul', node, ctx, ' class="task-list"'), '</ul>')
+      : wrapContent(openTag('ul', node, ctx), '</ul>'),
   ),
   'item:block': (writer, processor) => (node, ctx, interator) => {
     // make text from first para
@@ -250,10 +264,10 @@ const rules = {
     const isTask = node.checked !== undefined
 
     if (isTask) {
-      writer.writeRaw('<li class="task-list-item">')
+      writer.writeRaw(openTag('li', node, ctx, ' class="task-list-item"'))
       writer.writeRaw(node.checked ? '<input type="checkbox" disabled checked> ' : '<input type="checkbox" disabled> ')
     } else {
-      writer.writeRaw('<li>')
+      writer.writeRaw(openTag('li', node, ctx))
     }
 
     interator(node.content, ctx)
@@ -262,23 +276,37 @@ const rules = {
   'comment:block': emptyContent,
   'boundary:block': (writer, processor) => (node, ctx) => {
     const conf = makeAttrs(node, ctx)
+    const id = getExplicitNodeId(node, ctx)
+    const idAttr = id ? ` id="${id}"` : ''
     if (conf.exists('caption')) {
-      writer.writeRaw('<hr title="')
+      writer.writeRaw(`<hr${idAttr} title="`)
       writer.write(conf.getFirstValue('caption'))
       writer.writeRaw('">')
     } else {
-      writer.writeRaw('<hr>')
+      writer.writeRaw(`<hr${idAttr}>`)
     }
   },
-  defn: wrapContent('', '</dd>'),
+  // The term opens the pair, so an :id on the definition lands on its <dt>.
+  defn: setFn((node, ctx) => {
+    const id = getExplicitNodeId(node, ctx)
+    return id
+      ? subUse({ 'term:para': wrapContent(`<dt id="${id}">`, '</dt><dd>') }, wrapContent('', '</dd>'))
+      : wrapContent('', '</dd>')
+  }),
   'term:para': wrapContent('<dt>', '</dt><dd>'),
   nested: handleNested(content, 1),
-  output: handleNested(wrapContent('<pre><samp>', '</samp></pre>'), 1),
-  input: handleNested(wrapContent('<pre><kbd>', '</kbd></pre>'), 1),
+  output: handleNested(
+    setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<samp>`, '</samp></pre>')),
+    1,
+  ),
+  input: handleNested(
+    setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<kbd>`, '</kbd></pre>')),
+    1,
+  ),
   // table section
   'table:block': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
-    writer.writeRaw('<table>')
+    writer.writeRaw(openTag('table', node, ctx))
     if (conf.exists('caption')) {
       writer.writeRaw('<caption>')
       writer.write(conf.getFirstValue('caption'))

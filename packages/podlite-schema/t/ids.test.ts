@@ -4,6 +4,7 @@ import {
   getTextContentFromNode,
   mkRootBlock,
   PodliteDocument,
+  toHtml,
   toTree,
   validatePodliteAst,
 } from '@podlite/schema'
@@ -143,6 +144,46 @@ test`)
       "type": "block",
     }
   `)
+})
+
+describe('html anchors from :id', () => {
+  const html = (src: string) => toHtml({}).run(src).toString()
+
+  it('every local link has a target', () => {
+    const out = html(`=for item :id<D-1>
+first
+
+=for item :id<D-2>
+second, see L<back|#D-1>
+`)
+    const targets = [...out.matchAll(/href="#([^"]+)"/g)].map(m => m[1])
+    expect(targets).toEqual(['D-1'])
+    targets.forEach(id => expect(out).toContain(`id="${id}"`))
+  })
+
+  it('paragraph', () => {
+    expect(html(`=for para :id<P-1>\ntext\n`)).toContain('<p id="P-1">')
+  })
+
+  it('generated node id stays out of the output', () => {
+    expect(html(`=for para\ntext\n`)).toContain('<p>')
+  })
+
+  it('table', () => {
+    expect(html(`=begin table :id<T-1>\n a b\n=end table\n`)).toContain('<table id="T-1">')
+  })
+
+  it('code', () => {
+    expect(html(`=begin code :id<C-1>\nsource\n=end code\n`)).toContain('<pre id="C-1"><code>')
+  })
+
+  it('definition', () => {
+    expect(html(`=begin defn :id<DF-1>\nterm\nbody\n=end defn\n`)).toContain('<dt id="DF-1">')
+  })
+
+  it('boundary', () => {
+    expect(html(`=for boundary :id<B-1>\n`)).toContain('<hr id="B-1">')
+  })
 })
 
 it('[slugifyText] multypass', () => {
