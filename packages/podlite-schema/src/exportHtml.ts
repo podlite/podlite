@@ -105,6 +105,13 @@ const rules = {
     }
     return wrapContent(`<a href="${meta}">`, `</a>`)
   }),
+  'W<>': setFn((node, ctx) => {
+    let { meta } = node
+    if (meta === null) {
+      meta = node.content
+    }
+    return wrapContent(`<a href="${meta}" class="backlink">`, `</a>`)
+  }),
 
   /**
      * CSS rules for footnotes

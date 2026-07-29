@@ -124,6 +124,9 @@
                     "$ref": "#/definitions/FormattingCodeL"
                 },
                 {
+                    "$ref": "#/definitions/FormattingCodeW"
+                },
+                {
                     "$ref": "#/definitions/FormattingCodeN"
                 },
                 {
@@ -1099,6 +1102,9 @@
                                 "$ref": "#/definitions/FormattingCodeL"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeW"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeN"
                             },
                             {
@@ -1946,6 +1952,9 @@
                                 "$ref": "#/definitions/FormattingCodeL"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeW"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeN"
                             },
                             {
@@ -2213,6 +2222,51 @@
                 "type"
             ]
         },
+        "FormattingCodeW": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "fcode"
+                },
+                "name": {
+                    "type": "string",
+                    "const": "W"
+                },
+                "meta": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "content": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "$ref": "#/definitions/Text"
+                                }
+                            ],
+                            "minItems": 1,
+                            "maxItems": 1
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "content",
+                "meta",
+                "name",
+                "type"
+            ]
+        },
         "FormattingCodeN": {
             "type": "object",
             "properties": {
@@ -2251,6 +2305,9 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeW"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeN"
@@ -2333,6 +2390,9 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeW"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeN"
@@ -2469,6 +2529,9 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeW"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeN"

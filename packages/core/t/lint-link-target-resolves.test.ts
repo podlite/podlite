@@ -29,6 +29,11 @@ describe('link-target-resolves rule', () => {
     expect(check('=for para :id<A>\nSee L<#B>.\n')).toHaveLength(1)
   })
 
+  it('covers contextual backlinks', () => {
+    expect(check('=for para :id<A>\nSee W<there|#A>.\n')).toEqual([])
+    expect(check('=for para :id<A>\nSee W<there|#nowhere>.\n')).toHaveLength(1)
+  })
+
   it('leaves external targets alone', () => {
     const src =
       '=for para :id<A>\nL<a|https://example.com> L<b|file:other.podlite> L<c|doc:Other#Z> L<d|mailto:x@y.z>\n'

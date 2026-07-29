@@ -687,6 +687,23 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         </a>
       ))
     }),
+    'W<>': setFn((node, ctx) => {
+      let { meta } = node
+      if (meta === null) {
+        meta = node.content
+      }
+      if (Array.isArray(meta)) {
+        meta = meta[0]
+      }
+      if (meta && typeof meta !== 'string' && 'value' in meta) {
+        meta = meta.value
+      }
+      return mkComponent(({ children, key }) => (
+        <a href={meta} key={key} className="backlink">
+          {children}
+        </a>
+      ))
+    }),
     'S<>': (writer, processor) => (node, ctx, interator) => {
       let content = node.content || ''
       if (typeof content !== 'string' && 'value' in content) {

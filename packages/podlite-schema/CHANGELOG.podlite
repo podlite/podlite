@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item add the C<< W<> >> contextual backlink markup code — same link shape as C<< L<> >>, rendered with a distinguishing class in HTML and JSX
+
 =item html export emits C<:id> as an anchor on any block, not only on headings
 
 =item markdown export keeps the checkbox state of task list items

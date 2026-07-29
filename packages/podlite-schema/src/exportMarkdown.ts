@@ -70,6 +70,13 @@ const rules = {
     }
     return wrapContent(`[`, `](${meta})`)
   }),
+  'W<>': setFn((node, ctx) => {
+    let { meta } = node
+    if (meta === null) {
+      meta = node.content
+    }
+    return wrapContent(`[`, `](${meta})`)
+  }),
 
   'N<>': (writer, processor) => {
     writer.addListener('end', () => {

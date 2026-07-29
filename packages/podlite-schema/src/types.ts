@@ -49,6 +49,7 @@ export interface RulesStrict {
   'X<>': RuleHandler<FormattingCodeX>
   'S<>': RuleHandler<FormattingCodeS>
   'L<>': RuleHandler<FormattingCodeL>
+  'W<>': RuleHandler<FormattingCodeW>
   'U<>': RuleHandler<FormattingCodeAny>
   'Z<>': RuleHandler<FormattingCodeAny>
   'O<>': RuleHandler<FormattingCodeAny>
@@ -268,6 +269,13 @@ export interface FormattingCodeL {
   content: string | Text | [Text] // TODO: link content can contain other formatting codes
 }
 
+export interface FormattingCodeW {
+  type: 'fcode'
+  name: 'W'
+  meta: string | null
+  content: string | Text | [Text]
+}
+
 export interface FormattingCodeI {
   type: 'fcode'
   name: 'I'
@@ -482,6 +490,7 @@ export type FormattingCodes =
   | FormattingCodeF
   | FormattingCodeI
   | FormattingCodeL
+  | FormattingCodeW
   | FormattingCodeN
   | FormattingCodeX
   | FormattingCodeZ
