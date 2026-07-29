@@ -632,12 +632,8 @@ it('spec: 00-maintests 5', () => {
           },
           Object {
             "name": "k3",
-            "type": "array",
-            "value": Array [
-              "23",
-              23233,
-              333,
-            ],
+            "type": "string",
+            "value": "'23', 23233, 333",
           },
         ],
         "margin": "",

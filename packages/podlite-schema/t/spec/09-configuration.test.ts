@@ -379,13 +379,19 @@ it('spec: 09-configuration 3', () => {
             "config": Array [
               Object {
                 "name": "title",
-                "type": "string",
-                "value": "presentation template",
+                "type": "array",
+                "value": Array [
+                  "presentation",
+                  "template",
+                ],
               },
               Object {
                 "name": "author",
-                "type": "string",
-                "value": "John Brown",
+                "type": "array",
+                "value": Array [
+                  "John",
+                  "Brown",
+                ],
               },
               Object {
                 "name": "pubdate",
@@ -437,7 +443,7 @@ it('spec: 09-configuration 3', () => {
 it('spec: 09-configuration 4', () => {
   const pod = `
 =begin pod
-=for table :caption<Table of contents>
+=for table :caption('Table of contents')
     foo bar
 =end pod
 
@@ -455,7 +461,7 @@ it('spec: 09-configuration 4', () => {
             "config": Array [
               Object {
                 "name": "caption",
-                "type": "string",
+                "type": "value",
                 "value": "Table of contents",
               },
             ],
@@ -478,7 +484,7 @@ it('spec: 09-configuration 4', () => {
               "end": Object {
                 "column": 1,
                 "line": 5,
-                "offset": 63,
+                "offset": 65,
               },
               "start": Object {
                 "column": 1,
@@ -495,7 +501,7 @@ it('spec: 09-configuration 4', () => {
           "end": Object {
             "column": 1,
             "line": 6,
-            "offset": 72,
+            "offset": 74,
           },
           "start": Object {
             "column": 1,
@@ -700,10 +706,8 @@ foo
         "config": Array [
           Object {
             "name": "k1",
-            "type": "array",
-            "value": Array [
-              1,
-            ],
+            "type": "string",
+            "value": "1",
           },
           Object {
             "name": "k2",

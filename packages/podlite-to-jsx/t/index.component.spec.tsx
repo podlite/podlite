@@ -497,7 +497,7 @@ it('accepts =Image base', () => {
     <Podlite>
       {`
   =begin pod
-  =for Image :id<1> :caption<A picture of a cat> :link<https://example.com/cat.jpg>
+  =for Image :id<1> :caption('A picture of a cat') :link<https://example.com/cat.jpg>
   alternative https://www.example.org
   =end pod
 `}
@@ -879,7 +879,7 @@ describe(':folded attribute', () => {
     render(
       <Podlite>
         {`=begin pod
-=begin nested :notify<tip> :folded :caption<Pro Tip>
+=begin nested :notify<tip> :folded :caption('Pro Tip')
 This is a tip that is collapsed by default.
 =end nested
 =end pod`}
@@ -907,7 +907,7 @@ This is a tip that is collapsed by default.
     render(
       <Podlite>
         {`=begin pod
-=begin nested :notify<warning> :!folded :caption<Important Warning>
+=begin nested :notify<warning> :!folded :caption('Important Warning')
 This warning is expanded by default.
 =end nested
 =end pod`}
@@ -967,7 +967,7 @@ Expanded note.
     render(
       <Podlite>
         {`=begin pod
-=for table :folded :caption<Data Table>
+=for table :folded :caption('Data Table')
   A   B   C
   1   2   3
 =end pod`}
@@ -1019,7 +1019,7 @@ Expanded note.
     render(
       <Podlite>
         {`=begin pod
-=for table :!folded :caption<Expanded Table>
+=for table :!folded :caption('Expanded Table')
   X   Y
   1   2
 =end pod`}

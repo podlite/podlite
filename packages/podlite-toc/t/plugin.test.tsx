@@ -177,11 +177,11 @@ it('[check default list]=toc', () => {
 it.skip('=toc Image Diagram1', () => {
   const pod = `=for toc :title<Table of Media>
   Image Diagram 
-    =for Image :caption<Image caption> :id(1)
+    =for Image :caption('Image caption') :id(1)
     https://example.com.image.png
     =Image https://example.com.image.png
     
-    =for Diagram :caption<Diagram caption> :id(2)
+    =for Diagram :caption('Diagram caption') :id(2)
     User content
     `
   const nodes = getFromTree(parseImage(pod), ':image')
@@ -193,9 +193,9 @@ it.skip('=toc Image Diagram1', () => {
 it('=toc Image Diagram', () => {
   const pod = `=for toc :title<Table of Media>
 Image Diagram 
-  =for Image :caption<Image caption> :id(1)
+  =for Image :caption('Image caption') :id(1)
   https://example.com.image.png
-  =for Diagram :caption<Diagram caption> :id(2)
+  =for Diagram :caption('Diagram caption') :id(2)
   User content
   `
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`

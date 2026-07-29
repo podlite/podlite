@@ -61,7 +61,7 @@ is $r.config<pubdate>, 2011;
 
 #---
 =begin pod
-=for table :caption<Table of contents>
+=for table :caption('Table of contents')
     foo bar
 =end pod
 #---

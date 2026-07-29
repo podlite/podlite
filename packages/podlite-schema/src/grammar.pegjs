@@ -168,14 +168,33 @@ allow_attribute = _ ':' isFalse:[!]? key:'allow' value:(
   / '<' _ '>'  { return { value:[], type:"array"}}
 ) _  {return { name:'allow', ...value, ...(isFalse ? { isFalse: true } : {})}}
 
+// A list element written without quotes. Only the list-shaped values use it:
+// the parenthesised form keeps a permissive fallback that swallows anything up
+// to the closing paren, and letting bare words in there would cut that short.
+bareWord = $([^ \t\r\n,<>\[\]{}()'"]+)
+
+listItem = item / bareWord
+
+list_items =
+          code:listItem ( hs+ / _','_ ) codes:list_items
+                            { return flattenDeep([ code, codes ]) }
+          / code:listItem { return [code] }
+
+// Angle brackets hold a list only when the content is separated by whitespace:
+// `<a b>` is a list, `<a>` and `<a,b>` are strings. Requiring at least one
+// separator keeps single values and comma-joined text out of the list branch.
+angle_list =
+          first:listItem rest:( hs+ i:listItem { return i })+
+                            { return flattenDeep([ first, ...rest ]) }
+
 array_sp = all:( _ i:item _ {return i})* { return all }/ res:item {return  [res]} / _ {return []}
 
 attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   
   '{' _  hash:array_pairs _ '}' { return { value:hash, type:"map" } }
   /
-   '['  _ array:(  
-              array:array_items  { return array }  
+   '['  _ array:(
+              array:list_items  { return array }
               /     
               $(!(']'/'[') .)+ {return [text()]}     
               ) _ ']'  
@@ -185,9 +204,13 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
               }  
     } 
   /
-  '<' _ array:array_items _ '>'  { return { value:array, type:"array" } }
+  '<' _ array:angle_list _ '>'  { return { value:array, type:"array" } }
   /
-  '<' _ array: $(!('<'/'>') .)+ _ '>'  { return { value:array, type:"string" } }
+  '<' _ ['] text:$([^']*) ['] _ '>'  { return { value:text, type:"string" } }
+  /
+  '<' _ ["] text:$([^"]*) ["] _ '>'  { return { value:text, type:"string" } }
+  /
+  '<' _ text: $(!('<'/'>') .)+ '>'  { return { value:text.trim(), type:"string" } }
   /
   '<' _ '>'  { return { value:[], type:"array" } }
   /
@@ -205,8 +228,14 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
                     ...res
                   }
         }
-  / _ 
-  { return { 
+  /
+  ['] text:$([^']*) ['] { return { value:text, type:"string" } }
+  /
+  ["] text:$([^"]*) ["] { return { value:text, type:"string" } }
+  /
+  '｢' text:$([^｣]*) '｣' { return { value:text, type:"string" } }
+  / _
+  { return {
             value:!isFalse,
             type:"boolean"
           }
@@ -235,7 +264,7 @@ item =  // quoted strings
         // float number
         numberFloat:floatNumber { return parseFloat(numberFloat) } /
         // number
-        number:number { return parseInt(number,10) } 
+        number:number { return parseInt(number,10) }
 
 
 delimitedBlockRaw = 
