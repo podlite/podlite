@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`:folded-levels rendering in JSX (per-item conditional fold) full document with :folded-levels[2,3] renders correctly (snapshot) 1`] = `
+exports[`:folded-levels rendering in JSX (per-item conditional fold) full document with :folded-levels(2,3) renders correctly (snapshot) 1`] = `
 <div id="id">
   <div class="toc">
     <div class="toctitle">

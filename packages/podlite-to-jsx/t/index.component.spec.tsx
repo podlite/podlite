@@ -367,7 +367,7 @@ it('accepts =output', () => {
   render(
     <Podlite>
       {`
-=for code :allow(T)
+=for code :allow<T>
 T<output>
 =begin output
 Print? B<K<n>>

@@ -52,6 +52,18 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     const rawTree = toTree()
       .use(idMiddleware)
       .parse(text, { ...opt, diagnostics })
+    // one mistake inside a value reports twice: for the value and for the whole
+    // attribute around it. The narrower report names the place to fix
+    const innermost = diagnostics.filter(
+      d =>
+        !diagnostics.some(
+          other =>
+            other !== d &&
+            other.location.start.offset >= d.location.start.offset &&
+            other.location.end.offset <= d.location.end.offset,
+        ),
+    )
+    diagnostics.splice(0, diagnostics.length, ...innermost)
     const root = mkRootBlock({ margin: '' }, rawTree)
     return diagnostics.length ? { ...root, diagnostics } : root
   }

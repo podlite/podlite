@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> square brackets and bare text in parentheses are no longer attribute values. C<:tags[a,b]> and C<:mime-type(text/csv)> now drop the attribute and report it; write C<< :tags<a b> >> and C<:mime-type('text/csv')>
+
 =item read the option form inside braces: C<< :key{:a<x>, :b} >> and C<:key{:!a}> next to the arrow form
 
 =item a value that cannot be read no longer breaks the block: the attribute is dropped and the parser reports it on the root node as C<diagnostics>

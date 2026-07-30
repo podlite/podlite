@@ -14,7 +14,7 @@ describe(':folded-levels rendering in JSX (per-item conditional fold)', () => {
       <Podlite>
         {`
 =begin pod
-=for toc :folded-levels[2]
+=for toc :folded-levels(2)
 head1, head2, head3
 
 =head1 Top
@@ -43,7 +43,7 @@ head1, head2, head3
       <Podlite>
         {`
 =begin pod
-=for toc :folded-levels[2]
+=for toc :folded-levels(2)
 head1, head2, head3
 
 =head1 Top
@@ -83,7 +83,7 @@ head1, head2
       <Podlite>
         {`
 =begin pod
-=for toc :folded-levels[2]
+=for toc :folded-levels(2)
 head1, head2
 
 =head1 Top
@@ -167,12 +167,12 @@ head1
     expect(root.innerHTML).toContain('<summary class="toctitle">Contents</summary>')
   })
 
-  it('full document with :folded-levels[2,3] renders correctly (snapshot)', () => {
+  it('full document with :folded-levels(2,3) renders correctly (snapshot)', () => {
     render(
       <Podlite>
         {`
 =begin pod
-=for toc :folded-levels[2,3] :caption('Contents')
+=for toc :folded-levels(2,3) :caption('Contents')
 head1, head2, head3
 
 =head1 Introduction

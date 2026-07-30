@@ -191,17 +191,11 @@ allow_attribute = _ ':' isFalse:[!]? key:'allow' value:(
   / '<' _ '>'  { return { value:[], type:"array"}}
 ) _  {return { name:'allow', ...value, ...(isFalse ? { isFalse: true } : {})}}
 
-// A list element written without quotes. Only the list-shaped values use it:
-// the parenthesised form keeps a permissive fallback that swallows anything up
-// to the closing paren, and letting bare words in there would cut that short.
+// A list element written without quotes. Angle brackets are the only value form
+// that takes one.
 bareWord = $([^ \t\r\n,<>\[\]{}()'"]+)
 
 listItem = item / bareWord
-
-list_items =
-          code:listItem ( hs+ / _','_ ) codes:list_items
-                            { return flattenDeep([ code, codes ]) }
-          / code:listItem { return [code] }
 
 // Angle brackets hold a list only when the content is separated by whitespace:
 // `<a b>` is a list, `<a>` and `<a,b>` are strings. Requiring at least one
@@ -220,16 +214,13 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   /
   '{' $(!('}'/newline) .)* '}'  { return { unreadable:true, location:location() } }
   /
-   '['  _ array:(
-              array:list_items  { return array }
-              /     
-              $(!(']'/'[') .)+ {return [text()]}     
-              ) _ ']'  
-    { return   { 
-                value:array,
-                type:"array"
-              }  
-    } 
+  '[' $(!(']'/newline) .)* ']'
+    { return {
+              unreadable:true,
+              location:location(),
+              message:"Square brackets are not an attribute value form; write a list with angle brackets or parentheses"
+             }
+    }
   /
   '<' _ array:angle_list _ '>'  { return { value:array, type:"array" } }
   /
@@ -245,14 +236,21 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
                                  return  (array.length > 1)
                                         ? { type:'array', value:array }
                                         : { type:valueKind(array[0]), value:array[0] };
-                               }
-        /
-        $(!(')'/'(') .)+ {return { type:"string", value:text() } }) _ ')'
+                               }) _ ')'
         { return res }
   /
   '(' _ ')'  { return { value:[], type:"array" } }
   /
-  '(' $(!(')'/newline) .)* ')'  { return { unreadable:true, location:location() } }
+  // a nested set is left as written: the norm has not settled nesting yet
+  '(' _ text:$(':' (!(')'/'(') .)*) ')'  { return { value:text, type:"string" } }
+  /
+  '(' $(!(')'/newline) .)* ')'
+    { return {
+              unreadable:true,
+              location:location(),
+              message:"Bare text in parentheses; quote it or use a number"
+             }
+    }
   /
   ['] text:$([^']*) ['] { return { value:text, type:"string" } }
   /
@@ -267,7 +265,7 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   }
 )  _  {
       if (value.unreadable) {
-        addDiagnostic(options, `cannot read the value of :${key}`, value.location)
+        addDiagnostic(options, value.message || `cannot read the value of :${key}`, value.location)
         return { name:key, dropped:true }
       }
       return { name:key, ...value, ...(isFalse && value.type !== 'boolean' ? { isFalse: true } : {})}

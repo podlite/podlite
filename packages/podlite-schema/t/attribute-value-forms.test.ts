@@ -60,12 +60,10 @@ describe('attribute value forms', () => {
     expect(value(':k<False>')).toMatchObject({ value: 'False', type: 'string' })
   })
 
-  it('square brackets give a list', () => {
-    expect(value(':k[a,b]')).toMatchObject({ value: ['a', 'b'], type: 'array' })
-  })
-
-  it('square brackets with one element stay a list', () => {
-    expect(value(':k[a]')).toMatchObject({ value: ['a'], type: 'array' })
+  it('square brackets are not a value form', () => {
+    expect(value(':k[a,b]')).toBeUndefined()
+    expect(value(':k[a]')).toBeUndefined()
+    expect(value(':k[]')).toBeUndefined()
   })
 
   it('empty parentheses give an empty list', () => {
@@ -138,7 +136,7 @@ describe('a value that cannot be read', () => {
     const [first, ...rest] = parseRoot(':k(1_000)').diagnostics
     expect(rest).toEqual([])
     expect(first.severity).toBe('warning')
-    expect(first.message).toBe('cannot read the value of :k')
+    expect(first.message).toBe('Bare text in parentheses; quote it or use a number')
     expect(first.location.start).toMatchObject({ line: 1, column: 13 })
   })
 
@@ -147,13 +145,48 @@ describe('a value that cannot be read', () => {
     const block = findBlock(ast, 'para')[0]
     expect(block).toBeDefined()
     expect(block.config).toEqual([])
+    const reported = parseRoot(':k{:a(1_000)}').diagnostics
+    expect(reported).toHaveLength(1)
+    expect(reported[0].message).toBe('Bare text in parentheses; quote it or use a number')
   })
 
-  it('a bare word in parentheses still reads as a string', () => {
-    expect(value(':k(spec)')).toMatchObject({ value: 'spec', type: 'string' })
+  it('a hash that is not readable at all names the attribute', () => {
+    expect(parseRoot(':k{a b}').diagnostics[0].message).toBe('cannot read the value of :k')
   })
 
   it('a document without such values carries no diagnostics', () => {
     expect(parseRoot(':k<a b>').diagnostics).toBeUndefined()
+  })
+})
+
+describe('value forms the norm does not have', () => {
+  const messageFor = (attrs: string) => parseRoot(attrs).diagnostics?.[0]?.message
+
+  it('bare text in parentheses is rejected', () => {
+    expect(value(':k(spec)')).toBeUndefined()
+    expect(value(':k(text/csv)')).toBeUndefined()
+    expect(messageFor(':k(spec)')).toBe('Bare text in parentheses; quote it or use a number')
+  })
+
+  it('a Q-quoted string is bare text too', () => {
+    expect(value(':k(Q[str])')).toBeUndefined()
+    expect(messageFor(':k(Q[str])')).toBe('Bare text in parentheses; quote it or use a number')
+  })
+
+  it('square brackets are rejected with their own message', () => {
+    expect(messageFor(':k[a,b]')).toBe(
+      'Square brackets are not an attribute value form; write a list with angle brackets or parentheses',
+    )
+  })
+
+  it('numbers, quoted strings and their lists are untouched', () => {
+    expect(value(':k(42)')).toMatchObject({ value: 42, type: 'number' })
+    expect(value(':k(2,3)')).toMatchObject({ value: [2, 3], type: 'array' })
+    expect(value(":k('a','b')")).toMatchObject({ value: ['a', 'b'], type: 'array' })
+    expect(value(':k(True)')).toMatchObject({ value: true, type: 'boolean' })
+  })
+
+  it('a nested set is left as written', () => {
+    expect(value(':k(:align<right>)')).toMatchObject({ value: ':align<right>', type: 'string' })
   })
 })

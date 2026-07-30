@@ -562,18 +562,6 @@ it('spec: 00-maintests 4', () => {
             "type": "string",
             "value": "str",
           },
-          Object {
-            "name": "k4",
-            "type": "array",
-            "value": Array [
-              "str",
-            ],
-          },
-          Object {
-            "name": "k5",
-            "type": "string",
-            "value": "Q[str]",
-          },
         ],
         "content": Array [
           Object {

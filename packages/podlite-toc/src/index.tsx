@@ -124,7 +124,7 @@ export const plugin: Plugin = {
       }
 
       // Parse :folded-levels attribute. Supports both forms:
-      //   :folded-levels[2,3]          -> {2: true, 3: true}     (every listed level folded)
+      //   :folded-levels(2,3)          -> {2: true, 3: true}     (every listed level folded)
       //   :folded-levels{2=>1, 3=>0}   -> {2: true, 3: false}    (per-level folding state)
       let foldedLevels: Record<number, boolean> | undefined
       if (conf.exists('folded-levels')) {

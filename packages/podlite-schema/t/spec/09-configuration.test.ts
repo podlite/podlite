@@ -634,18 +634,6 @@ foo
             "type": "string",
             "value": "str",
           },
-          Object {
-            "name": "k4",
-            "type": "array",
-            "value": Array [
-              "str",
-            ],
-          },
-          Object {
-            "name": "k5",
-            "type": "string",
-            "value": "Q[str]",
-          },
         ],
         "content": Array [
           Object {
@@ -714,41 +702,6 @@ foo
             "type": "number",
             "value": 2,
           },
-          Object {
-            "name": "k3",
-            "type": "array",
-            "value": Array [
-              2,
-            ],
-          },
-          Object {
-            "name": "k4",
-            "type": "array",
-            "value": Array [
-              2000000000,
-            ],
-          },
-          Object {
-            "name": "k5",
-            "type": "array",
-            "value": Array [
-              -2000000000,
-            ],
-          },
-          Object {
-            "name": "k6",
-            "type": "array",
-            "value": Array [
-              100000000000000000,
-            ],
-          },
-          Object {
-            "name": "k7",
-            "type": "array",
-            "value": Array [
-              -100000000000000000,
-            ],
-          },
         ],
         "content": Array [
           Object {
@@ -813,30 +766,9 @@ foo
             "value": 2.3,
           },
           Object {
-            "name": "k2",
-            "type": "array",
-            "value": Array [
-              -2.3,
-            ],
-          },
-          Object {
-            "name": "k3",
-            "type": "array",
-            "value": Array [
-              10000,
-            ],
-          },
-          Object {
             "name": "k4",
             "type": "number",
             "value": 31000,
-          },
-          Object {
-            "name": "k5",
-            "type": "array",
-            "value": Array [
-              -0.00031,
-            ],
           },
         ],
         "content": Array [
@@ -912,23 +844,9 @@ foo
             "value": true,
           },
           Object {
-            "name": "k4",
-            "type": "array",
-            "value": Array [
-              true,
-            ],
-          },
-          Object {
             "name": "k5",
             "type": "boolean",
             "value": false,
-          },
-          Object {
-            "name": "k6",
-            "type": "array",
-            "value": Array [
-              false,
-            ],
           },
         ],
         "content": Array [
@@ -990,17 +908,6 @@ foo
         "config": Array [
           Object {
             "name": "k1",
-            "type": "array",
-            "value": Array [
-              1,
-              "b c",
-              2.3,
-              true,
-              false,
-            ],
-          },
-          Object {
-            "name": "k2",
             "type": "array",
             "value": Array [
               1,
@@ -1203,22 +1110,7 @@ foo
         "type": "blankline",
       },
       Object {
-        "config": Array [
-          Object {
-            "name": "k6",
-            "type": "array",
-            "value": Array [
-              1e+30,
-            ],
-          },
-          Object {
-            "name": "k7",
-            "type": "array",
-            "value": Array [
-              -1e+30,
-            ],
-          },
-        ],
+        "config": Array [],
         "content": Array [
           Object {
             "content": Array [

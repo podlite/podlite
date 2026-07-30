@@ -196,21 +196,21 @@ Rule four
     expect(ids).toEqual(['r1', 'r3'])
   })
 
-  it('contains operator matches a square-bracket list', () => {
-    const src = `=begin pod\n=begin defn :id<s1> :tags[podlite,spec,reference]\nOne\n=end defn\n=begin defn :id<s2> :tags[axona, design]\nTwo\n=end defn\n=end pod\n`
+  it('contains operator matches a member of a list', () => {
+    const src = `=begin pod\n=begin defn :id<s1> :tags<podlite spec reference>\nOne\n=end defn\n=begin defn :id<s2> :tags<axona  design>\nTwo\n=end defn\n=end pod\n`
     const blocks = runSelector('file:./**/*.podlite | *[:tags~<spec>]', [makeDoc('kb/a.podlite', src)]) as any[]
     const ids = blocks.map(b => b.config?.find((c: any) => c.name === 'id')?.value)
     expect(ids).toEqual(['s1'])
   })
 
-  it('contains operator ignores padding after a comma', () => {
-    const src = `=begin pod\n=begin defn :id<s2> :tags[axona, design]\nTwo\n=end defn\n=end pod\n`
+  it('contains operator ignores extra whitespace between elements', () => {
+    const src = `=begin pod\n=begin defn :id<s2> :tags<axona  design>\nTwo\n=end defn\n=end pod\n`
     const blocks = runSelector('file:./**/*.podlite | *[:tags~<design>]', [makeDoc('kb/a.podlite', src)]) as any[]
     expect(blocks.length).toBe(1)
   })
 
   it('exact-match operator does not match a member of a list', () => {
-    const src = `=begin pod\n=begin defn :id<s1> :tags[podlite,spec]\nOne\n=end defn\n=end pod\n`
+    const src = `=begin pod\n=begin defn :id<s1> :tags<podlite spec>\nOne\n=end defn\n=end pod\n`
     const blocks = runSelector('file:./**/*.podlite | *[:tags<spec>]', [makeDoc('kb/a.podlite', src)]) as any[]
     expect(blocks).toEqual([])
   })
