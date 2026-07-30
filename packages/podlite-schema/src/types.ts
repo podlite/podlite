@@ -175,6 +175,15 @@ export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'marg
 export interface RootBlock extends Omit<Block, 'location'> {
   name: 'root'
   content: AstTree
+  diagnostics?: Array<ParseDiagnostic>
+}
+
+// reported by the parser, not part of the document: a value that could not be
+// read is dropped together with its attribute
+export interface ParseDiagnostic {
+  severity: 'warning'
+  message: string
+  location: Location
 }
 
 // pod6 definitions

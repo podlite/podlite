@@ -88,3 +88,40 @@ describe('attribute value forms', () => {
     expect(value(':k(True)')).toMatchObject({ value: true, type: 'boolean' })
   })
 })
+
+const parseRoot = (attrs: string): any => {
+  const p = podlitePluggable()
+  return p.parse(`=for para ${attrs}\ntext\n`, { podMode: 1 })
+}
+
+describe('a value that cannot be read', () => {
+  it('drops its own attribute and keeps the block', () => {
+    const ast = parseToAst('=for para :id<one> :k(1_000)\ntext\n')
+    const block = findBlock(ast, 'para')[0]
+    expect(block).toBeDefined()
+    expect(block.config.map((c: any) => c.name)).toEqual(['id'])
+  })
+
+  it('reports the position of the dropped value', () => {
+    const [first, ...rest] = parseRoot(':k(1_000)').diagnostics
+    expect(rest).toEqual([])
+    expect(first.severity).toBe('warning')
+    expect(first.message).toBe('cannot read the value of :k')
+    expect(first.location.start).toMatchObject({ line: 1, column: 13 })
+  })
+
+  it('an option inside braces is dropped until it is read', () => {
+    const ast = parseToAst('=for para :k{:a<x>}\ntext\n')
+    const block = findBlock(ast, 'para')[0]
+    expect(block).toBeDefined()
+    expect(block.config).toEqual([])
+  })
+
+  it('a bare word in parentheses still reads as a string', () => {
+    expect(value(':k(spec)')).toMatchObject({ value: 'spec', type: 'string' })
+  })
+
+  it('a document without such values carries no diagnostics', () => {
+    expect(parseRoot(':k<a b>').diagnostics).toBeUndefined()
+  })
+})

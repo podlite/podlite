@@ -48,9 +48,12 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
   }
 
   instance.parse = (text, opt: parseOpt = { skipChain: 0, podMode: 1 }) => {
-    const rawTree = toTree().use(idMiddleware).parse(text, opt)
+    const diagnostics = opt.diagnostics || []
+    const rawTree = toTree()
+      .use(idMiddleware)
+      .parse(text, { ...opt, diagnostics })
     const root = mkRootBlock({ margin: '' }, rawTree)
-    return root
+    return diagnostics.length ? { ...root, diagnostics } : root
   }
 
   instance.toAst = ast => {

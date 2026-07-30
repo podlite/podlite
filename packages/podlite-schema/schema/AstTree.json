@@ -1295,6 +1295,12 @@
                 "content": {
                     "$ref": "#/definitions/AstTree"
                 },
+                "diagnostics": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ParseDiagnostic"
+                    }
+                },
                 "margin": {
                     "type": "string"
                 },
@@ -1331,6 +1337,26 @@
             "items": {
                 "$ref": "#/definitions/PodNode"
             }
+        },
+        "ParseDiagnostic": {
+            "type": "object",
+            "properties": {
+                "severity": {
+                    "type": "string",
+                    "const": "warning"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
+                }
+            },
+            "required": [
+                "location",
+                "message",
+                "severity"
+            ]
         },
         "Image": {
             "type": "object",

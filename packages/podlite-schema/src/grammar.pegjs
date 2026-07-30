@@ -24,6 +24,21 @@
     return 'string'
   }
 
+  // the same marker line is attempted by several block rules, so one broken
+  // value reaches this more than once
+  function addDiagnostic(options, message, location) {
+    if (!options || !Array.isArray(options.diagnostics)) return
+    const seen = options.diagnostics.some(d =>
+      d.message === message && d.location.start.offset === location.start.offset)
+    if (!seen) {
+      options.diagnostics.push({ severity: 'warning', message, location })
+    }
+  }
+
+  function keepReadable(attrs) {
+    return attrs.filter(a => !a.dropped)
+  }
+
   function isSupportedBlockName(name) {
       return [
         'boundary',
@@ -70,7 +85,7 @@
 
 Document = nodes:Element*  { return nodes }
 
-attributesOnly = _ attrs:attributes* _ { return attrs }
+attributesOnly = _ attrs:attributes* _ { return keepReadable(attrs) }
 
 Element =  delimitedBlockRaw
          / delimitedBlockTableStructured
@@ -201,6 +216,8 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   /
   '{' _ '}'  { return { value:{}, type:"map" } }
   /
+  '{' $(!('}'/newline) .)* '}'  { return { unreadable:true, location:location() } }
+  /
    '['  _ array:(
               array:list_items  { return array }
               /     
@@ -233,6 +250,8 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   /
   '(' _ ')'  { return { value:[], type:"array" } }
   /
+  '(' $(!(')'/newline) .)* ')'  { return { unreadable:true, location:location() } }
+  /
   ['] text:$([^']*) ['] { return { value:text, type:"string" } }
   /
   ["] text:$([^"]*) ["] { return { value:text, type:"string" } }
@@ -244,11 +263,17 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
             type:"boolean"
           }
   }
-)  _  {return { name:key, ...value, ...(isFalse && value.type !== 'boolean' ? { isFalse: true } : {})}}
+)  _  {
+      if (value.unreadable) {
+        addDiagnostic(options, `cannot read the value of :${key}`, value.location)
+        return { name:key, dropped:true }
+      }
+      return { name:key, ...value, ...(isFalse && value.type !== 'boolean' ? { isFalse: true } : {})}
+   }
 
-pod_configuration = 
-  first:attributes* newline 
-  cont:("=" _ rest:attributes+ _ newline {return rest })*  {return flattenDeep([...first, ...cont])}
+pod_configuration =
+  first:attributes* newline
+  cont:("=" _ rest:attributes+ _ newline {return rest })*  {return keepReadable(flattenDeep([...first, ...cont]))}
 
 string = text:$([^'"]+){ return text}
 
