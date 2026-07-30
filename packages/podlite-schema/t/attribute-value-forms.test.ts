@@ -55,6 +55,11 @@ describe('attribute value forms', () => {
     expect(value(':k<1>')).toMatchObject({ value: '1', type: 'string' })
   })
 
+  it('True and False in angle brackets stay strings', () => {
+    expect(value(':k<True>')).toMatchObject({ value: 'True', type: 'string' })
+    expect(value(':k<False>')).toMatchObject({ value: 'False', type: 'string' })
+  })
+
   it('square brackets give a list', () => {
     expect(value(':k[a,b]')).toMatchObject({ value: ['a', 'b'], type: 'array' })
   })
