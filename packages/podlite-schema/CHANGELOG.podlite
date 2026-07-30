@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item read the option form inside braces: C<< :key{:a<x>, :b} >> and C<:key{:!a}> next to the arrow form
+
 =item a value that cannot be read no longer breaks the block: the attribute is dropped and the parser reports it on the root node as C<diagnostics>
 
 =item read C<:key()> as an empty list and C<:key{}> as an empty hash instead of breaking the block

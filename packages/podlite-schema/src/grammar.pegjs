@@ -175,8 +175,10 @@ array_items =
 
 identifierKey = $([a-zA-Z0-9]+[a-zA-Z0-9_-]*)
 
-// $k1=>$v1,$k2=>$v2
-pair_item =  name:identifierKey _( ',' / '=>')_ value:item { return { [name]: value } }
+// $k1=>$v1,$k2=>$v2 or the option form, read by the rules of the marker line
+pair_item =
+             attr:attributes &{ return !attr.dropped } { return { [attr.name]: attr.value } }
+             / name:identifierKey _( ',' / '=>')_ value:item { return { [name]: value } }
 
 array_pairs = 
               pair:pair_item  _','_  pairs:array_pairs 

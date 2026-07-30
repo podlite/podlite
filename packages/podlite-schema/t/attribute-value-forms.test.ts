@@ -89,6 +89,38 @@ describe('attribute value forms', () => {
   })
 })
 
+describe('options inside braces', () => {
+  const mapValue = (attrs: string) => value(attrs)?.value
+
+  it('an option with a value becomes an entry', () => {
+    expect(mapValue(':k{:a<x>}')).toEqual({ a: 'x' })
+    expect(mapValue(':k{:a(42)}')).toEqual({ a: 42 })
+    expect(mapValue(":k{:a('s')}")).toEqual({ a: 's' })
+  })
+
+  it('an option with no value is true, a negated one is false', () => {
+    expect(mapValue(':k{:a}')).toEqual({ a: true })
+    expect(mapValue(':k{:!a}')).toEqual({ a: false })
+  })
+
+  it('options and arrow entries mix in one hash', () => {
+    expect(mapValue(':k{:a<x>, :b}')).toEqual({ a: 'x', b: true })
+    expect(mapValue(':k{a=>1, :b<x>}')).toEqual({ a: 1, b: 'x' })
+  })
+
+  it('an arrow entry reads its value as one string, an option reads it as a list', () => {
+    expect(mapValue(":k{a=>'x y'}")).toEqual({ a: 'x y' })
+    expect(mapValue(':k{:a<x y>}')).toEqual({ a: ['x', 'y'] })
+  })
+
+  it('a numeric option key is not a valid key', () => {
+    const ast = parseToAst('=for para :k{:1}\ntext\n')
+    const block = findBlock(ast, 'para')[0]
+    expect(block).toBeDefined()
+    expect(block.config).toEqual([])
+  })
+})
+
 const parseRoot = (attrs: string): any => {
   const p = podlitePluggable()
   return p.parse(`=for para ${attrs}\ntext\n`, { podMode: 1 })
@@ -110,8 +142,8 @@ describe('a value that cannot be read', () => {
     expect(first.location.start).toMatchObject({ line: 1, column: 13 })
   })
 
-  it('an option inside braces is dropped until it is read', () => {
-    const ast = parseToAst('=for para :k{:a<x>}\ntext\n')
+  it('a broken option value drops the whole hash', () => {
+    const ast = parseToAst('=for para :k{:a(1_000)}\ntext\n')
     const block = findBlock(ast, 'para')[0]
     expect(block).toBeDefined()
     expect(block.config).toEqual([])
