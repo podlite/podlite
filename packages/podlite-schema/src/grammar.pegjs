@@ -18,6 +18,12 @@
    return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
   }
 
+  function valueKind(v) {
+    if (typeof v === 'number') return 'number'
+    if (typeof v === 'boolean') return 'boolean'
+    return 'string'
+  }
+
   function isSupportedBlockName(name) {
       return [
         'boundary',
@@ -215,19 +221,13 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   '<' _ '>'  { return { value:[], type:"array" } }
   /
   '(' _ res:(array:array_items {
-                                // if one element (23) set type to 'value' 
                                  return  (array.length > 1)
                                         ? { type:'array', value:array }
-                                        : { type:'value', value:array[0] };
-                               } 
-        / 
-        $(!(')'/'(') .)+ {return { value:text() } }) _ ')' 
-        {
-            return { 
-                    type:"value", 
-                    ...res
-                  }
-        }
+                                        : { type:valueKind(array[0]), value:array[0] };
+                               }
+        /
+        $(!(')'/'(') .)+ {return { type:"string", value:text() } }) _ ')'
+        { return res }
   /
   ['] text:$([^']*) ['] { return { value:text, type:"string" } }
   /

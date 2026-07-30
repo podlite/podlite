@@ -31,12 +31,12 @@ foo
       },
       {
         "name": "k2",
-        "type": "value",
+        "type": "string",
         "value": "str"
       },
       {
         "name": "k3",
-        "type": "value",
+        "type": "string",
         "value": "str"
       },
       {
@@ -48,7 +48,7 @@ foo
       },
       {
         "name": "k5",
-        "type": "value",
+        "type": "string",
         "value": "Q[str]"
       }
     ],

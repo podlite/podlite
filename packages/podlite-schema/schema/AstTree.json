@@ -334,7 +334,7 @@
                     ]
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/ConfigItemType"
                 },
                 "isFalse": {
                     "type": "boolean"
@@ -345,6 +345,16 @@
                 "type",
                 "value"
             ]
+        },
+        "ConfigItemType": {
+            "enum": [
+                "array",
+                "boolean",
+                "map",
+                "number",
+                "string"
+            ],
+            "type": "string"
         },
         "BlockData": {
             "type": "object",

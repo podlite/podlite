@@ -293,7 +293,7 @@ it('spec: 09-configuration 2', () => {
             "config": Array [
               Object {
                 "name": "number",
-                "type": "value",
+                "type": "number",
                 "value": 42,
               },
               Object {
@@ -395,7 +395,7 @@ it('spec: 09-configuration 3', () => {
               },
               Object {
                 "name": "pubdate",
-                "type": "value",
+                "type": "number",
                 "value": 2011,
               },
             ],
@@ -461,7 +461,7 @@ it('spec: 09-configuration 4', () => {
             "config": Array [
               Object {
                 "name": "caption",
-                "type": "value",
+                "type": "string",
                 "value": "Table of contents",
               },
             ],
@@ -626,12 +626,12 @@ foo
           },
           Object {
             "name": "k2",
-            "type": "value",
+            "type": "string",
             "value": "str",
           },
           Object {
             "name": "k3",
-            "type": "value",
+            "type": "string",
             "value": "str",
           },
           Object {
@@ -643,7 +643,7 @@ foo
           },
           Object {
             "name": "k5",
-            "type": "value",
+            "type": "string",
             "value": "Q[str]",
           },
         ],
@@ -711,7 +711,7 @@ foo
           },
           Object {
             "name": "k2",
-            "type": "value",
+            "type": "number",
             "value": 2,
           },
           Object {
@@ -809,7 +809,7 @@ foo
         "config": Array [
           Object {
             "name": "k1",
-            "type": "value",
+            "type": "number",
             "value": 2.3,
           },
           Object {
@@ -828,7 +828,7 @@ foo
           },
           Object {
             "name": "k4",
-            "type": "value",
+            "type": "number",
             "value": 31000,
           },
           Object {
@@ -908,7 +908,7 @@ foo
           },
           Object {
             "name": "k3",
-            "type": "value",
+            "type": "boolean",
             "value": true,
           },
           Object {
@@ -920,7 +920,7 @@ foo
           },
           Object {
             "name": "k5",
-            "type": "value",
+            "type": "boolean",
             "value": false,
           },
           Object {

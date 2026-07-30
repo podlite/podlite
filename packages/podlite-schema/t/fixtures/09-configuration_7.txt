@@ -33,7 +33,7 @@ foo
       },
       {
         "name": "k2",
-        "type": "value",
+        "type": "number",
         "value": 2
       },
       {

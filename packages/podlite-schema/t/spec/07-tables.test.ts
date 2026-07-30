@@ -1049,12 +1049,12 @@ bar
           },
           Object {
             "name": "bar",
-            "type": "value",
+            "type": "number",
             "value": 0,
           },
           Object {
             "name": "baz",
-            "type": "value",
+            "type": "number",
             "value": 2.3,
           },
         ],

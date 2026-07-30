@@ -26,7 +26,7 @@ foo
     "config": [
       {
         "name": "k1",
-        "type": "value",
+        "type": "number",
         "value": 2.3
       },
       {
@@ -45,7 +45,7 @@ foo
       },
       {
         "name": "k4",
-        "type": "value",
+        "type": "number",
         "value": 31000
       },
       {

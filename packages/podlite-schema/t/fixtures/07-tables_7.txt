@@ -52,12 +52,12 @@ bar
       },
       {
         "name": "bar",
-        "type": "value",
+        "type": "number",
         "value": 0
       },
       {
         "name": "baz",
-        "type": "value",
+        "type": "number",
         "value": 2.3
       }
     ],

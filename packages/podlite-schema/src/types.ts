@@ -338,10 +338,12 @@ export interface ConfigItemKV {
 // TODO:: find this case
 export interface BrokenConfigItem extends Omit<ConfigItem, 'type'> {}
 
+export type ConfigItemType = 'boolean' | 'number' | 'string' | 'array' | 'map'
+
 export interface ConfigItem {
   name: string
   value: boolean | string | number | Array<string | number | boolean> | ConfigItemKV
-  type: string
+  type: ConfigItemType
   isFalse?: boolean
 }
 

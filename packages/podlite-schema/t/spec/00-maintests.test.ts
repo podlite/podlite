@@ -554,12 +554,12 @@ it('spec: 00-maintests 4', () => {
           },
           Object {
             "name": "k2",
-            "type": "value",
+            "type": "string",
             "value": "str",
           },
           Object {
             "name": "k3",
-            "type": "value",
+            "type": "string",
             "value": "str",
           },
           Object {
@@ -571,7 +571,7 @@ it('spec: 00-maintests 4', () => {
           },
           Object {
             "name": "k5",
-            "type": "value",
+            "type": "string",
             "value": "Q[str]",
           },
         ],

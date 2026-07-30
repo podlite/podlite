@@ -36,7 +36,7 @@ foo
       },
       {
         "name": "k3",
-        "type": "value",
+        "type": "boolean",
         "value": true
       },
       {
@@ -48,7 +48,7 @@ foo
       },
       {
         "name": "k5",
-        "type": "value",
+        "type": "boolean",
         "value": false
       },
       {

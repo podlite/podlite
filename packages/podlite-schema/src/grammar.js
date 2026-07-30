@@ -249,20 +249,14 @@ function peg$parse(input, options) {
       peg$c96 = "(",
       peg$c97 = peg$literalExpectation("(", false),
       peg$c98 = function(isFalse, key, array) {
-                                      // if one element (23) set type to 'value' 
                                        return  (array.length > 1)
                                               ? { type:'array', value:array }
-                                              : { type:'value', value:array[0] };
+                                              : { type:valueKind(array[0]), value:array[0] };
                                      },
       peg$c99 = ")",
       peg$c100 = peg$literalExpectation(")", false),
-      peg$c101 = function(isFalse, key) {return { value:text() } },
-      peg$c102 = function(isFalse, key, res) {
-                  return { 
-                          type:"value", 
-                          ...res
-                        }
-              },
+      peg$c101 = function(isFalse, key) {return { type:"string", value:text() } },
+      peg$c102 = function(isFalse, key, res) { return res },
       peg$c103 = "\uFF62",
       peg$c104 = peg$literalExpectation("\uFF62", false),
       peg$c105 = /^[^\uFF63]/,
@@ -7389,6 +7383,12 @@ function peg$parse(input, options) {
 
     function flattenDeep(arr) {
      return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
+    }
+
+    function valueKind(v) {
+      if (typeof v === 'number') return 'number'
+      if (typeof v === 'boolean') return 'boolean'
+      return 'string'
     }
 
     function isSupportedBlockName(name) {

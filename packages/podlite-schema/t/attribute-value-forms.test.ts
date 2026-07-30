@@ -67,7 +67,9 @@ describe('attribute value forms', () => {
     expect(value(":k('a', 2)")).toMatchObject({ value: ['a', 2], type: 'array' })
   })
 
-  it('parentheses with one element give the element', () => {
-    expect(value(':k(2)')).toMatchObject({ value: 2, type: 'value' })
+  it('parentheses with one element give the element typed by its content', () => {
+    expect(value(':k(2)')).toMatchObject({ value: 2, type: 'number' })
+    expect(value(":k('str')")).toMatchObject({ value: 'str', type: 'string' })
+    expect(value(':k(True)')).toMatchObject({ value: true, type: 'boolean' })
   })
 })

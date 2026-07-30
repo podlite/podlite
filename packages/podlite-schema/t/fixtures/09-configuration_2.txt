@@ -14,7 +14,7 @@
         "config": [
           {
             "name": "number",
-            "type": "value",
+            "type": "number",
             "value": 42
           },
           {
