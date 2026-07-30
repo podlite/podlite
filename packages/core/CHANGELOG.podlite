@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint adds the attr-value-dropped rule — reports an attribute whose value the parser could not read and dropped
+
 =item podlite lint adds the link-target-resolves rule — an in-document anchor link must have a block carrying that id
 
 =head1 0.0.64
