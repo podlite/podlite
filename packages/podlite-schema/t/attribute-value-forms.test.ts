@@ -68,6 +68,16 @@ describe('attribute value forms', () => {
     expect(value(':k[a]')).toMatchObject({ value: ['a'], type: 'array' })
   })
 
+  it('empty parentheses give an empty list', () => {
+    expect(value(':k()')).toMatchObject({ value: [], type: 'array' })
+  })
+
+  it('empty braces give an empty hash', () => {
+    const attr = value(':k{}')
+    expect(attr).toMatchObject({ type: 'map' })
+    expect(attr.value).toEqual({})
+  })
+
   it('parentheses with commas give a list', () => {
     expect(value(":k('a', 2)")).toMatchObject({ value: ['a', 2], type: 'array' })
   })

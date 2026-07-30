@@ -199,6 +199,8 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   
   '{' _  hash:array_pairs _ '}' { return { value:hash, type:"map" } }
   /
+  '{' _ '}'  { return { value:{}, type:"map" } }
+  /
    '['  _ array:(
               array:list_items  { return array }
               /     
@@ -228,6 +230,8 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
         /
         $(!(')'/'(') .)+ {return { type:"string", value:text() } }) _ ')'
         { return res }
+  /
+  '(' _ ')'  { return { value:[], type:"array" } }
   /
   ['] text:$([^']*) ['] { return { value:text, type:"string" } }
   /

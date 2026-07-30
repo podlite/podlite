@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item read C<:key()> as an empty list and C<:key{}> as an empty hash instead of breaking the block
+
 =item attribute value type is one of boolean, number, string, array or map; the untyped value tag is gone
 
 =item attribute values in angle brackets hold a list when the content is separated by whitespace and a string otherwise; a comma inside angle brackets is part of the value, not a separator
