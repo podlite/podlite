@@ -22,6 +22,7 @@ const transformIgnores = [
   '.*longest-streak',
   'remark',
   'zwitch',
+  'nanoid',
 ].join('|')
 
 module.exports = {
