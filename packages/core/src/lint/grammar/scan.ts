@@ -29,10 +29,31 @@ type GrammarOptions = {
   diagnostics: Violation[]
   _blockStack: BlockMarker[]
   _inDirective: boolean
+  verbatimBlocks: string[]
 }
 
+// blocks whose content is taken as written, so an indented attribute-looking
+// line there is content and not a dropped continuation
+const VERBATIM_BLOCKS = [
+  'code',
+  'comment',
+  'data',
+  'data-table',
+  'formula',
+  'input',
+  'markdown',
+  'output',
+  'picture',
+  'table',
+]
+
 export function scanSourceRules(content: string): Violation[] {
-  const opts: GrammarOptions = { diagnostics: [], _blockStack: [], _inDirective: false }
+  const opts: GrammarOptions = {
+    diagnostics: [],
+    _blockStack: [],
+    _inDirective: false,
+    verbatimBlocks: VERBATIM_BLOCKS,
+  }
   try {
     lintGrammar.parse(content, opts)
   } catch {

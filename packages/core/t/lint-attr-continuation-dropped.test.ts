@@ -19,7 +19,7 @@ describe('attr-continuation-dropped rule', () => {
     const v = scanSourceRules('=begin pod :id<x>\n  :tag<y>\n=end pod\n')
     const flagged = v.filter(d => d.rule === 'attr-continuation-dropped')
     expect(flagged).toHaveLength(1)
-    expect(flagged[0].message).toMatch(/attribute :tag<…>/)
+    expect(flagged[0].message).toMatch(/attribute :tag /)
     expect(flagged[0].severity).toBe('warning')
   })
 
@@ -27,7 +27,7 @@ describe('attr-continuation-dropped rule', () => {
     const v = scanSourceRules('=for defn :id<x>\n  :super<y>\n')
     const flagged = v.filter(d => d.rule === 'attr-continuation-dropped')
     expect(flagged).toHaveLength(1)
-    expect(flagged[0].message).toMatch(/attribute :super<…>/)
+    expect(flagged[0].message).toMatch(/attribute :super /)
   })
 
   it('flags every continuation attribute in a chain', () => {
@@ -64,6 +64,32 @@ describe('attr-continuation-dropped rule', () => {
     const v = scanSourceRules('# Heading\n\n  :tag<looks like attr but no directive>\n')
     const flagged = v.filter(d => d.rule === 'attr-continuation-dropped')
     expect(flagged).toEqual([])
+  })
+
+  it('flags a value written in any of the delimiters', () => {
+    const flagged = (attr: string) =>
+      scanSourceRules(`=for para :id<x>\n  ${attr}\ntext\n`).filter(d => d.rule === ATTR_CONTINUATION_DROPPED_RULE_ID)
+    expect(flagged(':name<x>')).toHaveLength(1)
+    expect(flagged(":name('x y')")).toHaveLength(1)
+    expect(flagged(":name'x y'")).toHaveLength(1)
+    expect(flagged(':name"x"')).toHaveLength(1)
+    expect(flagged(':name{a=>1}')).toHaveLength(1)
+    expect(flagged(':name[a,b]')).toHaveLength(1)
+  })
+
+  it('stays quiet inside a block that keeps its content verbatim', () => {
+    const flagged = (block: string) =>
+      scanSourceRules(`=begin ${block}\n  :src<a>\n=end ${block}\n`).filter(
+        d => d.rule === ATTR_CONTINUATION_DROPPED_RULE_ID,
+      )
+    expect(flagged('code')).toEqual([])
+    expect(flagged('data')).toEqual([])
+    expect(flagged('comment')).toEqual([])
+  })
+
+  it('still flags a continuation inside an ordinary block', () => {
+    const v = scanSourceRules('=begin pod :type<x>\n  :domain<y>\n\ntext\n\n=end pod\n')
+    expect(v.filter(d => d.rule === ATTR_CONTINUATION_DROPPED_RULE_ID)).toHaveLength(1)
   })
 
   it('reports line and column of the indented attribute', () => {
