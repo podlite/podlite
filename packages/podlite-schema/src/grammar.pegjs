@@ -167,9 +167,15 @@ error_para = $(!EOL .)+ EOL
 array_codes = code:FCode hs+ codes:array_codes {return flattenDeep([code,codes])}/ code:FCode { return [code] }
 FCode = $(char)
 
+// A bracketed value may go on where the configuration itself goes on: a line
+// starting with `=` and a space. Quoted values may not, so nothing inside a
+// literal ever crosses a line
+cont_glue = newline '=' [ \t]+
+gap = ( [ \t] / cont_glue )*
+
 // Define array: '1 2 3' or '1,2,3'
-array_items = 
-          code:item ( hs+ / _','_ ) codes:array_items 
+array_items =
+          code:item ( hs+ / gap ',' gap ) codes:array_items
                             { return flattenDeep([ code, codes ]) }
           / code:item { return [code] }
 
@@ -177,11 +183,11 @@ identifierKey = $([a-zA-Z0-9]+[a-zA-Z0-9_-]*)
 
 // $k1=>$v1,$k2=>$v2 or the option form, read by the rules of the marker line
 pair_item =
-             attr:attributes &{ return !attr.dropped } { return { [attr.name]: attr.value } }
-             / name:identifierKey _( ',' / '=>')_ value:item { return { [name]: value } }
+             gap attr:attributes &{ return !attr.dropped } { return { [attr.name]: attr.value } }
+             / gap name:identifierKey gap ( ',' / '=>') gap value:item { return { [name]: value } }
 
-array_pairs = 
-              pair:pair_item  _','_  pairs:array_pairs 
+array_pairs =
+              pair:pair_item  gap ',' gap  pairs:array_pairs
                     { return { ...pair, ...pairs } }
               / code:pair_item { return code }
 
@@ -208,9 +214,9 @@ array_sp = all:( _ i:item _ {return i})* { return all }/ res:item {return  [res]
 
 attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   
-  '{' _  hash:array_pairs _ '}' { return { value:hash, type:"map" } }
+  '{' gap  hash:array_pairs gap '}' { return { value:hash, type:"map" } }
   /
-  '{' _ '}'  { return { value:{}, type:"map" } }
+  '{' gap '}'  { return { value:{}, type:"map" } }
   /
   '{' $(!('}'/newline) .)* '}'  { return { unreadable:true, location:location() } }
   /
@@ -232,14 +238,14 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   /
   '<' _ '>'  { return { value:[], type:"array" } }
   /
-  '(' _ res:(array:array_items {
+  '(' gap res:(array:array_items {
                                  return  (array.length > 1)
                                         ? { type:'array', value:array }
                                         : { type:valueKind(array[0]), value:array[0] };
-                               }) _ ')'
+                               }) gap ')'
         { return res }
   /
-  '(' _ ')'  { return { value:[], type:"array" } }
+  '(' gap ')'  { return { value:[], type:"array" } }
   /
   // a nested set is left as written: the norm has not settled nesting yet
   '(' _ text:$(':' (!(')'/'(') .)*) ')'  { return { value:text, type:"string" } }
@@ -262,7 +268,7 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
     { return {
               unreadable:true,
               location:location(),
-              message:"Value is not closed on this line; a value does not continue onto the next one"
+              message:"Value is not closed; only a bracketed value may continue on the next configuration line"
              }
     }
   / _
@@ -301,9 +307,9 @@ Boolean = 'True' {return true} / 'False' {return false}
 
 floatNumber = $(number ('.' digits)? [eE] number ) / $( number '.' digits )
 
-item =  // quoted strings
-        ["] text:$([^"]*) ["] { return text} /
-        ['] text:$([^']*) ['] { return text} /
+item =  // quoted strings, never crossing a line
+        ["] text:$([^"\n\r]*) ["] { return text} /
+        ['] text:$([^'\n\r]*) ['] { return text} /
         // boolean
         Boolean /
         // float number

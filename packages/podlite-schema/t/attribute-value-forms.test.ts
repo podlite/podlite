@@ -176,17 +176,40 @@ describe('a value on a continuation line', () => {
     expect(messages).toEqual([])
   })
 
-  it('a value left open on the line is dropped, and the reader is told where it stopped', () => {
-    const { names, messages } = parseDoc("=for para :a<1>\n=  :b{\n=    x=>1\n=  }\n=  :c('done')\ntext\n")
-    expect(names).toEqual(['a'])
-    expect(messages[0]).toBe('Value is not closed on this line; a value does not continue onto the next one')
-    expect(messages[1]).toBe('Configuration continuation line could not be read')
+  it('a bracketed value goes on where the configuration goes on', () => {
+    const { names, messages } = parseDoc("=for para :a<1>\n=  :b{\n=    x=>1,\n=    y=>2\n=  }\n=  :c('done')\ntext\n")
+    expect(names).toEqual(['a', 'b', 'c'])
+    expect(messages).toEqual([])
+    expect(value(':b{\n=    x=>1\n=  }')).toBeUndefined()
   })
 
-  it('an open angle bracket no longer swallows the next line', () => {
+  it('parentheses and options carry over the same way', () => {
+    expect(parseDoc('=for para :b(\n=    1,2\n=  )\ntext\n').names).toEqual(['b'])
+    expect(parseDoc('=for para :b{\n=    :x<1>,\n=    :y\n=  }\ntext\n').names).toEqual(['b'])
+  })
+
+  it('a quoted value stays on its line', () => {
+    const { names, messages } = parseDoc("=for para :a<1>\n=  :b('one\n=   two')\ntext\n")
+    expect(names).toEqual(['a'])
+    expect(messages[0]).toBe('Value is not closed; only a bracketed value may continue on the next configuration line')
+  })
+
+  it('an angle bracket does not swallow the next line', () => {
     const { names, messages } = parseDoc('=for para :a<1>\n=  :b<one\n=   two>\ntext\n')
     expect(names).toEqual(['a'])
-    expect(messages[0]).toBe('Value is not closed on this line; a value does not continue onto the next one')
+    expect(messages[0]).toBe('Value is not closed; only a bracketed value may continue on the next configuration line')
+  })
+
+  it('a bracket left open ends where the configuration ends', () => {
+    const { names, messages } = parseDoc('=for para :a<1>\n=  :b{\n=    x=>1\ntext\n')
+    expect(names).toEqual(['a'])
+    expect(messages[0]).toBe('Value is not closed; only a bracketed value may continue on the next configuration line')
+  })
+
+  it('a bracket left open does not eat the closing marker of the block', () => {
+    const ast = parseToAst('=begin pod\n=for para :a<1>\n=  :b{\n=end pod\n')
+    expect(findBlock(ast, 'pod')[0]).toBeDefined()
+    expect(findBlock(ast, 'para')[0].config.map((c: any) => c.name)).toEqual(['a'])
   })
 })
 
