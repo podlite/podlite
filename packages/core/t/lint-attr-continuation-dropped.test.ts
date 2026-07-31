@@ -87,6 +87,11 @@ describe('attr-continuation-dropped rule', () => {
     expect(flagged('comment')).toEqual([])
   })
 
+  it('stays quiet for a marker written inside a verbatim block', () => {
+    const src = '=begin code :language<podlite>\n=begin pod :type<x>\n   :id<y>\n=end pod\n=end code\n'
+    expect(scanSourceRules(src).filter(d => d.rule === ATTR_CONTINUATION_DROPPED_RULE_ID)).toEqual([])
+  })
+
   it('still flags a continuation inside an ordinary block', () => {
     const v = scanSourceRules('=begin pod :type<x>\n  :domain<y>\n\ntext\n\n=end pod\n')
     expect(v.filter(d => d.rule === ATTR_CONTINUATION_DROPPED_RULE_ID)).toHaveLength(1)

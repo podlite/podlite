@@ -228,8 +228,9 @@ function peg$parse(input, options) {
     peg$c19 = '!',
     peg$c20 = peg$literalExpectation('!', false),
     peg$c21 = function (name) {
-      const top = options._blockStack[options._blockStack.length - 1]
-      const verbatim = top && options.verbatimBlocks.indexOf(top.name) !== -1
+      // any verbatim block on the stack makes this line content: markers written
+      // inside such a block are an example, not structure
+      const verbatim = options._blockStack.some(b => options.verbatimBlocks.indexOf(b.name) !== -1)
       if (options._inDirective && !verbatim) {
         options.diagnostics.push({
           rule: 'attr-continuation-dropped',
