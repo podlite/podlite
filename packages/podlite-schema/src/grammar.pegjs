@@ -224,11 +224,11 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
   /
   '<' _ array:angle_list _ '>'  { return { value:array, type:"array" } }
   /
-  '<' _ ['] text:$([^']*) ['] _ '>'  { return { value:text, type:"string" } }
+  '<' _ ['] text:$([^'\n\r]*) ['] _ '>'  { return { value:text, type:"string" } }
   /
-  '<' _ ["] text:$([^"]*) ["] _ '>'  { return { value:text, type:"string" } }
+  '<' _ ["] text:$([^"\n\r]*) ["] _ '>'  { return { value:text, type:"string" } }
   /
-  '<' _ text: $(!('<'/'>') .)+ '>'  { return { value:text.trim(), type:"string" } }
+  '<' _ text: $(!('<'/'>'/newline) .)+ '>'  { return { value:text.trim(), type:"string" } }
   /
   '<' _ '>'  { return { value:[], type:"array" } }
   /
@@ -252,11 +252,19 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
              }
     }
   /
-  ['] text:$([^']*) ['] { return { value:text, type:"string" } }
+  ['] text:$([^'\n\r]*) ['] { return { value:text, type:"string" } }
   /
-  ["] text:$([^"]*) ["] { return { value:text, type:"string" } }
+  ["] text:$([^"\n\r]*) ["] { return { value:text, type:"string" } }
   /
-  '｢' text:$([^｣]*) '｣' { return { value:text, type:"string" } }
+  '｢' text:$([^｣\n\r]*) '｣' { return { value:text, type:"string" } }
+  /
+  ('<' / '(' / '{' / '[' / ['] / ["] / '｢') $(!newline .)*
+    { return {
+              unreadable:true,
+              location:location(),
+              message:"Value is not closed on this line; a value does not continue onto the next one"
+             }
+    }
   / _
   { return {
             value:!isFalse,
@@ -273,7 +281,15 @@ attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
 
 pod_configuration =
   first:attributes* newline
-  cont:("=" _ rest:attributes+ _ newline {return rest })*  {return keepReadable(flattenDeep([...first, ...cont]))}
+  cont:("=" _ rest:attributes+ _ newline {return rest })*
+  unread:unread_continuation?
+  {return keepReadable(flattenDeep([...first, ...cont]))}
+
+// a line still marked as a continuation, but nothing on it could be read: it
+// stays block content, and the reader is told where it stopped
+unread_continuation =
+  &("=" [ \t])
+  { addDiagnostic(options, "Configuration continuation line could not be read", location()) }
 
 string = text:$([^'"]+){ return text}
 

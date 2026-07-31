@@ -159,6 +159,37 @@ describe('a value that cannot be read', () => {
   })
 })
 
+describe('a value on a continuation line', () => {
+  const parseDoc = (src: string) => {
+    const p = podlitePluggable()
+    const root = p.parse(src, { podMode: 1 }) as any
+    const block = findBlock(p.toAst(root), 'para')[0]
+    return {
+      names: (block?.config || []).map((c: any) => c.name),
+      messages: (root.diagnostics || []).map((d: any) => d.message),
+    }
+  }
+
+  it('carries whole attributes', () => {
+    const { names, messages } = parseDoc('=for para :a<1>\n=  :b<2>\ntext\n')
+    expect(names).toEqual(['a', 'b'])
+    expect(messages).toEqual([])
+  })
+
+  it('a value left open on the line is dropped, and the reader is told where it stopped', () => {
+    const { names, messages } = parseDoc("=for para :a<1>\n=  :b{\n=    x=>1\n=  }\n=  :c('done')\ntext\n")
+    expect(names).toEqual(['a'])
+    expect(messages[0]).toBe('Value is not closed on this line; a value does not continue onto the next one')
+    expect(messages[1]).toBe('Configuration continuation line could not be read')
+  })
+
+  it('an open angle bracket no longer swallows the next line', () => {
+    const { names, messages } = parseDoc('=for para :a<1>\n=  :b<one\n=   two>\ntext\n')
+    expect(names).toEqual(['a'])
+    expect(messages[0]).toBe('Value is not closed on this line; a value does not continue onto the next one')
+  })
+})
+
 describe('value forms the norm does not have', () => {
   const messageFor = (attrs: string) => parseRoot(attrs).diagnostics?.[0]?.message
 
