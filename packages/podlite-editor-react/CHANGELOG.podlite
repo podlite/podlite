@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item mark an attribute value the parser could not read, with the message on hover; the line under the caret stays quiet while it is being typed
+
 =head1 0.0.61
 
 =item stop importing global css from the entry — import C<@podlite/editor-react/Editor.css> and C<@podlite/editor-react/podlite-vars.css> in your app

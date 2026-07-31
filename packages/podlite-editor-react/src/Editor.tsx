@@ -17,6 +17,7 @@ import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
+import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
 import { createImagePasteDropHandler } from './imagePasteHandler'
@@ -630,6 +631,10 @@ function PodliteEditorInternal(
       preventToggleComment,
       imagePasteDropHandler,
     ]
+
+    if (language === 'podlite') {
+      exts.push(podliteDiagnostics())
+    }
 
     if (enableFolding) {
       if (language === 'podlite') exts.push(podliteFoldService)
