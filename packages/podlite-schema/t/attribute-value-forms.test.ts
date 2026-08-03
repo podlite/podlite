@@ -159,6 +159,38 @@ describe('a value that cannot be read', () => {
   })
 })
 
+describe('a value in bare delimiters', () => {
+  it('holds a single word', () => {
+    expect(value(":k'str'")).toMatchObject({ value: 'str', type: 'string' })
+    expect(value(':k"str"')).toMatchObject({ value: 'str', type: 'string' })
+    expect(value(':k｢str｣')).toMatchObject({ value: 'str', type: 'string' })
+  })
+
+  it('holds a value with spaces', () => {
+    expect(value(":k'str with spaces'")).toMatchObject({ value: 'str with spaces', type: 'string' })
+    expect(value(':k"str with spaces"')).toMatchObject({ value: 'str with spaces', type: 'string' })
+    expect(value(':k｢str with spaces｣')).toMatchObject({ value: 'str with spaces', type: 'string' })
+  })
+
+  it('empty delimiters give an empty string', () => {
+    expect(value(":k''")).toMatchObject({ value: '', type: 'string' })
+    expect(value(':k""')).toMatchObject({ value: '', type: 'string' })
+    expect(value(':k｢｣')).toMatchObject({ value: '', type: 'string' })
+  })
+
+  it('negation keeps the value and marks the attribute', () => {
+    expect(value(":!k'str'")).toMatchObject({ value: 'str', type: 'string', isFalse: true })
+  })
+
+  it('a delimiter left open drops the attribute', () => {
+    expect(value(":k'unclosed")).toBeUndefined()
+    expect(value(':k｢unclosed')).toBeUndefined()
+    expect(parseRoot(":k'unclosed").diagnostics[0].message).toBe(
+      'Value is not closed; only a bracketed value may continue on the next configuration line',
+    )
+  })
+})
+
 describe('a value on a continuation line', () => {
   const parseDoc = (src: string) => {
     const p = podlitePluggable()
