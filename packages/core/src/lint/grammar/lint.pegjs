@@ -14,6 +14,7 @@ rule_match
   / delim_end
   / paragraph_directive
   / continuation_attr
+  / continuation_marker
   / blank_line_marker
   / line_marker
 
@@ -21,11 +22,27 @@ rule_match
 attr_nested_angle
   = ":" name:identifier "<" !"<" value:$([^>]*) ">"
     {
+      // only a real attribute list is checked: `<` and `>` in running text or in
+      // a verbatim block are not markup
+      const verbatim = options._blockStack.some(b => options.verbatimBlocks.indexOf(b.name) !== -1);
+      if (!options._inDirective || verbatim) return null;
+      const advice = "use a non-conflicting delimiter (\"...\", (...), <<...>>) or plain text";
+      // the mirror case: the value ended at a `>` written inside it, and the one
+      // the author meant as the closing bracket is still ahead on the line
+      const rest = input.slice(peg$savedPos + text().length).split(/\r?\n/)[0];
+      const closedEarly = rest.indexOf('>') !== -1 && !/^[ \t]*:/.test(rest);
       if (value.indexOf('<') !== -1) {
         options.diagnostics.push({
           rule: 'attr-nested-angle',
           severity: 'error',
-          message: "attribute value contains a nested <…> that closes the attribute early; use a non-conflicting delimiter (\"...\", [...], (...), <<...>>) or plain text",
+          message: "attribute value contains a nested <…> that closes the attribute early; " + advice,
+          location: location()
+        });
+      } else if (closedEarly) {
+        options.diagnostics.push({
+          rule: 'attr-nested-angle',
+          severity: 'error',
+          message: "attribute value contains a > that closes the attribute early; " + advice,
           location: location()
         });
       }
@@ -103,6 +120,14 @@ continuation_attr
 
 value_delim
   = "<" / "(" / "{" / "[" / "'" / "\"" / "｢"
+
+// a continuation line keeps the configuration context open
+continuation_marker
+  = sol "=" [ \t]+
+    {
+      options._inDirective = true;
+      return null;
+    }
 
 blank_line_marker
   = sol [ \t]* "\n"
