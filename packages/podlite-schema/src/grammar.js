@@ -182,7 +182,10 @@ function peg$parse(input, options) {
       peg$c33 = peg$literalExpectation("=", false),
       peg$c34 = peg$otherExpectation("text"),
       peg$c35 = function() {return text()},
-      peg$c36 = function() { return { type:"para", value:text(), error:true, location:location()}},
+      peg$c36 = function() {
+                    addDiagnostic(options, "Line looks like a directive but could not be read; it stays as text", location(), 'directive-unreadable')
+                    return { type:"para", value:text(), error:true, location:location()}
+                  },
       peg$c37 = function(code, codes) {return flattenDeep([code,codes])},
       peg$c38 = function(code) { return [code] },
       peg$c39 = /^[ \t]/,
@@ -7998,12 +8001,12 @@ function peg$parse(input, options) {
 
     // the same marker line is attempted by several block rules, so one broken
     // value reaches this more than once
-    function addDiagnostic(options, message, location) {
+    function addDiagnostic(options, message, location, code) {
       if (!options || !Array.isArray(options.diagnostics)) return
       const seen = options.diagnostics.some(d =>
         d.message === message && d.location.start.offset === location.start.offset)
       if (!seen) {
-        options.diagnostics.push({ severity: 'warning', message, location })
+        options.diagnostics.push({ severity: 'warning', code: code || 'value-unreadable', message, location })
       }
     }
 

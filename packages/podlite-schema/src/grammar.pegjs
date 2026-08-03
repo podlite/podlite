@@ -26,12 +26,12 @@
 
   // the same marker line is attempted by several block rules, so one broken
   // value reaches this more than once
-  function addDiagnostic(options, message, location) {
+  function addDiagnostic(options, message, location, code) {
     if (!options || !Array.isArray(options.diagnostics)) return
     const seen = options.diagnostics.some(d =>
       d.message === message && d.location.start.offset === location.start.offset)
     if (!seen) {
-      options.diagnostics.push({ severity: 'warning', message, location })
+      options.diagnostics.push({ severity: 'warning', code: code || 'value-unreadable', message, location })
     }
   }
 
@@ -151,7 +151,10 @@ Text "text" = $(c:char+)
 text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
 raw_text_until_eol = $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
-            { return { type:"para", value:text(), error:true, location:location()}}
+            {
+              addDiagnostic(options, "Line looks like a directive but could not be read; it stays as text", location(), 'directive-unreadable')
+              return { type:"para", value:text(), error:true, location:location()}
+            }
 /** 
 #  Value is...       Specify with...           Or with...            Or with...
 #  ===============   =======================   =================   ===========

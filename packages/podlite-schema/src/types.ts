@@ -182,6 +182,7 @@ export interface RootBlock extends Omit<Block, 'location'> {
 // read is dropped together with its attribute
 export interface ParseDiagnostic {
   severity: 'warning'
+  code: 'value-unreadable' | 'directive-unreadable'
   message: string
   location: Location
 }

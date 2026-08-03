@@ -1,5 +1,6 @@
 import { parseContent } from '../src/lint/loader'
 import { attrValueDroppedRule, ATTR_VALUE_DROPPED_RULE_ID } from '../src/lint/rules/attr-value-dropped'
+import { collectRecoveredErrors } from '../src/lint/rules/syntax-valid'
 import type { LintContext } from '../src/lint/types'
 
 const ctx: LintContext = { filePath: 'fake.podlite', fileType: 'podlite', config: {} }
@@ -32,5 +33,11 @@ describe('attr-value-dropped rule', () => {
 
   it('returns [] for a document with readable values', () => {
     expect(check('=for para :tags<a b> :k(42) :m{:a<x>}\ntext\n')).toEqual([])
+  })
+
+  it('leaves an unreadable directive line to syntax-valid', () => {
+    const src = '=begin item text after the name\ninside\n=end item\n'
+    expect(check(src)).toEqual([])
+    expect(collectRecoveredErrors(parseContent(src, 'podlite')).length).toBeGreaterThan(0)
   })
 })

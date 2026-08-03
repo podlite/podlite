@@ -1345,6 +1345,13 @@
                     "type": "string",
                     "const": "warning"
                 },
+                "code": {
+                    "enum": [
+                        "directive-unreadable",
+                        "value-unreadable"
+                    ],
+                    "type": "string"
+                },
                 "message": {
                     "type": "string"
                 },
@@ -1353,6 +1360,7 @@
                 }
             },
             "required": [
+                "code",
                 "location",
                 "message",
                 "severity"

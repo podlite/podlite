@@ -159,6 +159,26 @@ describe('a value that cannot be read', () => {
   })
 })
 
+describe('a directive line the parser could not read', () => {
+  const parse = (src: string) => podlitePluggable().parse(src, { podMode: 1 }) as any
+
+  it('is reported with its line, and the text stays in the document', () => {
+    const root = parse('=begin item text after the name\ninside\n=end item\n')
+    const [first] = root.diagnostics
+    expect(first.code).toBe('directive-unreadable')
+    expect(first.message).toBe('Line looks like a directive but could not be read; it stays as text')
+    expect(first.location.start.line).toBe(1)
+  })
+
+  it('is told apart from a value that could not be read', () => {
+    expect(parse('=for para :k(1_000)\ntext\n').diagnostics[0].code).toBe('value-unreadable')
+  })
+
+  it('leaves an ordinary document alone', () => {
+    expect(parse('=head1 Title\n\ntext\n').diagnostics).toBeUndefined()
+  })
+})
+
 describe('a value in bare delimiters', () => {
   it('holds a single word', () => {
     expect(value(":k'str'")).toMatchObject({ value: 'str', type: 'string' })
