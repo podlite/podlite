@@ -62,3 +62,36 @@ describe('podlite read on top of markdown', () => {
     expect(values).toEqual(['<x>', "('y')", '{k=>1}', '"z"', '｢w｣'])
   })
 })
+
+describe('markup codes', () => {
+  const codeNodes = (src: string): string[] => {
+    const out: string[] = []
+    parser.parse(src).iterate({ enter: n => void (n.name.startsWith('PodCode') && out.push(n.name)) })
+    return out
+  }
+
+  it('reads every code the highlighter knew', () => {
+    for (const letter of ['A', 'B', 'C', 'F', 'G', 'I', 'L', 'O', 'U', 'Z']) {
+      expect(codeNodes(`text ${letter}<inside> tail\n`)).toContain(`PodCode${letter}`)
+    }
+  })
+
+  it('reads multiple angles and guillemets', () => {
+    expect(codeNodes('text C<< a > b >> tail\n')).toContain('PodCodeC')
+    expect(codeNodes('text B«bold» tail\n')).toContain('PodCodeB')
+  })
+
+  it('takes the whole span, not the first closing bracket', () => {
+    expect(textOf('C<< $x > 5 >>\n', 'PodCodeC')).toBe('C<< $x > 5 >>')
+  })
+
+  it('reads a code inside a code', () => {
+    const found = codeNodes('B<bold I<and italic>>\n')
+    expect(found).toContain('PodCodeB')
+    expect(found).toContain('PodCodeI')
+  })
+
+  it('leaves a lone capital letter alone', () => {
+    expect(codeNodes('Just X and text\n')).toEqual([])
+  })
+})

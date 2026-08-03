@@ -13,6 +13,80 @@ const directiveRe = new RegExp(
 // a value keeps its own delimiters; the norm has no square brackets since 2026-08
 const attrRe = /:!?[\w-]+|<[^>]*>|\([^)]*\)|\{[^}]*\}|'[^']*'|"[^"]*"|｢[^｣]*｣/g
 
+// markup codes the stream highlighter knew, with the same colour meaning
+const CODE_TAGS: Record<string, any> = {
+  A: t.variableName,
+  B: t.strong,
+  C: t.monospace,
+  F: t.literal,
+  G: t.comment,
+  I: t.emphasis,
+  L: t.link,
+  O: t.strikethrough,
+  U: t.labelName,
+  Z: t.comment,
+}
+const CODE_LETTERS = Object.keys(CODE_TAGS)
+
+const codeNodeNames = CODE_LETTERS.map(c => `PodCode${c}`)
+
+const closingFor = (open: string): string => (open === '«' ? '»' : '>'.repeat(open.length))
+
+const openerAt = (src: string, at: number): string | null => {
+  if (!CODE_TAGS[src[at]]) return null
+  if (src[at + 1] === '«') return '«'
+  let open = ''
+  let i = at + 1
+  while (src[i] === '<') {
+    open += '<'
+    i++
+  }
+  return open || null
+}
+
+// a code ends at its matching bracket, so nested codes of the same width count
+const matchingEnd = (src: string, bodyFrom: number, open: string): number => {
+  const close = closingFor(open)
+  let depth = 1
+  let i = bodyFrom
+  while (i < src.length) {
+    const nested = openerAt(src, i)
+    if (nested === open) {
+      depth++
+      i += 1 + open.length
+      continue
+    }
+    if (src.startsWith(close, i)) {
+      depth--
+      if (!depth) return i
+      i += close.length
+      continue
+    }
+    i++
+  }
+  return -1
+}
+
+// reads one code at `at`; the body is scanned again so nested codes become children
+const readCode = (cx: any, src: string, at: number, offset: number): any => {
+  const open = openerAt(src, at)
+  if (!open) return null
+  const letter = src[at]
+  const bodyFrom = at + 1 + open.length
+  const end = matchingEnd(src, bodyFrom, open)
+  if (end === -1) return null
+  const children = [cx.elt('PodCodeMark', offset + at, offset + bodyFrom)]
+  for (let i = bodyFrom; i < end; ) {
+    const inner = readCode(cx, src, i, offset)
+    if (inner) {
+      children.push(inner)
+      i = inner.to - offset
+    } else i++
+  }
+  children.push(cx.elt('PodCodeMark', offset + end, offset + end + closingFor(open).length))
+  return cx.elt(`PodCode${letter}`, offset + at, offset + end + closingFor(open).length, children)
+}
+
 export const podliteMarkdownExtension: any = {
   defineNodes: [
     { name: 'PodDirective', block: true },
@@ -21,6 +95,8 @@ export const podliteMarkdownExtension: any = {
     { name: 'PodAttrName' },
     { name: 'PodAttrValue' },
     { name: 'PodVerbatim' },
+    { name: 'PodCodeMark' },
+    ...codeNodeNames.map(name => ({ name })),
   ],
   props: [
     styleTags({
@@ -29,7 +105,19 @@ export const podliteMarkdownExtension: any = {
       PodAttrName: t.attributeName,
       PodAttrValue: t.attributeValue,
       PodVerbatim: t.content,
+      PodCodeMark: t.processingInstruction,
+      ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),
     }),
+  ],
+  parseInline: [
+    {
+      name: 'PodFormattingCode',
+      before: 'Emphasis',
+      parse(cx: any, next: number, pos: number) {
+        const el = readCode(cx, cx.text, pos - cx.offset, cx.offset)
+        return el ? cx.addElement(el) : -1
+      },
+    },
   ],
   parseBlock: [
     {
