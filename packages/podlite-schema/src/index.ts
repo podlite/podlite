@@ -1,11 +1,13 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import * as pointer from 'json-pointer'
 import { AstTree, ParseDiagnostic, PodNode, PodliteDocument } from './types'
+import { BLOCK_NAMES } from './block-names'
 export { PodliteDocument } from './types'
 import * as jsonShemes from '../schema'
 import { makeInterator } from './ast-inerator'
 export { AstTree } from './types'
 export * from './types'
+export * from './block-names'
 export * from './blocks-helpers'
 export * from './query-helpers'
 export * from './ast-helpers'
@@ -198,7 +200,7 @@ function makeTree() {
 
   function parse(src: string, opt: parseOpt = { skipChain: 0, podMode: 1 }) {
     const { skipChain = 0, podMode = 1, diagnostics } = opt
-    let tree: AST = parser.parse(src, { podMode, diagnostics })
+    let tree: AST = parser.parse(src, { podMode, diagnostics, blockNames: BLOCK_NAMES })
     if (!skipChain) {
       for (let i = 0; i < plugins.length; i++) {
         const plugin = plugins[i]

@@ -1,5 +1,5 @@
 import type { Violation, SourceRule } from '../types'
-import type { Location } from '@podlite/schema'
+import { VERBATIM_BLOCKS, type Location } from '@podlite/schema'
 
 const lintGrammar = require('./lint.js')
 
@@ -32,27 +32,12 @@ type GrammarOptions = {
   verbatimBlocks: string[]
 }
 
-// blocks whose content is taken as written, so an indented attribute-looking
-// line there is content and not a dropped continuation
-const VERBATIM_BLOCKS = [
-  'code',
-  'comment',
-  'data',
-  'data-table',
-  'formula',
-  'input',
-  'markdown',
-  'output',
-  'picture',
-  'table',
-]
-
 export function scanSourceRules(content: string): Violation[] {
   const opts: GrammarOptions = {
     diagnostics: [],
     _blockStack: [],
     _inDirective: false,
-    verbatimBlocks: VERBATIM_BLOCKS,
+    verbatimBlocks: [...VERBATIM_BLOCKS],
   }
   try {
     lintGrammar.parse(content, opts)

@@ -39,8 +39,10 @@
     return attrs.filter(a => !a.dropped)
   }
 
-  function isSupportedBlockName(name) {
-      return [
+  // the caller passes the shared list; the copy below is the fallback for a
+  // direct call and is kept equal to it by a test
+  function knownBlockNames() {
+    return (options && options.blockNames) || [
         'boundary',
         'code',
         'comment',
@@ -63,9 +65,13 @@
         'set',
         'table',
         'toc',
-          ].includes(name) 
-          || 
-          isSemanticBlock(name) 
+      ]
+  }
+
+  function isSupportedBlockName(name) {
+      return knownBlockNames().includes(name)
+          ||
+          isSemanticBlock(name)
           ||
           // TODO: move detect headers/items level to parser
           name.match(/^(head|item)\d+$/)
