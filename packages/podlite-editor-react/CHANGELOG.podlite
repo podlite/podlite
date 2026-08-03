@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item read Podlite on top of the markdown parser behind the experimentalTreeHighlight prop: the content of a C<< =begin markdown >> block and code inside a fence get their own highlighting
+
 =item mark an attribute value the parser could not read, with the message on hover; the line under the caret stays quiet while it is being typed
 
 =head1 0.0.61
