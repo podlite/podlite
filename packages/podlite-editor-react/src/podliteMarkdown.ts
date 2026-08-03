@@ -4,11 +4,24 @@ import { styleTags, tags as t } from '@lezer/highlight'
 import { BLOCK_NAMES, isVerbatimBlock } from '@podlite/schema'
 import type { Extension } from '@codemirror/state'
 
-const directiveRe = new RegExp(
-  `^(=(?:begin|end|for|config|alias|${BLOCK_NAMES.join(
-    '|',
-  )}|head\\d*|item\\d*|[A-Z][A-Za-z0-9_-]*))(\\s+([\\w-]+))?(.*)$`,
-)
+const directiveRe = /^=([A-Za-z][\w-]*)(.*)$/
+// a directive may go on over the next lines, each opened by a bare `=`
+const continuationRe = /^=(\s.*)$/
+const nameRe = /^(\s+)([A-Za-z][\w-]*)/
+
+const DIRECTIVE_WORDS = ['begin', 'end', 'for', 'config', 'alias']
+const TAKES_A_NAME = new Set(['begin', 'end', 'for'])
+const standard = (name: string): boolean =>
+  DIRECTIVE_WORDS.includes(name) || (BLOCK_NAMES as readonly string[]).includes(name) || /^(head|item)\d*$/.test(name)
+
+// SYNOPSIS and SEE-ALSO name a section of the document; Image and Diagram name
+// a block the author brought in; the rest is a name nothing here knows
+const nodeForName = (name: string): string => {
+  if (standard(name)) return 'PodBlockName'
+  if (/^[A-Z][A-Z0-9_-]*$/.test(name)) return 'PodSemanticBlock'
+  if (/^[A-Z]/.test(name)) return 'PodCustomBlock'
+  return 'PodUnknownBlock'
+}
 
 // a value keeps its own delimiters; the norm has no square brackets since 2026-08
 const attrRe = /:!?[\w-]+|<[^>]*>|\([^)]*\)|\{[^}]*\}|'[^']*'|"[^"]*"|｢[^｣]*｣/g
@@ -92,6 +105,9 @@ export const podliteMarkdownExtension: any = {
     { name: 'PodDirective', block: true },
     { name: 'PodKeyword' },
     { name: 'PodBlockName' },
+    { name: 'PodSemanticBlock' },
+    { name: 'PodCustomBlock' },
+    { name: 'PodUnknownBlock' },
     { name: 'PodAttrName' },
     { name: 'PodAttrValue' },
     { name: 'PodVerbatim' },
@@ -102,6 +118,9 @@ export const podliteMarkdownExtension: any = {
     styleTags({
       PodKeyword: t.keyword,
       PodBlockName: t.typeName,
+      PodSemanticBlock: t.special(t.typeName),
+      PodCustomBlock: t.tagName,
+      PodUnknownBlock: t.name,
       PodAttrName: t.attributeName,
       PodAttrValue: t.attributeValue,
       PodVerbatim: t.content,
@@ -123,28 +142,54 @@ export const podliteMarkdownExtension: any = {
     {
       name: 'PodDirective',
       before: 'ATXHeading',
+      // a directive right under a line of text starts a block of its own,
+      // it does not go on the paragraph above
+      endLeaf(_cx: any, line: any) {
+        return directiveRe.test(line.text) || continuationRe.test(line.text)
+      },
       parse(cx: any, line: any) {
         const m = directiveRe.exec(line.text)
-        if (!m) return false
+        const cont = m ? null : continuationRe.exec(line.text)
+        if (!m && !cont) return false
         const start = cx.lineStart + line.pos
         const markerEnd = start + line.text.length
         const children = []
         let at = start
-        children.push(cx.elt('PodKeyword', at, at + m[1].length))
-        at += m[1].length
-        if (m[2]) {
-          const nameStart = at + (m[2].length - m[3].length)
-          children.push(cx.elt('PodBlockName', nameStart, nameStart + m[3].length))
-          at += m[2].length
+        let word = ''
+        let blockName = ''
+        let rest = ''
+        if (cont) {
+          children.push(cx.elt('PodKeyword', at, at + 1))
+          at += 1
+          rest = cont[1]
+        } else {
+          word = (m as RegExpExecArray)[1]
+          rest = (m as RegExpExecArray)[2]
+          // `=begin`, `=head1` and the like read as one word; a name of its own
+          // keeps the `=` a keyword and takes its colour from what the name is
+          if (standard(word)) {
+            children.push(cx.elt('PodKeyword', at, at + 1 + word.length))
+          } else {
+            children.push(cx.elt('PodKeyword', at, at + 1))
+            children.push(cx.elt(nodeForName(word), at + 1, at + 1 + word.length))
+          }
+          at += 1 + word.length
+          const n = TAKES_A_NAME.has(word) ? nameRe.exec(rest) : null
+          if (n) {
+            blockName = n[2]
+            children.push(cx.elt(nodeForName(blockName), at + n[1].length, at + n[0].length))
+            at += n[0].length
+            rest = rest.slice(n[0].length)
+          }
         }
-        for (const a of (m[4] || '').matchAll(attrRe)) {
+        for (const a of rest.matchAll(attrRe)) {
           const from = at + (a.index as number)
           children.push(cx.elt(a[0][0] === ':' ? 'PodAttrName' : 'PodAttrValue', from, from + a[0].length))
         }
         // a block that keeps its content as written: markdown must not read it.
         // `=begin markdown` is the exception — its content is markdown by definition
-        if (m[1] === '=begin' && m[3] && m[3] !== 'markdown' && isVerbatimBlock(m[3])) {
-          const endRe = new RegExp(`^=end\\s+${m[3]}\\b`)
+        if (word === 'begin' && blockName && blockName !== 'markdown' && isVerbatimBlock(blockName)) {
+          const endRe = new RegExp(`^=end\\s+${blockName}\\b`)
           cx.nextLine()
           while (cx.line && !endRe.test(cx.line.text)) if (!cx.nextLine()) break
           const to = cx.line ? cx.lineStart + cx.line.text.length : markerEnd

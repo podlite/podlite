@@ -63,6 +63,115 @@ describe('podlite read on top of markdown', () => {
   })
 })
 
+// the same ground the stream highlighter covers, read off the tree
+describe('parity with the stream highlighter', () => {
+  const nameNode = (src: string, name: string): string | undefined => {
+    let found: string | undefined
+    parser.parse(src).iterate({
+      enter: n => {
+        if (!found && n.name.startsWith('Pod') && src.slice(n.from, n.to) === name) found = n.name
+      },
+    })
+    return found
+  }
+
+  it('names a section of the document apart from a standard block', () => {
+    expect(nameNode('=begin SYNOPSIS\ntext\n=end SYNOPSIS\n', 'SYNOPSIS')).toBe('PodSemanticBlock')
+    expect(nameNode('=begin SEE-ALSO\ntext\n=end SEE-ALSO\n', 'SEE-ALSO')).toBe('PodSemanticBlock')
+    expect(nameNode('=for AUTHOR\ntext\n', 'AUTHOR')).toBe('PodSemanticBlock')
+  })
+
+  it('names a block the author brought in apart from both', () => {
+    expect(nameNode('=begin Image\ntext\n=end Image\n', 'Image')).toBe('PodCustomBlock')
+    expect(nameNode('=for Diagram\ntext\n', 'Diagram')).toBe('PodCustomBlock')
+  })
+
+  it('keeps a standard block standard', () => {
+    for (const name of ['code', 'data-table', 'row', 'cell', 'table', 'pod'])
+      expect(nameNode(`=begin ${name}\ntext\n=end ${name}\n`, name)).toBe('PodBlockName')
+    expect(nameNode('=end data-table\n', 'data-table')).toBe('PodBlockName')
+  })
+
+  it('leaves a lowercase name it does not know as such', () => {
+    expect(nameNode('=begin foo\ntext\n=end foo\n', 'foo')).toBe('PodUnknownBlock')
+    expect(nameNode('=foo text\n', 'foo')).toBe('PodUnknownBlock')
+  })
+
+  it('reads the abbreviated form the same way', () => {
+    expect(nameNode('=TITLE Heading\n', 'TITLE')).toBe('PodSemanticBlock')
+    expect(nameNode('=NAME Name\n', 'NAME')).toBe('PodSemanticBlock')
+    expect(nameNode('=SEE-ALSO links\n', 'SEE-ALSO')).toBe('PodSemanticBlock')
+    expect(nameNode('=Diagram diagram\n', 'Diagram')).toBe('PodCustomBlock')
+    expect(textOf('=head1 Title\n', 'PodKeyword')).toBe('=head1')
+    expect(textOf('=item1 One\n', 'PodKeyword')).toBe('=item1')
+  })
+
+  it('reads a directive that goes on over the next line', () => {
+    const src = '=set :caption<Multi>\n=    :id<x>\n'
+    const marks: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodKeyword' && marks.push(src.slice(n.from, n.to))),
+    })
+    expect(marks).toEqual(['=set', '='])
+    expect(textOf(src, 'PodAttrValue')).toBe('<Multi>')
+  })
+
+  it('does not let one directive swallow the next', () => {
+    const src = '=set :id<x>\n\n=head1 Title\n'
+    const keywords: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodKeyword' && keywords.push(src.slice(n.from, n.to))),
+    })
+    expect(keywords).toEqual(['=set', '=head1'])
+  })
+
+  it('starts a directive under a line of text', () => {
+    expect(textOf('text\n=head1 Title\n', 'PodKeyword')).toBe('=head1')
+  })
+
+  it('reads the attribute forms the highlighter knew', () => {
+    expect(textOf('=for para :masked\n', 'PodAttrName')).toBe(':masked')
+    expect(textOf('=for table :rename{a=>b}\n', 'PodAttrValue')).toBe('{a=>b}')
+    const src = '=begin data-table :src<file:./x.csv> :columns<a,b>\n=end data-table\n'
+    const values: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodAttrValue' && values.push(src.slice(n.from, n.to))),
+    })
+    expect(values).toEqual(['<file:./x.csv>', '<a,b>'])
+  })
+
+  it('reads a boundary directive with its caption', () => {
+    expect(textOf('=boundary :caption<End>\n', 'PodKeyword')).toBe('=boundary')
+    expect(textOf('=boundary :caption<End>\n', 'PodAttrValue')).toBe('<End>')
+  })
+
+  // the three the stream highlighter got wrong (T428)
+  it('takes a hyphenated name and a negation whole', () => {
+    expect(textOf('=for table :mime-type<text/csv>\n', 'PodAttrName')).toBe(':mime-type')
+    expect(textOf('=for pod :folded-levels<2>\n', 'PodAttrName')).toBe(':folded-levels')
+    expect(textOf('=for pod :!toc\n', 'PodAttrName')).toBe(':!toc')
+  })
+
+  it('marks a value in a bare delimiter', () => {
+    expect(textOf("=for pod :a'string'\n", 'PodAttrValue')).toBe("'string'")
+    expect(textOf('=for pod :a"string"\n', 'PodAttrValue')).toBe('"string"')
+    expect(textOf('=for pod :a｢string｣\n', 'PodAttrValue')).toBe('｢string｣')
+  })
+
+  it('takes only a matching pair for a value', () => {
+    const src = '=for pod :a<x)\n'
+    const values: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodAttrValue' && values.push(src.slice(n.from, n.to))),
+    })
+    expect(values).toEqual([])
+  })
+
+  it('marks content hidden from the reader', () => {
+    expect(textOf('The password is G<hunter2> here.\n', 'PodCodeG')).toBe('G<hunter2>')
+  })
+})
+
 describe('markup codes', () => {
   const codeNodes = (src: string): string[] => {
     const out: string[] = []
