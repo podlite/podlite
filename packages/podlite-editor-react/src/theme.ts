@@ -63,5 +63,9 @@ export const defaultTheme = createTheme({
       borderRadius: '3px',
     },
     { tag: t.strikethrough, textDecoration: 'line-through' },
+    { tag: t.constant(t.variableName), color: 'var(--color-prettylights-syntax-constant)' },
+    // the brackets of a markup code stand back from what they hold
+    { tag: t.processingInstruction, color: 'var(--color-fg-muted)' },
+    { tag: t.labelName, textDecoration: 'underline' },
   ],
 })

@@ -18,8 +18,8 @@ const standard = (name: string): boolean =>
 // a block the author brought in; the rest is a name nothing here knows
 const nodeForName = (name: string): string => {
   if (standard(name)) return 'PodBlockName'
-  if (/^[A-Z][A-Z0-9_-]*$/.test(name)) return 'PodSemanticBlock'
-  if (/^[A-Z]/.test(name)) return 'PodCustomBlock'
+  if (/^[A-Z][A-Z][A-Z0-9_-]*$/.test(name)) return 'PodSemanticBlock'
+  if (/^[A-Z][a-z][a-zA-Z0-9_-]*$/.test(name)) return 'PodCustomBlock'
   return 'PodUnknownBlock'
 }
 
@@ -116,13 +116,14 @@ export const podliteMarkdownExtension: any = {
   ],
   props: [
     styleTags({
+      // the same tags the stream highlighter gave these, so colours stay put
       PodKeyword: t.keyword,
-      PodBlockName: t.typeName,
-      PodSemanticBlock: t.special(t.typeName),
-      PodCustomBlock: t.tagName,
-      PodUnknownBlock: t.name,
+      PodBlockName: t.operator,
+      PodSemanticBlock: t.constant(t.variableName),
+      PodCustomBlock: t.className,
+      PodUnknownBlock: t.variableName,
       PodAttrName: t.attributeName,
-      PodAttrValue: t.attributeValue,
+      PodAttrValue: t.string,
       PodVerbatim: t.content,
       PodCodeMark: t.processingInstruction,
       ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),

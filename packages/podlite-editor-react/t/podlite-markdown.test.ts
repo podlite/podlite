@@ -92,6 +92,11 @@ describe('parity with the stream highlighter', () => {
     expect(nameNode('=end data-table\n', 'data-table')).toBe('PodBlockName')
   })
 
+  it('reads a closing marker on its own', () => {
+    expect(nameNode('=end SYNOPSIS\n', 'SYNOPSIS')).toBe('PodSemanticBlock')
+    expect(nameNode('=end Image\n', 'Image')).toBe('PodCustomBlock')
+  })
+
   it('leaves a lowercase name it does not know as such', () => {
     expect(nameNode('=begin foo\ntext\n=end foo\n', 'foo')).toBe('PodUnknownBlock')
     expect(nameNode('=foo text\n', 'foo')).toBe('PodUnknownBlock')
@@ -198,6 +203,13 @@ describe('markup codes', () => {
     const found = codeNodes('B<bold I<and italic>>\n')
     expect(found).toContain('PodCodeB')
     expect(found).toContain('PodCodeI')
+  })
+
+  it('stands next to markdown markup without breaking it', () => {
+    const src = 'B<bold> and [a link](/a) and **markdown** and _italic_\n'
+    expect(codeNodes(src)).toContain('PodCodeB')
+    expect(nodes(src)).toEqual(expect.arrayContaining(['Link', 'StrongEmphasis', 'Emphasis']))
+    expect(textOf(src, 'PodCodeB')).toBe('B<bold>')
   })
 
   it('leaves a lone capital letter alone', () => {
