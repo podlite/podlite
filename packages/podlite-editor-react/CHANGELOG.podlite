@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item read Podlite on top of the markdown parser behind the experimentalTreeHighlight prop: the content of a C<< =begin markdown >> block and code inside a fence get their own highlighting
+=item read Podlite on top of the markdown parser: the content of a C<< =begin markdown >> block and code inside a fence get their own highlighting. This replaces the stream mode — C<src/podlite.js> and C<src/simple-mode.js> are gone, and with them the C<podliteLang> export
 
 =item the tree highlighter tells a section name (C<SYNOPSIS>) from a name the author brought in (C<Image>) and from a standard block, in both the delimited and the abbreviated form
 

@@ -209,9 +209,10 @@ export const podliteMarkdownExtension: any = {
 
 // Podlite read on top of the markdown parser: the content of a markdown block
 // and the code inside a fence get their own highlighting for free
-export const podliteTreeLang = (): Extension =>
+// `codeLanguages` is a parameter so a test can hand in a list it loads itself
+export const podliteTreeLang = (codeLanguages: any = languages): Extension =>
   markdown({
     base: markdownLanguage,
-    codeLanguages: languages,
+    codeLanguages,
     extensions: [podliteMarkdownExtension as any],
   })

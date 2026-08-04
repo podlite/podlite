@@ -3,7 +3,6 @@ import CodeMirror, { ViewUpdate, ReactCodeMirrorProps, ReactCodeMirrorRef } from
 import Podlite from '@podlite/to-jsx'
 import { podlite as podlite_core } from 'podlite'
 import * as events from '@uiw/codemirror-extensions-events'
-import { podliteLang } from './podlite'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { defaultTheme } from './theme'
@@ -67,8 +66,6 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   enableHighlighting?: boolean
   /** Enable code folding (fold gutter + fold keymap) @default `true` */
   enableFolding?: boolean
-  /** read Podlite on top of the markdown parser: highlights the content of markdown blocks and code with a language */
-  experimentalTreeHighlight?: boolean
   /** Initial editor session state to restore (cursor, scroll, folds) */
   initialEditorState?: EditorSessionState
   /** Called when editor state changes (cursor move, scroll, fold/unfold) */
@@ -132,7 +129,6 @@ function PodliteEditorInternal(
     onOpenLink,
     enableHighlighting = false,
     enableFolding = true,
-    experimentalTreeHighlight = false,
     language = 'podlite',
     initialEditorState,
     onEditorStateChange,
@@ -626,11 +622,7 @@ function PodliteEditorInternal(
 
   const extensionsData = React.useMemo(() => {
     const exts: IPodliteEditor['extensions'] = [
-      language === 'markdown'
-        ? markdown({ base: markdownLanguage, codeLanguages: languages })
-        : experimentalTreeHighlight
-        ? podliteTreeLang()
-        : podliteLang(),
+      language === 'markdown' ? markdown({ base: markdownLanguage, codeLanguages: languages }) : podliteTreeLang(),
       EditorView.lineWrapping,
       search({ top: true }),
       stateChangeListener,
@@ -670,7 +662,6 @@ function PodliteEditorInternal(
     preventToggleComment,
     autocompletionExt,
     enableFolding,
-    experimentalTreeHighlight,
     language,
     imagePasteDropHandler,
   ])
