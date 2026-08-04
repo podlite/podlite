@@ -114,3 +114,20 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 2em;
 }
+
+/* Content the author keeps out of what is published — `G<>`. Shown as a
+   covered strip; stepping the caret inside uncovers it, so editing is
+   unaffected. The text stays selectable and copyable underneath. */
+.cm-pod-covered {
+  background: var(--color-neutral-muted);
+  color: transparent;
+  border-radius: 3px;
+}
+/* Settings after the language in a markdown fence — ```js :caption<...> —
+   coloured like the settings of any other block. */
+.cm-pod-fence-attr-name {
+  color: var(--color-prettylights-syntax-constant);
+}
+.cm-pod-fence-attr-value {
+  color: var(--color-prettylights-syntax-string);
+}

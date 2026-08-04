@@ -10,6 +10,10 @@
 
 =item a directive is read under an indent as well
 
+=item show content the author keeps out of what is published — C<< G<> >> — as a covered strip; the caret stepping inside uncovers it, and the text stays selectable underneath
+
+=item colour the settings that follow the language in a markdown fence, C<< ```js :caption<...> >>, in Podlite documents and in C<.md> files alike
+
 =item highlight all 22 markup codes the grammar accepts, not the ten the old highlighter knew: C<D>, C<E>, C<H>, C<J>, C<K>, C<N>, C<R>, C<S>, C<T>, C<V>, C<W>, C<X> are added, coloured by what each turns into when the document is rendered
 
 =item in C<< L<text|target> >> and C<< W<text|context> >> the part after the bar is highlighted apart from the text; a bar inside a nested code belongs to that code

@@ -18,6 +18,7 @@ import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
 import { dictionaryFor } from './helpers'
 import { podliteTreeLang, suggestionContextAt, SuggestionContext } from './podliteMarkdown'
+import { podliteDecorations } from './podliteDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
@@ -638,6 +639,9 @@ function PodliteEditorInternal(
       listContinuationKeymap,
       preventToggleComment,
       imagePasteDropHandler,
+      // covered content and the settings of a fenced block; a markdown file has
+      // fences too, so this is not kept to Podlite documents
+      podliteDecorations(),
     ]
 
     if (language === 'podlite') {
