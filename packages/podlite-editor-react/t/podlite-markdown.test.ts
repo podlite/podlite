@@ -221,6 +221,28 @@ describe('markup codes', () => {
     }
   })
 
+  // the whole set the grammar accepts, not only the ten the stream mode knew
+  it('reads every code the grammar accepts', () => {
+    const all = 'A V R B I C D E F G H J K L O S T U W Z N X'.split(' ')
+    for (const letter of all) {
+      expect(codeNodes(`text ${letter}<inside> tail\n`)).toContain(`PodCode${letter}`)
+    }
+    expect(all).toHaveLength(22)
+  })
+
+  it('splits what the reader sees from where it points', () => {
+    expect(textOf('L<home|https://podlite.org>\n', 'PodCodeTarget')).toBe('https://podlite.org')
+    expect(textOf('W<word|context>\n', 'PodCodeTarget')).toBe('context')
+    // the bar inside a nested code belongs to that code
+    expect(textOf('L<B<text>|target>\n', 'PodCodeTarget')).toBe('target')
+    expect(codeNodes('L<B<text>|target>\n')).toContain('PodCodeB')
+  })
+
+  it('leaves a code without a bar whole', () => {
+    expect(nodes('C<a > b>\n')).not.toContain('PodCodeTarget')
+    expect(textOf('L<https://podlite.org>\n', 'PodCodeL')).toBe('L<https://podlite.org>')
+  })
+
   it('reads multiple angles and guillemets', () => {
     expect(codeNodes('text C<< a > b >> tail\n')).toContain('PodCodeC')
     expect(codeNodes('text B«bold» tail\n')).toContain('PodCodeB')

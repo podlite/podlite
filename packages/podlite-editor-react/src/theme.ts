@@ -67,5 +67,9 @@ export const defaultTheme = createTheme({
     // the brackets of a markup code stand back from what they hold
     { tag: t.processingInstruction, color: 'var(--color-fg-muted)' },
     { tag: t.labelName, textDecoration: 'underline' },
+    { tag: t.escape, color: 'var(--color-prettylights-syntax-constant)' },
+    // a mark left for the reader — a note, an index entry, a place above or below the line
+    { tag: [t.meta, t.annotation], color: 'var(--color-fg-muted)' },
+    { tag: t.url, color: 'var(--color-prettylights-syntax-string)' },
   ],
 })

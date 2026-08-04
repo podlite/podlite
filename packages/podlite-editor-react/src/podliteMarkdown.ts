@@ -31,17 +31,32 @@ const nodeForName = (name: string): string => {
 // a value keeps its own delimiters; the norm has no square brackets since 2026-08
 const attrRe = /:!?[\w-]+|<[^>]*>|\([^)]*\)|\{[^}]*\}|'[^']*'|"[^"]*"|｢[^｣]*｣/g
 
-// markup codes the stream highlighter knew, with the same colour meaning
+// every markup code the grammar accepts, coloured by what it turns into when
+// the document is rendered: K and T are typed text like C, R names a stand-in
+// value, H and J stand above and below the line, N and X leave a mark for the
+// reader rather than text
 const CODE_TAGS: Record<string, any> = {
   A: t.variableName,
   B: t.strong,
   C: t.monospace,
+  D: t.definition(t.variableName),
+  E: t.escape,
   F: t.literal,
   G: t.comment,
+  H: t.annotation,
   I: t.emphasis,
+  J: t.annotation,
+  K: t.monospace,
   L: t.link,
+  N: t.meta,
   O: t.strikethrough,
+  R: t.variableName,
+  S: t.content,
+  T: t.monospace,
   U: t.labelName,
+  V: t.content,
+  W: t.link,
+  X: t.meta,
   Z: t.comment,
 }
 const CODE_LETTERS = Object.keys(CODE_TAGS)
@@ -85,6 +100,22 @@ const matchingEnd = (src: string, bodyFrom: number, open: string): number => {
   return -1
 }
 
+// L and W carry two parts: what the reader sees and where it points
+const SPLIT_CODES = new Set(['L', 'W'])
+
+// reads the codes standing between two places in the text
+const readCodesIn = (cx: any, src: string, from: number, to: number, offset: number): any[] => {
+  const found = []
+  for (let i = from; i < to; ) {
+    const inner = readCode(cx, src, i, offset)
+    if (inner) {
+      found.push(inner)
+      i = inner.to - offset
+    } else i++
+  }
+  return found
+}
+
 // reads one code at `at`; the body is scanned again so nested codes become children
 const readCode = (cx: any, src: string, at: number, offset: number): any => {
   const open = openerAt(src, at)
@@ -94,15 +125,33 @@ const readCode = (cx: any, src: string, at: number, offset: number): any => {
   const end = matchingEnd(src, bodyFrom, open)
   if (end === -1) return null
   const children = [cx.elt('PodCodeMark', offset + at, offset + bodyFrom)]
-  for (let i = bodyFrom; i < end; ) {
-    const inner = readCode(cx, src, i, offset)
-    if (inner) {
-      children.push(inner)
-      i = inner.to - offset
-    } else i++
+  const bar = SPLIT_CODES.has(letter) ? topLevelBar(src, bodyFrom, end, open) : -1
+  if (bar === -1) {
+    children.push(...readCodesIn(cx, src, bodyFrom, end, offset))
+  } else {
+    children.push(...readCodesIn(cx, src, bodyFrom, bar, offset))
+    children.push(cx.elt('PodCodeMark', offset + bar, offset + bar + 1))
+    children.push(cx.elt('PodCodeTarget', offset + bar + 1, offset + end, readCodesIn(cx, src, bar + 1, end, offset)))
   }
   children.push(cx.elt('PodCodeMark', offset + end, offset + end + closingFor(open).length))
   return cx.elt(`PodCode${letter}`, offset + at, offset + end + closingFor(open).length, children)
+}
+
+// the bar that splits the body, the one outside any code nested in it
+const topLevelBar = (src: string, from: number, to: number, open: string): number => {
+  for (let i = from; i < to; ) {
+    const nested = openerAt(src, i)
+    if (nested) {
+      const end = matchingEnd(src, i + 1 + nested.length, nested)
+      if (end !== -1) {
+        i = end + closingFor(nested).length
+        continue
+      }
+    }
+    if (src[i] === '|') return i
+    i++
+  }
+  return -1
 }
 
 export const podliteMarkdownExtension: any = {
@@ -125,6 +174,7 @@ export const podliteMarkdownExtension: any = {
     { name: 'PodAttrValue' },
     { name: 'PodVerbatim' },
     { name: 'PodCodeMark' },
+    { name: 'PodCodeTarget' },
     ...codeNodeNames.map(name => ({ name })),
   ],
   props: [
@@ -139,6 +189,7 @@ export const podliteMarkdownExtension: any = {
       PodAttrValue: t.string,
       PodVerbatim: t.content,
       PodCodeMark: t.processingInstruction,
+      PodCodeTarget: t.url,
       ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),
     }),
   ],
