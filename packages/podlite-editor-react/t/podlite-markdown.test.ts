@@ -1,5 +1,5 @@
 import { parser as mdParser } from '@lezer/markdown'
-import { podliteMarkdownExtension } from '../src/podliteMarkdown'
+import { podliteMarkdownExtension, suggestionContextForLine } from '../src/podliteMarkdown'
 
 const parser = mdParser.configure(podliteMarkdownExtension as any)
 
@@ -174,6 +174,37 @@ describe('parity with the stream highlighter', () => {
 
   it('marks content hidden from the reader', () => {
     expect(textOf('The password is G<hunter2> here.\n', 'PodCodeG')).toBe('G<hunter2>')
+  })
+})
+
+describe('where the caret stands', () => {
+  const body = (src: string): string[] => {
+    const out: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodMarkdownBody' && out.push(src.slice(n.from, n.to))),
+    })
+    return out
+  }
+
+  it('covers the body of a markdown block, delimited and abbreviated', () => {
+    expect(body('=begin markdown\ntext\n=end markdown\n')).toEqual(['text'])
+    expect(body('=markdown\ntext\n\n=para after\n')).toEqual(['text'])
+    // the old spelling with a capital letter is still met in documents
+    expect(body('=begin Markdown\ntext\n=end Markdown\n')).toEqual(['text'])
+  })
+
+  it('reads a directive that stands under an indent', () => {
+    expect(textOf('  =head1 Title\n', 'PodKeyword')).toBe('=head1')
+    expect(body('  =Markdown\n  text\n\n=para x\n')).toEqual(['text'])
+  })
+
+  it('tells markdown from Podlite by the line', () => {
+    const src = '=para one\n=begin markdown\ntext\n=end markdown\n=para two\n'
+    expect(suggestionContextForLine(src, 1)).toBe('pod6')
+    expect(suggestionContextForLine(src, 2)).toBe('pod6')
+    expect(suggestionContextForLine(src, 3)).toBe('md')
+    expect(suggestionContextForLine(src, 4)).toBe('pod6')
+    expect(suggestionContextForLine(src, 5)).toBe('pod6')
   })
 })
 

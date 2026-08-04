@@ -6,6 +6,10 @@
 
 =item the tree highlighter tells a section name (C<SYNOPSIS>) from a name the author brought in (C<Image>) and from a standard block, in both the delimited and the abbreviated form
 
+=item the body of a markdown block is a node of its own, so the editor tells markdown from Podlite by looking at the tree under the caret. C<getSuggestionContextForLine> no longer parses the document a second time; C<suggestionContextAt(state, pos)> answers the same question from editor state
+
+=item a directive is read under an indent as well
+
 =item the tree highlighter takes a hyphenated attribute name and a negation whole (C<:mime-type>, C<:!toc>), marks a value in a bare delimiter (C<'…'>, C<"…">, C<｢…｣>), and takes only a matching pair as a value
 
 =item mark an attribute value the parser could not read, with the message on hover; the line under the caret stays quiet while it is being typed

@@ -1,13 +1,18 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { ensureSyntaxTree, syntaxTree } from '@codemirror/language'
 import { languages } from '@codemirror/language-data'
 import { styleTags, tags as t } from '@lezer/highlight'
+import { parser as mdParser } from '@lezer/markdown'
 import { BLOCK_NAMES, isVerbatimBlock } from '@podlite/schema'
-import type { Extension } from '@codemirror/state'
+import type { EditorState, Extension } from '@codemirror/state'
 
 const directiveRe = /^=([A-Za-z][\w-]*)(.*)$/
 // a directive may go on over the next lines, each opened by a bare `=`
 const continuationRe = /^=(\s.*)$/
 const nameRe = /^(\s+)([A-Za-z][\w-]*)/
+
+// `=Markdown` with a capital letter is the old spelling, still met in documents
+const isMarkdownName = (name: string): boolean => /^markdown$/i.test(name)
 
 const DIRECTIVE_WORDS = ['begin', 'end', 'for', 'config', 'alias']
 const TAKES_A_NAME = new Set(['begin', 'end', 'for'])
@@ -103,6 +108,14 @@ const readCode = (cx: any, src: string, at: number, offset: number): any => {
 export const podliteMarkdownExtension: any = {
   defineNodes: [
     { name: 'PodDirective', block: true },
+    {
+      name: 'PodMarkdownBody',
+      block: true,
+      // 1 — the body of a delimited block, it runs up to its closing marker;
+      // 0 — the body of an abbreviated one, it runs to a blank line or the next directive
+      composite: (_cx: any, line: any, value: number) =>
+        value ? !/^\s*=end\s+markdown\b/i.test(line.text) : !!line.text.trim() && !/^\s*=/.test(line.text),
+    },
     { name: 'PodKeyword' },
     { name: 'PodBlockName' },
     { name: 'PodSemanticBlock' },
@@ -149,11 +162,12 @@ export const podliteMarkdownExtension: any = {
         return directiveRe.test(line.text) || continuationRe.test(line.text)
       },
       parse(cx: any, line: any) {
-        const m = directiveRe.exec(line.text)
-        const cont = m ? null : continuationRe.exec(line.text)
+        const text = line.text.slice(line.pos)
+        const m = directiveRe.exec(text)
+        const cont = m ? null : continuationRe.exec(text)
         if (!m && !cont) return false
         const start = cx.lineStart + line.pos
-        const markerEnd = start + line.text.length
+        const markerEnd = cx.lineStart + line.text.length
         const children = []
         let at = start
         let word = ''
@@ -189,8 +203,8 @@ export const podliteMarkdownExtension: any = {
         }
         // a block that keeps its content as written: markdown must not read it.
         // `=begin markdown` is the exception — its content is markdown by definition
-        if (word === 'begin' && blockName && blockName !== 'markdown' && isVerbatimBlock(blockName)) {
-          const endRe = new RegExp(`^=end\\s+${blockName}\\b`)
+        if (word === 'begin' && blockName && !isMarkdownName(blockName) && isVerbatimBlock(blockName)) {
+          const endRe = new RegExp(`^\\s*=end\\s+${blockName}\\b`)
           cx.nextLine()
           while (cx.line && !endRe.test(cx.line.text)) if (!cx.nextLine()) break
           const to = cx.line ? cx.lineStart + cx.line.text.length : markerEnd
@@ -201,10 +215,57 @@ export const podliteMarkdownExtension: any = {
         }
         cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
         cx.nextLine()
+        // the body of a markdown block is markdown; it gets a node of its own so
+        // the editor can tell from the tree that the caret stands inside one
+        const opensBody =
+          (word === 'begin' && isMarkdownName(blockName)) || (!cont && !TAKES_A_NAME.has(word) && isMarkdownName(word))
+        if (opensBody && cx.line) {
+          cx.startComposite('PodMarkdownBody', cx.line.pos, word === 'begin' ? 1 : 0)
+          return null
+        }
         return true
       },
     },
   ],
+}
+
+export type SuggestionContext = 'pod6' | 'md'
+
+// the tree already knows where the caret stands, so nothing is parsed a second time
+export const suggestionContextAt = (state: EditorState, pos: number): SuggestionContext => {
+  // the tree may not have reached the caret yet; give the parse a moment to get there
+  const tree = ensureSyntaxTree(state, pos, 100) || syntaxTree(state)
+  // both sides, so a caret at the very start or the very end of the body counts as inside
+  for (const side of [-1, 1] as const)
+    for (let node: any = tree.resolveInner(pos, side); node; node = node.parent)
+      if (node.name === 'PodMarkdownBody') return 'md'
+  return 'pod6'
+}
+
+// the same question answered on a piece of text, for callers that hold no editor state
+export const suggestionContextForLine = (text: string, line: number): SuggestionContext => {
+  const tree = mdParser.configure(podliteMarkdownExtension).parse(text)
+  const from = lineStartOf(text, line)
+  const nl = text.indexOf('\n', from)
+  const to = nl === -1 ? text.length : nl
+  let found: SuggestionContext = 'pod6'
+  // the body starts past the indent, so the line is measured by overlap
+  tree.iterate({
+    enter: n => {
+      if (n.name === 'PodMarkdownBody' && n.from <= to && from < n.to) found = 'md'
+    },
+  })
+  return found
+}
+
+const lineStartOf = (text: string, line: number): number => {
+  let at = 0
+  for (let n = 1; n < line; n++) {
+    const next = text.indexOf('\n', at)
+    if (next === -1) return at
+    at = next + 1
+  }
+  return at
 }
 
 // Podlite read on top of the markdown parser: the content of a markdown block

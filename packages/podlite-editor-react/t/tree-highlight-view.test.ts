@@ -6,7 +6,7 @@ import { LanguageDescription } from '@codemirror/language'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { podliteTreeLang } from '../src/podliteMarkdown'
+import { podliteTreeLang, suggestionContextAt } from '../src/podliteMarkdown'
 import { defaultTheme } from '../src/theme'
 
 // loaded here rather than through language-data, whose lazy import needs a flag jest does not have
@@ -40,6 +40,13 @@ describe('the live view', () => {
     const text = (s: string) => s.slice(s.indexOf('|') + 1)
     expect(found.map(text)).toEqual(expect.arrayContaining(['=begin', 'pod', ':id', '<x>']))
     expect(found.every(s => s.indexOf('|') > 0)).toBe(true)
+  })
+
+  it('tells where the caret stands from the state, without parsing again', () => {
+    const doc = '=para one\n=begin markdown\ntext\n=end markdown\n'
+    const state = EditorState.create({ doc, extensions: [podliteTreeLang(codeLanguages)] })
+    expect(suggestionContextAt(state, doc.indexOf('one'))).toBe('pod6')
+    expect(suggestionContextAt(state, doc.indexOf('text'))).toBe('md')
   })
 
   it('colours a name the author brought in apart from a standard one', () => {

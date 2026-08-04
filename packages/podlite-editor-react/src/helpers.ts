@@ -1,28 +1,15 @@
-import { getFromTree, PodliteDocument, podlitePluggable } from '@podlite/schema'
+import { PodliteDocument, podlitePluggable } from '@podlite/schema'
+import { suggestionContextForLine } from './podliteMarkdown'
+
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable()
   let tree = podlite.parse(str)
   const asAst = podlite.toAstResult(tree)
   return asAst.interator
 }
-export const getSuggestionContextForLine = (pod: string, line: number): 'pod6' | 'md' => {
-  const tree = parse(pod)
-  // TODO:: deprecate named block =Markdown
-  const markdownBlocks = getFromTree(tree, 'Markdown', 'markdown') as any // TODO: remove `any`
-  const isMd =
-    markdownBlocks.findIndex(
-      ({
-        location: {
-          start: { line: lineStart },
-          end: { line: lineEnd },
-        },
-      }) => {
-        return line > lineStart && line < lineEnd
-      },
-    ) !== -1
-  if (isMd) return 'md'
-  return 'pod6'
-}
+// answered off the highlighting tree; the document is no longer parsed a second time
+export const getSuggestionContextForLine = (pod: string, line: number): 'pod6' | 'md' =>
+  suggestionContextForLine(pod, line)
 
 interface Pos {
   line: number
