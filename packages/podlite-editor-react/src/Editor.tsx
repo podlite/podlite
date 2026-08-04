@@ -16,7 +16,8 @@ import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
-import { podliteTreeLang } from './podliteMarkdown'
+import { dictionaryFor } from './helpers'
+import { podliteTreeLang, suggestionContextAt, SuggestionContext } from './podliteMarkdown'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
@@ -596,29 +597,36 @@ function PodliteEditorInternal(
 
   const autocompletionExt = React.useMemo(() => {
     if (!enableAutocompletion) return null
-    const langDict: Dict[] = dictionary.filter(({ lang = 'pod6' }) => lang === 'pod6')
-    const completions = langDict.map(({ displayText, text }) => {
-      function cleanBraces(text: string): string {
-        return text.replace(/\#\{[^\}]*\}/g, '')
-      }
-      return {
-        label: displayText,
-        type: 'keyword',
-        apply: makeApply(text),
-        info: cleanBraces(text),
-      }
-    })
+    const optionsFor = (want: SuggestionContext) =>
+      dictionaryFor(dictionary as Dict[], want).map(({ displayText, text }) => {
+        function cleanBraces(text: string): string {
+          return text.replace(/\#\{[^\}]*\}/g, '')
+        }
+        return {
+          label: displayText,
+          type: 'keyword',
+          apply: makeApply(text),
+          info: cleanBraces(text),
+        }
+      })
+    const completions: Record<SuggestionContext, ReturnType<typeof optionsFor>> = {
+      pod6: optionsFor('pod6'),
+      md: optionsFor('md'),
+    }
     function myCompletions(context) {
       let before = context.matchBefore(/^\s*=\w*/)
       if (!context.explicit && !before) return null
+      // a markdown file is markdown throughout; inside a Podlite document the
+      // tree says whether the caret stands in the body of a markdown block
+      const where: SuggestionContext = language === 'markdown' ? 'md' : suggestionContextAt(context.state, context.pos)
       return {
         from: before ? before.from + before.text.indexOf('=') + 1 : context.pos,
-        options: completions,
+        options: completions[where],
         validFor: /^=\w*$/,
       }
     }
     return autocompletion({ override: [myCompletions] })
-  }, [enableAutocompletion, makeApply])
+  }, [enableAutocompletion, makeApply, language])
 
   const extensionsData = React.useMemo(() => {
     const exts: IPodliteEditor['extensions'] = [

@@ -10,6 +10,8 @@
 
 =item a directive is read under an indent as well
 
+=item suggestions follow the caret: markdown snippets inside the body of a markdown block and in a C<.md> file, Podlite ones everywhere else. The markdown entries of the dictionary were unreachable before
+
 =item the tree highlighter takes a hyphenated attribute name and a negation whole (C<:mime-type>, C<:!toc>), marks a value in a bare delimiter (C<'…'>, C<"…">, C<｢…｣>), and takes only a matching pair as a value
 
 =item mark an attribute value the parser could not read, with the message on hover; the line under the caret stays quiet while it is being typed

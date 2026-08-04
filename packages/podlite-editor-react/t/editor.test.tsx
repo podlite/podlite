@@ -1,5 +1,6 @@
 import { PodliteDocument, frozenIds, podlitePluggable } from '@podlite/schema'
-import { addVMargin, getSuggestionContextForLine, templateGetSelectionPos } from '../src/helpers'
+import dictionary from '../src/dict'
+import { addVMargin, dictionaryFor, getSuggestionContextForLine, templateGetSelectionPos } from '../src/helpers'
 
 export const parse = (str: string): PodliteDocument => {
   let podlite = podlitePluggable()
@@ -26,6 +27,18 @@ it('Check suggestion context: md', () => {
 })
 it('Check suggestion context: md second block', () => {
   expect(getSuggestionContextForLine(pod, 7)).toEqual('md')
+})
+
+it('Suggestions are picked by the context', () => {
+  const pod6 = dictionaryFor(dictionary, 'pod6')
+  const md = dictionaryFor(dictionary, 'md')
+  expect(pod6.length).toBeGreaterThan(0)
+  expect(md.length).toBeGreaterThan(0)
+  // an entry with no language of its own belongs to Podlite
+  expect(pod6.every(({ lang }) => lang === undefined || lang === 'pod6')).toBe(true)
+  expect(md.every(({ lang }) => lang === 'md')).toBe(true)
+  expect(md.map(({ text }) => text)).toContain('# ')
+  expect(pod6.map(({ text }) => text)).not.toContain('# ')
 })
 
 it('Selection position', () => {

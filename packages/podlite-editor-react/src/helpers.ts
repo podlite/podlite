@@ -11,6 +11,10 @@ export const parse = (str: string): PodliteDocument => {
 export const getSuggestionContextForLine = (pod: string, line: number): 'pod6' | 'md' =>
   suggestionContextForLine(pod, line)
 
+// an entry without a language belongs to Podlite
+export const dictionaryFor = <T extends { lang?: 'pod6' | 'md' }>(entries: T[], want: 'pod6' | 'md'): T[] =>
+  entries.filter(({ lang = 'pod6' }) => lang === want)
+
 interface Pos {
   line: number
   offset: number
