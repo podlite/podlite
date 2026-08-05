@@ -8,7 +8,15 @@ import { podliteDiagnostics } from '../src/diagnostics'
 
 const doc = '=begin pod\n\n=for para :tags[a,b]\ntext\n\n=end pod\n'
 
-const settle = () => new Promise(resolve => setTimeout(resolve, 200))
+const marker = (parent: HTMLElement) => parent.querySelector('.cm-lintRange-warning')
+
+// waiting on the mark itself, not on a stretch of time: under load the delay
+// before the mark appears grows, and a fixed pause turns the check flaky
+const waitForMark = async (parent: HTMLElement, limitMs = 5000) => {
+  const until = Date.now() + limitMs
+  while (!marker(parent) && Date.now() < until) await new Promise(r => setTimeout(r, 20))
+  return marker(parent)
+}
 
 const mount = (caretLine: number) => {
   const parent = document.createElement('div')
@@ -29,8 +37,7 @@ const mount = (caretLine: number) => {
 describe('diagnostics in a live editor', () => {
   it('marks the value and carries the message', async () => {
     const { parent, view } = mount(1)
-    await settle()
-    expect(parent.querySelector('.cm-lintRange-warning')).not.toBeNull()
+    expect(await waitForMark(parent)).not.toBeNull()
     const messages: string[] = []
     forEachDiagnostic(view.state, d => messages.push(d.message))
     expect(messages).toEqual([
@@ -40,9 +47,13 @@ describe('diagnostics in a live editor', () => {
   })
 
   it('stays quiet while the caret is on that line', async () => {
-    const { parent, view } = mount(3)
-    await settle()
-    expect(parent.querySelector('.cm-lintRange-warning')).toBeNull()
-    view.destroy()
+    // the second editor is the clock: once its mark is up, the first has had
+    // at least as long, so an empty first one means silence and not slowness
+    const quiet = mount(3)
+    const loud = mount(1)
+    expect(await waitForMark(loud.parent)).not.toBeNull()
+    expect(marker(quiet.parent)).toBeNull()
+    quiet.view.destroy()
+    loud.view.destroy()
   })
 })
