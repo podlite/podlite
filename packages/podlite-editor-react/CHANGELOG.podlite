@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item keep one copy of each CodeMirror package in the tree and raise C<@codemirror/view> to 6.43. With two copies an extension does nothing and says nothing: the find-and-replace panel refused to open, and highlighting stopped altogether when the copies were of C<@lezer/common>
+
 =item read Podlite on top of the markdown parser: the content of a C<< =begin markdown >> block and code inside a fence get their own highlighting. This replaces the stream mode — C<src/podlite.js> and C<src/simple-mode.js> are gone, and with them the C<podliteLang> export
 
 =item the tree highlighter tells a section name (C<SYNOPSIS>) from a name the author brought in (C<Image>) and from a standard block, in both the delimited and the abbreviated form
