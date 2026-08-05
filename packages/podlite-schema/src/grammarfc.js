@@ -3725,14 +3725,20 @@ function peg$parse(input, options) {
         s3 = [];
         s4 = peg$parsecode_C();
         if (s4 === peg$FAILED) {
-          s4 = peg$parsetext_L();
+          s4 = peg$parsecode_2();
+          if (s4 === peg$FAILED) {
+            s4 = peg$parsetext_L();
+          }
         }
         if (s4 !== peg$FAILED) {
           while (s4 !== peg$FAILED) {
             s3.push(s4);
             s4 = peg$parsecode_C();
             if (s4 === peg$FAILED) {
-              s4 = peg$parsetext_L();
+              s4 = peg$parsecode_2();
+              if (s4 === peg$FAILED) {
+                s4 = peg$parsetext_L();
+              }
             }
           }
         } else {

@@ -96,8 +96,8 @@ code_L =
     name:start_code_2 &{return name.code === "L" || name.code === "W"}
             
     content: (
-               code_C  /  text_L 
-             )+ 
+               code_C  /  code_2  /  text_L
+             )+
      
      meta:(
             separator t:$(!end_code .)*  { return t }

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a link keeps its target when the display text carries formatting codes — C<< L<I<text>|target> >> previously left the separator and target inside the text
+
 =head1 0.0.56
 
 =item B<Breaking:> square brackets and bare text in parentheses are no longer attribute values. C<:tags[a,b]> and C<:mime-type(text/csv)> now drop the attribute and report it; write C<< :tags<a b> >> and C<:mime-type('text/csv')>
