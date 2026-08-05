@@ -1,6 +1,67 @@
 import { createTheme } from '@uiw/codemirror-themes'
 import { tags as t } from '@lezer/highlight'
 
+// exported so a check can compare the colour of one role against another:
+// two roles reached the same colour by different tags and nobody noticed
+export const syntaxStyles = [
+  { tag: t.comment, color: 'var(--color-prettylights-syntax-comment)' },
+  { tag: t.variableName, color: 'var(--color-prettylights-syntax-variable)' },
+  { tag: t.special(t.brace), color: 'var(--color-prettylights-syntax-entity)' },
+  { tag: t.number, color: 'var(--color-prettylights-syntax-variable)' },
+  { tag: [t.bool, t.null], color: 'var(--color-prettylights-syntax-entity)' },
+  { tag: t.keyword, color: 'var(--color-prettylights-syntax-keyword)', fontWeight: 'bold' },
+  { tag: t.string, color: 'var(--color-prettylights-syntax-string)' },
+  { tag: t.operator, color: 'var(--color-accent-emphasis)' },
+  { tag: t.deleted, color: 'var(--color-prettylights-syntax-markup-deleted-bg)' },
+  { tag: t.deleted, color: 'red' },
+  { tag: t.className, color: 'var(--color-prettylights-syntax-variable)' },
+  { tag: t.definition(t.typeName), color: 'var(--color-prettylights-syntax-entity)' },
+  { tag: t.typeName, color: 'var(--color-prettylights-syntax-entity)' },
+  { tag: t.list, color: 'var(--color-prettylights-syntax-markup-list)' },
+  { tag: t.heading, color: 'var(--color-prettylights-syntax-markup-heading)', fontSize: '105%', fontWeight: 'bold' },
+  {
+    tag: t.heading1,
+    fontSize: '150%',
+  },
+  {
+    tag: t.heading2,
+    fontSize: '130%',
+  },
+  {
+    tag: t.heading3,
+    fontSize: '110%',
+  },
+  { tag: t.regexp, color: 'var(--color-prettylights-syntax-string-regexp)' },
+  { tag: t.literal, color: 'var(--color-prettylights-syntax-markup-italic)' },
+  {
+    tag: t.link,
+    color: 'var(--color-prettylights-syntax-constant-other-reference-link)',
+    textDecoration: 'underline',
+  },
+  { tag: t.angleBracket, color: 'var(--color-fg-default)' },
+  { tag: t.tagName, color: 'var(--color-prettylights-syntax-entity-tag)' },
+  { tag: t.macroName, color: 'var(--color-prettylights-syntax-entity)' },
+  { tag: t.attributeName, color: 'var(--color-prettylights-syntax-constant)' },
+  { tag: t.strong, fontWeight: 'bold' },
+  { tag: t.emphasis, fontStyle: 'italic' },
+  {
+    tag: t.monospace,
+    fontFamily: 'monospace',
+    color: 'var(--color-prettylights-syntax-string)',
+    backgroundColor: 'var(--color-canvas-subtle)',
+    borderRadius: '3px',
+  },
+  { tag: t.strikethrough, textDecoration: 'line-through' },
+  { tag: t.constant(t.variableName), color: 'var(--color-prettylights-syntax-constant)' },
+  // the brackets of a markup code stand back from what they hold
+  { tag: t.processingInstruction, color: 'var(--color-fg-muted)' },
+  { tag: t.labelName, textDecoration: 'underline' },
+  { tag: t.escape, color: 'var(--color-prettylights-syntax-constant)' },
+  // a mark left for the reader — a note, an index entry, a place above or below the line
+  { tag: [t.meta, t.annotation], color: 'var(--color-fg-muted)' },
+  { tag: t.url, color: 'var(--color-prettylights-syntax-string)' },
+]
+
 export const defaultTheme = createTheme({
   theme: 'light',
   settings: {
@@ -15,61 +76,5 @@ export const defaultTheme = createTheme({
     gutterBorder: 'var(--color-border-muted)',
     fontFamily: 'Menlo,Monaco,Consolas,Courier New,monospace',
   },
-  styles: [
-    { tag: t.comment, color: 'var(--color-prettylights-syntax-comment)' },
-    { tag: t.variableName, color: 'var(--color-prettylights-syntax-variable)' },
-    { tag: [t.string, t.special(t.brace)], color: 'var(--color-prettylights-syntax-entity)' },
-    { tag: t.number, color: 'var(--color-prettylights-syntax-variable)' },
-    { tag: [t.bool, t.null], color: 'var(--color-prettylights-syntax-entity)' },
-    { tag: t.keyword, color: 'var(--color-prettylights-syntax-keyword)', fontWeight: 'bold' },
-    { tag: t.string, color: 'var(--color-prettylights-syntax-string)' },
-    { tag: t.operator, color: 'var(--color-accent-emphasis)' },
-    { tag: t.deleted, color: 'var(--color-prettylights-syntax-markup-deleted-bg)' },
-    { tag: t.deleted, color: 'red' },
-    { tag: t.className, color: 'var(--color-prettylights-syntax-variable)' },
-    { tag: t.definition(t.typeName), color: 'var(--color-prettylights-syntax-entity)' },
-    { tag: t.typeName, color: 'var(--color-prettylights-syntax-entity)' },
-    { tag: t.list, color: 'var(--color-prettylights-syntax-markup-list)' },
-    { tag: t.heading, color: 'var(--color-prettylights-syntax-markup-heading)', fontSize: '105%', fontWeight: 'bold' },
-    {
-      tag: t.heading1,
-      fontSize: '150%',
-    },
-    {
-      tag: t.heading2,
-      fontSize: '130%',
-    },
-    {
-      tag: t.heading3,
-      fontSize: '110%',
-    },
-    { tag: t.regexp, color: 'var(--color-prettylights-syntax-string-regexp)' },
-    { tag: t.literal, color: 'var(--color-prettylights-syntax-markup-italic)' },
-    {
-      tag: t.link,
-      color: 'var(--color-prettylights-syntax-constant-other-reference-link)',
-      textDecoration: 'underline',
-    },
-    { tag: t.angleBracket, color: 'var(--color-fg-default)' },
-    { tag: t.tagName, color: 'var(--color-prettylights-syntax-entity-tag)' },
-    { tag: t.attributeName, color: 'var(--color-prettylights-syntax-constant)' },
-    { tag: t.strong, fontWeight: 'bold' },
-    { tag: t.emphasis, fontStyle: 'italic' },
-    {
-      tag: t.monospace,
-      fontFamily: 'monospace',
-      color: 'var(--color-prettylights-syntax-string)',
-      backgroundColor: 'var(--color-canvas-subtle)',
-      borderRadius: '3px',
-    },
-    { tag: t.strikethrough, textDecoration: 'line-through' },
-    { tag: t.constant(t.variableName), color: 'var(--color-prettylights-syntax-constant)' },
-    // the brackets of a markup code stand back from what they hold
-    { tag: t.processingInstruction, color: 'var(--color-fg-muted)' },
-    { tag: t.labelName, textDecoration: 'underline' },
-    { tag: t.escape, color: 'var(--color-prettylights-syntax-constant)' },
-    // a mark left for the reader — a note, an index entry, a place above or below the line
-    { tag: [t.meta, t.annotation], color: 'var(--color-fg-muted)' },
-    { tag: t.url, color: 'var(--color-prettylights-syntax-string)' },
-  ],
+  styles: syntaxStyles,
 })

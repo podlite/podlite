@@ -158,6 +158,18 @@ const topLevelBar = (src: string, from: number, to: number, open: string): numbe
   return -1
 }
 
+// the tag each kind of name is coloured by; a check compares the colours these
+// reach, because two of them once reached the same one
+export const ROLE_TAGS = {
+  keyword: t.keyword,
+  blockName: t.operator,
+  semanticBlock: t.macroName,
+  customBlock: t.tagName,
+  unknownBlock: t.variableName,
+  attrName: t.attributeName,
+  attrValue: t.string,
+}
+
 export const podliteMarkdownExtension: any = {
   defineNodes: [
     { name: 'PodDirective', block: true },
@@ -187,8 +199,8 @@ export const podliteMarkdownExtension: any = {
       // the same tags the stream highlighter gave these, so colours stay put
       PodKeyword: t.keyword,
       PodBlockName: t.operator,
-      PodSemanticBlock: t.constant(t.variableName),
-      PodCustomBlock: t.className,
+      PodSemanticBlock: t.macroName,
+      PodCustomBlock: t.tagName,
       PodUnknownBlock: t.variableName,
       PodAttrName: t.attributeName,
       PodAttrValue: t.string,
