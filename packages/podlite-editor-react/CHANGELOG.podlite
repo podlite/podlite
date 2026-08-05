@@ -10,6 +10,8 @@
 
 =item a directive is read under an indent as well
 
+=item the fold service takes the blocks whose content is read as written from the highlighting tree instead of its own list of five names — folding is no longer offered inside a table, a formula, a picture or a data table
+
 =item show content the author keeps out of what is published — C<< G<> >> — as a covered strip; the caret stepping inside uncovers it, and the text stays selectable underneath
 
 =item colour the settings that follow the language in a markdown fence, C<< ```js :caption<...> >>, in Podlite documents and in C<.md> files alike
