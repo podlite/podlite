@@ -118,9 +118,14 @@
 /* Content the author keeps out of what is published — `G<>`. Shown as a
    covered strip; stepping the caret inside uncovers it, so editing is
    unaffected. The text stays selectable and copyable underneath. */
+.cm-pod-covered,
+.cm-pod-covered * {
+  /* the syntax colour of the code sits on an inner span, so the cover has to
+     reach the descendants as well */
+  color: transparent !important;
+}
 .cm-pod-covered {
   background: var(--color-neutral-muted);
-  color: transparent;
   border-radius: 3px;
 }
 /* Settings after the language in a markdown fence — ```js :caption<...> —

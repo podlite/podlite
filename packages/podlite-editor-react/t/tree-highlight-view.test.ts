@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { javascript } from '@codemirror/lang-javascript'
-import { LanguageDescription } from '@codemirror/language'
+import { ensureSyntaxTree, LanguageDescription, syntaxTree } from '@codemirror/language'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
@@ -47,6 +47,16 @@ describe('the live view', () => {
     const state = EditorState.create({ doc, extensions: [podliteTreeLang(codeLanguages)] })
     expect(suggestionContextAt(state, doc.indexOf('one'))).toBe('pod6')
     expect(suggestionContextAt(state, doc.indexOf('text'))).toBe('md')
+  })
+
+  it('reads the body of a code block by the language its settings name', () => {
+    const doc = '=begin code :lang<js>\nconst x = 1\n=end code\n'
+    const state = EditorState.create({ doc, extensions: [podliteTreeLang(codeLanguages)] })
+    const names: string[] = []
+    ensureSyntaxTree(state, doc.length, 5000)
+    syntaxTree(state).iterate({ enter: n => void names.push(n.name) })
+    expect(names).toContain('VariableDefinition')
+    expect(names).toContain('PodVerbatim')
   })
 
   it('colours a name the author brought in apart from a standard one', () => {

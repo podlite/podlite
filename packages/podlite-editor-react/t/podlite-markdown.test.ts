@@ -47,6 +47,16 @@ describe('podlite read on top of markdown', () => {
     expect(textOf(src, 'PodVerbatim')).toContain('# not a heading')
   })
 
+  it('reads the closing marker of a block taken as written', () => {
+    const src = '=begin code :lang<js>\nvar i = 0\n=end code\n'
+    const keywords: string[] = []
+    parser.parse(src).iterate({
+      enter: n => void (n.name === 'PodKeyword' && keywords.push(src.slice(n.from, n.to))),
+    })
+    expect(keywords).toEqual(['=begin', '=end'])
+    expect(textOf(src, 'PodVerbatim')).toBe('\nvar i = 0')
+  })
+
   it('leaves ordinary markdown alone', () => {
     expect(nodes('- list item\n')).toEqual(expect.arrayContaining(['BulletList', 'ListItem']))
   })

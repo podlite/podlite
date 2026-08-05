@@ -1,7 +1,8 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { ensureSyntaxTree, syntaxTree } from '@codemirror/language'
+import { ensureSyntaxTree, LanguageDescription, ParseContext, syntaxTree } from '@codemirror/language'
 import { languages } from '@codemirror/language-data'
 import { styleTags, tags as t } from '@lezer/highlight'
+import { parseMixed } from '@lezer/common'
 import { parser as mdParser } from '@lezer/markdown'
 import { BLOCK_NAMES, isVerbatimBlock } from '@podlite/schema'
 import type { EditorState, Extension } from '@codemirror/state'
@@ -176,6 +177,7 @@ export const podliteMarkdownExtension: any = {
     { name: 'PodAttrName' },
     { name: 'PodAttrValue' },
     { name: 'PodVerbatim' },
+    { name: 'PodCodeBody' },
     { name: 'PodCodeMark' },
     { name: 'PodCodeTarget' },
     ...codeNodeNames.map(name => ({ name })),
@@ -191,6 +193,7 @@ export const podliteMarkdownExtension: any = {
       PodAttrName: t.attributeName,
       PodAttrValue: t.string,
       PodVerbatim: t.content,
+      PodCodeBody: t.content,
       PodCodeMark: t.processingInstruction,
       PodCodeTarget: t.url,
       ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),
@@ -265,11 +268,24 @@ export const podliteMarkdownExtension: any = {
         if (word === 'begin' && blockName && !isMarkdownName(blockName) && isVerbatimBlock(blockName)) {
           const endRe = new RegExp(`^\\s*=end\\s+${blockName}\\b`)
           cx.nextLine()
-          while (cx.line && !endRe.test(cx.line.text)) if (!cx.nextLine()) break
-          const to = cx.line ? cx.lineStart + cx.line.text.length : markerEnd
-          if (to > markerEnd) children.push(cx.elt('PodVerbatim', markerEnd, to))
-          cx.addElement(cx.elt('PodDirective', start, to, children))
-          cx.nextLine()
+          let closed = false
+          while (cx.line) {
+            if (endRe.test(cx.line.text)) {
+              closed = true
+              break
+            }
+            if (!cx.nextLine()) break
+          }
+          // the closing marker is left to be read as a directive of its own,
+          // so its keyword and block name get their colours
+          const to = closed ? cx.lineStart - 1 : cx.line ? cx.lineStart + cx.line.text.length : markerEnd
+          // the body sits in a node of its own inside the verbatim one: a
+          // language mounted on it replaces that child, and `PodVerbatim`
+          // stays where folding and the rest of the editor look for it
+          if (to > markerEnd)
+            children.push(cx.elt('PodVerbatim', markerEnd, to, [cx.elt('PodCodeBody', markerEnd, to)]))
+          cx.addElement(cx.elt('PodDirective', start, Math.max(to, markerEnd), children))
+          if (!closed) cx.nextLine()
           return true
         }
         cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
@@ -327,6 +343,28 @@ const lineStartOf = (text: string, line: number): number => {
   return at
 }
 
+// the body of `=begin code :lang<js>` is read by that language, the same way a
+// markdown fence is read by the language named after its backticks
+export const podliteCodeLanguage = (codeLanguages: any): any => ({
+  wrap: parseMixed((node: any, input: any) => {
+    if (node.name !== 'PodCodeBody' || !codeLanguages) return null
+    const block = node.node.parent?.parent
+    const marker = input.read(block ? block.from : node.from, node.from)
+    const named = /:lang\s*(?:<([^>]*)>|\(\s*'([^']*)'\s*\)|"([^"]*)"|｢([^｣]*)｣)/.exec(marker)
+    const name = ((named && (named[1] || named[2] || named[3] || named[4])) || '').trim()
+    if (!name) return null
+    const found =
+      typeof codeLanguages === 'function'
+        ? codeLanguages(name)
+        : LanguageDescription.matchLanguageName(codeLanguages, name, true)
+    if (!found) return null
+    if (found instanceof LanguageDescription)
+      // a language that has not been loaded yet parses as nothing until it is
+      return { parser: found.support ? found.support.language.parser : ParseContext.getSkippingParser(found.load()) }
+    return { parser: found.parser }
+  }),
+})
+
 // Podlite read on top of the markdown parser: the content of a markdown block
 // and the code inside a fence get their own highlighting for free
 // `codeLanguages` is a parameter so a test can hand in a list it loads itself
@@ -334,5 +372,5 @@ export const podliteTreeLang = (codeLanguages: any = languages): Extension =>
   markdown({
     base: markdownLanguage,
     codeLanguages,
-    extensions: [podliteMarkdownExtension as any],
+    extensions: [podliteMarkdownExtension as any, podliteCodeLanguage(codeLanguages)],
   })
