@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.69
+
 =item podlite lint attr-nested-angle also reports a value closed early by a C<< > >> written inside it, and no longer fires on running text or on the contents of a verbatim block
 
 =item podlite lint attr-continuation-dropped catches a value written in any delimiter, not only angle brackets, and stays quiet inside blocks that keep their content verbatim

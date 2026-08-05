@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.56
+
 =item B<Breaking:> square brackets and bare text in parentheses are no longer attribute values. C<:tags[a,b]> and C<:mime-type(text/csv)> now drop the attribute and report it; write C<< :tags<a b> >> and C<:mime-type('text/csv')>
 
 =item report a directive line the parser could not read; each diagnostic now carries a code, C<value-unreadable> or C<directive-unreadable>

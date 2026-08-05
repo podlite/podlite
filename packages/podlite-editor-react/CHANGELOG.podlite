@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.62
+
 =item give a section name and a name the author brought in colours of their own. A section name was coloured like a setting name, and an author's name like an unknown one, so four kinds of block name showed up as two
 
 =item keep one copy of each CodeMirror package in the tree and raise C<@codemirror/view> to 6.43. With two copies an extension does nothing and says nothing: the find-and-replace panel refused to open, and highlighting stopped altogether when the copies were of C<@lezer/common>
