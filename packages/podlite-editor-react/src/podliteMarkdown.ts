@@ -15,7 +15,10 @@ const nameRe = /^(\s+)([A-Za-z][\w-]*)/
 const isMarkdownName = (name: string): boolean => /^markdown$/i.test(name)
 
 const DIRECTIVE_WORDS = ['begin', 'end', 'for', 'config', 'alias']
-const TAKES_A_NAME = new Set(['begin', 'end', 'for'])
+const TAKES_A_NAME = new Set(['begin', 'end', 'for', 'config'])
+// the directives whose marker line carries settings; on every other one what
+// follows the keyword is content, and `C<…>` there is a markup code, not a value
+const TAKES_SETTINGS = new Set(['begin', 'for', 'config', 'alias', 'set', 'boundary'])
 const standard = (name: string): boolean =>
   DIRECTIVE_WORDS.includes(name) || (BLOCK_NAMES as readonly string[]).includes(name) || /^(head|item)\d*$/.test(name)
 
@@ -248,9 +251,14 @@ export const podliteMarkdownExtension: any = {
             rest = rest.slice(n[0].length)
           }
         }
-        for (const a of rest.matchAll(attrRe)) {
-          const from = at + (a.index as number)
-          children.push(cx.elt(a[0][0] === ':' ? 'PodAttrName' : 'PodAttrValue', from, from + a[0].length))
+        if (cont || TAKES_SETTINGS.has(word)) {
+          for (const a of rest.matchAll(attrRe)) {
+            const from = at + (a.index as number)
+            children.push(cx.elt(a[0][0] === ':' ? 'PodAttrName' : 'PodAttrValue', from, from + a[0].length))
+          }
+        } else if (rest) {
+          // an abbreviated block carries its content on the marker line
+          children.push(...cx.parser.parseInline(rest, at))
         }
         // a block that keeps its content as written: markdown must not read it.
         // `=begin markdown` is the exception — its content is markdown by definition

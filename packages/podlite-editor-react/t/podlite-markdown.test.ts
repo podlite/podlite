@@ -65,6 +65,12 @@ describe('podlite read on top of markdown', () => {
 
 // the same ground the stream highlighter covers, read off the tree
 describe('parity with the stream highlighter', () => {
+  const codeNodes = (src: string): string[] => {
+    const out: string[] = []
+    parser.parse(src).iterate({ enter: n => void (n.name.startsWith('PodCode') && out.push(n.name)) })
+    return out
+  }
+
   const nameNode = (src: string, name: string): string | undefined => {
     let found: string | undefined
     parser.parse(src).iterate({
@@ -143,6 +149,22 @@ describe('parity with the stream highlighter', () => {
       enter: n => void (n.name === 'PodAttrValue' && values.push(src.slice(n.from, n.to))),
     })
     expect(values).toEqual(['<file:./x.csv>', '<a,b>'])
+  })
+
+  // an abbreviated block carries its content on the marker line, and a code
+  // standing there is a code, not a setting
+  it('reads the content of an abbreviated block on its marker line', () => {
+    expect(codeNodes('=item B<bold> and C<monospace>\n')).toEqual(expect.arrayContaining(['PodCodeB', 'PodCodeC']))
+    expect(nodes('=item B<bold>\n')).not.toContain('PodAttrValue')
+    expect(codeNodes('=head1 Heading with C<code>\n')).toContain('PodCodeC')
+    expect(codeNodes('=TITLE B<bold>\n')).toContain('PodCodeB')
+  })
+
+  it('keeps reading settings where settings belong', () => {
+    expect(textOf('=for para :id<x>\n', 'PodAttrValue')).toBe('<x>')
+    expect(textOf('=begin code :lang<js>\n=end code\n', 'PodAttrValue')).toBe('<js>')
+    expect(textOf('=config head1 :like<head2>\n', 'PodAttrValue')).toBe('<head2>')
+    expect(textOf('=set :caption<Heading>\n', 'PodAttrValue')).toBe('<Heading>')
   })
 
   it('reads a boundary directive with its caption', () => {

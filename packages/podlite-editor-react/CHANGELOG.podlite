@@ -10,6 +10,8 @@
 
 =item a directive is read under an indent as well
 
+=item read the content of an abbreviated block on its own marker line: C<< =item B<bold> >> and C<< =head1 C<code> >> now show markup codes there, and the brackets of a code are no longer taken for a setting value. Settings are read where settings belong — C<=begin>, C<=for>, C<=config>, C<=alias>, C<=set>, C<=boundary> and continuation lines
+
 =item the fold service takes the blocks whose content is read as written from the highlighting tree instead of its own list of five names — folding is no longer offered inside a table, a formula, a picture or a data table
 
 =item show content the author keeps out of what is published — C<< G<> >> — as a covered strip; the caret stepping inside uncovers it, and the text stays selectable underneath

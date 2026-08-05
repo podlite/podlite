@@ -2026,6 +2026,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@codemirror/lint@npm:~6.8.4":
+  version: 6.8.5
+  resolution: "@codemirror/lint@npm:6.8.5"
+  dependencies:
+    "@codemirror/state": ^6.0.0
+    "@codemirror/view": ^6.35.0
+    crelt: ^1.0.5
+  checksum: 76fa457c6664f333216aacb0112bce8a0e2fd7011c180b7c855027dbb871dc112a31bf828f5affc0e53973111dee3aac4c9c3b80ade8534ac9748f296fb77abc
+  languageName: node
+  linkType: hard
+
 "@codemirror/search@npm:^6.0.0":
   version: 6.5.8
   resolution: "@codemirror/search@npm:6.5.8"
@@ -2830,6 +2841,7 @@ __metadata:
     "@codemirror/lang-markdown": ^6.5.1
     "@codemirror/language": ^6.10.8
     "@codemirror/language-data": ^6.5.2
+    "@codemirror/lint": ~6.8.4
     "@codemirror/search": ^6.7.1
     "@codemirror/view": ^6.36.2
     "@lezer/highlight": ^1.2.1

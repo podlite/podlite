@@ -12,7 +12,6 @@
     "llm-tools"
   ],
   "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
   "bin": {
     "podlite-mcp": "./bin/podlite-mcp.js"
   },
@@ -47,5 +46,7 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
 }
