@@ -22,9 +22,12 @@ const build = (view: EditorView): DecorationSet => {
       to,
       enter: node => {
         if (node.name === 'PodCodeG') {
-          // the letter, its brackets and the closing one stay visible
-          const body = { from: node.from + 2, to: node.to - 1 }
-          if (body.to > body.from && !caretIsIn(view, node.from, node.to)) builder.add(body.from, body.to, covered)
+          // the letter and the brackets stay visible, and they are not always
+          // one character wide: `G<<…>>` and `G«…»` are the same code
+          const open = node.node.firstChild
+          const close = node.node.lastChild
+          if (!open || !close || close.from <= open.to) return
+          if (!caretIsIn(view, node.from, node.to)) builder.add(open.to, close.from, covered)
           return
         }
         if (node.name !== 'CodeInfo') return

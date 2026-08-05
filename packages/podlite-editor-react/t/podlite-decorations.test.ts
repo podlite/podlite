@@ -39,6 +39,11 @@ describe('what a colour cannot show', () => {
     expect(text).toBe('naïve')
   })
 
+  it('covers the body whatever the brackets are', () => {
+    expect(marked('G<< a > b >> tail\n', 16)).toEqual([['cm-pod-covered', ' a > b ']])
+    expect(marked('G«naïve» tail\n', 12)).toEqual([['cm-pod-covered', 'naïve']])
+  })
+
   it('colours the settings of a fenced block apart from the language', () => {
     const doc = '```js :caption<Example> :lineno\nvar i = 0\n```\n'
     expect(marked(doc, 0)).toEqual([
