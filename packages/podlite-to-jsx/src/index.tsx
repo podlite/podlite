@@ -22,6 +22,8 @@ import {
   frozenIds,
   JSXHelper,
   getSafeNodeId,
+  indexAnchors,
+  resolveFragment,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
@@ -236,6 +238,13 @@ export const HookedImage: React.FC<{
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
 
 const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
+  // A link inside the same document points at a heading by name, so it goes
+  // through the rules that shaped that heading's anchor.
+  const sameDocTarget = (meta, ctx) => {
+    if (typeof meta !== 'string' || !meta.startsWith('#') || meta === '#') return meta
+    return `#${resolveFragment(meta.slice(1), ctx?.__anchors)}`
+  }
+
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
     // prepare extraProps for createElement
     // add id attribute if exists
@@ -681,8 +690,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (meta && typeof meta !== 'string' && 'value' in meta) {
         meta = meta.value
       }
+      const href = sameDocTarget(meta, ctx)
       return mkComponent(({ children, key }) => (
-        <a href={meta} key={key}>
+        <a href={href} key={key}>
           {children}
         </a>
       ))
@@ -698,8 +708,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (meta && typeof meta !== 'string' && 'value' in meta) {
         meta = meta.value
       }
+      const href = sameDocTarget(meta, ctx)
       return mkComponent(({ children, key }) => (
-        <a href={meta} key={key} className="backlink">
+        <a href={href} key={key} className="backlink">
           {children}
         </a>
       ))
@@ -1062,7 +1073,10 @@ function podlite(
     postInterator?: any
   }
   const writer = new Writer(s => {}) as WriterPostinterator
-  const res = toAny({ processor: parse, context: { renderMode, imageSrc, imageBaseDir } })
+  const res = toAny({
+    processor: parse,
+    context: { renderMode, imageSrc, imageBaseDir, __anchors: indexAnchors(ast) },
+  })
     .use({
       '*:*': () => (node, ctx, interator) => {
         // skip named blocks

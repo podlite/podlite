@@ -43,19 +43,19 @@ exports[`:folded-levels rendering in JSX (per-item conditional fold) full docume
   <p>
     First section content.
   </p>
-  <h2 id="id-3">
+  <h2 id="id-2">
     Background
   </h2>
   <p>
     Background details.
   </p>
-  <h3 id="id-5">
+  <h3 id="id-3">
     History
   </h3>
   <p>
     Historical context.
   </p>
-  <h1 id="id-7">
+  <h1 id="id-4">
     Conclusion
   </h1>
   <p>

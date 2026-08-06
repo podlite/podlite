@@ -23,22 +23,71 @@ export const toFragment = (value: string): string => {
 }
 
 // Repeated names would otherwise share one anchor: seventeen headings once
-// collapsed onto a single «infix». The counter lives in the render context, so
-// numbering restarts per document.
-const takeUnique = (fragment: string, ctx): string => {
+// collapsed onto a single «infix».
+const takeUnique = (fragment: string, taken: Map<string, number>): string => {
   if (!fragment) return fragment
-  const seen: Map<string, number> = ctx && typeof ctx === 'object' ? (ctx.__fragments ||= new Map()) : new Map()
-  const used = seen.get(fragment)
+  const used = taken.get(fragment)
   if (used === undefined) {
-    seen.set(fragment, 1)
+    taken.set(fragment, 1)
     return fragment
   }
   const next = used + 1
-  seen.set(fragment, next)
+  taken.set(fragment, next)
   return `${fragment}-${next}`
 }
 
+export type AnchorIndex = {
+  byNode: Map<object, string>
+  byName: Map<string, string>
+}
+
+const walkNodes = (node: unknown, visit: (n: any) => void): void => {
+  if (Array.isArray(node)) {
+    for (const child of node) walkNodes(child, visit)
+    return
+  }
+  if (!node || typeof node !== 'object') return
+  visit(node)
+  if ('content' in (node as any)) walkNodes((node as any).content, visit)
+}
+
+// Anchors are handed out in one walk before rendering. A renderer asks for the
+// same heading more than once — the numbering would run away — and a link may
+// stand before the heading it points to, so both need the whole tree first.
+export const indexAnchors = (tree: unknown): AnchorIndex => {
+  const byNode = new Map<object, string>()
+  const byName = new Map<string, string>()
+  const taken = new Map<string, number>()
+  walkNodes(tree, node => {
+    if (node.name !== 'head') return
+    const id = getNodeId(node, {})
+    if (id == null) return
+    const name = id.toString()
+    const anchor = takeUnique(toFragment(name), taken)
+    byNode.set(node, anchor)
+    if (!byName.has(name)) byName.set(name, anchor)
+  })
+  return { byNode, byName }
+}
+
+// Exact name first, then without regard to case: a link copied from markdown
+// carries a lowercased target, and one written by hand carries the name itself.
+export const resolveFragment = (target: string, index?: AnchorIndex): string => {
+  const name = target.trim()
+  const shaped = toFragment(name)
+  if (!index || index.byName.size === 0) return shaped
+  const exact = index.byName.get(name)
+  if (exact !== undefined) return exact
+  const wanted = [name.toLowerCase(), shaped.toLowerCase()]
+  for (const [heading, anchor] of index.byName) {
+    if (wanted.includes(heading.toLowerCase()) || wanted.includes(anchor.toLowerCase())) return anchor
+  }
+  return shaped
+}
+
 export const getSafeNodeId = (node: Node, ctx): string | null => {
+  const assigned = ctx?.__anchors?.byNode?.get(node)
+  if (assigned !== undefined) return assigned
   const id = getNodeId(node, ctx)
   if (id == null) return null
   const fragment = toFragment(id.toString())
@@ -46,7 +95,9 @@ export const getSafeNodeId = (node: Node, ctx): string | null => {
   // blocks claim the same anchor. An author-written :id is the author's business,
   // and a generated one is unique already.
   const isHeading = typeof node === 'object' && (node as any).name === 'head'
-  return isHeading ? takeUnique(fragment, ctx) : fragment
+  if (!isHeading) return fragment
+  const taken: Map<string, number> = ctx && typeof ctx === 'object' ? (ctx.__fragments ||= new Map()) : new Map()
+  return takeUnique(fragment, taken)
 }
 
 // Only the author-written :id. The generated node.id changes on every parse, so

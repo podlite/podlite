@@ -1,4 +1,4 @@
-import { getSafeNodeId, toFragment } from '../src/ast-helpers'
+import { getSafeNodeId, indexAnchors, resolveFragment, toFragment } from '../src/ast-helpers'
 import { podlite } from '../../core/src'
 
 const headingIds = (source: string): (string | undefined)[] => {
@@ -74,5 +74,52 @@ describe('repeated names get numbered', () => {
     const ctx = {}
     expect(getSafeNodeId({ name: 'para', id: 'same' } as any, ctx)).toBe('same')
     expect(getSafeNodeId({ name: 'para', id: 'same' } as any, ctx)).toBe('same')
+  })
+
+  it('gives one heading the same anchor however often it is asked for', () => {
+    const first = { name: 'head', id: 'infix //' }
+    const second = { name: 'head', id: 'infix ^' }
+    const ctx = { __anchors: indexAnchors([first, second]) }
+    expect(getSafeNodeId(first as any, ctx)).toBe('infix')
+    expect(getSafeNodeId(first as any, ctx)).toBe('infix')
+    expect(getSafeNodeId(second as any, ctx)).toBe('infix-2')
+  })
+})
+
+describe('a link target finds its heading', () => {
+  const index = indexAnchors([
+    { name: 'head', id: 'Приветствие Мир' },
+    { name: 'head', id: 'Getting Started' },
+    { name: 'head', id: 'infix //' },
+    { name: 'head', id: 'infix ^' },
+  ])
+
+  it('takes the exact name', () => {
+    expect(resolveFragment('Приветствие Мир', index)).toBe('Приветствие-Мир')
+  })
+
+  it('takes a name written in another case', () => {
+    expect(resolveFragment('приветствие мир', index)).toBe('Приветствие-Мир')
+  })
+
+  it('takes a fragment written in another case', () => {
+    expect(resolveFragment('getting-started', index)).toBe('Getting-Started')
+  })
+
+  it('prefers the exact match over the case-insensitive one', () => {
+    const both = indexAnchors([
+      { name: 'head', id: 'Sum' },
+      { name: 'head', id: 'sum' },
+    ])
+    expect(resolveFragment('sum', both)).toBe('sum')
+    expect(resolveFragment('Sum', both)).toBe('Sum')
+  })
+
+  it('shapes a target that matches nothing', () => {
+    expect(resolveFragment('nothing here', index)).toBe('nothing-here')
+  })
+
+  it('shapes a target when there is no index', () => {
+    expect(resolveFragment('nothing here')).toBe('nothing-here')
   })
 })
