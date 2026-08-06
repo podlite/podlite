@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item a heading keeps its own text as its identifier; shaping it for a url — collapsing separators, dropping punctuation, numbering repeats — moved to the output side, where each format applies its own rules
+=item stop transliterating cyrillic headings: «Приветствие Мир» kept its letters instead of becoming Privetstvie-Mir, and the original name is recoverable again
+=item headings that shape into the same fragment get numbered instead of sharing one anchor
+
 =head1 0.0.57
 
 =item a link keeps its target when the display text carries formatting codes — C<< L<I<text>|target> >> previously left the separator and target inside the text

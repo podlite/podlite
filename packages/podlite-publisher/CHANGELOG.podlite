@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item shape the heading name into a url fragment when building an index anchor
+
 =head1 0.0.29
 
 =item add C<exports> map, top-level C<types>, and explicit C<sideEffects> to package manifest

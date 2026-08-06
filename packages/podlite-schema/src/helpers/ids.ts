@@ -27,7 +27,14 @@ export const cleanIds =
     return transformerBlocks(tree, {})
   }
 
-// TODO: refactor linking for blocks
+// A heading carries its own text as the identifier. Shaping it for a particular
+// output — collapsing separators, dropping punctuation, numbering repeats — is the
+// exporter's job (see getSafeNodeId), not the parser's. Slugifying here also
+// transliterated cyrillic, so «Приветствие Мир» became Privetstvie-Mir and the
+// original name could not be recovered.
+export const headingId = (text: string) => text.trim().replace(/\s+/g, ' ')
+
+// kept for callers outside the tree layer
 export const slugifyText = (text: string) => {
   return slugify(text.trim(), {})
 }
@@ -79,7 +86,7 @@ const middleware: ParserPlugin = () => tree => {
           if (node.name == 'caption') {
             return node
           } else if (node.name == 'head') {
-            return { ...node, id: slugifyText(getTextContentFromNode(node)) } as BlockHead
+            return { ...node, id: headingId(getTextContentFromNode(node)) } as BlockHead
           } else {
             return { ...node, id: nanoid() } as PodNode
           }

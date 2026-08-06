@@ -10,6 +10,7 @@ import {
   setFn,
   subUse,
   toAny,
+  toFragment,
 } from '@podlite/schema'
 import { BUILT_PATH } from './constants'
 import * as fs from 'fs'
@@ -108,7 +109,8 @@ const plugin = ({ built_path = BUILT_PATH }): PodliteWebPlugin => {
       const termWithUrl = terms.map(({ xnode, parent }) => {
         const urlParts = [item.publishUrl]
         if (parent && typeof parent !== 'string' && 'id' in parent) {
-          urlParts.push(parent.id)
+          // the tree keeps the heading name; an anchor needs it shaped for a url
+          urlParts.push(toFragment(String(parent.id)))
         }
         return {
           xnode,
