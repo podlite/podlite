@@ -1,6 +1,6 @@
 {
   "name": "@podlite/to-jsx",
-  "version": "0.0.60",
+  "version": "0.0.61",
   "description": "Render Podlite markup as React JSX components",
   "main": "./lib/index.js",
   "sideEffects": [
