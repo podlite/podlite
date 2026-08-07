@@ -5,6 +5,7 @@
 =item a heading keeps its own text as its identifier; shaping it for a url — collapsing separators, dropping punctuation, numbering repeats — moved to the output side, where each format applies its own rules
 =item stop transliterating cyrillic headings: «Приветствие Мир» kept its letters instead of becoming Privetstvie-Mir, and the original name is recoverable again
 =item headings that shape into the same fragment get numbered instead of sharing one anchor
+=item markdown export shapes a same-document link the way a markdown reader will: lower case, punctuation dropped, each remaining space a hyphen, repeats numbered from C<-1>. Html keeps its own rule, where case survives
 =item html export writes the shaped fragment as the heading anchor instead of the raw name — C<< <h2 id="Getting Started"> >> carried a space
 =item html and markdown exports send a link to the heading it names: C<< L<text|#Getting Started> >> reaches C<#Getting-Started>, and a target written in another case still finds it
 =item anchors are handed out in one walk before rendering, so a heading keeps the same anchor however often a renderer asks for it and the numbering no longer skips

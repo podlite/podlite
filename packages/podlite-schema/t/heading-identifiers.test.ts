@@ -1,4 +1,4 @@
-import { getSafeNodeId, indexAnchors, resolveFragment, toFragment } from '../src/ast-helpers'
+import { getSafeNodeId, indexAnchors, resolveFragment, toFragment, toMarkdownFragment } from '../src/ast-helpers'
 import { podlite } from '../../core/src'
 
 const headingIds = (source: string): (string | undefined)[] => {
@@ -160,15 +160,13 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир
   })
 
   it('sends a link to the heading it names', () => {
-    const { html, md } = exported()
-    expect(html).toContain('<a href="#Getting-Started">a</a>')
-    expect(md).toContain('[a](#Getting-Started)')
+    expect(exported().html).toContain('<a href="#Getting-Started">a</a>')
   })
 
   it('finds the heading when the target is written in another case', () => {
-    const { html, md } = exported()
+    const { html } = exported()
     expect(html).toContain('<a href="#Getting-Started">b</a>')
-    expect(md).toContain('[c](#Приветствие-Мир)')
+    expect(html).toContain('<a href="#Приветствие-Мир">c</a>')
   })
 
   it('shapes a target that names no heading', () => {
@@ -179,5 +177,76 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир
     const { html, md } = exported()
     expect(html).toContain('<a href="#">e</a>')
     expect(md).toContain('[f](https://example.com/x#frag)')
+  })
+})
+
+describe('markdown shapes the name the way a markdown reader will', () => {
+  const cases: Array<[string, string]> = [
+    ['Getting Started', 'getting-started'],
+    ['infix //', 'infix-'],
+    ['Приветствие Мир', 'приветствие-мир'],
+    ['Section 1.2 (draft)', 'section-12-draft'],
+    ['A — B', 'a--b'],
+    ['A   B', 'a---b'],
+    ['  A  ', '--a--'],
+    ['A-B', 'a-b'],
+    ['A - B', 'a---b'],
+    ['1. Введение', '1-введение'],
+    ['///', ''],
+    ['A_B', 'a_b'],
+    ['C++ and C#', 'c-and-c'],
+  ]
+
+  it.each(cases)('%s becomes %s', (input, expected) => {
+    expect(toMarkdownFragment(input)).toBe(expected)
+  })
+})
+
+describe('the markdown output carries its own anchors', () => {
+  const doc = `=begin pod
+
+=head2 Getting Started
+
+=head2 infix //
+
+=head2 infix ^
+
+=head2 Приветствие Мир
+
+L<a|#Getting Started>, L<b|#getting-started>, L<c|#Приветствие Мир>, L<d|#infix ^>, L<e|#nothing here>, L<f|#>, L<g|https://x/y#z>
+
+=end pod
+`
+  const exported = () => {
+    const p = podlite({ importPlugins: true })
+    const ast = p.toAst(p.parse(doc))
+    return { html: p.toHtml(ast).toString(), md: p.toMarkdown(ast).toString() }
+  }
+
+  it('lowercases the target', () => {
+    const { md } = exported()
+    expect(md).toContain('[a](#getting-started)')
+    expect(md).toContain('[c](#приветствие-мир)')
+  })
+
+  it('numbers a repeat from one, not from two', () => {
+    expect(exported().md).toContain('[d](#infix--1)')
+  })
+
+  it('shapes a target that names no heading', () => {
+    expect(exported().md).toContain('[e](#nothing-here)')
+  })
+
+  it('leaves a bare anchor and an outside address alone', () => {
+    const { md } = exported()
+    expect(md).toContain('[f](#)')
+    expect(md).toContain('[g](https://x/y#z)')
+  })
+
+  it('leaves the html output on its own rule', () => {
+    const { html } = exported()
+    expect(html).toContain('<h2 id="Getting-Started">')
+    expect(html).toContain('<h2 id="infix-2">')
+    expect(html).toContain('<a href="#Getting-Started">a</a>')
   })
 })
