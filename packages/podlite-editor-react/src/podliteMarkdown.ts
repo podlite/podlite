@@ -67,6 +67,18 @@ const CODE_LETTERS = Object.keys(CODE_TAGS)
 
 const codeNodeNames = CODE_LETTERS.map(c => `PodCode${c}`)
 
+// a heading is sized by its level; it also carries t.heading for the colour and
+// weight the level tags leave out — the same pair a markdown heading is given
+const HEAD_TAGS: Record<string, any> = {
+  PodHead1: [t.heading1, t.heading],
+  PodHead2: [t.heading2, t.heading],
+  PodHead3: [t.heading3, t.heading],
+  PodHead4: [t.heading4, t.heading],
+  PodHead5: [t.heading5, t.heading],
+  PodHead6: [t.heading6, t.heading],
+}
+const headNodeNames = Object.keys(HEAD_TAGS)
+
 const closingFor = (open: string): string => (open === '«' ? '»' : '>'.repeat(open.length))
 
 const openerAt = (src: string, at: number): string | null => {
@@ -193,6 +205,7 @@ export const podliteMarkdownExtension: any = {
     { name: 'PodCodeMark' },
     { name: 'PodCodeTarget' },
     ...codeNodeNames.map(name => ({ name })),
+    ...headNodeNames.map(name => ({ name })),
   ],
   props: [
     styleTags({
@@ -209,6 +222,7 @@ export const podliteMarkdownExtension: any = {
       PodCodeMark: t.processingInstruction,
       PodCodeTarget: t.url,
       ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),
+      ...HEAD_TAGS,
     }),
   ],
   parseInline: [
@@ -273,7 +287,11 @@ export const podliteMarkdownExtension: any = {
           }
         } else if (rest) {
           // an abbreviated block carries its content on the marker line
-          children.push(...cx.parser.parseInline(rest, at))
+          const inline = cx.parser.parseInline(rest, at)
+          const head = /^head([1-6])$/.exec(word)
+          // the text of a heading is wrapped so its level sizes it
+          if (head) children.push(cx.elt(`PodHead${head[1]}`, at, at + rest.length, inline))
+          else children.push(...inline)
         }
         // a block that keeps its content as written: markdown must not read it.
         // `=begin markdown` is the exception — its content is markdown by definition

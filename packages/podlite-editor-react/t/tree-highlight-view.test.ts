@@ -69,4 +69,17 @@ describe('the live view', () => {
     expect(standard).toBeDefined()
     expect(image?.split('|')[0]).not.toBe(standard?.split('|')[0])
   })
+
+  it('sizes a heading by its level', () => {
+    const doc = '=head1 One\n\n=head2 Two\n\n=head3 Three\n'
+    const state = EditorState.create({ doc, extensions: [podliteTreeLang(codeLanguages)] })
+    ensureSyntaxTree(state, doc.length, 5000)
+    const names: string[] = []
+    syntaxTree(state).iterate({ enter: n => void names.push(n.name) })
+    expect(names).toEqual(expect.arrayContaining(['PodHead1', 'PodHead2', 'PodHead3']))
+    const found = spans(doc, podliteTreeLang(codeLanguages))
+    const cls = (word: string) => found.find(s => s.split('|')[1]?.includes(word))?.split('|')[0]
+    // three levels reach three sizes, so three different classes
+    expect(new Set([cls('One'), cls('Two'), cls('Three')]).size).toBe(3)
+  })
 })

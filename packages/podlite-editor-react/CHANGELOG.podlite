@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a heading in the editor is sized by its level again; the marker keeps its colour, the text takes the weight and size
+
 =head1 0.0.62
 
 =item give a section name and a name the author brought in colours of their own. A section name was coloured like a setting name, and an author's name like an unknown one, so four kinds of block name showed up as two
