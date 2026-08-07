@@ -14,7 +14,7 @@ import makeAttrs from './helpers/config'
 import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, getExplicitNodeId } from './ast-helpers'
+import { getNodeId, getExplicitNodeId, getSafeNodeId, sameDocTarget } from './ast-helpers'
 import { decodeHTMLStrict } from 'entities'
 
 const openTag = (tag: string, node, ctx, attrs = '') => {
@@ -103,14 +103,14 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${meta}">`, `</a>`)
+    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}">`, `</a>`)
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${meta}" class="backlink">`, `</a>`)
+    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}" class="backlink">`, `</a>`)
   }),
 
   /**
@@ -247,7 +247,7 @@ const rules = {
     },
     setFn((node, ctx) => {
       const { level } = node
-      const id = getNodeId(node, ctx)
+      const id = getSafeNodeId(node, ctx)
       const open = `<h${level}${id ? ` id="${id}"` : ''}>${
         node.numberPrefix ? `<span class="head-number">${node.numberPrefix}</span> ` : ''
       }`

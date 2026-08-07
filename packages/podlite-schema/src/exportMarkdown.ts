@@ -13,7 +13,7 @@ import makeAttrs from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId } from './ast-helpers'
+import { getNodeId, sameDocTarget } from './ast-helpers'
 
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
@@ -68,14 +68,14 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${meta})`)
+    return wrapContent(`[`, `](${sameDocTarget(meta, ctx)})`)
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${meta})`)
+    return wrapContent(`[`, `](${sameDocTarget(meta, ctx)})`)
   }),
 
   'N<>': (writer, processor) => {

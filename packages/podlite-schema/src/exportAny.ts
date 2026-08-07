@@ -2,6 +2,7 @@ import { makeRule, makePlug } from './helpers/makeQuery'
 import makeInterator from './helpers/makeInterator'
 import Writer from './writer'
 import { parse } from './'
+import { indexAnchors } from './ast-helpers'
 // const parse = require('.').parse
 
 export type Options = {
@@ -61,7 +62,8 @@ export const toAny = (options: Options = {}, plugins = []) => {
     let newFns = fns.slice()
     newFns.reverse()
     const interator = makeInterator(newFns.map(rule => makeRule(rule.rule, rule.fn(writer, processor, tree))).reverse())
-    const context = { ...(options.context || {}) }
+    // Every exporter needs the same anchors: assigned once, before the walk starts.
+    const context = { __anchors: indexAnchors(tree), ...(options.context || {}) }
     writer.startWrite(tree)
     const result = interator(tree, context)
     writer.endWrite()

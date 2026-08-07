@@ -157,19 +157,19 @@ it('[check default list]=toc', () => {
     <h1 id="id">
       head
     </h1>
-    <h2 id="id">
+    <h2 id="id-2">
       head
     </h2>
-    <h3 id="id">
+    <h3 id="id-3">
       head
     </h3>
-    <h4 id="id">
+    <h4 id="id-4">
       head
     </h4>
-    <h5 id="id">
+    <h5 id="id-5">
       head
     </h5>
-    <h6 id="id">
+    <h6 id="id-6">
       head
     </h6>
   `)

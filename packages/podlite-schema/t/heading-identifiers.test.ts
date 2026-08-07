@@ -123,3 +123,61 @@ describe('a link target finds its heading', () => {
     expect(resolveFragment('nothing here')).toBe('nothing-here')
   })
 })
+
+describe('an output writes the shaped anchor', () => {
+  const doc = `=begin pod
+
+=head2 Getting Started
+
+=head2 infix //
+
+=head2 infix ^
+
+=head2 Приветствие Мир
+
+L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир>, L<d|#nothing here>, L<e|#>, L<f|https://example.com/x#frag>
+
+=end pod
+`
+  const exported = () => {
+    const p = podlite({ importPlugins: true })
+    const ast = p.toAst(p.parse(doc))
+    return { html: p.toHtml(ast).toString(), md: p.toMarkdown(ast).toString() }
+  }
+
+  it('writes a heading anchor without spaces', () => {
+    expect(exported().html).toContain('<h2 id="Getting-Started">')
+  })
+
+  it('numbers headings that shape into the same anchor', () => {
+    const { html } = exported()
+    expect(html).toContain('<h2 id="infix">')
+    expect(html).toContain('<h2 id="infix-2">')
+  })
+
+  it('keeps cyrillic letters in the anchor', () => {
+    expect(exported().html).toContain('<h2 id="Приветствие-Мир">')
+  })
+
+  it('sends a link to the heading it names', () => {
+    const { html, md } = exported()
+    expect(html).toContain('<a href="#Getting-Started">a</a>')
+    expect(md).toContain('[a](#Getting-Started)')
+  })
+
+  it('finds the heading when the target is written in another case', () => {
+    const { html, md } = exported()
+    expect(html).toContain('<a href="#Getting-Started">b</a>')
+    expect(md).toContain('[c](#Приветствие-Мир)')
+  })
+
+  it('shapes a target that names no heading', () => {
+    expect(exported().html).toContain('<a href="#nothing-here">d</a>')
+  })
+
+  it('leaves a bare anchor and an outside address alone', () => {
+    const { html, md } = exported()
+    expect(html).toContain('<a href="#">e</a>')
+    expect(md).toContain('[f](https://example.com/x#frag)')
+  })
+})

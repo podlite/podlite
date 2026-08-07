@@ -85,6 +85,13 @@ export const resolveFragment = (target: string, index?: AnchorIndex): string => 
   return shaped
 }
 
+// A link inside the same document points at a heading by name, so it goes through
+// the rules that shaped that heading's anchor.
+export const sameDocTarget = <T>(target: T, ctx): T | string => {
+  if (typeof target !== 'string' || !target.startsWith('#') || target === '#') return target
+  return `#${resolveFragment(target.slice(1), ctx?.__anchors)}`
+}
+
 export const getSafeNodeId = (node: Node, ctx): string | null => {
   const assigned = ctx?.__anchors?.byNode?.get(node)
   if (assigned !== undefined) return assigned
