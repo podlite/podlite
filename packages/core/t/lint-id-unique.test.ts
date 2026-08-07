@@ -80,3 +80,10 @@ describe('runLint id-unique integration', () => {
     expect(code).toBe(0)
   })
 })
+
+describe('id-unique and headings', () => {
+  it('says nothing about two headings with the same text', () => {
+    const src = '=head1 Введение\n\n=head1 Введение\n'
+    expect(idUniqueRule.check(parseContent(src, 'podlite'), ctx)).toEqual([])
+  })
+})

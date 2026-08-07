@@ -1,4 +1,4 @@
-import { PodliteDocument } from '@podlite/schema'
+import { PodliteDocument, findAnchor, indexAnchors, toFragment } from '@podlite/schema'
 import type { Rule, Violation, LintContext } from '../types'
 import { collectExplicitIds } from './id-unique'
 
@@ -38,13 +38,20 @@ export const linkTargetResolvesRule: Rule = {
   check: (ast: PodliteDocument, _ctx: LintContext): Violation[] => {
     const anchors = collectAnchors(ast).filter(({ target }) => target.startsWith('#'))
     if (anchors.length === 0) return []
-    const known = new Set(collectExplicitIds(ast).map(entry => entry.value))
+    // Both ways an anchor can exist: written by the author as :id, or carried by a
+    // heading under its own name. Matched the way the exporter matches them.
+    const written = new Set(collectExplicitIds(ast).map(entry => toFragment(entry.value)))
+    const headings = indexAnchors(ast)
+    const resolves = (target: string): boolean => {
+      const name = target.slice(1)
+      return written.has(toFragment(name)) || findAnchor(name, headings) !== undefined
+    }
     return anchors
-      .filter(({ target }) => !known.has(target.slice(1)))
+      .filter(({ target }) => !resolves(target))
       .map(({ target, at }) => ({
         rule: LINK_TARGET_RESOLVES_RULE_ID,
         severity: 'error' as const,
-        message: `Link target ${target} has no matching :id<${target.slice(1)}>`,
+        message: `Link target ${target} matches no :id and no heading`,
         location: at,
       }))
   },

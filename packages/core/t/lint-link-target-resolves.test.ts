@@ -34,6 +34,28 @@ describe('link-target-resolves rule', () => {
     expect(check('=for para :id<A>\nSee W<there|#nowhere>.\n')).toHaveLength(1)
   })
 
+  it('accepts a link to a heading by name', () => {
+    expect(check('=head1 Getting Started\n\nSee L<there|#Getting Started>.\n')).toEqual([])
+  })
+
+  it('accepts a heading target written in another case', () => {
+    expect(check('=head1 Getting Started\n\nSee L<there|#getting-started>.\n')).toEqual([])
+  })
+
+  it('accepts a heading target with the punctuation dropped', () => {
+    expect(check('=head1 infix //\n\nSee L<there|#infix>.\n')).toEqual([])
+  })
+
+  it('still flags a target that names neither an id nor a heading', () => {
+    const v = check('=head1 Getting Started\n\nSee L<there|#nowhere>.\n')
+    expect(v).toHaveLength(1)
+    expect(v[0].message).toMatch(/#nowhere/)
+  })
+
+  it('accepts an id that differs from the target only in shaping', () => {
+    expect(check("=for para :id('my section')\nSee L<there|#my section>.\n")).toEqual([])
+  })
+
   it('leaves external targets alone', () => {
     const src =
       '=for para :id<A>\nL<a|https://example.com> L<b|file:other.podlite> L<c|doc:Other#Z> L<d|mailto:x@y.z>\n'

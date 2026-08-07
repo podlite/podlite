@@ -8,7 +8,7 @@
 =item html export writes the shaped fragment as the heading anchor instead of the raw name — C<< <h2 id="Getting Started"> >> carried a space
 =item html and markdown exports send a link to the heading it names: C<< L<text|#Getting Started> >> reaches C<#Getting-Started>, and a target written in another case still finds it
 =item anchors are handed out in one walk before rendering, so a heading keeps the same anchor however often a renderer asks for it and the numbering no longer skips
-=item add C<indexAnchors> and C<resolveFragment>: a link target inside the document finds its heading by name, exact match first and then without regard to case
+=item add C<indexAnchors>, C<findAnchor> and C<resolveFragment>: a link target inside the document finds its heading by name, exact match first and then without regard to case
 
 =head1 0.0.57
 

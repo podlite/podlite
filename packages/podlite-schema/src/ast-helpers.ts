@@ -72,18 +72,20 @@ export const indexAnchors = (tree: unknown): AnchorIndex => {
 
 // Exact name first, then without regard to case: a link copied from markdown
 // carries a lowercased target, and one written by hand carries the name itself.
-export const resolveFragment = (target: string, index?: AnchorIndex): string => {
+export const findAnchor = (target: string, index?: AnchorIndex): string | undefined => {
   const name = target.trim()
-  const shaped = toFragment(name)
-  if (!index || index.byName.size === 0) return shaped
+  if (!index || index.byName.size === 0) return undefined
   const exact = index.byName.get(name)
   if (exact !== undefined) return exact
-  const wanted = [name.toLowerCase(), shaped.toLowerCase()]
+  const wanted = [name.toLowerCase(), toFragment(name).toLowerCase()]
   for (const [heading, anchor] of index.byName) {
     if (wanted.includes(heading.toLowerCase()) || wanted.includes(anchor.toLowerCase())) return anchor
   }
-  return shaped
+  return undefined
 }
+
+export const resolveFragment = (target: string, index?: AnchorIndex): string =>
+  findAnchor(target, index) ?? toFragment(target)
 
 // A link inside the same document points at a heading by name, so it goes through
 // the rules that shaped that heading's anchor.
