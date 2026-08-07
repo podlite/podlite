@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a table row written on one line and separated by whitespace now splits on two spaces, as the specification says — the positional template it used to go through needed three, and a row with tighter columns collapsed into a single cell without a word
+=item such a cell no longer carries the spaces that aligned it in the source
 =item a heading keeps its own text as its identifier; shaping it for a url — collapsing separators, dropping punctuation, numbering repeats — moved to the output side, where each format applies its own rules
 =item stop transliterating cyrillic headings: «Приветствие Мир» kept its letters instead of becoming Privetstvie-Mir, and the original name is recoverable again
 =item headings that shape into the same fragment get numbered instead of sharing one anchor

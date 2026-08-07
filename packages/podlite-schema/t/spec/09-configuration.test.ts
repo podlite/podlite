@@ -470,7 +470,7 @@ it('spec: 09-configuration 4', () => {
                 "content": Array [
                   Object {
                     "content": Array [
-                      " foo bar",
+                      "foo bar",
                     ],
                     "name": "cell",
                     "type": "block",
@@ -640,7 +640,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -708,7 +708,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -776,7 +776,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -854,7 +854,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -923,7 +923,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -992,7 +992,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1059,7 +1059,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1116,7 +1116,7 @@ foo
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",

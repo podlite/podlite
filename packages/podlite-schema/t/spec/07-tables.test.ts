@@ -23,48 +23,21 @@ it('spec: 07-tables 0', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " The Shoveller",
+                  "The Shoveller",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Eddie Stevens ",
+                  "Eddie Stevens",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " King Arthur's singing shovel",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  " Blue Raja    ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " Geoffrey Smith",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " Master of cutlery",
+                  "King Arthur's singing shovel",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -77,21 +50,21 @@ it('spec: 07-tables 0', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Mr Furious   ",
+                  "Blue Raja",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Roy Orson     ",
+                  "Geoffrey Smith",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Ticking time bomb of fury",
+                  "Master of cutlery",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -104,21 +77,48 @@ it('spec: 07-tables 0', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " The Bowler   ",
+                  "Mr Furious",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Carol Pinnsler",
+                  "Roy Orson",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Haunted bowling ball",
+                  "Ticking time bomb of fury",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "The Bowler",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "Carol Pinnsler",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "Haunted bowling ball",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -180,34 +180,14 @@ it('spec: 07-tables 1', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Constants      ",
+                  "Constants",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " 1",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  " Variables      ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " 10",
+                  "1",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -220,14 +200,14 @@ it('spec: 07-tables 1', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Subroutines    ",
+                  "Variables",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " 33",
+                  "10",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -240,14 +220,34 @@ it('spec: 07-tables 1', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Everything else",
+                  "Subroutines",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " 57",
+                  "33",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "Everything else",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "57",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -756,21 +756,21 @@ it('spec: 07-tables 5', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Blue Raja    ",
+                  "Blue Raja",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Geoffrey Smith",
+                  "Geoffrey Smith",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Master of cutlery",
+                  "Master of cutlery",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -820,21 +820,21 @@ it('spec: 07-tables 5', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " The Bowler   ",
+                  "The Bowler",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Carol Pinnsler",
+                  "Carol Pinnsler",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Haunted bowling ball",
+                  "Haunted bowling ball",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1063,7 +1063,7 @@ bar
             "content": Array [
               Object {
                 "content": Array [
-                  " foo",
+                  "foo",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1076,7 +1076,7 @@ bar
             "content": Array [
               Object {
                 "content": Array [
-                  " bar",
+                  "bar",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1162,14 +1162,14 @@ it('spec: extra', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Block typename",
+                  "Block typename",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Specifies",
+                  "Specifies",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1187,34 +1187,14 @@ it('spec: extra', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " code          ",
+                  "code",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Verbatim pre-formatted sample source code",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  " comment       ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " Content to be ignored by all renderers",
+                  "Verbatim pre-formatted sample source code",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1227,14 +1207,14 @@ it('spec: extra', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " defn          ",
+                  "comment",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Definition of a term",
+                  "Content to be ignored by all renderers",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -1247,14 +1227,34 @@ it('spec: extra', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Typename      ",
+                  "defn",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " User-defined block",
+                  "Definition of a term",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "Typename",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "User-defined block",
                 ],
                 "name": "cell",
                 "type": "block",

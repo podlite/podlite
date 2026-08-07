@@ -19,14 +19,14 @@ describe('no separator in table  ', () => {
                   "content": Array [
                     Object {
                       "content": Array [
-                        "   X",
+                        "X",
                       ],
                       "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
-                        " Y",
+                        "Y",
                       ],
                       "name": "cell",
                       "type": "block",
@@ -39,14 +39,14 @@ describe('no separator in table  ', () => {
                   "content": Array [
                     Object {
                       "content": Array [
-                        "   1",
+                        "1",
                       ],
                       "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
-                        " 2",
+                        "2",
                       ],
                       "name": "cell",
                       "type": "block",
@@ -112,14 +112,14 @@ describe('no separator in table  ', () => {
                   "content": Array [
                     Object {
                       "content": Array [
-                        "   X ",
+                        "X",
                       ],
                       "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
-                        " Y",
+                        "Y",
                       ],
                       "name": "cell",
                       "type": "block",
@@ -132,14 +132,14 @@ describe('no separator in table  ', () => {
                   "content": Array [
                     Object {
                       "content": Array [
-                        "   1a",
+                        "1a",
                       ],
                       "name": "cell",
                       "type": "block",
                     },
                     Object {
                       "content": Array [
-                        "  2a",
+                        "2a",
                       ],
                       "name": "cell",
                       "type": "block",
@@ -184,5 +184,37 @@ describe('no separator in table  ', () => {
         },
       ]
     `)
+  })
+})
+
+describe('two whitespace characters separate columns', () => {
+  const podlite = require('../../core/src').podlite
+  const cellsOf = (src: string): string[] => {
+    const p = podlite({ importPlugins: true })
+    const html = p.toHtml(p.toAst(p.parse(src))).toString()
+    return (html.match(/<t[dh][^>]*>(.*?)<\/t[dh]>/g) || []).map(c => c.replace(/<[^>]*>/g, '').trim())
+  }
+  const table = (row: string) =>
+    `=begin table\n  A               B\n  ===============|===============\n  ${row}\n=end table\n`
+
+  it('splits a row whose cells stand two spaces apart', () => {
+    expect(cellsOf(table('Data corpusXXX  tag'))).toEqual(['A', 'B', 'Data corpusXXX', 'tag'])
+  })
+
+  it('splits the same row written with a wider gap', () => {
+    expect(cellsOf(table('Data corpusXXX     tag'))).toEqual(['A', 'B', 'Data corpusXXX', 'tag'])
+  })
+
+  it('splits a row of non-latin cells', () => {
+    expect(cellsOf(table('Данные корпуса  метка'))).toEqual(['A', 'B', 'Данные корпуса', 'метка'])
+  })
+
+  it('keeps a single space inside a cell', () => {
+    expect(cellsOf(table('two words  tag'))).toEqual(['A', 'B', 'two words', 'tag'])
+  })
+
+  it('keeps an empty cell carried by an edge pipe', () => {
+    const board = '=table\n    X | O |\n   ---+---+---\n      | X | O\n'
+    expect(cellsOf(board)).toEqual(['X', 'O', '', '', 'X', 'O'])
   })
 })

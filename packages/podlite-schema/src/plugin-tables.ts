@@ -576,24 +576,18 @@ export default () => tree => {
       const makeHeaderRow = cells =>
         makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
       const makeCell = text => makeBlock('cell', { type: 'text', value: text })
-      // Routing: per-line separator detection (Rule 1) is used only when a
-      // line with a visible separator (`|` or `+`) coexists with one that
-      // has only whitespace separation — the Scenario 2 case where the
-      // legacy positional mask collapses columns. Tables with a uniform
-      // separator, or with both visible kinds (pipe + plus) handled by the
-      // shared mask, fall back to the legacy positional template, which
-      // preserves continuation-line alignment in multi-line rows and keeps
-      // byte-for-byte AST/HTML output stable.
+      // Routing: a whitespace-separated row on one line splits by its own
+      // gaps — two spaces are enough there, while the positional mask needs
+      // three. Rows with a visible separator keep the mask: an edge `|`
+      // carries a real empty cell that per-line splitting would drop.
       const columnTemplate = makeMask(lines, separators)
       const seenSeparatorKinds = new Set(lines.map(detectLineSeparator))
-      const hasVisible = seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')
-      const hasWhitespace = seenSeparatorKinds.has('whitespace')
-      const useMixedSplitting = hasVisible && hasWhitespace
+      const useMixedSplitting =
+        (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
+      const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(line) === 'whitespace'
       const splitToCells = (rowValue: string): string[] => {
-        if (useMixedSplitting) {
-          const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
-          if (rowLines.length <= 1) return rowToCells(rowValue)
-        }
+        const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
+        if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue)
         return extractColumnsByTemplate(rowValue, columnTemplate)
       }
       const res = makeTransformer({
@@ -601,10 +595,13 @@ export default () => tree => {
           if (textRows.length == 1) {
             // No separator blocks: each line of the only text row becomes its own row
             const textRowsLines = flattenDeep([row.value].map(splitToLines))
-            if (useMixedSplitting) {
-              return textRowsLines.map(line => makeRow(splitLineCells(line).map(makeCell)))
-            }
-            return textRowsLines.map(line => makeRow(extractColumnsByTemplate(line, columnTemplate).map(makeCell)))
+            return textRowsLines.map(line =>
+              makeRow(
+                (splitsItself(line) ? splitLineCells(line) : extractColumnsByTemplate(line, columnTemplate)).map(
+                  makeCell,
+                ),
+              ),
+            )
           }
           return makeRow(splitToCells(row.value).map(makeCell))
         },
