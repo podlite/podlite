@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<stateVersionPlugin> accepts optional C<indexFilePath>; C<globalStyles>, favicon and image files contribute to C<stateVersion>
+
 =head1 0.0.39
 
 =item shape the heading name into a url fragment when building an index anchor
