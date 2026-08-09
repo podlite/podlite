@@ -17,6 +17,10 @@ const spans = (doc: string, lang: any): string[] => {
     state: EditorState.create({ doc, extensions: [lang, defaultTheme] }),
     parent: document.body,
   })
+  // jsdom runs no idle work, so a parse left half-done colours only part of the
+  // document; under a full suite that turned into a test failing by timing alone
+  ensureSyntaxTree(view.state, doc.length, 5000)
+  view.dispatch({ changes: { from: 0, insert: '' } })
   const out = Array.from(view.dom.querySelectorAll('.cm-line span')).map(
     s => `${(s as HTMLElement).className}|${s.textContent}`,
   )
