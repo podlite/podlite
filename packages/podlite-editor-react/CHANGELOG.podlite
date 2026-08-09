@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.66
+
 =item apply the heading style to a markdown file as well; the previous release paired the tags only in podlite documents, so a heading in a C<.md> file kept body weight and colour
 
 =head1 0.0.65

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.41
+
 =item C<stateVersionPlugin> accepts optional C<indexFilePath>; C<globalStyles>, favicon and image files contribute to C<stateVersion>
 
 =head1 0.0.39
