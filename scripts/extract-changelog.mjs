@@ -38,6 +38,16 @@ into the root CHANGELOG.podlite under =head2 @package headers.
 import fs from 'fs'
 import path from 'path'
 import glob from 'glob'
+import { createRequire } from 'module'
+
+// the esm build of the package does not resolve from node, the commonjs one does
+const { toMarkdown } = createRequire(import.meta.url)('@podlite/schema')
+
+// the converter separates items with a blank line; release notes keep them tight
+const toNotes = section =>
+  String(toMarkdown({}).run(section).toString())
+    .replace(/\n{2,}(?=- )/g, '\n')
+    .trim()
 
 const cwd = process.cwd()
 
@@ -86,13 +96,7 @@ const getReleaseContent = (changelog, version, pkg) => {
     const sectionContent = changelog.substring(h.start, end)
 
     if (isCurrent) {
-      // Convert podlite to markdown
-      const mdContent = sectionContent
-        .replace(/^=item\s+/gm, '- ')
-        .replace(/C<([^>]+)>/g, '`$1`')
-        .replace(/C<< ([^>]+) >>/g, '`$1`')
-        .trim()
-      return `# ${pkg.name}@${pkg.version}\n\n${mdContent}`
+      return `# ${pkg.name}@${pkg.version}\n\n${toNotes(sectionContent)}`
     }
   }
   return undefined
