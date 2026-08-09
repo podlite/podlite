@@ -91,6 +91,10 @@ const MD_HEAD_TAGS: Record<string, any> = {
   'ATXHeading6/...': [t.heading6, t.heading],
 }
 
+// a .md file is read by the stock markdown language, which never sees the podlite
+// extension; the same pairing is exported so a heading reads alike in both
+export const markdownHeadingStyle = { props: [styleTags(MD_HEAD_TAGS)] }
+
 const closingFor = (open: string): string => (open === '«' ? '»' : '>'.repeat(open.length))
 
 const openerAt = (src: string, at: number): string | null => {

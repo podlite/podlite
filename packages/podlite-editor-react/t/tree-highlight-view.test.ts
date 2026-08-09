@@ -6,7 +6,7 @@ import { ensureSyntaxTree, LanguageDescription, syntaxTree } from '@codemirror/l
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { podliteTreeLang, suggestionContextAt } from '../src/podliteMarkdown'
+import { podliteTreeLang, suggestionContextAt, markdownHeadingStyle } from '../src/podliteMarkdown'
 import { defaultTheme } from '../src/theme'
 
 // loaded here rather than through language-data, whose lazy import needs a flag jest does not have
@@ -70,6 +70,16 @@ describe('the live view', () => {
     expect(image).toBeDefined()
     expect(standard).toBeDefined()
     expect(image?.split('|')[0]).not.toBe(standard?.split('|')[0])
+  })
+
+  it('gives a heading the same weight and colour in a markdown file as in a podlite one', () => {
+    // a .md file goes through the stock markdown language, not the podlite one
+    const mdFile = markdown({ base: markdownLanguage, codeLanguages, extensions: [markdownHeadingStyle] })
+    const classOf = (doc: string, word: string, lang: any) =>
+      spans(doc, lang)
+        .find(s => s.split('|')[1]?.includes(word))
+        ?.split('|')[0]
+    expect(classOf('# One\n', 'One', mdFile)).toBe(classOf('=head1 One\n', 'One', podliteTreeLang(codeLanguages)))
   })
 
   it('gives a heading the same weight and colour in both languages', () => {

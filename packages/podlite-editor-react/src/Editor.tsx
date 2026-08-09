@@ -17,7 +17,7 @@ import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
 import { dictionaryFor } from './helpers'
-import { podliteTreeLang, suggestionContextAt, SuggestionContext } from './podliteMarkdown'
+import { podliteTreeLang, suggestionContextAt, markdownHeadingStyle, SuggestionContext } from './podliteMarkdown'
 import { podliteDecorations } from './podliteDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
@@ -631,7 +631,9 @@ function PodliteEditorInternal(
 
   const extensionsData = React.useMemo(() => {
     const exts: IPodliteEditor['extensions'] = [
-      language === 'markdown' ? markdown({ base: markdownLanguage, codeLanguages: languages }) : podliteTreeLang(),
+      language === 'markdown'
+        ? markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [markdownHeadingStyle] })
+        : podliteTreeLang(),
       EditorView.lineWrapping,
       search({ top: true }),
       stateChangeListener,
