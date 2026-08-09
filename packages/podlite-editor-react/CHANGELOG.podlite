@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.65
+
 =item a heading in a markdown file takes the same weight and colour as one in a podlite file; it carried only its size before
 
 =head1 0.0.64

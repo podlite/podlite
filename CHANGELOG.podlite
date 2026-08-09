@@ -2,6 +2,19 @@
 
 =head1 Upcoming
 
+=head1 0.0.79
+
+
+=head2 @podlite/editor-react
+
+=item a heading in a markdown file takes the same weight and colour as one in a podlite file; it carried only its size before
+
+=head2 @podlite/schema
+
+=item read a markup code delimited by a run of angles, C«C<<…>>» and C«C<<<…>>>», so a closing angle can sit inside the content
+
+=item export a document holding the space-preserving code instead of stopping on it; the markdown and html exporters read its content as text now
+
 =head1 0.0.78
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/markdown",
-  "version": "0.0.51",
+  "version": "0.0.52",
   "description": "Bidirectional Markdown support for Podlite — parse .md files, embed Markdown blocks",
   "main": "./lib/index.cjs",
   "sideEffects": false,
