@@ -121,9 +121,9 @@ const rules = {
     }
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
-    const content = node.content || ''
+    const text = collectText(node.content)
     // preserve spaces and newlines
-    writer.writeRaw(content.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
   },
   'T<>': wrapContent('`', '`'),
   'U<>': wrapContent('', ''),

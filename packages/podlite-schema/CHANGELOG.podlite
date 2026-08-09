@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item export a document holding the space-preserving code instead of stopping on it; the markdown and html exporters read its content as text now
+
 =head1 0.0.58
 
 =item a table row written on one line and separated by whitespace now splits on two spaces, as the specification says — the positional template it used to go through needed three, and a row with tighter columns collapsed into a single cell without a word

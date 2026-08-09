@@ -171,8 +171,7 @@ const rules = {
     }
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
-    const content = node.content || ''
-    const spaces = content.replace(/ /g, '&nbsp;')
+    const spaces = collectText(node.content).replace(/ /g, '&nbsp;')
     const newFeed = spaces.replace(/\n/g, '</br>')
     writer.writeRaw(newFeed)
   },
