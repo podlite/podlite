@@ -66,23 +66,22 @@ looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}
      /
      (!allowed_code_C .)  '«' not_code '»'  {return text()}  
 text_C = text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / not_code )+ {return text}
-code_C = 
-    name:start_code_2 &{ return name.code === "C" }
-    content:(  
-        /*  TODO: refactor this after "Parametric rules" will be implemented 
-        https://github.com/pegjs/pegjs/issues/107#issuecomment-10256137
-        */
+CodeCRun<Open, Close>
+  = name:$(allowed_code) &{ return name === "C" } Open
+    content:(
         code_E
         /
-        text:$( (!'<' !start_code_E .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / (!start_code_E looks_like_code_C) / text:$(!(etag:end_code &{ return  etag === name.end_tag }) !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
-    end_tag:end_code &{ return  end_tag === name.end_tag }
+        text:$( (!'<' !start_code_E .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / (!start_code_E looks_like_code_C) / text:$(!Close !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
+    Close
      {
-         return  { 
+         return  {
                 content,
                 'type':"fcode",
-                name:name.code,
+                name,
              }
     }
+
+code_C = CodeCRun<"<<<", ">>>"> / CodeCRun<"<<", ">>"> / CodeCRun<"<", ">"> / CodeCRun<"«", "»">
 separator = '|'
 text_L = text:$(
         (!'<' !allowed_code .) '<' text_L '>'
@@ -186,19 +185,22 @@ end_code = '>' / '»'
 //         end_tag:end_code &{ return  end_tag === name.end_tag}  
 // { return {content, type:'fcode', name:name.code }}
 
-code_2 = 
-        name:start_code_2 &{ return name.code !== 'C' }
-        content:(  
-                  allowed_rules / code_2 / 
-                        /*  TODO: refactor this after "Parametric rules" will be implemented 
-                            https://github.com/pegjs/pegjs/issues/107#issuecomment-10256137
-                        */
-                  text:$( '<' text '>' / '«' text '»' / looks_like_code / 
-                    ( text:$(!(etag:end_code &{ return  etag === name.end_tag }) !start_code_2 !looks_like_code .)+ {return text}) 
-                                                                         )+ {return text} 
-           )* 
-        end_tag:end_code &{ return  end_tag === name.end_tag}  
-{ return {content, type:'fcode', name:name.code }}
+// A code is delimited by a run of angles, and the closing run has to be as long
+// as the opening one. The pair is a parameter, so the literals consume their own
+// length and a shorter run inside stays part of the content.
+CodeRun<Open, Close>
+      = name:$(allowed_code) &{ return name !== 'C' } Open
+        content:(
+                  allowed_rules / code_2 /
+                  text:$( '<' text '>' / '«' text '»' / looks_like_code /
+                    ( text:$(!Close !start_code_2 !looks_like_code .)+ {return text})
+                                                                         )+ {return text}
+           )*
+        Close
+{ return {content, type:'fcode', name }}
+
+// longest run first, so a doubled opening is not read as a single one
+code_2 = CodeRun<"<<<", ">>>"> / CodeRun<"<<", ">>"> / CodeRun<"<", ">"> / CodeRun<"«", "»">
 
 
 empty =  $(!end_code .)*

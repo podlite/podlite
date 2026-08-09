@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item read a markup code delimited by a run of angles, C«C<<…>>» and C«C<<<…>>>», so a closing angle can sit inside the content
+
 =item export a document holding the space-preserving code instead of stopping on it; the markdown and html exporters read its content as text now
 
 =head1 0.0.58
