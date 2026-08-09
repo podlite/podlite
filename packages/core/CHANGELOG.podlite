@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.71
+
 =item podlite lint link-target-resolves accepts a link to a heading by name — exact match first, then without regard to case; it used to know only author-written C<:id> and reported an error on a sound document
 
 =head1 0.0.69

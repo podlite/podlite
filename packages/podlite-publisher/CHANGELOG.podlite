@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.39
+
 =item shape the heading name into a url fragment when building an index anchor
 
 =head1 0.0.29

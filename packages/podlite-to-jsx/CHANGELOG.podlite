@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.62
+
 =item a link to a heading in the same document is shaped by the rules that shaped the anchor, so C<< L<text|#Приветствие Мир> >> reaches the heading; a target written in another case still finds it
 
 =head1 0.0.59

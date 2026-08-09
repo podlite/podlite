@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.64
+
 =item a heading in the editor is sized by its level again; the marker keeps its colour, the text takes the weight and size
 
 =head1 0.0.62
