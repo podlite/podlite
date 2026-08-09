@@ -79,6 +79,18 @@ const HEAD_TAGS: Record<string, any> = {
 }
 const headNodeNames = Object.keys(HEAD_TAGS)
 
+// the markdown parser gives a heading its level tag alone, which the theme sizes
+// but leaves in body colour and weight; pairing it the way a podlite heading is
+// paired makes a heading read the same in both languages
+const MD_HEAD_TAGS: Record<string, any> = {
+  'ATXHeading1/... SetextHeading1/...': [t.heading1, t.heading],
+  'ATXHeading2/... SetextHeading2/...': [t.heading2, t.heading],
+  'ATXHeading3/...': [t.heading3, t.heading],
+  'ATXHeading4/...': [t.heading4, t.heading],
+  'ATXHeading5/...': [t.heading5, t.heading],
+  'ATXHeading6/...': [t.heading6, t.heading],
+}
+
 const closingFor = (open: string): string => (open === '«' ? '»' : '>'.repeat(open.length))
 
 const openerAt = (src: string, at: number): string | null => {
@@ -223,6 +235,7 @@ export const podliteMarkdownExtension: any = {
       PodCodeTarget: t.url,
       ...Object.fromEntries(CODE_LETTERS.map(c => [`PodCode${c}`, CODE_TAGS[c]])),
       ...HEAD_TAGS,
+      ...MD_HEAD_TAGS,
     }),
   ],
   parseInline: [

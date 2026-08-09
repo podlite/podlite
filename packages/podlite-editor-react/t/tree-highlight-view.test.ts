@@ -28,11 +28,13 @@ const spans = (doc: string, lang: any): string[] => {
 // the language inside the fence never finishes and nothing on the page is coloured.
 // That case is checked on the tree, in podlite-markdown.test.ts
 describe('the live view', () => {
-  it('shows plain markdown the same way in both languages', () => {
+  it('shows plain markdown the same way in both languages, apart from headings', () => {
     const doc = ['# Heading', '', 'text with **bold** and [a link](/a)', '', '- item'].join('\n')
+    // a heading carries the shared heading style here; plain markdown leaves it out
+    const exceptHeading = (found: string[]) => found.filter(s => !/\|#$|\|\s*Heading$/.test(s))
     const tree = spans(doc, podliteTreeLang(codeLanguages))
     expect(tree.length).toBeGreaterThan(4)
-    expect(tree).toEqual(spans(doc, markdown({ base: markdownLanguage, codeLanguages })))
+    expect(exceptHeading(tree)).toEqual(exceptHeading(spans(doc, markdown({ base: markdownLanguage, codeLanguages }))))
   })
 
   it('colours a directive line', () => {
@@ -68,6 +70,15 @@ describe('the live view', () => {
     expect(image).toBeDefined()
     expect(standard).toBeDefined()
     expect(image?.split('|')[0]).not.toBe(standard?.split('|')[0])
+  })
+
+  it('gives a heading the same weight and colour in both languages', () => {
+    const lang = podliteTreeLang(codeLanguages)
+    const classOf = (doc: string, word: string) =>
+      spans(doc, lang)
+        .find(s => s.split('|')[1]?.includes(word))
+        ?.split('|')[0]
+    expect(classOf('=head1 One\n', 'One')).toBe(classOf('# One\n', 'One'))
   })
 
   it('sizes a heading by its level', () => {
