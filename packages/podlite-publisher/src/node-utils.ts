@@ -380,6 +380,37 @@ export function parseSources(path: string): publishRecord[] {
   return allFiles as publishRecord[]
 }
 
+// Writes one record per line and returns where each landed, so a reader can take
+// a single record without holding the whole file as one string.
+export function streamWriteLines(array: any[], outputPath): Promise<Array<{ offset: number; length: number }>> {
+  return new Promise((resolve, reject) => {
+    const writeStream = fs.createWriteStream(outputPath)
+    const places: Array<{ offset: number; length: number }> = []
+    let offset = 0
+
+    const writeItem = index => {
+      if (index >= array.length) {
+        writeStream.end()
+        resolve(places)
+        return
+      }
+      const line = JSON.stringify(array[index]) + '\n'
+      const length = Buffer.byteLength(line)
+      places.push({ offset, length })
+      offset += length
+
+      if (writeStream.write(line)) {
+        setImmediate(() => writeItem(index + 1))
+      } else {
+        writeStream.once('drain', () => writeItem(index + 1))
+      }
+    }
+
+    writeStream.on('error', reject)
+    writeItem(0)
+  })
+}
+
 export function streamWriteArray(array: any[], outputPath) {
   return new Promise((resolve, reject) => {
     const writeStream = fs.createWriteStream(outputPath)
