@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.42
+
 =item write the page records one per line, with a light index next to them that names every field but the parsed tree and says where each record sits in the file
 
 =head1 0.0.41
