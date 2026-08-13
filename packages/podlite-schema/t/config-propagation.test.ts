@@ -1,4 +1,5 @@
 import { podlitePluggable } from '../src/pluggableParser'
+import { toHtml, toMarkdown } from '../src'
 import { makeAttrs } from '../src/helpers/config'
 import { propagateConfigDefaults } from '../src/helpers/configPropagation'
 
@@ -103,5 +104,110 @@ Not folded
     const before = JSON.stringify(ast)
     propagateConfigDefaults(ast)
     expect(JSON.stringify(ast)).toBe(before)
+  })
+})
+
+describe('=config lexical scope', () => {
+  const findAll = (node: any, name: string, out: any[] = []): any[] => {
+    if (Array.isArray(node)) {
+      node.forEach(n => findAll(n, name, out))
+      return out
+    }
+    if (!node || typeof node !== 'object') return out
+    if (node.type === 'block' && node.name === name) out.push(node)
+    if (node.content) findAll(node.content, name, out)
+    return out
+  }
+
+  it('a declaration inside a block does not reach the blocks after it', () => {
+    const ast = parseToAst(`=begin pod
+=begin nested
+=config head2 :folded
+
+=head2 Inside
+=end nested
+
+=head2 After
+=end pod`)
+    const heads = findAll(ast, 'head')
+    expect(heads.length).toBe(2)
+    expect(makeAttrs(heads[0]).exists('folded')).toBe(true)
+    expect(makeAttrs(heads[1]).exists('folded')).toBe(false)
+  })
+
+  it('a declaration reaches blocks nested deeper in the same scope', () => {
+    const ast = parseToAst(`=begin pod
+=config head2 :folded
+
+=begin nested
+=head2 Deeper
+=end nested
+=end pod`)
+    const heads = findAll(ast, 'head')
+    expect(heads.length).toBe(1)
+    expect(makeAttrs(heads[0]).exists('folded')).toBe(true)
+  })
+})
+
+describe('=config lexical scope in export', () => {
+  const src = `=begin pod
+=begin nested
+=config table :caption('CAP')
+
+=begin table
+a | b
+=end table
+=end nested
+
+=begin table
+c | d
+=end table
+=end pod`
+
+  it('html keeps a declaration inside the block it sits in', () => {
+    const out = toHtml({}).run(src).toString()
+    expect(out.match(/<caption>CAP<\/caption>/g)).toHaveLength(1)
+  })
+
+  it('markdown keeps a declaration inside the block it sits in', () => {
+    const out = toMarkdown({}).run(src).toString()
+    expect(out.match(/CAP/g)).toHaveLength(1)
+  })
+
+  it('a declaration at document level reaches every block below it', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config table :caption('CAP')
+
+=begin table
+a | b
+=end table
+
+=begin nested
+=begin table
+c | d
+=end table
+=end nested
+=end pod`,
+      )
+      .toString()
+    expect(out.match(/<caption>CAP<\/caption>/g)).toHaveLength(2)
+  })
+
+  it('own attribute on the block still overrides the declaration', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config table :caption('CAP')
+
+=begin table :caption('OWN')
+a | b
+=end table
+=end pod`,
+      )
+      .toString()
+    expect(out).toContain('<caption>OWN</caption>')
+    expect(out).not.toContain('<caption>CAP</caption>')
   })
 })

@@ -47,7 +47,8 @@ const walk = (node: PodNode, config: ConfigMap): void => {
     }
   }
   if (anyNode.content !== undefined) {
-    walk(anyNode.content as PodNode, config)
+    // a block is a lexical scope: what is declared inside it stays inside
+    walk(anyNode.content as PodNode, anyNode.type === 'block' ? { ...config } : config)
   }
 }
 

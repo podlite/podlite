@@ -17,6 +17,23 @@ function thisFunc(rules) {
       // convert string to lex node with type
       return interator({ type: 'text', value: node }, context)
     }
+    // a block is a lexical scope: a =config written inside it must not reach
+    // what follows the block. The context object itself is kept, since rules
+    // count cells and mark rows through it
+    if (node.type === 'block' && context) {
+      const outer = context.config
+      const hadOuter = context.hasOwnProperty('config')
+      context.config = { ...outer }
+      try {
+        return dispatch(node, context)
+      } finally {
+        if (hadOuter) context.config = outer
+        else delete context.config
+      }
+    }
+    return dispatch(node, context)
+  }
+  function dispatch(node, context) {
     // get first rule for this node
     const reversed = rules.slice()
     reversed.reverse()
