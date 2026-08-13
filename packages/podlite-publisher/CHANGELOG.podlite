@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.44
+
 =item skip an image whose declared orientation is outside the range a build can read, instead of letting one such file stop the whole site
 
 =head1 0.0.43
