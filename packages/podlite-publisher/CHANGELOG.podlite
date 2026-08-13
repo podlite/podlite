@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.43
+
 =item C<:language> on the index page reaches site data, so a site states the language of its own content
 
 =head1 0.0.42
