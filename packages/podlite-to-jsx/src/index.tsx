@@ -26,6 +26,7 @@ import {
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
+import { readLinkConfig } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import HighlightedCode from './HighlightedCode'
 
@@ -232,6 +233,16 @@ export const HookedImage: React.FC<{
   }, [src, baseDir, hook, initial])
   if (resolved == null) return null
   return render ? render(resolved) : <img src={resolved} alt={alt} />
+}
+
+const linkConfigProps = (config: any) => {
+  const { newContext, title, lang, download } = readLinkConfig(config)
+  const props: { [key: string]: any } = {}
+  if (newContext) props.target = '_blank'
+  if (title !== undefined) props.title = title
+  if (lang !== undefined) props.hrefLang = lang
+  if (download !== undefined) props.download = download
+  return props
 }
 
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
@@ -683,8 +694,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         meta = meta.value
       }
       const href = sameDocTarget(meta, ctx)
+      const linkProps = linkConfigProps(node.config)
       return mkComponent(({ children, key }) => (
-        <a href={href} key={key}>
+        <a href={href} key={key} {...linkProps}>
           {children}
         </a>
       ))
@@ -701,8 +713,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         meta = meta.value
       }
       const href = sameDocTarget(meta, ctx)
+      const linkProps = linkConfigProps(node.config)
       return mkComponent(({ children, key }) => (
-        <a href={href} key={key} className="backlink">
+        <a href={href} key={key} className="backlink" {...linkProps}>
           {children}
         </a>
       ))

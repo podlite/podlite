@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item read configuration attributes on C«L<>» and C«W<>», so C«L<API|https://api.example.com :new :title('Doc')>» carries them into the AST instead of dumping them into the link specification
+
+=item keep the closing angle of a markup code that ends with an attribute value in angles, C«L<Guide|https://example.fr/guide :lang<fr>>»
+
+=item render the link attributes: C<:new>, C<:title>, C<:lang> and C<:download> reach html and jsx, C<:title> reaches markdown
+
 =head1 0.0.59
 
 =item read a markup code delimited by a run of angles, C«C<<…>>» and C«C<<<…>>>», so a closing angle can sit inside the content

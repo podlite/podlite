@@ -15,7 +15,21 @@ import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId, getExplicitNodeId, getSafeNodeId, sameDocTarget } from './ast-helpers'
+import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
+
+const quoteValue = (value: string) => value.replace(/"/g, '&quot;')
+
+const linkConfigAttrs = config => {
+  const { newContext, title, lang, download } = readLinkConfig(config)
+  const attrs: string[] = []
+  if (newContext) attrs.push(' target="_blank"')
+  if (title !== undefined) attrs.push(` title="${quoteValue(title)}"`)
+  if (lang !== undefined) attrs.push(` hreflang="${quoteValue(lang)}"`)
+  if (download === true) attrs.push(' download')
+  else if (typeof download === 'string') attrs.push(` download="${quoteValue(download)}"`)
+  return attrs.join('')
+}
 
 const openTag = (tag: string, node, ctx, attrs = '') => {
   const id = getExplicitNodeId(node, ctx)
@@ -103,14 +117,14 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}">`, `</a>`)
+    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(node.config)}>`, `</a>`)
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}" class="backlink">`, `</a>`)
+    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(node.config)} class="backlink">`, `</a>`)
   }),
 
   /**

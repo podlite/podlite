@@ -14,10 +14,16 @@ import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId, markdownStyle, restyleAnchors, sameDocTarget } from './ast-helpers'
+import { readLinkConfig } from './helpers/link-config'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
 const markdownAnchors = ctx => ctx && (ctx.__markdownAnchors ||= restyleAnchors(ctx.__anchors, markdownStyle))
+
+const linkTitle = config => {
+  const { title } = readLinkConfig(config)
+  return title === undefined ? '' : ` "${title.replace(/"/g, '\\"')}"`
+}
 
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
@@ -72,14 +78,14 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))})`)
+    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(node.config)})`)
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))})`)
+    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(node.config)})`)
   }),
 
   'N<>': (writer, processor) => {

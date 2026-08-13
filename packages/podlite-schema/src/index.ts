@@ -18,6 +18,8 @@ export { makeTransformer, isNamedBlock, isSemanticBlock } from './helpers/makeTr
 export { toAny } from './exportAny'
 export { makeAttrs } from './helpers/config'
 export { parseAttributes } from './helpers/parseAttributes'
+export { readLinkConfig } from './helpers/link-config'
+export type { LinkConfig } from './helpers/link-config'
 export { pluginCleanLocation } from './plugin-clean-location'
 export { toAnyRules } from './helpers/plugins'
 
