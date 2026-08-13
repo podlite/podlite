@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint delimited-block-balance takes =begin/=end lines inside a verbatim block as content and reports same-name nesting only there; nesting that the parser accepts is no longer an error
+
 =head1 0.0.71
 
 =item podlite lint link-target-resolves accepts a link to a heading by name — exact match first, then without regard to case; it used to know only author-written C<:id> and reported an error on a sound document

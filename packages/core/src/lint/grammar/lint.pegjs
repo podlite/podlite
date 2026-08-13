@@ -54,13 +54,19 @@ delim_begin
   = sol "=begin" __ name:identifier
     {
       const top = options._blockStack[options._blockStack.length - 1];
-      if (top && top.name === name) {
-        options.diagnostics.push({
-          rule: 'delimited-block-balance',
-          severity: 'error',
-          message: "=begin " + name + " nested inside =begin " + name + " (opened at line " + top.location.start.line + "); indent inner =begin/=end markers by one space to make them verbatim content",
-          location: location()
-        });
+      const verbatim = top && options.verbatimBlocks.indexOf(top.name) !== -1;
+      if (verbatim) {
+        // the same name closes the enclosing block early and orphans the marker after it
+        if (top.name === name) {
+          options.diagnostics.push({
+            rule: 'delimited-block-balance',
+            severity: 'error',
+            message: "=begin " + name + " nested inside =begin " + name + " (opened at line " + top.location.start.line + "); indent inner =begin/=end markers by one space to make them verbatim content",
+            location: location()
+          });
+        }
+        options._inDirective = false;
+        return null;
       }
       options._blockStack.push({ name: name, location: location() });
       options._inDirective = true;
@@ -71,6 +77,11 @@ delim_end
   = sol "=end" __ name:identifier
     {
       const top = options._blockStack[options._blockStack.length - 1];
+      // a verbatim block runs to its own =end, so any other marker inside it is content
+      if (top && top.name !== name && options.verbatimBlocks.indexOf(top.name) !== -1) {
+        options._inDirective = false;
+        return null;
+      }
       if (!top) {
         options.diagnostics.push({
           rule: 'delimited-block-balance',

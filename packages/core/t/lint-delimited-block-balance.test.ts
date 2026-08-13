@@ -23,9 +23,36 @@ describe('delimited-block-balance rule', () => {
   })
 
   it('flags mismatched =end name', () => {
+    const v = scanSourceRules('=begin nested\nbody\n=end para\n')
+    expect(v).toHaveLength(1)
+    expect(v[0].message).toMatch(/=end para does not match =begin nested/)
+  })
+
+  it('markers of another block inside a verbatim block are content', () => {
+    const src =
+      '=begin pod\n=begin code :lang<pod6>\n=begin pod :type<changelog>\n\n=begin pod :released-in<0.2.0>\n=item one\n=end pod\n\n=end pod\n=end code\n\ntail\n=end pod\n'
+    expect(scanSourceRules(src)).toEqual([])
+  })
+
+  it('=end of another name inside a verbatim block is content', () => {
+    expect(scanSourceRules('=begin code\n=end pod\n=end code\n')).toEqual([])
+  })
+
+  it('mismatched =end inside a verbatim block leaves it unclosed', () => {
     const v = scanSourceRules('=begin code\nbody\n=end para\n')
     expect(v).toHaveLength(1)
-    expect(v[0].message).toMatch(/=end para does not match =begin code/)
+    expect(v[0].message).toMatch(/=begin code is not closed before end of file/)
+  })
+
+  it('same-name blocks nest outside a verbatim block', () => {
+    const src = '=begin pod\n=head1 A\n\n=begin pod :released-in<0.2.0>\n=item one\n=end pod\n\n=end pod\n'
+    expect(scanSourceRules(src)).toEqual([])
+  })
+
+  it('unclosed block outside a verbatim block is still flagged', () => {
+    const v = scanSourceRules('=begin pod\n=begin code\nx\n=end code\n')
+    expect(v).toHaveLength(1)
+    expect(v[0].message).toMatch(/=begin pod is not closed before end of file/)
   })
 
   it('flags nested same-name trap', () => {
@@ -88,7 +115,7 @@ describe('runLint delimited-block-balance integration', () => {
     const code = runLint([path.join(FIXTURES, 'delim-mismatch.podlite')], { strict: false, format: 'text' })
     expect(code).toBe(1)
     const out = stdout.mock.calls.map(c => c[0]).join('')
-    expect(out).toMatch(/error: =end para does not match =begin code/)
+    expect(out).toMatch(/error: =end para does not match =begin nested/)
   })
 
   it('nested-trap fixture → exit 1', () => {
