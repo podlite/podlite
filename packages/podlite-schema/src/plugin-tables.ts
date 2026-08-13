@@ -163,13 +163,19 @@ function detectSourceReference(tableNode) {
   return { scheme: m[1], target: m[2] }
 }
 
-function buildCellBlock(text) {
-  return {
+function buildCellBlock(text, allow?: string[]) {
+  const block: any = {
     name: 'cell',
     type: 'block',
     margin: '',
     content: [{ type: 'text', value: text }],
   }
+  // a value read from data is not markup, so the cell carries the set of codes
+  // that may act inside it, empty unless the block declared :allow
+  if (allow) {
+    block.config = [{ name: 'allow', value: [...allow], type: 'array' }]
+  }
+  return block
 }
 
 function buildRowBlock(cells, isHeader) {
@@ -191,9 +197,9 @@ function buildRowBlock(cells, isHeader) {
 // `:header`. Default behaviour leaves all rows unmarked, matching authors
 // who use a structured table with explicit `=begin row :header` or a
 // Markdown GFM table.
-export function csvToTableContent(csvRows, hasHeader = false) {
+export function csvToTableContent(csvRows, hasHeader = false, allow: string[] = []) {
   return csvRows.map((row, i) => {
-    const cells = row.map(v => buildCellBlock(v.trim()))
+    const cells = row.map(v => buildCellBlock(v.trim(), allow))
     return buildRowBlock(cells, hasHeader && i === 0)
   })
 }
@@ -510,7 +516,8 @@ export default () => tree => {
             return { ...node, content: [] }
           }
           const hasHeader = mimeParams.header === 'present'
-          const filledNode = { ...node, content: csvToTableContent(rows, hasHeader) }
+          const allow = makeAttrs(node, {}).getAllValues('allow')
+          const filledNode = { ...node, content: csvToTableContent(rows, hasHeader, allow) }
           return normalizeCellCounts(filledNode, `table data:${ref.target}`)
         }
         // Rule 4: source not tabular → render as code block so content remains visible

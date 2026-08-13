@@ -150,7 +150,11 @@ function processDataTable(node, tree) {
     rows = applyRename(rows, renameMap as Record<string, string>, hasHeader)
   }
 
-  const filledNode = { ...node, name: 'table', content: csvToTableContent(rows, hasHeader) }
+  const filledNode = {
+    ...node,
+    name: 'table',
+    content: csvToTableContent(rows, hasHeader, attrs.getAllValues('allow')),
+  }
   return normalizeCellCounts(filledNode, 'data-table')
 }
 

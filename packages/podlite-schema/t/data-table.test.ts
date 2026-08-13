@@ -264,6 +264,68 @@ Alice,B<Important>
     const allow = table.config.find((c: any) => c.name === 'allow')
     expect(allow).toBeDefined()
   })
+
+  it('cell content stays text without :allow', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present')
+name,value
+secret,Z<hidden>
+cmd,C<run>
+bold,B<loud>
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const cells = extractCellTexts(findBlock(tree, 'table'))
+    expect(cells[1]).toEqual(['secret', 'Z<hidden>'])
+    expect(cells[2]).toEqual(['cmd', 'C<run>'])
+    expect(cells[3]).toEqual(['bold', 'B<loud>'])
+  })
+
+  it(':allow<B> leaves only B acting inside a cell', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present') :allow<B>
+name,value
+cmd,C<run>
+bold,B<loud>
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1 })
+    const rows = findBlock(tree, 'table').content.filter((c: any) => c && c.name === 'row')
+    const cellContent = (row: number, cell: number) =>
+      rows[row].content.filter((c: any) => c.name === 'cell')[cell].content
+    expect(extractCellTexts(findBlock(tree, 'table'))[1]).toEqual(['cmd', 'C<run>'])
+    expect(cellContent(2, 1)[0]).toMatchObject({ type: 'fcode', name: 'B' })
+  })
+})
+
+describe('=table data: reference cell markup', () => {
+  const src = (attr: string) => `=begin pod
+=begin data :key<vals> :mime-type('text/csv; header=present')
+name,value
+secret,Z<hidden>
+bold,B<loud>
+=end data
+
+=begin table${attr}
+data:vals
+=end table
+=end pod`
+
+  it('cell content stays text without :allow', () => {
+    const cells = extractCellTexts(findBlock(parse(src(''), { podMode: 1 }), 'table'))
+    expect(cells[1]).toEqual(['secret', 'Z<hidden>'])
+    expect(cells[2]).toEqual(['bold', 'B<loud>'])
+  })
+
+  it(':allow<B> leaves only B acting inside a cell', () => {
+    const table = findBlock(parse(src(' :allow<B>'), { podMode: 1 }), 'table')
+    const rows = table.content.filter((c: any) => c && c.name === 'row')
+    expect(extractCellTexts(table)[1]).toEqual(['secret', 'Z<hidden>'])
+    expect(rows[2].content.filter((c: any) => c.name === 'cell')[1].content[0]).toMatchObject({
+      type: 'fcode',
+      name: 'B',
+    })
+  })
 })
 
 describe('=data-table :rename overrides', () => {

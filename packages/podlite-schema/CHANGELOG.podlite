@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item keep a cell built from CSV or TSV as text, so a value reading C«Z<secret>» or C«C<command>» reaches the output whole; C«:allow» on the block names the codes that act inside such a cell
+
 =item read configuration attributes on C«L<>» and C«W<>», so C«L<API|https://api.example.com :new :title('Doc')>» carries them into the AST instead of dumping them into the link specification
 
 =item keep the closing angle of a markup code that ends with an attribute value in angles, C«L<Guide|https://example.fr/guide :lang<fr>>»

@@ -41,6 +41,8 @@ const middle: ParserPlugin = () => tree => {
       const allowValues = conf.getAllValues('allow')
       if (isNamedBlock(name)) return n
       if (isVerbatimDefault && allowValues.length === 0) return n
+      // a cell built from data carries its own set; declared empty means no code acts
+      if (name === 'cell' && conf.exists('allow') && allowValues.length === 0) return n
       const allowed = allowValues.sort()
       const transformer = makeTransformer({
         ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed, parseAttributes }),
