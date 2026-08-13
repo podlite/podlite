@@ -78,6 +78,45 @@ it('siteDataPlugin: :theme attribute propagates to siteData', () => {
   expect(context.siteData.theme).toBe('product')
 })
 
+it('siteDataPlugin: :language attribute propagates to siteData', () => {
+  const localisedIndex = `
+=begin pod
+= :favicon<./logo.png>
+= :puburl<http://example.com>
+= :language<ru>
+
+=TITLE Localised Site
+=end pod
+`
+  const state = [processFile('virtual/index.podlite', localisedIndex)]
+  const config: PluginConfig = {
+    plugin: siteDataPlugin({
+      public_path: '/tmp/public',
+      indexFilePath: 'virtual/index.podlite',
+      built_path: '/built',
+      site_url: 'http://example.com',
+    }),
+    includePatterns: '.*',
+  }
+  const [, context] = processPlugin(config, state, tctx)
+  expect(context.siteData.language).toBe('ru')
+})
+
+it('siteDataPlugin: no :language attribute leaves the field out', () => {
+  const state = [processFile('virtual/index.podlite', indexFile)]
+  const config: PluginConfig = {
+    plugin: siteDataPlugin({
+      public_path: '/tmp/public',
+      indexFilePath: 'virtual/index.podlite',
+      built_path: '/built',
+      site_url: 'http://example.com',
+    }),
+    includePatterns: '.*',
+  }
+  const [, context] = processPlugin(config, state, tctx)
+  expect('language' in context.siteData).toBe(false)
+})
+
 it('buildStylesContent: theme only — emits theme @import', () => {
   expect(buildStylesContent('product', undefined)).toMatch(/@import '@Styles\/themes\/product\.css';/)
 })

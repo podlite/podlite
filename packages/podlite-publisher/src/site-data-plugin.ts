@@ -20,6 +20,7 @@ export interface SiteInfo {
   node: any
   title: string
   globalStyles: string
+  language?: string
   theme?: string
   footer: string
   gtmId: string
@@ -52,7 +53,7 @@ const plugin = ({
     const [pod] = getFromTree(indexPage.node, 'pod')
     const attr = makeAttrs(pod, {})
     const pageAttr = Object.fromEntries(Object.keys(attr.asHash()).map(k => [k, attr.getFirstValue(k)]))
-    const { postsPerPage, favicon, puburl, url, globalStyles, theme, gtmId, templateFile } = pageAttr
+    const { postsPerPage, favicon, puburl, url, globalStyles, language, theme, gtmId, templateFile } = pageAttr
 
     // process favicon file
 
@@ -87,6 +88,7 @@ const plugin = ({
       node: pageNode,
       title,
       globalStyles,
+      ...(language && { language }),
       ...(theme && { theme }),
       redirects,
       footer,

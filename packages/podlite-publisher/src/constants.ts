@@ -21,6 +21,7 @@ export type SiteInfo = {
   url: 'http://example.com'
   title: 'Example'
   globalStyles?: string
+  language?: string
   node: PodNode
   footer: PodNode
   gtmId?: string // Google Tag Manager ID
