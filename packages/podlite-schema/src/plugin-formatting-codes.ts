@@ -2,6 +2,7 @@ import * as fcparser from './grammarfc'
 import makeTransformer from './helpers/makeTransformer'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
+import { parseAttributes } from './helpers/parseAttributes'
 import { ParserPlugin, Node, nPara, AST, nText, nVerbatim } from './'
 
 /**
@@ -16,10 +17,10 @@ const middle: ParserPlugin = () => tree => {
     ':para': (n, ctx, visiter) => {
       return makeTransformer({
         ':text': (n: nText, ctx) => {
-          return fcparser.parse(n.value)
+          return fcparser.parse(n.value, { parseAttributes })
         },
         ':verbatim': (n: nVerbatim, ctx) => {
-          return fcparser.parse(n.value)
+          return fcparser.parse(n.value, { parseAttributes })
         },
       })(n, { ...ctx })
       return n
@@ -42,8 +43,8 @@ const middle: ParserPlugin = () => tree => {
       if (isVerbatimDefault && allowValues.length === 0) return n
       const allowed = allowValues.sort()
       const transformer = makeTransformer({
-        ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed }),
-        ':text': (n: nText, ctx) => fcparser.parse(n.value, { allowed }),
+        ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed, parseAttributes }),
+        ':text': (n: nText, ctx) => fcparser.parse(n.value, { allowed, parseAttributes }),
         ':block': (n, ctx) => transformerBlocks(n, { ...ctx }),
       })
       return { ...n, content: transformer(n.content, { ...ctx }) }

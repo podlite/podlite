@@ -2238,6 +2238,12 @@
                         "string"
                     ]
                 },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
                 "content": {
                     "anyOf": [
                         {
@@ -2282,6 +2288,12 @@
                         "null",
                         "string"
                     ]
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "content": {
                     "anyOf": [

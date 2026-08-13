@@ -276,6 +276,7 @@ export interface FormattingCodeL {
   type: 'fcode'
   name: 'L'
   meta: string | null
+  config?: ConfigItem[]
   content: string | Text | [Text] // TODO: link content can contain other formatting codes
 }
 
@@ -283,6 +284,7 @@ export interface FormattingCodeW {
   type: 'fcode'
   name: 'W'
   meta: string | null
+  config?: ConfigItem[]
   content: string | Text | [Text]
 }
 

@@ -6,6 +6,20 @@
     const  map = {'<':'>', '«':'»','>':'<', '»':'«'}
     return map[tag]
   }
+  function link_target (spec) {
+    const trimmed = spec.replace(/\s+$/, '')
+    const quote = trimmed[0]
+    if ((quote === "'" || quote === '"') && trimmed.length > 1 && trimmed[trimmed.length - 1] === quote) {
+      return trimmed.slice(1, -1)
+    }
+    return trimmed
+  }
+  // callers hand the block-attribute parser in through options; without it the
+  // text stays as written rather than being dropped
+  function link_items (attrs, options) {
+    const read = options && options.parseAttributes
+    return typeof read === 'function' ? read(attrs) : attrs
+  }
 }
 
 Expression
@@ -90,20 +104,61 @@ text_L = text:$(
     / 
     !separator !end_code !start_code !looks_like_code . )+ { return text } 
 
+// the configuration region opens at the first whitespace that a colon follows
+// straight away; colons inside a URL carry no whitespace before them
+link_spec = $( ( !( hs ':' ) !end_code . )* )
+link_spec_filled = $( ( !( hs ':' ) !end_code . )+ )
+link_config =
+    hs+ t:$(
+        ( ['] [^'\n\r]* ['] / ["] [^"\n\r]* ["] / '<' (!'>' .)* '>' / !end_code . )*
+    ) { return t }
+
 // L and W share the [text|]linkspec shape; W adds context to the reference
-code_L = 
+code_L =
     name:start_code_2 &{return name.code === "L" || name.code === "W"}
-            
     content: (
                code_C  /  code_2  /  text_L
              )+
-     
+    separator
+    spec:link_spec
+    attrs:link_config
+    end_tag:end_code &{ return  end_tag === name.end_tag}
+    {
+        return  {
+               content,
+               'type':"fcode",
+               name:name.code,
+               meta:link_target(spec),
+               config:link_items(attrs, options)
+            }
+    }
+    /
+    name:start_code_2 &{return name.code === "L" || name.code === "W"}
+    spec:link_spec_filled
+    attrs:link_config
+    end_tag:end_code &{ return  end_tag === name.end_tag}
+    {
+        return  {
+               content:[link_target(spec)],
+               'type':"fcode",
+               name:name.code,
+               meta:null,
+               config:link_items(attrs, options)
+            }
+    }
+    /
+    name:start_code_2 &{return name.code === "L" || name.code === "W"}
+
+    content: (
+               code_C  /  code_2  /  text_L
+             )+
+
      meta:(
             separator t:$(!end_code .)*  { return t }
            )?
      end_tag:end_code &{ return  end_tag === name.end_tag}
      {
-         return  { 
+         return  {
                 content,
                 'type':"fcode",
                 name:name.code,
