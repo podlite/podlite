@@ -10,7 +10,7 @@ import {
   collectText,
 } from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
-import makeAttrs from './helpers/config'
+import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
@@ -117,14 +117,20 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(node.config)}>`, `</a>`)
+    return wrapContent(
+      `<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(codeConfigWithDefaults(node, ctx))}>`,
+      `</a>`,
+    )
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(node.config)} class="backlink">`, `</a>`)
+    return wrapContent(
+      `<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(codeConfigWithDefaults(node, ctx))} class="backlink">`,
+      `</a>`,
+    )
   }),
 
   /**

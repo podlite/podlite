@@ -9,7 +9,7 @@ import {
   maskText,
   collectText,
 } from './helpers/handlers'
-import makeAttrs from './helpers/config'
+import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
@@ -78,14 +78,20 @@ const rules = {
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(node.config)})`)
+    return wrapContent(
+      `[`,
+      `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(codeConfigWithDefaults(node, ctx))})`,
+    )
   }),
   'W<>': setFn((node, ctx) => {
     let { meta } = node
     if (meta === null) {
       meta = node.content
     }
-    return wrapContent(`[`, `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(node.config)})`)
+    return wrapContent(
+      `[`,
+      `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(codeConfigWithDefaults(node, ctx))})`,
+    )
   }),
 
   'N<>': (writer, processor) => {

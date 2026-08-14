@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item read a markup code pre-configured with C«=config L<>» when rendering it, so a declared default reaches the link and a value written on the link itself wins
+
 =item put pre-configured attributes on the blocks before markup codes are parsed, so C«=config code :allow<B>» and C«=config cell :allow<B>» decide which codes act inside those blocks
 
 =item hold a C«=config» to the block it is written in, so a declaration inside one block no longer configures the blocks that follow it

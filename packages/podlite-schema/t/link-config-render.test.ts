@@ -58,3 +58,44 @@ describe('link configuration attributes in markdown', () => {
     expect(markdown('L<API|https://api.example.com :new>')).toContain('[API](https://api.example.com)')
   })
 })
+
+describe('link configuration pre-configured with =config', () => {
+  const doc = (body: string) => `=begin pod\n${body}\n=end pod`
+  const htmlDoc = (body: string) => toHtml({}).run(doc(body)).toString()
+  const markdownDoc = (body: string) => toMarkdown({}).run(doc(body)).toString()
+
+  it('a link takes the declared default', () => {
+    const out = htmlDoc('=config L<> :new\n\n=para\nL<External|https://example.com>')
+    expect(out).toContain('target="_blank"')
+  })
+
+  it('a negated attribute on the link removes the default', () => {
+    const out = htmlDoc('=config L<> :new\n\n=para\nL<Internal|file:local.html :!new>')
+    expect(out).not.toContain('target="_blank"')
+  })
+
+  it('a value on the link replaces the declared one', () => {
+    const out = htmlDoc("=config L<> :title('default')\n\n=para\nL<API|https://api.example.com :title('own')>")
+    expect(out).toContain('title="own"')
+    expect(out).not.toContain('title="default"')
+  })
+
+  it('a declaration for one code leaves another code alone', () => {
+    const out = htmlDoc("=config L<> :title('default')\n\n=para\nW<term|defn:glossary>")
+    expect(out).toContain('class="backlink"')
+    expect(out).not.toContain('title=')
+  })
+
+  it('markdown carries the declared title', () => {
+    const out = markdownDoc("=config L<> :title('default')\n\n=para\nL<API|https://api.example.com>")
+    expect(out).toContain('[API](https://api.example.com "default")')
+  })
+
+  it('a declaration inside a block does not reach a link after it', () => {
+    const out = htmlDoc(
+      '=begin nested\n=config L<> :new\n\n=para\nL<Inside|https://in.example>\n=end nested\n\n=para\nL<Outside|https://out.example>',
+    )
+    expect(out).toContain('<a href="https://in.example" target="_blank">')
+    expect(out).toContain('<a href="https://out.example">')
+  })
+})

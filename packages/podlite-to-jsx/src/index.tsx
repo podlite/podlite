@@ -26,7 +26,7 @@ import {
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
-import { readLinkConfig } from '@podlite/schema'
+import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import HighlightedCode from './HighlightedCode'
 
@@ -694,7 +694,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         meta = meta.value
       }
       const href = sameDocTarget(meta, ctx)
-      const linkProps = linkConfigProps(node.config)
+      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
       return mkComponent(({ children, key }) => (
         <a href={href} key={key} {...linkProps}>
           {children}
@@ -713,7 +713,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         meta = meta.value
       }
       const href = sameDocTarget(meta, ctx)
-      const linkProps = linkConfigProps(node.config)
+      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
       return mkComponent(({ children, key }) => (
         <a href={href} key={key} className="backlink" {...linkProps}>
           {children}

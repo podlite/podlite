@@ -10,6 +10,15 @@ export interface Attr {
   exists(name: string): boolean
 }
 
+// A markup code is pre-configured under its name followed by a pair of angles.
+// The declaration comes first, so a value written on the code itself is read
+// last and wins.
+export const codeConfigWithDefaults = (node, ctx: Context = {}) => {
+  const declared = ctx.config ? ctx.config[`${node.name}<>`] : undefined
+  const own = Array.isArray(node.config) ? node.config : []
+  return Array.isArray(declared) ? [...declared, ...own] : own
+}
+
 export const makeAttrs = (node, ctx: Context = {}): Attr => {
   const config = node.config instanceof Array ? node.config : []
   // add config's from ctx
