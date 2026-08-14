@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item take the alias name from the text of the code, so C«A<NAME>» is replaced by its C«=alias» declaration in html and markdown instead of printing an object; a declaration is held to the block it is written in
+
 =item read a markup code pre-configured with C«=config L<>» when rendering it, so a declared default reaches the link and a value written on the link itself wins
 
 =item put pre-configured attributes on the blocks before markup codes are parsed, so C«=config code :allow<B>» and C«=config cell :allow<B>» decide which codes act inside those blocks

@@ -36,10 +36,11 @@ const rules = {
 
   // Formatting codes
   'A<>': (writer, processor) => (node, ctx, interator) => {
-    if (!(ctx.alias && ctx.alias.hasOwnProperty(node.content))) {
-      writer.writeRaw(`A<${node.content}>`)
+    const term = collectText(node.content).trim()
+    if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
+      writer.writeRaw(`A<${term}>`)
     } else {
-      const src = ctx.alias[node.content].join('\n')
+      const src = ctx.alias[term].join('\n')
       const tree_1 = processor(src)
       const tree = clean_plugin()(tree_1)
       if (tree[0].type === 'para') {

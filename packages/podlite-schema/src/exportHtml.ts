@@ -49,10 +49,11 @@ const rules = {
   // Formatting codes
   'A<>': (writer, processor) => (node, ctx, interator) => {
     //get replacement text
-    if (!(ctx.alias && ctx.alias.hasOwnProperty(node.content))) {
-      writer.write(`A<${node.content}>`)
+    const term = collectText(node.content).trim()
+    if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
+      writer.write(`A<${term}>`)
     } else {
-      const src = ctx.alias[node.content].join('\n')
+      const src = ctx.alias[term].join('\n')
       const tree_1 = processor(src)
       // now clean locations
       const tree = clean_plugin()(tree_1)
