@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite query and podlite lint hand over the whole output when it goes to a pipe; the command used to stop at 64 KB and still report success. A write that fails now gives a non-zero exit code
+
 =item podlite lint delimited-block-balance takes =begin/=end lines inside a verbatim block as content and reports same-name nesting only there; nesting that the parser accepts is no longer an error
 
 =head1 0.0.71

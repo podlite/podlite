@@ -153,7 +153,7 @@ function readStdinSync(): string {
   return fs.readFileSync(0, 'utf-8')
 }
 
-function runQueryCommand(args: ReturnType<typeof parseArgs>): never {
+function runQueryCommand(args: ReturnType<typeof parseArgs>): void {
   if (!args) process.exit(1)
 
   // First positional arg is the selector, rest are files
@@ -211,14 +211,22 @@ function runQueryCommand(args: ReturnType<typeof parseArgs>): never {
     if (!args.quiet) {
       console.error(`${result.matchCount} match${result.matchCount === 1 ? '' : 'es'}`)
     }
-    process.exit(result.exitCode)
+    // exiting here would cut a large output short: a write to a pipe is async
+    process.exitCode = result.exitCode
   } catch (e) {
     console.error(`podlite query: ${(e as Error).message}`)
-    process.exit(1)
+    process.exitCode = 1
   }
 }
 
 function main() {
+  process.stdout.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code !== 'EPIPE') {
+      console.error(`podlite: cannot write output: ${err.message}`)
+    }
+    process.exitCode = 1
+  })
+
   const args = parseArgs(process.argv.slice(2))
 
   if (!args) {
@@ -228,6 +236,7 @@ function main() {
 
   if (args.command === 'query') {
     runQueryCommand(args)
+    return
   }
 
   if (args.command === 'lint') {
@@ -241,13 +250,12 @@ function main() {
       console.error(`podlite lint: unknown --format "${format}". Supported: ${LINT_FORMATS.join(', ')}`)
       process.exit(2)
     }
-    process.exit(
-      runLint(args.files, {
-        strict: args.strict,
-        format,
-        configPath: args.configPath || undefined,
-      }),
-    )
+    process.exitCode = runLint(args.files, {
+      strict: args.strict,
+      format,
+      configPath: args.configPath || undefined,
+    })
+    return
   }
 
   if (args.command !== 'convert') {
