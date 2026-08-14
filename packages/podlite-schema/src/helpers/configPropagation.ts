@@ -52,7 +52,7 @@ const walk = (node: PodNode, config: ConfigMap): void => {
   }
 }
 
-export const propagateConfigDefaults = <T extends PodliteDocument | PodNode>(ast: T): T => {
+export const propagateConfigDefaults = <T extends PodliteDocument | PodNode | unknown[]>(ast: T): T => {
   walk(ast as PodNode, {})
   return ast
 }

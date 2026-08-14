@@ -36,6 +36,7 @@ import defnGroup_plug from './plugin-group-defn'
 import itemsGroup_plug from './plugin-group-items'
 import defnTerms_plug from './plugin-defn-fill-term'
 import set_plug from './plugin-set'
+import { propagateConfigDefaults } from './helpers/configPropagation'
 import table_plug from './plugin-tables'
 import data_table_plug from './plugin-data-table'
 
@@ -171,6 +172,8 @@ export type parseOpt = {
   mode?: 'pod' | 'md'
   diagnostics?: ParseDiagnostic[]
 }
+const configDefaults_plug: ParserPlugin = () => tree => propagateConfigDefaults(tree)
+
 function makeTree() {
   var plugins: Array<ParserPlugin> = []
   chain.use = use
@@ -182,6 +185,9 @@ function makeTree() {
   chain.use(defnTerms_plug)
   chain.use(table_plug)
   chain.use(data_table_plug)
+  // pre-configured attributes must sit on the blocks before markup codes are
+  // parsed, since :allow decides which of them are read at all
+  chain.use(configDefaults_plug)
   chain.use(formattingCodes_plug)
 
   // save order for the next two plugins

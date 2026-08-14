@@ -149,6 +149,79 @@ describe('=config lexical scope', () => {
   })
 })
 
+describe('=config :allow reaches the markup-code parse', () => {
+  it('opens a code block to a listed markup code', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config code :allow<B>
+
+=begin code
+B<loud> and C<run>
+=end code
+=end pod`,
+      )
+      .toString()
+    expect(out).toContain('<strong>loud</strong>')
+    expect(out).toContain('C&lt;run&gt;')
+  })
+
+  it('narrows the codes acting in a cell', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config cell :allow<B>
+
+=begin table
+=begin row
+=for cell
+B<loud> and C<run>
+=end row
+=end table
+=end pod`,
+      )
+      .toString()
+    expect(out).toContain('<strong>loud</strong>')
+    expect(out).toContain('C&lt;run&gt;')
+  })
+
+  it('own :allow on the block wins over the declaration', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config cell :allow<B>
+
+=begin table
+=begin row
+=for cell :allow<I>
+I<slanted> and B<loud>
+=end row
+=end table
+=end pod`,
+      )
+      .toString()
+    expect(out).toContain('<em>slanted</em>')
+    expect(out).toContain('B&lt;loud&gt;')
+  })
+
+  it('leaves a cell built from data as text', () => {
+    const out = toHtml({})
+      .run(
+        `=begin pod
+=config cell :allow<B>
+
+=begin data-table :mime-type('text/csv; header=present')
+name,value
+bold,B<loud>
+=end data-table
+=end pod`,
+      )
+      .toString()
+    expect(out).toContain('B&lt;loud&gt;')
+    expect(out).not.toContain('<strong>loud</strong>')
+  })
+})
+
 describe('=config lexical scope in export', () => {
   const src = `=begin pod
 =begin nested
