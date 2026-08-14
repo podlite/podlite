@@ -18,7 +18,7 @@ const LINT_FORMATS: LintFormat[] = ['text', 'json']
 function usage() {
   console.log(`Usage:
   podlite convert <files...> --to <format> [-o <output>]
-  podlite lint <files...> [--strict] [--format <text|json>] [--config <path>]
+  podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
 
 Commands:
@@ -240,7 +240,11 @@ function main() {
   }
 
   if (args.command === 'lint') {
-    if (args.files.length === 0) {
+    const files = args.files.filter(f => f !== '-')
+    const stdinContent =
+      args.files.includes('-') || (!process.stdin.isTTY && files.length === 0) ? readStdinSync() : undefined
+
+    if (files.length === 0 && stdinContent === undefined) {
       console.error('podlite lint: no input files specified')
       usage()
       process.exit(2)
@@ -250,10 +254,11 @@ function main() {
       console.error(`podlite lint: unknown --format "${format}". Supported: ${LINT_FORMATS.join(', ')}`)
       process.exit(2)
     }
-    process.exitCode = runLint(args.files, {
+    process.exitCode = runLint(files, {
       strict: args.strict,
       format,
       configPath: args.configPath || undefined,
+      stdinContent,
     })
     return
   }

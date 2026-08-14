@@ -78,3 +78,38 @@ describe('syntax-valid rule', () => {
     expect(v.location).toBeUndefined()
   })
 })
+
+describe('runLint on text handed in instead of a path', () => {
+  let stdout: jest.SpyInstance
+
+  beforeEach(() => {
+    stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  })
+  afterEach(() => {
+    stdout.mockRestore()
+  })
+
+  const output = () => stdout.mock.calls.map(c => c[0]).join('')
+
+  it('checks the text and names it in the report', () => {
+    const code = runLint([], { strict: false, format: 'text', stdinContent: '=end table\n' })
+    expect(code).toBe(1)
+    expect(output()).toMatch(/<stdin>:1:1: error: =end table without matching =begin/)
+  })
+
+  it('sound text returns 0', () => {
+    const code = runLint([], { strict: false, format: 'text', stdinContent: '=begin pod\n=head1 Title\n=end pod\n' })
+    expect(code).toBe(0)
+    expect(output()).toBe('1 file checked, 0 errors, 0 warnings\n')
+  })
+
+  it('checks a file and the text side by side', () => {
+    const code = runLint([path.join(FIXTURES, 'valid.podlite')], {
+      strict: false,
+      format: 'text',
+      stdinContent: '=end table\n',
+    })
+    expect(code).toBe(1)
+    expect(output()).toMatch(/2 files checked/)
+  })
+})

@@ -13,23 +13,14 @@ export type LintOptions = {
   strict: boolean
   format: LintFormat
   configPath?: string
+  stdinContent?: string
 }
 
-function lintFile(filePath: string): Violation[] {
-  const violations: Violation[] = []
-  let content: string
-  try {
-    content = readFile(filePath)
-  } catch (e) {
-    violations.push({
-      rule: 'io',
-      severity: 'error',
-      message: `Cannot read file: ${(e as Error).message}`,
-    })
-    return violations
-  }
-  violations.push(...scanSourceRules(content))
+// text handed to the command instead of a path is reported under this name
+export const STDIN_NAME = '<stdin>'
 
+function lintSource(content: string, filePath: string): Violation[] {
+  const violations: Violation[] = [...scanSourceRules(content)]
   const fileType = detectFileType(filePath)
   try {
     const ast = parseContent(content, fileType)
@@ -41,8 +32,27 @@ function lintFile(filePath: string): Violation[] {
   return violations
 }
 
+function lintFile(filePath: string): Violation[] {
+  let content: string
+  try {
+    content = readFile(filePath)
+  } catch (e) {
+    return [
+      {
+        rule: 'io',
+        severity: 'error',
+        message: `Cannot read file: ${(e as Error).message}`,
+      },
+    ]
+  }
+  return lintSource(content, filePath)
+}
+
 export function runLint(files: string[], options: LintOptions): number {
   const reports: FileReport[] = files.map(filePath => ({ filePath, violations: lintFile(filePath) }))
+  if (options.stdinContent !== undefined) {
+    reports.push({ filePath: STDIN_NAME, violations: lintSource(options.stdinContent, STDIN_NAME) })
+  }
 
   const output =
     options.format === 'json' ? formatJson(reports) : formatText(reports, { color: process.stdout.isTTY === true })

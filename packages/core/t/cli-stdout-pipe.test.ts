@@ -34,3 +34,22 @@ describe('podlite query writing to a pipe', () => {
     expect(piped.length - file.length).toBeLessThanOrEqual(1)
   })
 })
+
+describe('podlite lint reading from stdin', () => {
+  const lint = (args: string[], input: string) =>
+    execFileSync('node', [bin, 'lint', ...args], { input, encoding: 'utf-8' })
+
+  it('checks the text given after a dash', () => {
+    expect(lint(['-'], '=begin pod\n=head1 Title\n=end pod\n')).toContain('1 file checked, 0 errors')
+  })
+
+  it('checks piped text with no marker at all', () => {
+    let out = ''
+    try {
+      lint([], '=end table\n')
+    } catch (e) {
+      out = (e as { stdout: string }).stdout
+    }
+    expect(out).toMatch(/<stdin>:1:1: error: =end table without matching =begin/)
+  })
+})
