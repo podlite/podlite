@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.77
+
 =item podlite lint takes text from stdin, either after a dash or piped with no files given, and names it <stdin> in the report
 
 =item podlite query and podlite lint hand over the whole output when it goes to a pipe; the command used to stop at 64 KB and still report success. A write that fails now gives a non-zero exit code

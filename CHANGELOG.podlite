@@ -2,6 +2,39 @@
 
 =head1 Upcoming
 
+=head1 0.0.84
+
+
+=head2 podlite
+
+=item podlite lint takes text from stdin, either after a dash or piped with no files given, and names it <stdin> in the report
+
+=item podlite query and podlite lint hand over the whole output when it goes to a pipe; the command used to stop at 64 KB and still report success. A write that fails now gives a non-zero exit code
+
+=item podlite lint delimited-block-balance takes =begin/=end lines inside a verbatim block as content and reports same-name nesting only there; nesting that the parser accepts is no longer an error
+
+=head2 @podlite/schema
+
+=item take the alias name from the text of the code, so C«A<NAME>» is replaced by its C«=alias» declaration in html and markdown instead of printing an object; a declaration is held to the block it is written in
+
+=item read a markup code pre-configured with C«=config L<>» when rendering it, so a declared default reaches the link and a value written on the link itself wins
+
+=item put pre-configured attributes on the blocks before markup codes are parsed, so C«=config code :allow<B>» and C«=config cell :allow<B>» decide which codes act inside those blocks
+
+=item hold a C«=config» to the block it is written in, so a declaration inside one block no longer configures the blocks that follow it
+
+=item keep a cell built from CSV or TSV as text, so a value reading C«Z<secret>» or C«C<command>» reaches the output whole; C«:allow» on the block names the codes that act inside such a cell
+
+=item read configuration attributes on C«L<>» and C«W<>», so C«L<API|https://api.example.com :new :title('Doc')>» carries them into the AST instead of dumping them into the link specification
+
+=item keep the closing angle of a markup code that ends with an attribute value in angles, C«L<Guide|https://example.fr/guide :lang<fr>>»
+
+=item render the link attributes: C<:new>, C<:title>, C<:lang> and C<:download> reach html and jsx, C<:title> reaches markdown
+
+=head2 @podlite/to-jsx
+
+=item render the link configuration attributes C<:new>, C<:title>, C<:lang> and C<:download>
+
 =head1 0.0.83
 
 

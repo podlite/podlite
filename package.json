@@ -1,6 +1,6 @@
 {
   "name": "podlite-monorep",
-  "version": "0.0.83",
+  "version": "0.0.84",
   "description": "Podlite - a lightweight block-based markup language",
   "private": true,
   "funding": {

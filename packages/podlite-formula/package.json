@@ -1,6 +1,6 @@
 {
   "name": "@podlite/formula",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "Render LaTeX math formulas in Podlite documents — MathJax-powered",
   "main": "./lib/index.js",
   "sideEffects": [

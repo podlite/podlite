@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.68
+
 =item render the link configuration attributes C<:new>, C<:title>, C<:lang> and C<:download>
 
 =head1 0.0.62

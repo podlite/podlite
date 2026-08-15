@@ -1,6 +1,6 @@
 {
   "name": "@podlite/editor-react",
-  "version": "0.0.69",
+  "version": "0.0.70",
   "description": "Rich text editor React component for Podlite — syntax highlighting, live preview, CodeMirror 6",
   "main": "./lib/index.js",
   "exports": {
