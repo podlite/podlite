@@ -16,10 +16,14 @@ const plugin = (): PodliteWebPlugin => {
       let componensFileContent = ''
       for (const key of componensMap.keys()) {
         const componentName = componensMap.get(key)
+        // a renamed import binds the local name, so that is what may be re-exported
+        const exported = Array.isArray(componentName)
+          ? componentName.map(name => name.split(/\s+as\s+/).pop())
+          : componentName
         componensFileContent += `import ${
           Array.isArray(componentName) ? `{ ${componentName} }` : componentName
         } from "${key}"
-export { ${componentName} }
+export { ${exported} }
         `
       }
       componensFileContent += `
@@ -35,7 +39,7 @@ export default {}
       // process JSX
       useReact: (node, ctx, interator) => {
         const text = getTextContentFromNode(node)
-        const importMatchResult = text.match(/^\s*(?<component>\S+)\s*from\s*['"](?<source>\S+)['"]/)
+        const importMatchResult = text.match(/^\s*(?<component>\{[^}]*\}|\S+)\s*from\s*['"](?<source>\S+)['"]/)
         if (importMatchResult) {
           //@ts-ignore
           const { component, source } = (
@@ -47,7 +51,10 @@ export default {}
           // save absolute Component path and Component name
           const notDefaultImport = component.match(/{(.*)}/)
           if (notDefaultImport) {
-            const components = notDefaultImport[1].split(/\s*,\s*/)
+            const components = notDefaultImport[1]
+              .split(',')
+              .map(name => name.trim())
+              .filter(Boolean)
             // check if already exists
             if (componensMap.has(path)) {
               const savedComponents = componensMap.get(path)

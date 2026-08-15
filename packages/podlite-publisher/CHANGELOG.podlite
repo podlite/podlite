@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item read a component list written with spaces after the comma, which used to drop the whole import with a warning
+
+=item import a component under another name
+
 =head1 0.0.44
 
 =item skip an image whose declared orientation is outside the range a build can read, instead of letting one such file stop the whole site
