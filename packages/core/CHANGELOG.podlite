@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item declare the node floor: the command line needs 20.19 or newer, because loading it reaches an ESM-only dependency through require
+
 =head1 0.0.77
 
 =item podlite lint takes text from stdin, either after a dash or piped with no files given, and names it <stdin> in the report

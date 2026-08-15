@@ -40,6 +40,9 @@
     "watch:lint-grammar": "npx nodemon -e pegjs --exec 'yarn build:lint-grammar'"
   },
   "bin": "./bin/podlite.js",
+  "engines": {
+    "node": ">=20.19"
+  },
   "files": [
     "bin",
     "lib",
