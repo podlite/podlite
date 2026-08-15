@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item keep the page where it is when a change the editor did not make arrives while the editor is not focused: such a change reads as typing, and typing brings the caret into view by scrolling whatever contains the editor
+
 =head1 0.0.66
 
 =item apply the heading style to a markdown file as well; the previous release paired the tags only in podlite documents, so a heading in a C<.md> file kept body weight and colour

@@ -487,6 +487,14 @@ function PodliteEditorInternal(
   const scrollExtensions = events.scroll({
     scroll: previewScrollHandle,
   })
+
+  // A DOM change the editor did not make arrives as typing, and typing brings the
+  // caret into view by walking up to whatever scrolls — the page, when the editor
+  // is embedded in one. Keep it inside unless the person is in the editor.
+  // The handler runs inside a measure pass, where reading layout throws, so it
+  // decides on focus alone. The two places that sync the preview to the editor
+  // put the line where they want it themselves.
+  const keepScrollInside = React.useMemo(() => EditorView.scrollHandler.of(view => !view.hasFocus), [])
   // Create custom keymap that prevents the toggle comment shortcut
   const preventToggleComment = keymap.of([
     {
@@ -644,6 +652,7 @@ function PodliteEditorInternal(
       // covered content and the settings of a fenced block; a markdown file has
       // fences too, so this is not kept to Podlite documents
       podliteDecorations(),
+      keepScrollInside,
     ]
 
     if (language === 'podlite') {
@@ -676,6 +685,7 @@ function PodliteEditorInternal(
     preventToggleComment,
     autocompletionExt,
     enableFolding,
+    keepScrollInside,
     language,
     imagePasteDropHandler,
   ])
