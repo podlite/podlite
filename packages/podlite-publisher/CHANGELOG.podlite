@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item resolve a component path that starts with C<../>, which was passed through unchanged and reached the build as written
+
 =item read a component list written with spaces after the comma, which used to drop the whole import with a warning
 
 =item import a component under another name

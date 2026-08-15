@@ -47,7 +47,7 @@ export default {}
               groups: { component: undefined, source: undefined },
             }
           ).groups
-          const { path } = source.match(/^\.?\//) ? getPathToOpen(source, file) : { path: source }
+          const { path } = source.match(/^\.{0,2}\//) ? getPathToOpen(source, file) : { path: source }
           // save absolute Component path and Component name
           const notDefaultImport = component.match(/{(.*)}/)
           if (notDefaultImport) {
