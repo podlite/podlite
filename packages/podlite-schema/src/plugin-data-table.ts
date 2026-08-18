@@ -8,6 +8,7 @@ import {
   extractDataText,
   csvToTableContent,
   normalizeCellCounts,
+  makeTableReport,
 } from './plugin-tables'
 
 const extensionMimeMap: Record<string, string> = {
@@ -71,7 +72,7 @@ function applyRename(rows: string[][], rename: Record<string, string>, hasHeader
   return [headerRow, ...rows.slice(1)]
 }
 
-function processDataTable(node, tree) {
+function processDataTable(node, tree, report) {
   const attrs = makeAttrs(node, {})
   const srcRaw = attrs.getFirstValue('src')
   const mimeAttr = attrs.getFirstValue('mime-type')
@@ -102,7 +103,7 @@ function processDataTable(node, tree) {
     if (scheme === 'data') {
       const dataBlock = findDataBlockByKey(tree, target)
       if (!dataBlock) {
-        console.warn(`[data-table] no =data block found for data:${target} — rendered as empty`)
+        report('table-source-unreadable', `no =data block found for data:${target}, table rendered as empty`, node)
         return { ...node, name: 'table', content: [] }
       }
       if (mimeAttr) {
@@ -110,7 +111,7 @@ function processDataTable(node, tree) {
       }
       const dataMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
       if (!dataMime) {
-        console.warn(`[data-table] =data block ${target} has no :mime-type — rendered as empty`)
+        report('table-source-unreadable', `=data block ${target} has no :mime-type, table rendered as empty`, node)
         return { ...node, name: 'table', content: [] }
       }
       const parsed = parseMimeType(dataMime)
@@ -133,12 +134,12 @@ function processDataTable(node, tree) {
   const isCsv = mimeType === 'text/csv'
   const isTsv = mimeType === 'text/tab-separated-values'
   if (!isCsv && !isTsv) {
-    console.warn(`[data-table] unsupported mime-type ${mimeType} — rendered as empty`)
+    report('table-source-unreadable', `unsupported mime-type ${mimeType}, table rendered as empty`, node)
     return { ...node, name: 'table', content: [] }
   }
   let rows = isCsv ? parseCsv(csvText) : parseTsv(csvText)
   if (rows.length === 0) {
-    console.warn(`[data-table] ${isCsv ? 'CSV' : 'TSV'} parse produced no rows — rendered as empty`)
+    report('table-source-unreadable', `${isCsv ? 'CSV' : 'TSV'} source has no rows, table rendered as empty`, node)
     return { ...node, name: 'table', content: [] }
   }
 
@@ -155,19 +156,21 @@ function processDataTable(node, tree) {
     name: 'table',
     content: csvToTableContent(rows, hasHeader, attrs.getAllValues('allow')),
   }
-  return normalizeCellCounts(filledNode, 'data-table')
+  return normalizeCellCounts(filledNode, 'data-table', report)
 }
 
-export default () => tree => {
-  const transformer = makeTransformer({
-    'data-table': node => {
-      try {
-        return processDataTable(node, tree)
-      } catch (err) {
-        console.warn(`[data-table] ${(err as Error).message}`)
-        return { ...node, name: 'table', content: [] }
-      }
-    },
-  })
-  return transformer(tree)
-}
+export default (opt = {}) =>
+  tree => {
+    const report = makeTableReport(opt)
+    const transformer = makeTransformer({
+      'data-table': node => {
+        try {
+          return processDataTable(node, tree, report)
+        } catch (err) {
+          report('table-source-unreadable', (err as Error).message, node)
+          return { ...node, name: 'table', content: [] }
+        }
+      },
+    })
+    return transformer(tree)
+  }

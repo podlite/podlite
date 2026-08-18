@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint reports a reshaped table under the table-shape rule, with file, line and a place in the summary; the padded-row message names the cause
+
 =item podlite convert writes to stdout when the output is a dash, and reads the document from stdin after a dash or from a pipe with no files given; without a dash it still writes a file as before
 
 =head1 0.0.78

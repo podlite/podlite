@@ -1,4 +1,5 @@
 import { toTree } from '../..'
+import type { ParseDiagnostic } from '../../src/types'
 
 function findNodeByName(tree: unknown, name: string): unknown {
   if (!tree || typeof tree !== 'object') return null
@@ -34,15 +35,14 @@ const cellsOf = (row: unknown) =>
   }>
 
 describe('table error recovery (design notes Rules 2-4)', () => {
-  let warnSpy: jest.SpyInstance
+  let reports: ParseDiagnostic[]
 
   beforeEach(() => {
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    reports = []
   })
 
-  afterEach(() => {
-    warnSpy.mockRestore()
-  })
+  const parse = (src: string) => toTree().parse(src, { podMode: 1, skipChain: 0, diagnostics: reports })
+  const said = (re: RegExp) => reports.some(d => re.test(d.message))
 
   // ─── Rule 2: cell count validation ──────────────────────────────────────
 
@@ -62,12 +62,12 @@ describe('table error recovery (design notes Rules 2-4)', () => {
 
 =end table
 `
-    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const tree = parse(src)
     const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row')
     expect(rows).toHaveLength(2)
     expect(cellsOf(rows[0])).toHaveLength(3)
     expect(cellsOf(rows[1])).toHaveLength(3)
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/row has 2 cells, expected 3 — padded/))
+    expect(said(/row has 2 of 3 cells, padded/)).toBe(true)
   })
 
   it('Rule 2: truncates long structured rows', () => {
@@ -87,12 +87,12 @@ describe('table error recovery (design notes Rules 2-4)', () => {
 
 =end table
 `
-    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const tree = parse(src)
     const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row')
     expect(rows).toHaveLength(2)
     expect(cellsOf(rows[0])).toHaveLength(2)
     expect(cellsOf(rows[1])).toHaveLength(2)
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/row has 4 cells, expected 2 — truncated 2/))
+    expect(said(/row has 4 of 2 cells, dropped 2/)).toBe(true)
   })
 
   it('Rule 2: header row determines expected count over data row maximum', () => {
@@ -117,7 +117,7 @@ describe('table error recovery (design notes Rules 2-4)', () => {
 
 =end table
 `
-    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const tree = parse(src)
     const rows = collectNodesByName(findNodeByName(tree, 'table'), 'row')
     rows.forEach(r => expect(cellsOf(r)).toHaveLength(2))
   })
@@ -137,8 +137,8 @@ describe('table error recovery (design notes Rules 2-4)', () => {
 
 =end table
 `
-    toTree().parse(src, { podMode: 1, skipChain: 0 })
-    expect(warnSpy).not.toHaveBeenCalled()
+    parse(src)
+    expect(reports).toEqual([])
   })
 
   // ─── Rule 3: mixed separator warning ────────────────────────────────────
@@ -150,9 +150,8 @@ Alice  30   London
 Bob    25   Paris
 =end table
 `
-    toTree().parse(src, { podMode: 1, skipChain: 0 })
-    const calls = warnSpy.mock.calls.map(args => args[0])
-    expect(calls.some(m => /mixed separator types/.test(m))).toBe(true)
+    parse(src)
+    expect(said(/mixes separator styles/)).toBe(true)
   })
 
   it('Rule 3: uniform pipe separator emits no mixed warning', () => {
@@ -162,9 +161,8 @@ Alice | 30 | London
 Bob | 25 | Paris
 =end table
 `
-    toTree().parse(src, { podMode: 1, skipChain: 0 })
-    const calls = warnSpy.mock.calls.map(args => args[0])
-    expect(calls.some(m => /mixed separator types/.test(m))).toBe(false)
+    parse(src)
+    expect(said(/mixes separator styles/)).toBe(false)
   })
 
   // ─── Rule 4: CSV error recovery ─────────────────────────────────────────
@@ -173,12 +171,12 @@ Bob | 25 | Paris
     const src = `=for table
 data:nonexistent
 `
-    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const tree = parse(src)
     const table = findNodeByName(tree, 'table') as { content: unknown[] }
     expect(table).toBeTruthy()
     expect(Array.isArray(table.content)).toBe(true)
     expect(table.content).toHaveLength(0)
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/no =data block found.*rendered as empty/))
+    expect(said(/no =data block found.*rendered as empty/)).toBe(true)
   })
 
   it('Rule 4: non-CSV mime-type renders as =code block instead of =table', () => {
@@ -189,11 +187,11 @@ data:rawjson
 {"a": 1}
 =end data
 `
-    const tree = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const tree = parse(src)
     expect(findNodeByName(tree, 'table')).toBeNull()
     const code = findNodeByName(tree, 'code') as { content: unknown[] }
     expect(code).toBeTruthy()
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/non-tabular mime-type.*rendered as =code/))
+    expect(said(/non-tabular mime-type.*rendered as =code/)).toBe(true)
   })
 
   it('Rule 4: well-formed CSV produces table without warnings', () => {
@@ -205,7 +203,7 @@ ingredient,quantity
 flour,2
 =end data
 `
-    toTree().parse(src, { podMode: 1, skipChain: 0 })
-    expect(warnSpy).not.toHaveBeenCalled()
+    parse(src)
+    expect(reports).toEqual([])
   })
 })

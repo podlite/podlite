@@ -206,15 +206,31 @@ export function csvToTableContent(csvRows, hasHeader = false, allow: string[] = 
 
 // ─── Error recovery (design notes Rules 2-4) ───────────────────────────────
 
+// A table reports through the same channel as the parser: the report carries a
+// place and reaches the caller, instead of going straight to the console.
+export type TableReport = (code: string, message: string, node) => void
+
+export function makeTableReport(opt): TableReport {
+  const diagnostics = opt && Array.isArray(opt.diagnostics) ? opt.diagnostics : null
+  return (code, message, node) => {
+    const location = node && node.location
+    if (!diagnostics || !location) return
+    const seen = diagnostics.some(d => d.message === message && d.location.start.offset === location.start.offset)
+    if (!seen) diagnostics.push({ severity: 'warning', code, message, location })
+  }
+}
+
+const noReport: TableReport = () => {}
+
 // Rule 2 — table-level cell count validation. Pad short rows with empty
-// cells; truncate long rows. Emit a warning whenever a row is changed.
+// cells; truncate long rows. Report whenever a row is changed.
 // Expected count is taken from the `:header` row if present, otherwise from
 // the row with the maximum cell count.
 //
 // Skipped when any cell uses `:colspan` or `:rowspan`: a spanning cell
 // occupies multiple columns, so naive cell counting would misreport row
 // width and drop legitimate spanned cells.
-export function normalizeCellCounts(tableNode, source = 'table') {
+export function normalizeCellCounts(tableNode, source = 'table', report = noReport) {
   if (!tableNode || !Array.isArray(tableNode.content)) return tableNode
   const rows = tableNode.content.filter(c => c && c.type === 'block' && c.name === 'row')
   if (rows.length === 0) return tableNode
@@ -239,8 +255,10 @@ export function normalizeCellCounts(tableNode, source = 'table') {
     if (cells.length < expected) {
       const padding = []
       for (let i = cells.length; i < expected; i++) padding.push(buildCellBlock(''))
-      console.warn(
-        `[${source}] row has ${cells.length} cells, expected ${expected} — padded with ${padding.length} empty`,
+      report(
+        'table-row-cells',
+        `${source} row has ${cells.length} of ${expected} cells, padded with ${padding.length} empty. A row continued on the next line needs a blank line before the next row`,
+        tableNode,
       )
       mutated = true
       return { ...child, content: [...child.content, ...padding] }
@@ -248,7 +266,7 @@ export function normalizeCellCounts(tableNode, source = 'table') {
 
     // cells.length > expected → truncate
     const dropped = cells.length - expected
-    console.warn(`[${source}] row has ${cells.length} cells, expected ${expected} — truncated ${dropped}`)
+    report('table-row-cells', `${source} row has ${cells.length} of ${expected} cells, dropped ${dropped}`, tableNode)
     mutated = true
     // Keep non-cell entries (e.g. blanklines) and the first `expected` cells
     let keepCells = expected
@@ -273,7 +291,7 @@ export function normalizeCellCounts(tableNode, source = 'table') {
 // for visible separators (`|` / `+`) surrounded by whitespace; lines without
 // any visible separator fall back to whitespace separation. Warns when more
 // than one separator type is observed within a single table.
-function detectMixedSeparators(lines) {
+function detectMixedSeparators(lines, report = noReport, node = null) {
   const seen = new Set<string>()
   for (const line of lines) {
     if (!line || typeof line !== 'string') continue
@@ -283,7 +301,7 @@ function detectMixedSeparators(lines) {
     if (seen.size > 1) break
   }
   if (seen.size > 1) {
-    console.warn(`[table] mixed separator types detected: ${Array.from(seen).join(', ')} — recommend a single style`)
+    report('table-mixed-separators', `table mixes separator styles: ${Array.from(seen).join(', ')}. Keep one`, node)
   }
 }
 
@@ -490,135 +508,145 @@ const isStructured = tableNode =>
   Array.isArray(tableNode.content) &&
   tableNode.content.some(c => c && c.type === 'block' && (c.name === 'row' || c.name === 'cell'))
 
-export default () => tree => {
-  const transformer = makeTransformer({
-    table: (node, ctx, visiter) => {
-      // CSV/data source reference (spec §1672):
-      //   =table data:<key>      →  resolve =data block with :key<key>
-      //   =table file:<path>     →  defer to host reader (not implemented here)
-      const ref = detectSourceReference(node)
-      if (ref && ref.scheme === 'data') {
-        const dataBlock = findDataBlockByKey(tree, ref.target)
-        if (!dataBlock) {
-          // Rule 4: source not found → empty table (still a =table block)
-          console.warn(`[table] no =data block found for data:${ref.target} — rendered as empty`)
-          return { ...node, content: [] }
-        }
-        const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
-        const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
-        const isCsv = mimeType === 'text/csv'
-        const isTsv = mimeType === 'text/tab-separated-values'
-        if (isCsv || isTsv) {
-          const text = extractDataText(dataBlock)
-          const rows = isCsv ? parseCsv(text) : parseTsv(text)
-          if (rows.length === 0) {
-            console.warn(
-              `[table] ${isCsv ? 'CSV' : 'TSV'} parse produced no rows for data:${ref.target} — rendered as empty`,
+export default (opt = {}) =>
+  tree => {
+    const report = makeTableReport(opt)
+    const transformer = makeTransformer({
+      table: (node, ctx, visiter) => {
+        // CSV/data source reference (spec §1672):
+        //   =table data:<key>      →  resolve =data block with :key<key>
+        //   =table file:<path>     →  defer to host reader (not implemented here)
+        const ref = detectSourceReference(node)
+        if (ref && ref.scheme === 'data') {
+          const dataBlock = findDataBlockByKey(tree, ref.target)
+          if (!dataBlock) {
+            // Rule 4: source not found → empty table (still a =table block)
+            report(
+              'table-source-unreadable',
+              `no =data block found for data:${ref.target}, table rendered as empty`,
+              node,
             )
             return { ...node, content: [] }
           }
-          const hasHeader = mimeParams.header === 'present'
-          const allow = makeAttrs(node, {}).getAllValues('allow')
-          const filledNode = { ...node, content: csvToTableContent(rows, hasHeader, allow) }
-          return normalizeCellCounts(filledNode, `table data:${ref.target}`)
-        }
-        // Rule 4: source not tabular → render as code block so content remains visible
-        console.warn(
-          `[table] =data :key<${ref.target}> has non-tabular mime-type ${rawMime || '(none)'} — rendered as =code`,
-        )
-        return buildCodeFromDataBlock(node, dataBlock)
-      }
-
-      // structured mode: transform row children (wrap implicit cells), then
-      // apply Rule 2 cell count normalization.
-      if (isStructured(node)) {
-        const transformedContent = (node.content || []).map(c => {
-          if (c && c.name === 'row') return wrapImplicitCells(c)
-          return c
-        })
-        // a matched rule replaces the node without descending, so recurse
-        // here or tables nested inside cells keep their raw text rows
-        const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
-        return normalizeCellCounts({ ...node, content: recursed }, 'table')
-      }
-      let rows = []
-      const collectValues = row => {
-        rows.push(row.value)
-      }
-      // collect separators for calculate max length of rows
-      let seps = []
-      makeTransformer({
-        'row:text': collectValues,
-        'head:text': collectValues,
-        ':separator': sep => {
-          seps.push(sep.text)
-        },
-      })(node)
-      // add table-caption
-      // if table empty return node as is
-      if (!rows.length) return node
-
-      const splitToLines = row =>
-        row
-          .split(/\n/) // split each row by eol
-          .filter(str => str.length > 0) // filter empty strings ( after slit )
-
-      // split each row into lines
-      const lines = flattenDeep(rows.map(splitToLines))
-      const separators = flattenDeep(seps.map(splitToLines))
-
-      // Rule 3: warn on mixed separator types within a single table
-      detectMixedSeparators(lines)
-
-      // collect text rows
-      let textRows = []
-      makeTransformer({
-        'row:text': row => {
-          textRows.push(row.value)
-        },
-      })(node)
-
-      const makeBlock = (name, content, extra = {}) => {
-        return { ...extra, name, type: 'block', content: Array.isArray(content) ? content : [content] }
-      }
-      const makeRow = cells => makeBlock('row', cells)
-      const makeHeaderRow = cells =>
-        makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
-      const makeCell = text => makeBlock('cell', { type: 'text', value: text })
-      // Routing: a whitespace-separated row on one line splits by its own
-      // gaps — two spaces are enough there, while the positional mask needs
-      // three. Rows with a visible separator keep the mask: an edge `|`
-      // carries a real empty cell that per-line splitting would drop.
-      const columnTemplate = makeMask(lines, separators)
-      const seenSeparatorKinds = new Set(lines.map(detectLineSeparator))
-      const useMixedSplitting =
-        (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
-      const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(line) === 'whitespace'
-      const splitToCells = (rowValue: string): string[] => {
-        const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
-        if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue)
-        return extractColumnsByTemplate(rowValue, columnTemplate)
-      }
-      const res = makeTransformer({
-        'row:text': row => {
-          if (textRows.length == 1) {
-            // No separator blocks: each line of the only text row becomes its own row
-            const textRowsLines = flattenDeep([row.value].map(splitToLines))
-            return textRowsLines.map(line =>
-              makeRow(
-                (splitsItself(line) ? splitLineCells(line) : extractColumnsByTemplate(line, columnTemplate)).map(
-                  makeCell,
-                ),
-              ),
-            )
+          const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+          const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
+          const isCsv = mimeType === 'text/csv'
+          const isTsv = mimeType === 'text/tab-separated-values'
+          if (isCsv || isTsv) {
+            const text = extractDataText(dataBlock)
+            const rows = isCsv ? parseCsv(text) : parseTsv(text)
+            if (rows.length === 0) {
+              report(
+                'table-source-unreadable',
+                `${isCsv ? 'CSV' : 'TSV'} source data:${ref.target} has no rows, table rendered as empty`,
+                node,
+              )
+              return { ...node, content: [] }
+            }
+            const hasHeader = mimeParams.header === 'present'
+            const allow = makeAttrs(node, {}).getAllValues('allow')
+            const filledNode = { ...node, content: csvToTableContent(rows, hasHeader, allow) }
+            return normalizeCellCounts(filledNode, `table data:${ref.target}`, report)
           }
-          return makeRow(splitToCells(row.value).map(makeCell))
-        },
-        'head:text': head => makeHeaderRow(splitToCells(head.value).map(makeCell)),
-      })(node)
+          // Rule 4: source not tabular → render as code block so content remains visible
+          report(
+            'table-source-unreadable',
+            `=data :key<${ref.target}> has non-tabular mime-type ${rawMime || '(none)'}, rendered as =code`,
+            node,
+          )
+          return buildCodeFromDataBlock(node, dataBlock)
+        }
 
-      return normalizeCellCounts(res, 'table')
-    },
-  })
-  return transformer(tree, {})
-}
+        // structured mode: transform row children (wrap implicit cells), then
+        // apply Rule 2 cell count normalization.
+        if (isStructured(node)) {
+          const transformedContent = (node.content || []).map(c => {
+            if (c && c.name === 'row') return wrapImplicitCells(c)
+            return c
+          })
+          // a matched rule replaces the node without descending, so recurse
+          // here or tables nested inside cells keep their raw text rows
+          const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
+          return normalizeCellCounts({ ...node, content: recursed }, 'table', report)
+        }
+        let rows = []
+        const collectValues = row => {
+          rows.push(row.value)
+        }
+        // collect separators for calculate max length of rows
+        let seps = []
+        makeTransformer({
+          'row:text': collectValues,
+          'head:text': collectValues,
+          ':separator': sep => {
+            seps.push(sep.text)
+          },
+        })(node)
+        // add table-caption
+        // if table empty return node as is
+        if (!rows.length) return node
+
+        const splitToLines = row =>
+          row
+            .split(/\n/) // split each row by eol
+            .filter(str => str.length > 0) // filter empty strings ( after slit )
+
+        // split each row into lines
+        const lines = flattenDeep(rows.map(splitToLines))
+        const separators = flattenDeep(seps.map(splitToLines))
+
+        // Rule 3: warn on mixed separator types within a single table
+        detectMixedSeparators(lines, report, node)
+
+        // collect text rows
+        let textRows = []
+        makeTransformer({
+          'row:text': row => {
+            textRows.push(row.value)
+          },
+        })(node)
+
+        const makeBlock = (name, content, extra = {}) => {
+          return { ...extra, name, type: 'block', content: Array.isArray(content) ? content : [content] }
+        }
+        const makeRow = cells => makeBlock('row', cells)
+        const makeHeaderRow = cells =>
+          makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
+        const makeCell = text => makeBlock('cell', { type: 'text', value: text })
+        // Routing: a whitespace-separated row on one line splits by its own
+        // gaps — two spaces are enough there, while the positional mask needs
+        // three. Rows with a visible separator keep the mask: an edge `|`
+        // carries a real empty cell that per-line splitting would drop.
+        const columnTemplate = makeMask(lines, separators)
+        const seenSeparatorKinds = new Set(lines.map(detectLineSeparator))
+        const useMixedSplitting =
+          (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
+        const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(line) === 'whitespace'
+        const splitToCells = (rowValue: string): string[] => {
+          const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
+          if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue)
+          return extractColumnsByTemplate(rowValue, columnTemplate)
+        }
+        const res = makeTransformer({
+          'row:text': row => {
+            if (textRows.length == 1) {
+              // No separator blocks: each line of the only text row becomes its own row
+              const textRowsLines = flattenDeep([row.value].map(splitToLines))
+              return textRowsLines.map(line =>
+                makeRow(
+                  (splitsItself(line) ? splitLineCells(line) : extractColumnsByTemplate(line, columnTemplate)).map(
+                    makeCell,
+                  ),
+                ),
+              )
+            }
+            return makeRow(splitToCells(row.value).map(makeCell))
+          },
+          'head:text': head => makeHeaderRow(splitToCells(head.value).map(makeCell)),
+        })(node)
+
+        return normalizeCellCounts(res, 'table', report)
+      },
+    })
+    return transformer(tree, {})
+  }

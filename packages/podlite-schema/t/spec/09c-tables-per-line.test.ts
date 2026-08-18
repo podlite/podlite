@@ -1,4 +1,5 @@
 import { toTree } from '../..'
+import type { ParseDiagnostic } from '../../src/types'
 
 function findNodeByName(tree: unknown, name: string): unknown {
   if (!tree || typeof tree !== 'object') return null
@@ -36,12 +37,9 @@ const cellText = (cell: unknown) => {
 }
 
 describe('per-line separator detection (Rule 1)', () => {
-  let warnSpy: jest.SpyInstance
+  let reports: ParseDiagnostic[]
   beforeEach(() => {
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  })
-  afterEach(() => {
-    warnSpy.mockRestore()
+    reports = []
   })
 
   it('Scenario 2: header pipes + data whitespace → all rows resolve to 3 cells', () => {
@@ -70,9 +68,8 @@ Name | Age | City
 Alice  30    London
 =end table
 `
-    toTree().parse(src, { podMode: 1, skipChain: 0 })
-    const calls = warnSpy.mock.calls.map(args => args[0])
-    expect(calls.some(m => /mixed separator types/.test(m))).toBe(true)
+    toTree().parse(src, { podMode: 1, skipChain: 0, diagnostics: reports })
+    expect(reports.some(d => /mixes separator styles/.test(d.message))).toBe(true)
   })
 
   it('uniform pipe table works as before (no whitespace artifacts since per-line)', () => {

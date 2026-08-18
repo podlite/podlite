@@ -1,5 +1,10 @@
 var parse = require('..').parse
 
+let reports: any[] = []
+beforeEach(() => {
+  reports = []
+})
+
 const findBlock = (tree: any, name: string): any => {
   if (!Array.isArray(tree)) return undefined
   for (const node of tree) {
@@ -56,7 +61,7 @@ Alice,30
 Bob,25
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     const cells = extractCellTexts(table)
@@ -66,19 +71,17 @@ Bob,25
   })
 
   it('inline body without :mime-type renders as empty with warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const src = `=begin pod
 =begin data-table
 name,age
 Alice,30
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     expect(table.content).toEqual([])
-    expect(warnSpy).toHaveBeenCalled()
-    warnSpy.mockRestore()
+    expect(reports.length).toBeGreaterThan(0)
   })
 })
 
@@ -93,7 +96,7 @@ Venus,6052
 
 =for data-table :src<data:planets>
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     const cells = extractCellTexts(table)
@@ -103,16 +106,14 @@ Venus,6052
   })
 
   it('renders empty with warning when referenced =data block is missing', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const src = `=begin pod
 =for data-table :src<data:nonexistent>
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     expect(table.content).toEqual([])
-    expect(warnSpy).toHaveBeenCalled()
-    warnSpy.mockRestore()
+    expect(reports.length).toBeGreaterThan(0)
   })
 })
 
@@ -125,7 +126,7 @@ Alice,30,London
 Bob,25,Paris
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     const cells = extractCellTexts(table)
     expect(cells[0]).toEqual(['name', 'city'])
@@ -141,7 +142,7 @@ Alice,30,London
 Bob,25,Paris
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     const cells = extractCellTexts(table)
     expect(cells[0]).toEqual(['name', 'city'])
@@ -155,7 +156,7 @@ name,age
 Alice,30
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     const cells = extractCellTexts(table)
     expect(cells[0]).toEqual(['age', 'name'])
@@ -163,18 +164,16 @@ Alice,30
   })
 
   it('out-of-range column index renders empty with warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const src = `=begin pod
 =begin data-table :mime-type('text/csv; header=present') :columns<99>
 name,age
 Alice,30
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table.content).toEqual([])
-    expect(warnSpy).toHaveBeenCalled()
-    warnSpy.mockRestore()
+    expect(reports.length).toBeGreaterThan(0)
   })
 })
 
@@ -183,7 +182,7 @@ describe('=data-table :src deferred schemes', () => {
     const src = `=begin pod
 =for data-table :src<file:./planets.csv>
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const dt = findBlock(tree, 'data-table')
     expect(dt).toBeDefined()
     expect(dt.name).toBe('data-table')
@@ -193,7 +192,7 @@ describe('=data-table :src deferred schemes', () => {
     const src = `=begin pod
 =for data-table :src<https://example.com/data.csv>
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const dt = findBlock(tree, 'data-table')
     expect(dt).toBeDefined()
     expect(dt.name).toBe('data-table')
@@ -203,7 +202,7 @@ describe('=data-table :src deferred schemes', () => {
     const src = `=begin pod
 =for data-table :src<file:./planets.tsv>
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const dt = findBlock(tree, 'data-table')
     expect(dt).toBeDefined()
     expect(dt.name).toBe('data-table')
@@ -218,7 +217,7 @@ name,radius
 Mercury,2440
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     expect(table.config).toBeDefined()
@@ -230,7 +229,6 @@ Mercury,2440
 
 describe('=data-table error recovery', () => {
   it('malformed CSV with unequal cells produces padded table + warning', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const src = `=begin pod
 =begin data-table :mime-type('text/csv; header=present')
 name,age,city
@@ -238,14 +236,13 @@ Alice,30
 Bob,25,Paris,Extra
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     const cells = extractCellTexts(table)
     expect(cells.length).toBe(3)
     expect(cells[0]).toEqual(['name', 'age', 'city'])
-    expect(warnSpy).toHaveBeenCalled()
-    warnSpy.mockRestore()
+    expect(reports.length).toBeGreaterThan(0)
   })
 })
 
@@ -257,7 +254,7 @@ name,description
 Alice,B<Important>
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     expect(table).toBeDefined()
     expect(table.config).toBeDefined()
@@ -274,7 +271,7 @@ cmd,C<run>
 bold,B<loud>
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const cells = extractCellTexts(findBlock(tree, 'table'))
     expect(cells[1]).toEqual(['secret', 'Z<hidden>'])
     expect(cells[2]).toEqual(['cmd', 'C<run>'])
@@ -289,7 +286,7 @@ cmd,C<run>
 bold,B<loud>
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const rows = findBlock(tree, 'table').content.filter((c: any) => c && c.name === 'row')
     const cellContent = (row: number, cell: number) =>
       rows[row].content.filter((c: any) => c.name === 'cell')[cell].content
@@ -336,7 +333,7 @@ name,age
 Alice,30
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     const cells = extractCellTexts(table)
     expect(cells[0]).toEqual(['name', 'Years'])
@@ -350,7 +347,7 @@ name,age
 Alice,30
 =end data-table
 =end pod`
-    const tree = parse(src, { podMode: 1 })
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
     const table = findBlock(tree, 'table')
     const cells = extractCellTexts(table)
     expect(cells[0]).toEqual(['Person', 'age'])

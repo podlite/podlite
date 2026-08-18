@@ -5,6 +5,7 @@ import { idUniqueRule } from './id-unique'
 import { mediaAbsoluteFileRule } from './media-absolute-file'
 import { linkTargetResolvesRule } from './link-target-resolves'
 import { attrValueDroppedRule } from './attr-value-dropped'
+import { tableShapeRule } from './table-shape'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -13,4 +14,5 @@ export const DEFAULT_RULES: Rule[] = [
   mediaAbsoluteFileRule,
   linkTargetResolvesRule,
   attrValueDroppedRule,
+  tableShapeRule,
 ]
