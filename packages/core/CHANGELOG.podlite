@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite convert writes to stdout when the output is a dash, and reads the document from stdin after a dash or from a pipe with no files given; without a dash it still writes a file as before
+
 =head1 0.0.78
 
 =item declare the node floor: the command line needs 20.19 or newer, because loading it reaches an ESM-only dependency through require

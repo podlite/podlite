@@ -14,10 +14,11 @@ const FORMATS: Record<string, string> = {
 
 const QUERY_FORMATS: QueryFormat[] = ['podlite', 'md', 'html', 'json']
 const LINT_FORMATS: LintFormat[] = ['text', 'json']
+const STDIN_MARKER = '-'
 
 function usage() {
   console.log(`Usage:
-  podlite convert <files...> --to <format> [-o <output>]
+  podlite convert <files...|-> --to <format> [-o <output|->]
   podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
 
@@ -34,7 +35,7 @@ Options:
   --strict   lint: promote warnings to errors
   --config   lint: path to .podlitelintrc.{json,js}
   --base     convert: prefix for relative file: image paths (or env PODLITE_BASE)
-  -o         Output file or directory (default: same dir, new extension)
+  -o         Output file or directory, or - for stdout (default: same dir, new extension)
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
   --help     Show this help
@@ -42,6 +43,8 @@ Options:
 Examples:
   podlite convert doc.pod6 --to md
   podlite convert *.pod6 --to md -o output/
+  podlite convert doc.podlite --to md -o -
+  cat doc.podlite | podlite convert - --to md
   podlite query 'head1' docs/api.podlite
   podlite query 'head1, head2' manual.podlite --to md
   podlite query 'code[:lang<python>]' tutorials/*.podlite --to json
@@ -108,13 +111,14 @@ function convertFile(inputPath: string, format: string, outputPath?: string, bas
     process.exit(1)
   }
 
-  const content = fs.readFileSync(inputPath, 'utf-8')
+  const fromStdin = inputPath === STDIN_MARKER
+  const content = fromStdin ? readStdinSync() : fs.readFileSync(inputPath, 'utf-8')
   const p = podlite({ importPlugins: true })
   const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
 
   let tree = parseToAst(content)
   try {
-    tree = resolveIncludes(tree, { baseDir: path.dirname(inputPath), parse: parseToAst })
+    tree = resolveIncludes(tree, { baseDir: fromStdin ? process.cwd() : path.dirname(inputPath), parse: parseToAst })
   } catch (e) {
     console.error(`podlite convert: ${(e as Error).message}`)
     process.exit(1)
@@ -128,6 +132,12 @@ function convertFile(inputPath: string, format: string, outputPath?: string, bas
   } else {
     console.error(`Format "${format}" not implemented yet`)
     process.exit(1)
+  }
+
+  if (outputPath === STDIN_MARKER || (fromStdin && !outputPath)) {
+    process.stdout.write(result)
+    if (!result.endsWith('\n')) process.stdout.write('\n')
+    return
   }
 
   if (outputPath) {
@@ -269,7 +279,11 @@ function main() {
     process.exit(1)
   }
 
-  if (args.files.length === 0) {
+  const namedFiles = args.files.filter(f => f !== STDIN_MARKER)
+  const readsStdin = args.files.includes(STDIN_MARKER) || (!process.stdin.isTTY && namedFiles.length === 0)
+  const sources = readsStdin ? [...namedFiles, STDIN_MARKER] : namedFiles
+
+  if (sources.length === 0) {
     console.error('No input files specified')
     usage()
     process.exit(1)
@@ -281,12 +295,13 @@ function main() {
     process.exit(1)
   }
 
-  if (args.files.length > 1 && args.output && !fs.existsSync(args.output)) {
+  const toStdout = args.output === STDIN_MARKER
+  if (sources.length > 1 && args.output && !toStdout && !fs.existsSync(args.output)) {
     fs.mkdirSync(args.output, { recursive: true })
   }
 
-  for (const file of args.files) {
-    if (!fs.existsSync(file)) {
+  for (const file of sources) {
+    if (file !== STDIN_MARKER && !fs.existsSync(file)) {
       console.error(`File not found: ${file}`)
       process.exit(1)
     }

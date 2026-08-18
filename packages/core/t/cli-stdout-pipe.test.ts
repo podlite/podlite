@@ -35,6 +35,36 @@ describe('podlite query writing to a pipe', () => {
   })
 })
 
+describe('podlite convert writing to stdout', () => {
+  let dir: string
+  let src: string
+  const doc = '=begin pod\n=head1 Title\n=end pod\n'
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-convert-'))
+    src = path.join(dir, 'doc.podlite')
+    fs.writeFileSync(src, doc)
+  })
+
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }))
+
+  it('prints a file given a dash as the output', () => {
+    const out = execFileSync('node', [bin, 'convert', src, '--to', 'md', '-o', '-'], { encoding: 'utf-8' })
+    expect(out).toContain('# Title')
+    expect(fs.readdirSync(dir)).toEqual(['doc.podlite'])
+  })
+
+  it('prints text taken from stdin', () => {
+    const out = execFileSync('node', [bin, 'convert', '-', '--to', 'md'], { input: doc, encoding: 'utf-8' })
+    expect(out).toContain('# Title')
+  })
+
+  it('still writes a file next to the source without an output', () => {
+    run(['convert', src, '--to', 'md'])
+    expect(fs.readdirSync(dir).sort()).toEqual(['doc.md', 'doc.podlite'])
+  })
+})
+
 describe('podlite lint reading from stdin', () => {
   const lint = (args: string[], input: string) =>
     execFileSync('node', [bin, 'lint', ...args], { input, encoding: 'utf-8' })
