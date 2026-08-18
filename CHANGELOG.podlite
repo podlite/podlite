@@ -2,6 +2,29 @@
 
 =head1 Upcoming
 
+=head1 0.0.85
+
+
+=head2 podlite
+
+=item declare the node floor: the command line needs 20.19 or newer, because loading it reaches an ESM-only dependency through require
+
+=head2 @podlite/editor-react
+
+=item keep the page where it is when a change the editor did not make arrives while the editor is not focused: such a change reads as typing, and typing brings the caret into view by scrolling whatever contains the editor
+
+=head2 @podlite/publisher
+
+=item resolve a component path that starts with C<../>, which was passed through unchanged and reached the build as written
+
+=item read a component list written with spaces after the comma, which used to drop the whole import with a warning
+
+=item import a component under another name
+
+=head2 @podlite/schema
+
+=item split a table row only on a separator that stands apart from the content: a bare pipe inside markup such as a link was counted as a column break
+
 =head1 0.0.84
 
 

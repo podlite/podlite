@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.65
+
 =item split a table row only on a separator that stands apart from the content: a bare pipe inside markup such as a link was counted as a column break
 
 =head1 0.0.64
