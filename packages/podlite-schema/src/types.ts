@@ -453,7 +453,7 @@ export interface BlockTable extends Omit<Block, 'content'> {
 export interface TableCell {
   name: 'cell'
   type: 'block'
-  content: Array<string>
+  content: Array<PodNode>
 }
 export interface TableRow {
   name: 'row'
