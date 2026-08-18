@@ -60,7 +60,10 @@ const Image: Plugin = {
         // make  inline image
         const imageSrc = conf.exists('src') ? conf.getFirstValue('src') : src
         const imageAlt = conf.exists('alt') ? conf.getFirstValue('alt') : altText
-        const resultContent: Array<PodNode> = [mkImage(imageSrc, imageAlt)]
+        // The link belongs to this block. Taken from the context it outlived the
+        // node and reached every image below that had none of its own.
+        const imageLink = conf.exists('link') ? conf.getFirstValue('link') : undefined
+        const resultContent: Array<PodNode> = [mkImage(imageSrc, imageAlt, imageLink)]
         // make caption
         const captionContent = conf.exists('caption') ? conf.getFirstValue('caption') : captionText
         if (captionContent) {
@@ -77,7 +80,7 @@ const Image: Plugin = {
       // inside head don't wrap into <p>
       ':image': setFn((node, ctx) => {
         return writer => node => {
-          const linkTo = ctx.link
+          const linkTo = node.link
           if (linkTo) {
             writer.writeRaw('<a href="')
             writer.write(linkTo)

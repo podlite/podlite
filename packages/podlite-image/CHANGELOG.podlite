@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an image link belongs to its own block: an image with no link of its own is no longer wrapped in the link of an image above it
+
 =head1 0.0.53
 
 =item Image block keeps the src when its content is an inline image node

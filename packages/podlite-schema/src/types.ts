@@ -131,6 +131,7 @@ export interface Image {
   type: 'image'
   src: string
   alt?: string
+  link?: string
 }
 
 // Table of contents

@@ -428,11 +428,9 @@ const trimEdgeEmpty = (cells: string[]): string[] => {
 
 // A separator has to stand apart from the content, so a bare `|` inside markup
 // such as L<text|url> is content, not a column break.
-const splitLineByPipe = (line: string): string[] =>
-  trimEdgeEmpty(line.split(/(?<=^|\s)\|(?=\s|$)/).map(c => c.trim()))
+const splitLineByPipe = (line: string): string[] => trimEdgeEmpty(line.split(/(?<=^|\s)\|(?=\s|$)/).map(c => c.trim()))
 
-const splitLineByPlus = (line: string): string[] =>
-  trimEdgeEmpty(line.split(/(?<=^|\s)\+(?=\s|$)/).map(c => c.trim()))
+const splitLineByPlus = (line: string): string[] => trimEdgeEmpty(line.split(/(?<=^|\s)\+(?=\s|$)/).map(c => c.trim()))
 
 const splitLineByWhitespace = (line: string): string[] =>
   line

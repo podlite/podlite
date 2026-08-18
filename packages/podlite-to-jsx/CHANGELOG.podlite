@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item a code block wraps at spaces instead of breaking inside a word, so a long command stays readable
+=item a table row is read from its first column: that column is set flush left, the columns after it stay centred
+
 =head1 0.0.68
 
 =item render the link configuration attributes C<:new>, C<:title>, C<:lang> and C<:download>

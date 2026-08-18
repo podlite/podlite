@@ -93,11 +93,12 @@ export const mkCaption = (content: Array<Node>): BlockCaption => {
     content,
   }
 }
-export const mkImage = (src: string, alt?: string): Image => {
+export const mkImage = (src: string, alt?: string, link?: string): Image => {
   return {
     type: 'image',
     src,
     alt,
+    ...(link ? { link } : {}),
   }
 }
 
