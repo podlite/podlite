@@ -12,25 +12,50 @@ interface MakeTransformerParams {
   [name: string]: (n: Node, ctx: any, visiter?: any) => any
 }
 
+type AllowedIn = Record<string, string[]>
+
+// `=config C<> :allow<I>` names a markup code, not a block: the trailing angles
+// are the marker, and what it declares belongs to the code they name
+const codeConfigOwner = (name: unknown): string | null =>
+  typeof name === 'string' && /^[A-Z]<>$/.test(name) ? name[0] : null
+
+const collectAllowedIn = (content: unknown, inherited: AllowedIn): AllowedIn => {
+  if (!Array.isArray(content)) return inherited
+  let map = inherited
+  for (const child of content) {
+    if (!child || typeof child !== 'object') continue
+    const node = child as { type?: string; name?: string }
+    if (node.type !== 'config') continue
+    const owner = codeConfigOwner(node.name)
+    if (!owner) continue
+    if (map === inherited) map = { ...inherited }
+    map[owner] = makeAttrs(node, {}).getAllValues('allow')
+  }
+  return map
+}
+
 const middle: ParserPlugin = () => tree => {
   const transformerBlocks = makeTransformer({
     ':para': (n, ctx, visiter) => {
+      const allowedIn = ctx.allowedIn
       return makeTransformer({
         ':text': (n: nText, ctx) => {
-          return fcparser.parse(n.value, { parseAttributes })
+          return fcparser.parse(n.value, { allowedIn, parseAttributes })
         },
         ':verbatim': (n: nVerbatim, ctx) => {
-          return fcparser.parse(n.value, { parseAttributes })
+          return fcparser.parse(n.value, { allowedIn, parseAttributes })
         },
       })(n, { ...ctx })
       return n
     },
     ':block': (n, ctx, visiter) => {
+      // a block is a lexical scope: a code configured inside it stays inside
+      const allowedIn = collectAllowedIn('content' in n ? n.content : undefined, ctx.allowedIn || {})
       // only =pod may have childs blocks
       if ('name' in n && n.name === 'pod')
         return {
           ...n,
-          content: visiter(n.content, ctx, visiter),
+          content: visiter(n.content, { ...ctx, allowedIn }, visiter),
         }
 
       const conf = makeAttrs(n, ctx)
@@ -45,13 +70,14 @@ const middle: ParserPlugin = () => tree => {
       if (name === 'cell' && conf.exists('allow') && allowValues.length === 0) return n
       const allowed = allowValues.sort()
       const transformer = makeTransformer({
-        ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed, parseAttributes }),
-        ':text': (n: nText, ctx) => fcparser.parse(n.value, { allowed, parseAttributes }),
-        ':block': (n, ctx) => transformerBlocks(n, { ...ctx }),
+        ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed, allowedIn, parseAttributes }),
+        ':text': (n: nText, ctx) => fcparser.parse(n.value, { allowed, allowedIn, parseAttributes }),
+        ':block': (n, ctx) => transformerBlocks(n, { ...ctx, allowedIn }),
       })
-      return { ...n, content: transformer(n.content, { ...ctx }) }
+      return { ...n, content: transformer(n.content, { ...ctx, allowedIn }) }
     },
   })
-  return transformerBlocks(tree, {})
+  // a document needs no enclosing block, so the top level is a scope of its own
+  return transformerBlocks(tree, { allowedIn: collectAllowedIn(tree, {}) })
 }
 export default middle

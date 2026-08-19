@@ -20,6 +20,12 @@
     const read = options && options.parseAttributes
     return typeof read === 'function' ? read(attrs) : attrs
   }
+  // codes a `=config C<>` declaration lets act inside that code
+  function inner_allowed (options, owner) {
+    const map = options && options.allowedIn
+    const list = map && map[owner]
+    return Array.isArray(list) ? list : []
+  }
 }
 
 Expression
@@ -66,7 +72,14 @@ FCodeWithArray<Letter, ContentRule>
     { return { name, content, items } }
 
 code_A = FCodeSimple<"A", text_L>
-code_V = FCodeSimple<"V", fcode_content_V>
+code_V = &{ return inner_allowed(options, 'V').length > 0 } v:FCodeSimple<"V", fcode_content_V_mixed> { return v }
+       / FCodeSimple<"V", fcode_content_V>
+
+inner_code_C = node:( allowed_rules / code_2 ) &{ return inner_allowed(options, 'C').includes(node.name) } { return node }
+inner_code_V = node:( allowed_rules / code_2 ) &{ return inner_allowed(options, 'V').includes(node.name) } { return node }
+inner_start_C = name:$(allpossible_codes) ('<' / '«') &{ return inner_allowed(options, 'C').includes(name) }
+inner_start_V = name:$(allpossible_codes) ('<' / '«') &{ return inner_allowed(options, 'V').includes(name) }
+fcode_content_V_mixed = ( inner_code_V / $((!end_code !inner_start_V .)+) )+
 code_S = FCodeSimple<"S", fcode_content_verbatim>
 code_Z = FCodeSimple<"Z", fcode_content_verbatim>
 
@@ -85,7 +98,9 @@ CodeCRun<Open, Close>
     content:(
         code_E
         /
-        text:$( (!'<' !start_code_E .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / (!start_code_E looks_like_code_C) / text:$(!Close !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
+        inner_code_C
+        /
+        text:$( (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ (!'«' !inner_start_C .)? '«' text_C? '»' / (!start_code_E !inner_start_C looks_like_code_C) / text:$(!Close !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
     Close
      {
          return  {

@@ -4,6 +4,8 @@
 
 =item an image node carries its own link
 
+=item read a markup code configured by name, C«=config C<> :allow<I>» and C«=config V<> :allow<E>»: the declared codes act inside every following C«C<>» or C«V<>» whatever delimiters it is written in, and the declaration is held to the block it stands in
+
 =item a table that was reshaped says so through the parse diagnostics instead of the console: a padded or dropped row, mixed separator styles and an unreadable data source now carry the place of the table
 
 =item let a table cell hold markup codes in the document schema, so validating a table with C«C<>» or a link in a cell no longer reports errors
