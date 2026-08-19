@@ -63,18 +63,33 @@ const middle: ParserPlugin = () => tree => {
       // Blocks whose content is verbatim by default — fcode parsing only
       // kicks in when :allow opts in (per spec, "Formatting within code blocks").
       const isVerbatimDefault = ['code', 'data', 'markdown', 'picture', 'formula'].includes(name)
-      const allowValues = conf.getAllValues('allow')
       if (isNamedBlock(name)) return n
+
+      // A table owns rows, and the text sits in the cells, so :allow written on
+      // the table reaches them. The nearest declaration wins: cell, row, table.
+      const inheritsAllow = name === 'row' || name === 'cell'
+      const declared = conf.exists('allow')
+        ? conf.getAllValues('allow')
+        : inheritsAllow
+        ? ctx.allowFromTable
+        : undefined
+      const allowValues = declared || []
+      const passesAllow = name === 'table' || name === 'row' ? declared : ctx.allowFromTable
+
       if (isVerbatimDefault && allowValues.length === 0) return n
-      // a cell built from data carries its own set; declared empty means no code acts
-      if (name === 'cell' && conf.exists('allow') && allowValues.length === 0) return n
-      const allowed = allowValues.sort()
+      // declared empty means no code acts on this text; nested blocks still get
+      // their turn, since a cell may declare a set of its own
+      const literal = inheritsAllow && declared !== undefined && declared.length === 0
+      const allowed = [...allowValues].sort()
+      const inner = { ...ctx, allowedIn, allowFromTable: passesAllow }
       const transformer = makeTransformer({
-        ':verbatim': (n: nVerbatim, ctx) => fcparser.parse(n.value, { allowed, allowedIn, parseAttributes }),
-        ':text': (n: nText, ctx) => fcparser.parse(n.value, { allowed, allowedIn, parseAttributes }),
-        ':block': (n, ctx) => transformerBlocks(n, { ...ctx, allowedIn }),
+        ':verbatim': (node: nVerbatim, ctx) =>
+          literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':text': (node: nText, ctx) =>
+          literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':block': (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn, allowFromTable: passesAllow }),
       })
-      return { ...n, content: transformer(n.content, { ...ctx, allowedIn }) }
+      return { ...n, content: transformer(n.content, inner) }
     },
   })
   // a document needs no enclosing block, so the top level is a scope of its own
