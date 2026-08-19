@@ -504,6 +504,41 @@ const wrapImplicitCells = rowNode => {
   return { ...rowNode, content: wrapped }
 }
 
+// An abbreviated `=for row` owns its own paragraph, so cells written under it
+// stay at table level and both the row and the cells lose their meaning. They
+// are attached to the row above, and the author is told, per the same recovery
+// contract that pads and truncates rows.
+const attachOrphanCells = (tableNode, report = noReport) => {
+  const content = tableNode.content
+  if (!Array.isArray(content)) return tableNode
+  if (!content.some(c => c && c.type === 'block' && c.name === 'cell')) return tableNode
+
+  const out = []
+  let openRow = null
+  for (const child of content) {
+    if (child && child.type === 'block' && child.name === 'row') {
+      openRow = { ...child, content: Array.isArray(child.content) ? [...child.content] : [] }
+      out.push(openRow)
+      continue
+    }
+    if (child && child.type === 'block' && child.name === 'cell') {
+      if (!openRow) {
+        openRow = { type: 'block', name: 'row', margin: child.margin || '', content: [] }
+        out.push(openRow)
+      }
+      openRow.content.push(child)
+      continue
+    }
+    out.push(child)
+  }
+  report(
+    'table-cell-outside-row',
+    'a cell written outside a row was attached to the row above it; an abbreviated =for row holds only its own paragraph, so write =begin row and =end row around the cells',
+    tableNode,
+  )
+  return { ...tableNode, content: out }
+}
+
 const isStructured = tableNode =>
   Array.isArray(tableNode.content) &&
   tableNode.content.some(c => c && c.type === 'block' && (c.name === 'row' || c.name === 'cell'))
@@ -560,14 +595,15 @@ export default (opt = {}) =>
         // structured mode: transform row children (wrap implicit cells), then
         // apply Rule 2 cell count normalization.
         if (isStructured(node)) {
-          const transformedContent = (node.content || []).map(c => {
+          const attached = attachOrphanCells(node, report)
+          const transformedContent = (attached.content || []).map(c => {
             if (c && c.name === 'row') return wrapImplicitCells(c)
             return c
           })
           // a matched rule replaces the node without descending, so recurse
           // here or tables nested inside cells keep their raw text rows
           const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
-          return normalizeCellCounts({ ...node, content: recursed }, 'table', report)
+          return normalizeCellCounts({ ...attached, content: recursed }, 'table', report)
         }
         let rows = []
         const collectValues = row => {

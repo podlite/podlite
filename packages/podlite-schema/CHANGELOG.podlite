@@ -4,6 +4,8 @@
 
 =item an image node carries its own link
 
+=item attach a cell written outside a row to the row above it and report the recovery: an abbreviated C«=for row» holds only its own paragraph, so the cells under it used to leave the row empty and land at table level
+
 =item C«:allow» written on a table reaches the text of its cells: an empty set keeps them literal, a named set leaves only those codes active, and a declaration on a row or a cell overrides the table
 
 =item read a markup code configured by name, C«=config C<> :allow<I>» and C«=config V<> :allow<E>»: the declared codes act inside every following C«C<>» or C«V<>» whatever delimiters it is written in, and the declaration is held to the block it stands in

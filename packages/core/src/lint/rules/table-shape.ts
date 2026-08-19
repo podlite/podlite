@@ -3,7 +3,7 @@ import type { Rule, Violation, LintContext } from '../types'
 
 export const TABLE_SHAPE_RULE_ID = 'table-shape'
 
-const TABLE_CODES = ['table-row-cells', 'table-mixed-separators', 'table-source-unreadable']
+const TABLE_CODES = ['table-row-cells', 'table-cell-outside-row', 'table-mixed-separators', 'table-source-unreadable']
 
 export const tableShapeRule: Rule = {
   id: TABLE_SHAPE_RULE_ID,

@@ -187,6 +187,7 @@ export interface ParseDiagnostic {
     | 'value-unreadable'
     | 'directive-unreadable'
     | 'table-row-cells'
+    | 'table-cell-outside-row'
     | 'table-mixed-separators'
     | 'table-source-unreadable'
   message: string

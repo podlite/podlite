@@ -1348,6 +1348,7 @@
                 "code": {
                     "enum": [
                         "directive-unreadable",
+                        "table-cell-outside-row",
                         "table-mixed-separators",
                         "table-row-cells",
                         "table-source-unreadable",
