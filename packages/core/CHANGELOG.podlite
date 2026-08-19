@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint takes C«:lint-ignore» from the document: written on a block it silences the named rules there, written on C«=begin pod» it covers the file, and C«=config» spreads it over a scope. The attribute must name its rules; a mute that silenced nothing is reported under the lint-ignore rule, and the summary counts what was silenced
+
 =item podlite lint applies the file given to --config: a rule set to off is not run, and any other setting replaces its severity. A config that cannot be read, or a setting outside off, error, warning and info, stops the run with exit code 2
 
 =item podlite lint adds the table-column-width rule: a cell that reaches or crosses the column boundary set by the separator line is reported, because the table silently loses a column when it does

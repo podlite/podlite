@@ -7,6 +7,7 @@ import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
 import { scanSourceRules } from './grammar/scan'
 import { applyConfig, ConfigError, readConfig } from './config'
+import { applyMutes } from './mute'
 
 export type LintFormat = 'text' | 'json'
 
@@ -20,31 +21,36 @@ export type LintOptions = {
 // text handed to the command instead of a path is reported under this name
 export const STDIN_NAME = '<stdin>'
 
-function lintSource(content: string, filePath: string, config: LintConfig): Violation[] {
+function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
   const violations: Violation[] = [...applyConfig(scanSourceRules(content), config)]
   const fileType = detectFileType(filePath)
   try {
     const ast = parseContent(content, fileType)
     const ctx: LintContext = { filePath, fileType, config }
     violations.push(...runRules(ast, DEFAULT_RULES, ctx))
+    const muted = applyMutes(violations, ast)
+    return { filePath, violations: applyConfig(muted.kept, config), silenced: muted.silenced }
   } catch (e) {
     violations.push(makeSyntaxViolation(e, filePath))
   }
-  return violations
+  return { filePath, violations }
 }
 
-function lintFile(filePath: string, config: LintConfig): Violation[] {
+function lintFile(filePath: string, config: LintConfig): FileReport {
   let content: string
   try {
     content = readFile(filePath)
   } catch (e) {
-    return [
-      {
-        rule: 'io',
-        severity: 'error',
-        message: `Cannot read file: ${(e as Error).message}`,
-      },
-    ]
+    return {
+      filePath,
+      violations: [
+        {
+          rule: 'io',
+          severity: 'error',
+          message: `Cannot read file: ${(e as Error).message}`,
+        },
+      ],
+    }
   }
   return lintSource(content, filePath, config)
 }
@@ -59,9 +65,9 @@ export function runLint(files: string[], options: LintOptions): number {
     return 2
   }
 
-  const reports: FileReport[] = files.map(filePath => ({ filePath, violations: lintFile(filePath, config) }))
+  const reports: FileReport[] = files.map(filePath => lintFile(filePath, config))
   if (options.stdinContent !== undefined) {
-    reports.push({ filePath: STDIN_NAME, violations: lintSource(options.stdinContent, STDIN_NAME, config) })
+    reports.push(lintSource(options.stdinContent, STDIN_NAME, config))
   }
 
   const output =

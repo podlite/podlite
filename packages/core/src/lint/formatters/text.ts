@@ -1,6 +1,6 @@
 import type { Severity, Violation } from '../types'
 
-export type FileReport = { filePath: string; violations: Violation[] }
+export type FileReport = { filePath: string; violations: Violation[]; silenced?: number }
 
 export type TextFormatOptions = { color: boolean }
 
@@ -27,11 +27,13 @@ function summaryLine(reports: FileReport[]): string {
   const nFiles = reports.length
   const nErrors = totals.filter(v => v.severity === 'error').length
   const nWarnings = totals.filter(v => v.severity === 'warning').length
-  return `${plural(nFiles, 'file', 'files')} checked, ${plural(nErrors, 'error', 'errors')}, ${plural(
+  const nSilenced = reports.reduce((sum, r) => sum + (r.silenced || 0), 0)
+  const head = `${plural(nFiles, 'file', 'files')} checked, ${plural(nErrors, 'error', 'errors')}, ${plural(
     nWarnings,
     'warning',
     'warnings',
   )}`
+  return nSilenced === 0 ? head : `${head}, ${nSilenced} silenced`
 }
 
 export function formatText(reports: FileReport[], opts: TextFormatOptions): string {
