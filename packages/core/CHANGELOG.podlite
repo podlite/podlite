@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint adds the table-column-width rule: a cell that reaches or crosses the column boundary set by the separator line is reported, because the table silently loses a column when it does
+
 =item podlite lint reports a reshaped table under the table-shape rule, with file, line and a place in the summary; the padded-row message names the cause
 
 =item podlite convert writes to stdout when the output is a dash, and reads the document from stdin after a dash or from a pipe with no files given; without a dash it still writes a file as before
