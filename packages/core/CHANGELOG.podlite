@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint applies the file given to --config: a rule set to off is not run, and any other setting replaces its severity. A config that cannot be read, or a setting outside off, error, warning and info, stops the run with exit code 2
+
 =item podlite lint adds the table-column-width rule: a cell that reaches or crosses the column boundary set by the separator line is reported, because the table silently loses a column when it does
 
 =item podlite lint reports a reshaped table under the table-shape rule, with file, line and a place in the summary; the padded-row message names the cause

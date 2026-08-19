@@ -1,4 +1,4 @@
-import type { Violation, LintContext } from './types'
+import type { LintConfig, Violation, LintContext } from './types'
 import { makeSyntaxViolation } from './rules/syntax-valid'
 import { DEFAULT_RULES } from './rules'
 import { runRules } from './engine'
@@ -6,6 +6,7 @@ import { detectFileType, readFile, parseContent } from './loader'
 import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
 import { scanSourceRules } from './grammar/scan'
+import { applyConfig, ConfigError, readConfig } from './config'
 
 export type LintFormat = 'text' | 'json'
 
@@ -19,12 +20,12 @@ export type LintOptions = {
 // text handed to the command instead of a path is reported under this name
 export const STDIN_NAME = '<stdin>'
 
-function lintSource(content: string, filePath: string): Violation[] {
-  const violations: Violation[] = [...scanSourceRules(content)]
+function lintSource(content: string, filePath: string, config: LintConfig): Violation[] {
+  const violations: Violation[] = [...applyConfig(scanSourceRules(content), config)]
   const fileType = detectFileType(filePath)
   try {
     const ast = parseContent(content, fileType)
-    const ctx: LintContext = { filePath, fileType, config: {} }
+    const ctx: LintContext = { filePath, fileType, config }
     violations.push(...runRules(ast, DEFAULT_RULES, ctx))
   } catch (e) {
     violations.push(makeSyntaxViolation(e, filePath))
@@ -32,7 +33,7 @@ function lintSource(content: string, filePath: string): Violation[] {
   return violations
 }
 
-function lintFile(filePath: string): Violation[] {
+function lintFile(filePath: string, config: LintConfig): Violation[] {
   let content: string
   try {
     content = readFile(filePath)
@@ -45,13 +46,22 @@ function lintFile(filePath: string): Violation[] {
       },
     ]
   }
-  return lintSource(content, filePath)
+  return lintSource(content, filePath, config)
 }
 
 export function runLint(files: string[], options: LintOptions): number {
-  const reports: FileReport[] = files.map(filePath => ({ filePath, violations: lintFile(filePath) }))
+  let config: LintConfig
+  try {
+    config = readConfig(options.configPath)
+  } catch (e) {
+    if (!(e instanceof ConfigError)) throw e
+    console.error(`podlite lint: ${e.message}`)
+    return 2
+  }
+
+  const reports: FileReport[] = files.map(filePath => ({ filePath, violations: lintFile(filePath, config) }))
   if (options.stdinContent !== undefined) {
-    reports.push({ filePath: STDIN_NAME, violations: lintSource(options.stdinContent, STDIN_NAME) })
+    reports.push({ filePath: STDIN_NAME, violations: lintSource(options.stdinContent, STDIN_NAME, config) })
   }
 
   const output =

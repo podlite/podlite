@@ -4,8 +4,11 @@ export type Severity = 'error' | 'warning' | 'info'
 
 export type FileType = 'md' | 'podlite'
 
-// Placeholder until the config schema is defined — narrow now to keep widening backwards-compatible.
-export type LintConfig = Record<string, never>
+export type RuleSetting = 'off' | Severity
+
+export type LintConfig = {
+  rules?: Record<string, RuleSetting>
+}
 
 export type LintContext = {
   filePath: string
