@@ -359,20 +359,50 @@ const rules = {
       return
     }
 
+    // A cell holds a paragraph when the table is written as blocks, and a
+    // paragraph prints line breaks that would tear the row apart. The cell is
+    // rendered aside and folded onto one line.
+    const renderCell = cell => {
+      const parts: string[] = []
+      const original = writer.output
+      if (typeof original !== 'function') return null
+      writer.output = (str: string) => parts.push(str)
+      try {
+        ;(cell.content || []).forEach(c => {
+          if (typeof c === 'string') {
+            writer.write(c.trim())
+          } else {
+            interator([c], ctx)
+          }
+        })
+      } finally {
+        writer.output = original
+      }
+      return parts
+        .join('')
+        .replace(/\s*\n+\s*/g, ' ')
+        .trim()
+    }
+
     // render each row
     rows.forEach((row, rowIndex) => {
       const cells = (row.content || []).filter(c => c.name === 'cell')
       writer.writeRaw('|')
       cells.forEach(cell => {
         writer.writeRaw(' ')
-        if (cell.content) {
-          cell.content.forEach(c => {
-            if (typeof c === 'string') {
-              writer.write(c.trim())
-            } else {
-              interator([c], ctx)
-            }
-          })
+        const folded = renderCell(cell)
+        if (folded === null) {
+          if (cell.content) {
+            cell.content.forEach(c => {
+              if (typeof c === 'string') {
+                writer.write(c.trim())
+              } else {
+                interator([c], ctx)
+              }
+            })
+          }
+        } else {
+          writer.writeRaw(folded)
         }
         writer.writeRaw(' |')
       })

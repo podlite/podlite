@@ -4,6 +4,8 @@
 
 =item an image node carries its own link
 
+=item fold a table cell onto one line when converting to markdown: a cell written as a block holds a paragraph, and its line breaks used to tear the row apart
+
 =item attach a cell written outside a row to the row above it and report the recovery: an abbreviated C«=for row» holds only its own paragraph, so the cells under it used to leave the row empty and land at table level
 
 =item C«:allow» written on a table reaches the text of its cells: an empty set keeps them literal, a named set leaves only those codes active, and a declaration on a row or a cell overrides the table
