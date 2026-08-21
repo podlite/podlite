@@ -2,6 +2,46 @@
 
 =head1 Upcoming
 
+=head1 0.0.86
+
+
+=head2 podlite
+
+=item podlite lint takes C«:lint-ignore» from the document: written on a block it silences the named rules there, written on C«=begin pod» it covers the file, and C«=config» spreads it over a scope. The attribute must name its rules; a mute that silenced nothing is reported under the lint-ignore rule, and the summary counts what was silenced
+
+=item podlite lint applies the file given to --config: a rule set to off is not run, and any other setting replaces its severity. A config that cannot be read, or a setting outside off, error, warning and info, stops the run with exit code 2
+
+=item podlite lint adds the table-column-width rule: a cell that reaches or crosses the column boundary set by the separator line is reported, because the table silently loses a column when it does
+
+=item podlite lint reports a reshaped table under the table-shape rule, with file, line and a place in the summary; the padded-row message names the cause
+
+=item podlite convert writes to stdout when the output is a dash, and reads the document from stdin after a dash or from a pipe with no files given; without a dash it still writes a file as before
+
+=head2 @podlite/image
+
+=item an image link belongs to its own block: an image with no link of its own is no longer wrapped in the link of an image above it
+
+=head2 @podlite/schema
+
+=item an image node carries its own link
+
+=item fold a table cell onto one line when converting to markdown: a cell written as a block holds a paragraph, and its line breaks used to tear the row apart
+
+=item attach a cell written outside a row to the row above it and report the recovery: an abbreviated C«=for row» holds only its own paragraph, so the cells under it used to leave the row empty and land at table level
+
+=item C«:allow» written on a table reaches the text of its cells: an empty set keeps them literal, a named set leaves only those codes active, and a declaration on a row or a cell overrides the table
+
+=item read a markup code configured by name, C«=config C<> :allow<I>» and C«=config V<> :allow<E>»: the declared codes act inside every following C«C<>» or C«V<>» whatever delimiters it is written in, and the declaration is held to the block it stands in
+
+=item a table that was reshaped says so through the parse diagnostics instead of the console: a padded or dropped row, mixed separator styles and an unreadable data source now carry the place of the table
+
+=item let a table cell hold markup codes in the document schema, so validating a table with C«C<>» or a link in a cell no longer reports errors
+
+=head2 @podlite/to-jsx
+
+=item a code block wraps at spaces instead of breaking inside a word, so a long command stays readable
+=item a table row is read from its first column: that column is set flush left, the columns after it stay centred
+
 =head1 0.0.85
 
 

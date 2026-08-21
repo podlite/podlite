@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.65
+
 =item an image link belongs to its own block: an image with no link of its own is no longer wrapped in the link of an image above it
 
 =head1 0.0.53

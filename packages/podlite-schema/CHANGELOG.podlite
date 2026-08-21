@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.66
+
 =item an image node carries its own link
 
 =item fold a table cell onto one line when converting to markdown: a cell written as a block holds a paragraph, and its line breaks used to tear the row apart
