@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the page index carries the record fields a site names in C<indexFields>, on top of the built-in ones
+
 =head1 0.0.46
 
 =item resolve a component path that starts with C<../>, which was passed through unchanged and reached the build as written
