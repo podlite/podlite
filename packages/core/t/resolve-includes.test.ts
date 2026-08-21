@@ -86,3 +86,98 @@ describe('resolveIncludes', () => {
     expect(() => convert(loop, 'md')).not.toThrow()
   })
 })
+
+describe('include with a directory mask', () => {
+  const mkdir = (name: string) => {
+    const d = path.join(tmpDir, name)
+    fs.mkdirSync(d, { recursive: true })
+    return d
+  }
+  const writeIn = (dir: string, name: string, body: string) => fs.writeFileSync(path.join(dir, name), body)
+
+  it('takes every matching file of the directory', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(inc, 'b.podlite', '=pod\n\n=item beta\n\n=end pod\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).toContain('beta')
+  })
+
+  it('keeps files out that the mask does not name', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(inc, 'notes.md', 'plain markdown line\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).not.toContain('plain markdown line')
+  })
+
+  it('does not walk into subdirectories', () => {
+    const inc = mkdir('inc')
+    const deep = mkdir(path.join('inc', 'deep'))
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(deep, 'c.podlite', '=pod\n\n=item gamma\n\n=end pod\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).not.toContain('gamma')
+  })
+
+  it('applies the selector to every file the mask names', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'a.podlite', '=head1 first\n\n=item alpha\n')
+    writeIn(inc, 'b.podlite', '=head1 second\n\n=item beta\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite | head1\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('first')
+    expect(md).toContain('second')
+    expect(md).not.toContain('alpha')
+  })
+
+  it('reads files in name order', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'b.podlite', '=pod\n\n=item beta\n\n=end pod\n')
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md.indexOf('alpha')).toBeLessThan(md.indexOf('beta'))
+  })
+
+  it('leaves nothing behind when the mask names no file', () => {
+    mkdir('inc')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    expect(() => convert(wrapper, 'md')).not.toThrow()
+    expect(convert(wrapper, 'md')).not.toContain('include')
+  })
+
+  it('does not read a file the mask leaves out', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(inc, 'photo.png', 'not text at all')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const seen: string[] = []
+    const counting = (source: string) => {
+      seen.push(source)
+      return parseToAst(source)
+    }
+    resolveIncludes(parseToAst(fs.readFileSync(wrapper, 'utf-8')), {
+      baseDir: path.dirname(wrapper),
+      parse: counting,
+    })
+    expect(seen.join('\n')).toContain('alpha')
+    expect(seen.join('\n')).not.toContain('not text at all')
+  })
+
+  it('skips a dotfile', () => {
+    const inc = mkdir('inc')
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(inc, '.hidden.podlite', '=pod\n\n=item hidden\n\n=end pod\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).not.toContain('hidden')
+  })
+})

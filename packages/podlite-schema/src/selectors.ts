@@ -419,7 +419,7 @@ const globToRegex = (glob: string): RegExp => {
   return compiled
 }
 
-const filePathMatches = (docFile: string, target: string): boolean => {
+export const filePathMatches = (docFile: string, target: string): boolean => {
   const a = normalizePath(docFile)
   const b = normalizePath(target)
 

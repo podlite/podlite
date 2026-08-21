@@ -232,7 +232,7 @@ export const parseFormattingCodes = (text: string, options: { [key: string]: any
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
-export { parseSelector, runSelector } from './selectors'
+export { parseSelector, runSelector, filePathMatches } from './selectors'
 export type { SelectorDoc, ParsedSelector } from './selectors'
 export { applyImageBase } from './image-base'
 export { version } from './version'
