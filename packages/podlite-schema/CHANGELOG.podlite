@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item name the header columns that were parsed when C«:columns» or C«:rename» cannot match one: leading spaces from an indented body stay in the field, so the name that fails looks identical to the one in the source
+
 =head1 0.0.66
 
 =item an image node carries its own link

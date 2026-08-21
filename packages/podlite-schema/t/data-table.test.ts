@@ -175,6 +175,30 @@ Alice,30
     expect(table.content).toEqual([])
     expect(reports.length).toBeGreaterThan(0)
   })
+
+  it('unknown column name reports the header names it parsed', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present') :columns<city>
+name,age
+Alice,30
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
+    const messages = reports.map((r: any) => String(r.message || r))
+    expect(messages.some(m => m.includes('header has "name", "age"'))).toBe(true)
+  })
+
+  it('indented body keeps leading spaces in the header name', () => {
+    const src = `=begin pod
+=begin data-table :mime-type('text/csv; header=present') :columns<name>
+    name,age
+    Alice,30
+=end data-table
+=end pod`
+    const tree = parse(src, { podMode: 1, diagnostics: reports })
+    const messages = reports.map((r: any) => String(r.message || r))
+    expect(messages.some(m => m.includes('"    name"'))).toBe(true)
+  })
 })
 
 describe('=data-table :src deferred schemes', () => {

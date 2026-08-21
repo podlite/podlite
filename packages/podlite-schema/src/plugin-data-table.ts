@@ -49,7 +49,8 @@ function resolveColumnIndex(col: string, headerRow: string[] | null, maxCols: nu
   }
   const idx = headerRow.indexOf(col)
   if (idx === -1) {
-    throw new Error(`column name "${col}" not found in header`)
+    const names = headerRow.map(h => `"${h}"`).join(', ')
+    throw new Error(`column name "${col}" not found in header; header has ${names}`)
   }
   return idx
 }
