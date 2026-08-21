@@ -16,9 +16,12 @@ const QUERY_FORMATS: QueryFormat[] = ['podlite', 'md', 'html', 'json']
 const LINT_FORMATS: LintFormat[] = ['text', 'json']
 const STDIN_MARKER = '-'
 
+type RenderMode = 'production' | 'draft'
+const RENDER_MODES: RenderMode[] = ['production', 'draft']
+
 function usage() {
   console.log(`Usage:
-  podlite convert <files...|-> --to <format> [-o <output|->]
+  podlite convert <files...|-> --to <format> [-o <output|->] [--render-mode <production|draft>]
   podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
 
@@ -35,6 +38,9 @@ Options:
   --strict   lint: promote warnings to errors
   --config   lint: path to .podlitelintrc.{json,js}
   --base     convert: prefix for relative file: image paths (or env PODLITE_BASE)
+  --render-mode
+             convert: production (default, covered content is masked) or draft
+             (covered content is shown); or env PODLITE_RENDER_MODE
   -o         Output file or directory, or - for stdout (default: same dir, new extension)
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
@@ -67,6 +73,7 @@ function parseArgs(argv: string[]) {
     format: '',
     configPath: '',
     base: '',
+    renderMode: '',
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
@@ -94,6 +101,8 @@ function parseArgs(argv: string[]) {
       args.configPath = argv[++i] || ''
     } else if (arg === '--base') {
       args.base = argv[++i] || ''
+    } else if (arg === '--render-mode') {
+      args.renderMode = argv[++i] || ''
     } else if (arg === '--help' || arg === '-h') {
       return null
     } else if (!arg.startsWith('-')) {
@@ -104,7 +113,13 @@ function parseArgs(argv: string[]) {
   return args
 }
 
-function convertFile(inputPath: string, format: string, outputPath?: string, base?: string): void {
+function convertFile(
+  inputPath: string,
+  format: string,
+  outputPath?: string,
+  base?: string,
+  renderMode: RenderMode = 'production',
+): void {
   const ext = FORMATS[format]
   if (!ext) {
     console.error(`Unknown format: ${format}. Supported: ${Object.keys(FORMATS).join(', ')}`)
@@ -126,9 +141,9 @@ function convertFile(inputPath: string, format: string, outputPath?: string, bas
 
   let result: string
   if (format === 'md' || format === 'markdown') {
-    result = toMarkdown({ base }).run(tree).toString()
+    result = toMarkdown({ base, renderMode }).run(tree).toString()
   } else if (format === 'html') {
-    result = toHtml({ base }).run(tree).toString()
+    result = toHtml({ base, renderMode }).run(tree).toString()
   } else {
     console.error(`Format "${format}" not implemented yet`)
     process.exit(1)
@@ -295,6 +310,12 @@ function main() {
     process.exit(1)
   }
 
+  const renderMode = (args.renderMode || process.env.PODLITE_RENDER_MODE || 'production') as RenderMode
+  if (!RENDER_MODES.includes(renderMode)) {
+    console.error(`Unknown render mode: ${renderMode}. Supported: ${RENDER_MODES.join(', ')}`)
+    process.exit(1)
+  }
+
   const toStdout = args.output === STDIN_MARKER
   if (sources.length > 1 && args.output && !toStdout && !fs.existsSync(args.output)) {
     fs.mkdirSync(args.output, { recursive: true })
@@ -305,7 +326,7 @@ function main() {
       console.error(`File not found: ${file}`)
       process.exit(1)
     }
-    convertFile(file, args.to, args.output || undefined, args.base || process.env.PODLITE_BASE)
+    convertFile(file, args.to, args.output || undefined, args.base || process.env.PODLITE_BASE, renderMode)
   }
 }
 
