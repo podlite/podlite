@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item covered content keeps its cover when it is taken out of the document it was written in. A block carrying :masked and a G<> code now mark the nodes below them, and the mark travels with the node through =include, through a selector and through a table built from a covered =data block. Draft mode still shows what production hides
+
 =item name the header columns that were parsed when C«:columns» or C«:rename» cannot match one: leading spaces from an indented body stay in the field, so the name that fails looks identical to the one in the source
 
 =head1 0.0.66

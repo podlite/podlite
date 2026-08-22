@@ -563,6 +563,10 @@ export default (opt = {}) =>
             )
             return { ...node, content: [] }
           }
+          // whatever is built out of a covered =data block is covered as well,
+          // otherwise the table is a way to read what the cover hides
+          const carryCover = built =>
+            makeAttrs(dataBlock, {}).getFirstValue('masked') ? { ...built, guarded: true } : built
           const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
           const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
           const isCsv = mimeType === 'text/csv'
@@ -581,7 +585,7 @@ export default (opt = {}) =>
             const hasHeader = mimeParams.header === 'present'
             const allow = makeAttrs(node, {}).getAllValues('allow')
             const filledNode = { ...node, content: csvToTableContent(rows, hasHeader, allow) }
-            return normalizeCellCounts(filledNode, `table data:${ref.target}`, report)
+            return carryCover(normalizeCellCounts(filledNode, `table data:${ref.target}`, report))
           }
           // Rule 4: source not tabular → render as code block so content remains visible
           report(
@@ -589,7 +593,7 @@ export default (opt = {}) =>
             `=data :key<${ref.target}> has non-tabular mime-type ${rawMime || '(none)'}, rendered as =code`,
             node,
           )
-          return buildCodeFromDataBlock(node, dataBlock)
+          return carryCover(buildCodeFromDataBlock(node, dataBlock))
         }
 
         // structured mode: transform row children (wrap implicit cells), then

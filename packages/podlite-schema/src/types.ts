@@ -316,11 +316,13 @@ export interface Ambient {
 export interface Verbatim {
   type: 'verbatim'
   value: string
+  guarded?: boolean
 }
 
 export interface Text {
   type: 'text'
   value: string
+  guarded?: boolean
 }
 export interface Para {
   type: 'para'
@@ -392,6 +394,9 @@ export interface Block {
   margin: string
   config?: Array<ConfigItem | BrokenConfigItem>
   id?: string // TODO: should it be non-optional?
+  // set where the cover is declared and copied onto everything below it, so
+  // content lifted out of the block still renders covered
+  guarded?: boolean
 }
 
 export interface BlockPod extends Block {

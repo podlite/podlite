@@ -12,6 +12,7 @@ import {
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
+import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId, getExplicitNodeId, getSafeNodeId, sameDocTarget } from './ast-helpers'
@@ -40,7 +41,7 @@ const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     // handle text with content
     if (node.value) {
-      writer.write(ctx?.maskMode ? maskText(node.value) : node.value)
+      writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
     }
@@ -225,7 +226,7 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    if (ctx?.maskMode) {
+    if (isCovered(node, ctx)) {
       writer.write(maskText(node.value))
       return
     }
@@ -452,11 +453,13 @@ const toHtml = opt =>
     })
     .use(rules)
     .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
-      if (!node || node.type !== 'block') return defaultFn()
+      if (!node) return defaultFn()
       if (ctx?.maskMode) return defaultFn()
+      if (ctx?.renderMode === 'draft') return defaultFn()
+      if (node.guarded) return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+      if (node.type !== 'block') return defaultFn()
       const conf = makeAttrs(node, ctx || {})
       if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
-      if (ctx?.renderMode === 'draft') return defaultFn()
       return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
     })
 

@@ -25,7 +25,7 @@ import {
   sameDocTarget,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
-import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText } from '@podlite/schema'
+import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText, isCovered } from '@podlite/schema'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import HighlightedCode from './HighlightedCode'
@@ -416,10 +416,10 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {
-      return ctx?.maskMode ? maskText(node.value) : node.value
+      return isCovered(node, ctx) ? maskText(node.value) : node.value
     },
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
-      return ctx?.maskMode ? maskText(node.value) : node.value
+      return isCovered(node, ctx) ? maskText(node.value) : node.value
     },
     'head:block': subUse(
       {
@@ -1110,11 +1110,13 @@ function podlite(
       // defaultFn chains to a single next rule, so masking and the render
       // safety net share this one wildcard hook
       const dispatch = () => {
-        if (!node || node.type !== 'block') return defaultFn()
+        if (!node) return defaultFn()
         if (ctx?.maskMode) return defaultFn()
+        if (ctx?.renderMode === 'draft') return defaultFn()
+        if (node.guarded) return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+        if (node.type !== 'block') return defaultFn()
         const conf = makeAttrs(node, ctx || {})
         if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
-        if (ctx?.renderMode === 'draft') return defaultFn()
         return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
       }
       const blockName = node && typeof node === 'object' ? node.name || node.type : undefined

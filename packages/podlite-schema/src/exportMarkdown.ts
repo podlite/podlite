@@ -1,4 +1,5 @@
 import toAny from './exportAny'
+import { isCovered } from './guard'
 import {
   subUse,
   wrapContent,
@@ -28,7 +29,7 @@ const linkTitle = config => {
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value) {
-      writer.write(ctx?.maskMode ? maskText(node.value) : node.value)
+      writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
     }
@@ -162,7 +163,7 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
-    const masked = ctx?.maskMode
+    const masked = isCovered(node, ctx)
     if (node.content) {
       node.content.forEach(child => {
         if (typeof child === 'string') {
@@ -180,7 +181,7 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
-    const masked = ctx?.maskMode
+    const masked = isCovered(node, ctx)
     if (node.content) {
       node.content.forEach(child => {
         if (typeof child === 'string') {
@@ -199,7 +200,7 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    writer.writeRaw(ctx?.maskMode ? maskText(node.value) : node.value)
+    writer.writeRaw(isCovered(node, ctx) ? maskText(node.value) : node.value)
   },
   ':blankline': emptyContent,
   ':ambient': emptyContent,
@@ -467,11 +468,13 @@ const toMarkdown = opt =>
     })
     .use(rules)
     .use('*', (writer, processor) => (node, ctx, interator, defaultFn) => {
-      if (!node || node.type !== 'block') return defaultFn()
+      if (!node) return defaultFn()
       if (ctx?.maskMode) return defaultFn()
+      if (ctx?.renderMode === 'draft') return defaultFn()
+      if (node.guarded) return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
+      if (node.type !== 'block') return defaultFn()
       const conf = makeAttrs(node, ctx || {})
       if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
-      if (ctx?.renderMode === 'draft') return defaultFn()
       return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
     })
 
