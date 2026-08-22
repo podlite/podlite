@@ -1,0 +1,115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the lint command end to end checks several files in one run 1`] = `
+"t/lint-fixtures/broken.podlite:11:1: error: =begin code is not closed before end of file (delimited-block-balance)
+t/lint-fixtures/broken.podlite:11:1: warning: Line could not be parsed as a directive or block: =begin code (syntax-valid)
+t/lint-fixtures/broken.podlite:9:1: warning: Heading level jump from 1 to 3 (heading-hierarchy)
+t/lint-fixtures/broken.podlite:6:1: error: Duplicate :id<dup> (id-unique)
+
+3 files checked, 2 errors, 2 warnings
+"
+`;
+
+exports[`the lint command end to end passes a clean markdown file 1`] = `
+"1 file checked, 0 errors, 0 warnings
+"
+`;
+
+exports[`the lint command end to end passes a document using the whole markup 1`] = `
+"1 file checked, 0 errors, 0 warnings
+"
+`;
+
+exports[`the lint command end to end reports a heading jump in markdown 1`] = `
+"t/lint-fixtures/enhanced.md:5:1: warning: Heading level jump from 1 to 3 (heading-hierarchy)
+
+1 file checked, 0 errors, 1 warning
+"
+`;
+
+exports[`the lint command end to end reports every fault of a broken document 1`] = `
+"t/lint-fixtures/broken.podlite:11:1: error: =begin code is not closed before end of file (delimited-block-balance)
+t/lint-fixtures/broken.podlite:11:1: warning: Line could not be parsed as a directive or block: =begin code (syntax-valid)
+t/lint-fixtures/broken.podlite:9:1: warning: Heading level jump from 1 to 3 (heading-hierarchy)
+t/lint-fixtures/broken.podlite:6:1: error: Duplicate :id<dup> (id-unique)
+
+1 file checked, 2 errors, 2 warnings
+"
+`;
+
+exports[`the lint command end to end writes the same findings as json 1`] = `
+Array [
+  Object {
+    "file": "t/lint-fixtures/broken.podlite",
+    "location": Object {
+      "end": Object {
+        "column": 12,
+        "line": 11,
+        "offset": 111,
+      },
+      "start": Object {
+        "column": 1,
+        "line": 11,
+        "offset": 100,
+      },
+    },
+    "message": "=begin code is not closed before end of file",
+    "rule": "delimited-block-balance",
+    "severity": "error",
+  },
+  Object {
+    "file": "t/lint-fixtures/broken.podlite",
+    "location": Object {
+      "end": Object {
+        "column": 1,
+        "line": 12,
+        "offset": 112,
+      },
+      "start": Object {
+        "column": 1,
+        "line": 11,
+        "offset": 100,
+      },
+    },
+    "message": "Line could not be parsed as a directive or block: =begin code",
+    "rule": "syntax-valid",
+    "severity": "warning",
+  },
+  Object {
+    "file": "t/lint-fixtures/broken.podlite",
+    "location": Object {
+      "end": Object {
+        "column": 1,
+        "line": 10,
+        "offset": 99,
+      },
+      "start": Object {
+        "column": 1,
+        "line": 9,
+        "offset": 67,
+      },
+    },
+    "message": "Heading level jump from 1 to 3",
+    "rule": "heading-hierarchy",
+    "severity": "warning",
+  },
+  Object {
+    "file": "t/lint-fixtures/broken.podlite",
+    "location": Object {
+      "end": Object {
+        "column": 1,
+        "line": 8,
+        "offset": 66,
+      },
+      "start": Object {
+        "column": 1,
+        "line": 6,
+        "offset": 40,
+      },
+    },
+    "message": "Duplicate :id<dup>",
+    "rule": "id-unique",
+    "severity": "error",
+  },
+]
+`;

@@ -1,0 +1,22 @@
+=head1 Handbook
+
+Opening prose with B<bold> and C<code>.
+
+=head2 Tables
+
+=begin table
+ Name  | Count
+ ======|======
+ alpha | 1
+ beta  | 2
+=end table
+
+=head2 Lists
+
+=item1 first
+=item2 nested
+=item1 second
+
+=begin code :lang<js>
+const x = 1
+=end code

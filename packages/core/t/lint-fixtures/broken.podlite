@@ -1,0 +1,12 @@
+=head1 Start
+
+=for para :id<dup>
+first
+
+=for para :id<dup>
+second
+
+=head3 Jumped from one to three
+
+=begin code
+unclosed on purpose
