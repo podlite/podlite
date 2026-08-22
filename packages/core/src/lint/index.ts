@@ -24,7 +24,7 @@ export type LintOptions = {
 // text handed to the command instead of a path is reported under this name
 export const STDIN_NAME = '<stdin>'
 
-function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
+export function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
   const violations: Violation[] = [...applyConfig(scanSourceRules(content), config)]
   const fileType = detectFileType(filePath)
   try {
@@ -39,7 +39,7 @@ function lintSource(content: string, filePath: string, config: LintConfig): File
   return { filePath, violations }
 }
 
-function lintFile(filePath: string, config: LintConfig): FileReport {
+export function lintFile(filePath: string, config: LintConfig): FileReport {
   let content: string
   try {
     content = readFile(filePath)
@@ -58,13 +58,31 @@ function lintFile(filePath: string, config: LintConfig): FileReport {
   return lintSource(content, filePath, config)
 }
 
-export function runLint(files: string[], options: LintOptions): number {
+// Thrown out of resolveConfig so a caller can turn it into exit code 2 wherever
+// the run is scheduled from.
+export function resolveConfig(files: string[], options: LintOptions): LintConfig {
   const searchFrom = files.length > 0 ? path.dirname(path.resolve(files[0])) : process.cwd()
   const configPath = options.configPath || findConfig(searchFrom)
+  return applyRuleFlags(readConfig(configPath), options.enable || [], options.disable || [])
+}
 
+export function reportLint(reports: FileReport[], options: LintOptions): number {
+  const output =
+    options.format === 'json' ? formatJson(reports) : formatText(reports, { color: process.stdout.isTTY === true })
+  if (output) process.stdout.write(output)
+
+  const totals = reports.flatMap(r => r.violations)
+  const hasError = totals.some(v => v.severity === 'error')
+  const hasWarning = totals.some(v => v.severity === 'warning')
+  if (hasError) return 1
+  if (options.strict && hasWarning) return 1
+  return 0
+}
+
+export function runLint(files: string[], options: LintOptions): number {
   let config: LintConfig
   try {
-    config = applyRuleFlags(readConfig(configPath), options.enable || [], options.disable || [])
+    config = resolveConfig(files, options)
   } catch (e) {
     if (!(e instanceof ConfigError)) throw e
     console.error(`podlite lint: ${e.message}`)
@@ -76,14 +94,5 @@ export function runLint(files: string[], options: LintOptions): number {
     reports.push(lintSource(options.stdinContent, STDIN_NAME, config))
   }
 
-  const output =
-    options.format === 'json' ? formatJson(reports) : formatText(reports, { color: process.stdout.isTTY === true })
-  if (output) process.stdout.write(output)
-
-  const totals = reports.flatMap(r => r.violations)
-  const hasError = totals.some(v => v.severity === 'error')
-  const hasWarning = totals.some(v => v.severity === 'warning')
-  if (hasError) return 1
-  if (options.strict && hasWarning) return 1
-  return 0
+  return reportLint(reports, options)
 }

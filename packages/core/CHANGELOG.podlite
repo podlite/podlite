@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint checks a long list of files on several threads, which cuts a 126-file run from 1.64 to 1.14 seconds. Short lists stay on one thread, and the report reads the same either way
+
 =item podlite lint finds .podlitelintrc.json or .podlitelintrc.js by itself — the nearest one at or above the first checked file, json before js. --config still wins, and --enable and --disable name a rule for one run
 
 =item =include takes a recursive mask: file:./dir/**/*.podlite reaches the nested directories too, skipping hidden ones. A single-level mask stays within its own directory

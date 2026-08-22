@@ -1,5 +1,8 @@
+import * as fs from 'fs'
+import * as os from 'os'
 import * as path from 'path'
 import { execFileSync } from 'child_process'
+import { lintFile, resolveConfig } from '../src/lint'
 
 const pkgRoot = path.join(__dirname, '..')
 const bin = path.join(pkgRoot, 'bin', 'podlite.js')
@@ -77,6 +80,57 @@ describe('the lint command end to end', () => {
     const result = lint(['--format', 'xml', sample('simple.md')])
     expect(result.code).toBe(2)
     expect(result.out).toContain('unknown --format')
+  })
+
+  describe('a list long enough to reach the threads', () => {
+    let dir: string
+    let files: string[]
+
+    beforeAll(() => {
+      dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-lint-many-'))
+      files = Array.from({ length: 20 }, (_, i) => {
+        const name = path.join(dir, `f${String(i).padStart(2, '0')}.podlite`)
+        const body = i % 2 === 0 ? '=head1 Title\n\ntext\n' : '=head1 Title\n\n=head3 jumped\n'
+        fs.writeFileSync(name, body)
+        return name
+      })
+    })
+    afterAll(() => fs.rmSync(dir, { recursive: true, force: true }))
+
+    const runOn = (extra: string[] = []) => {
+      try {
+        return { out: execFileSync('node', [bin, 'lint', ...extra, ...files], { encoding: 'utf-8' }), code: 0 }
+      } catch (e) {
+        const err = e as { stdout: string; stderr: string; status: number }
+        return { out: (err.stdout || '') + (err.stderr || ''), code: err.status }
+      }
+    }
+
+    it('counts every file of the list', () => {
+      expect(runOn().out).toContain('20 files checked')
+    })
+
+    it('finds the same faults the serial run finds', () => {
+      const parallel = JSON.parse(runOn(['--format', 'json']).out)
+      const config = resolveConfig(files, { strict: false, format: 'json' })
+      const serial = files
+        .map(f => lintFile(f, config))
+        .flatMap(r => r.violations.map(v => ({ ...v, file: r.filePath })))
+      expect(parallel).toHaveLength(serial.length)
+      expect(parallel.map((v: { file: string }) => v.file)).toEqual(serial.map(v => v.file))
+    })
+
+    it('keeps the order the files were given', () => {
+      const reported = runOn()
+        .out.split('\n')
+        .filter(line => line.includes('.podlite:'))
+        .map(line => line.split(':')[0])
+      expect(reported).toEqual([...reported].sort())
+    })
+
+    it('still honours a disabled rule', () => {
+      expect(runOn(['--disable', 'heading-hierarchy']).out).not.toContain('heading-hierarchy')
+    })
   })
 
   it('takes the document from stdin', () => {

@@ -2,7 +2,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { toMarkdown, toHtml } from '@podlite/schema'
 import { podlite } from './index'
-import { runLint, LintFormat } from './lint'
+import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './lint'
+import { ConfigError } from './lint/config'
+import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
 import { resolveIncludes } from './resolve-includes'
 
@@ -256,6 +258,27 @@ function runQueryCommand(args: ReturnType<typeof parseArgs>): void {
   }
 }
 
+function runLintOnThreads(files: string[], options: LintOptions): void {
+  let config
+  try {
+    config = resolveConfig(files, options)
+  } catch (e) {
+    if (!(e instanceof ConfigError)) throw e
+    console.error(`podlite lint: ${e.message}`)
+    process.exitCode = 2
+    return
+  }
+
+  lintFilesInParallel(files, config)
+    .then(reports => {
+      process.exitCode = reportLint(reports, options)
+    })
+    .catch(e => {
+      console.error(`podlite lint: ${(e as Error).message}`)
+      process.exitCode = 2
+    })
+}
+
 function main() {
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code !== 'EPIPE') {
@@ -291,14 +314,20 @@ function main() {
       console.error(`podlite lint: unknown --format "${format}". Supported: ${LINT_FORMATS.join(', ')}`)
       process.exit(2)
     }
-    process.exitCode = runLint(files, {
+    const lintOptions: LintOptions = {
       strict: args.strict,
       format,
       configPath: args.configPath || undefined,
       stdinContent,
       enable: args.enable,
       disable: args.disable,
-    })
+    }
+
+    if (stdinContent === undefined && worthThreads(files)) {
+      runLintOnThreads(files, lintOptions)
+      return
+    }
+    process.exitCode = runLint(files, lintOptions)
     return
   }
 
