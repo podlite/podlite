@@ -19,9 +19,11 @@ const isIncludeBlock = (node: any): boolean =>
 
 const hasMask = (target: string): boolean => /[*?]/.test(target)
 
-// A mask that reaches into subdirectories is not expanded yet; it keeps the
-// missing-target error rather than quietly resolving to nothing.
 const reachesSubdirs = (target: string): boolean => target.includes('**')
+
+// A mask that crosses directories could otherwise walk a whole disk from a
+// short prefix.
+const maxDepth = 32
 
 // Everything up to the last separator that carries no mask; the rest is matched
 // by the selector itself, which already knows the pattern language.
@@ -31,17 +33,20 @@ const fixedPrefix = (target: string): string => {
   return parts.slice(0, upto === -1 ? parts.length : upto).join('/')
 }
 
-const listDir = (dir: string): string[] => {
+const listDir = (dir: string, deep: boolean, depth = 0): string[] => {
   let entries: fs.Dirent[]
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true })
   } catch {
     return []
   }
-  return entries
-    .filter(e => e.isFile() && !e.name.startsWith('.'))
-    .map(e => e.name)
-    .sort()
+  const named = entries.filter(e => !e.name.startsWith('.')).sort((a, b) => (a.name < b.name ? -1 : 1))
+  const files = named.filter(e => e.isFile()).map(e => e.name)
+  if (!deep || depth >= maxDepth) return files
+  const nested = named
+    .filter(e => e.isDirectory())
+    .flatMap(e => listDir(path.join(dir, e.name), deep, depth + 1).map(inner => `${e.name}/${inner}`))
+  return [...files, ...nested]
 }
 
 // Candidate paths for a masked target, written the way the target is written so
@@ -50,7 +55,7 @@ const listDir = (dir: string): string[] => {
 // it through the parser.
 const expandMask = (target: string, baseDir: string): string[] => {
   const prefix = fixedPrefix(target)
-  return listDir(path.resolve(baseDir, prefix))
+  return listDir(path.resolve(baseDir, prefix), reachesSubdirs(target))
     .map(name => (prefix ? `${prefix}/${name}` : name))
     .filter(file => filePathMatches(file, target))
 }
@@ -75,9 +80,9 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       const parsed = selector ? parseSelector(selector) : undefined
       if (!selector || !parsed || parsed.scheme !== 'file' || !parsed.document) return node
 
-      const expands = hasMask(parsed.document) && !reachesSubdirs(parsed.document)
-      const written = expands ? expandMask(parsed.document, baseDir) : [parsed.document]
-      if (!expands && !fs.existsSync(path.resolve(baseDir, parsed.document))) {
+      const masked = hasMask(parsed.document)
+      const written = masked ? expandMask(parsed.document, baseDir) : [parsed.document]
+      if (!masked && !fs.existsSync(path.resolve(baseDir, parsed.document))) {
         throw new Error(`include target not found: ${parsed.document}`)
       }
 

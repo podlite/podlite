@@ -181,3 +181,67 @@ describe('include with a directory mask', () => {
     expect(md).not.toContain('hidden')
   })
 })
+
+describe('include with a recursive mask', () => {
+  const mkdir = (name: string) => {
+    const d = path.join(tmpDir, name)
+    fs.mkdirSync(d, { recursive: true })
+    return d
+  }
+  const writeIn = (dir: string, name: string, body: string) => fs.writeFileSync(path.join(dir, name), body)
+
+  const tree = () => {
+    const inc = mkdir('inc')
+    const deep = mkdir(path.join('inc', 'deep'))
+    const deeper = mkdir(path.join('inc', 'deep', 'deeper'))
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(deep, 'b.podlite', '=pod\n\n=item beta\n\n=end pod\n')
+    writeIn(deeper, 'c.podlite', '=pod\n\n=item gamma\n\n=end pod\n')
+  }
+
+  it('reaches files of nested directories', () => {
+    tree()
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/**/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).toContain('beta')
+    expect(md).toContain('gamma')
+  })
+
+  it('applies the selector across the whole tree', () => {
+    const inc = mkdir('inc')
+    const deep = mkdir(path.join('inc', 'deep'))
+    writeIn(inc, 'a.podlite', '=head1 first\n\n=item alpha\n')
+    writeIn(deep, 'b.podlite', '=head1 second\n\n=item beta\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/**/*.podlite | head1\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('first')
+    expect(md).toContain('second')
+    expect(md).not.toContain('alpha')
+  })
+
+  it('keeps a single-level mask out of the subdirectories', () => {
+    tree()
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).not.toContain('beta')
+  })
+
+  it('skips a hidden directory', () => {
+    const inc = mkdir('inc')
+    const hidden = mkdir(path.join('inc', '.git'))
+    writeIn(inc, 'a.podlite', '=pod\n\n=item alpha\n\n=end pod\n')
+    writeIn(hidden, 'b.podlite', '=pod\n\n=item beta\n\n=end pod\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/**/*.podlite\n')
+    const md = convert(wrapper, 'md')
+    expect(md).toContain('alpha')
+    expect(md).not.toContain('beta')
+  })
+
+  it('leaves nothing behind when the tree holds no match', () => {
+    mkdir(path.join('inc', 'deep'))
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/**/*.podlite\n')
+    expect(() => convert(wrapper, 'md')).not.toThrow()
+  })
+})
