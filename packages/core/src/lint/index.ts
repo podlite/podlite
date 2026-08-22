@@ -10,6 +10,12 @@ import { scanSourceRules } from './grammar/scan'
 import { applyConfig, applyRuleFlags, ConfigError, findConfig, readConfig } from './config'
 import { applyMutes } from './mute'
 
+// The entry a consumer outside the package is meant to reach: everything it
+// needs to run a check and read the findings, without naming a file inside.
+export type { Violation, Severity, LintConfig, LintContext, Rule, RuleSetting } from './types'
+export type { FileReport } from './formatters/text'
+export { ConfigError, findConfig, readConfig } from './config'
+
 export type LintFormat = 'text' | 'json'
 
 export type LintOptions = {

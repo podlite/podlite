@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the check is reachable as podlite/lint — runLint for a whole run, lintFile and lintSource for the findings as data, with the types that describe them. The path no longer spells the build layout, and the check stays out of the package entry
+
 =item podlite query --to json names the file every block came from, so a query over several files can be traced back to its documents. Text handed in on stdin is named <stdin>; the other output formats are unchanged
 
 =item podlite lint checks a long list of files on several threads, which cuts a 126-file run from 1.64 to 1.14 seconds. Short lists stay on one thread, and the report reads the same either way

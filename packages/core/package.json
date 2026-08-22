@@ -17,6 +17,12 @@
       "require": "./lib/index.js",
       "default": "./lib/index.js"
     },
+    "./lint": {
+      "types": "./lib/lint/index.d.ts",
+      "import": "./esm/lint/index.js",
+      "require": "./lib/lint/index.js",
+      "default": "./lib/lint/index.js"
+    },
     "./package.json": "./package.json",
     "./lib/lint/*": {
       "types": "./lib/lint/*.d.ts",
