@@ -26,6 +26,24 @@ const linkTitle = config => {
   return title === undefined ? '' : ` "${title.replace(/"/g, '\\"')}"`
 }
 
+// A cell's own text is written whole. Trimming each fragment on its own eats the
+// spaces that sit between them — between a word and a markup code, or around a
+// sign the parser split the text on — so only the cell edges are stripped.
+const writeCellParts = (cell, writer, interator, ctx) => {
+  const parts = cell.content || []
+  const last = parts.length - 1
+  parts.forEach((part, i) => {
+    if (typeof part !== 'string') {
+      interator([part], ctx)
+      return
+    }
+    let text = part
+    if (i === 0) text = text.replace(/^\s+/, '')
+    if (i === last) text = text.replace(/\s+$/, '')
+    writer.write(text)
+  })
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value) {
@@ -343,15 +361,7 @@ const rules = {
           if (colspan) attrs += ` colspan="${colspan}"`
           if (rowspan) attrs += ` rowspan="${rowspan}"`
           writer.writeRaw(`<${tag}${attrs}>`)
-          if (cell.content) {
-            cell.content.forEach(c => {
-              if (typeof c === 'string') {
-                writer.write(c.trim())
-              } else {
-                interator([c], ctx)
-              }
-            })
-          }
+          writeCellParts(cell, writer, interator, ctx)
           writer.writeRaw(`</${tag}>`)
         })
         writer.writeRaw('</tr>\n')
@@ -369,13 +379,7 @@ const rules = {
       if (typeof original !== 'function') return null
       writer.output = (str: string) => parts.push(str)
       try {
-        ;(cell.content || []).forEach(c => {
-          if (typeof c === 'string') {
-            writer.write(c.trim())
-          } else {
-            interator([c], ctx)
-          }
-        })
+        writeCellParts(cell, writer, interator, ctx)
       } finally {
         writer.output = original
       }
@@ -393,15 +397,7 @@ const rules = {
         writer.writeRaw(' ')
         const folded = renderCell(cell)
         if (folded === null) {
-          if (cell.content) {
-            cell.content.forEach(c => {
-              if (typeof c === 'string') {
-                writer.write(c.trim())
-              } else {
-                interator([c], ctx)
-              }
-            })
-          }
+          writeCellParts(cell, writer, interator, ctx)
         } else {
           writer.writeRaw(folded)
         }
