@@ -77,4 +77,73 @@ describe('lint config file', () => {
     const violations = [{ rule: 'id-unique', severity: 'error' as const, message: 'duplicate' }]
     expect(applyConfig(violations, {})).toEqual(violations)
   })
+
+  describe('found without a flag', () => {
+    it('reads the config sitting next to the file', () => {
+      const file = duplicated()
+      write('.podlitelintrc.json', '{"rules":{"id-unique":"off"}}')
+      expect(lint([file]).out).toContain('0 errors')
+    })
+
+    it('reads a config from a directory above', () => {
+      write('.podlitelintrc.json', '{"rules":{"id-unique":"off"}}')
+      const nested = path.join(dir, 'deep', 'deeper')
+      fs.mkdirSync(nested, { recursive: true })
+      const file = path.join(nested, 'dup.podlite')
+      fs.writeFileSync(file, '=for para :id<A>\none\n\n=for para :id<A>\ntwo\n')
+      expect(lint([file]).out).toContain('0 errors')
+    })
+
+    it('lets the nearer config win', () => {
+      write('.podlitelintrc.json', '{"rules":{"id-unique":"off"}}')
+      const nested = path.join(dir, 'deep')
+      fs.mkdirSync(nested, { recursive: true })
+      fs.writeFileSync(path.join(nested, '.podlitelintrc.json'), '{"rules":{"id-unique":"error"}}')
+      const file = path.join(nested, 'dup.podlite')
+      fs.writeFileSync(file, '=for para :id<A>\none\n\n=for para :id<A>\ntwo\n')
+      expect(lint([file]).out).toContain('1 error')
+    })
+
+    it('lets --config win over the found one', () => {
+      const file = duplicated()
+      write('.podlitelintrc.json', '{"rules":{"id-unique":"off"}}')
+      const loud = write('loud.json', '{"rules":{"id-unique":"error"}}')
+      expect(lint(['--config', loud, file]).out).toContain('1 error')
+    })
+
+    it('reads a js config', () => {
+      const file = duplicated()
+      write('.podlitelintrc.js', 'module.exports = { rules: { "id-unique": "off" } }\n')
+      expect(lint([file]).out).toContain('0 errors')
+    })
+
+    it('prefers the json config over the js one', () => {
+      const file = duplicated()
+      write('.podlitelintrc.json', '{"rules":{"id-unique":"off"}}')
+      write('.podlitelintrc.js', 'module.exports = { rules: { "id-unique": "error" } }\n')
+      expect(lint([file]).out).toContain('0 errors')
+    })
+  })
+
+  describe('rules named on the command line', () => {
+    it('turns a rule off for this run', () => {
+      const file = duplicated()
+      expect(lint([file]).out).toContain('1 error')
+      expect(lint(['--disable', 'id-unique', file]).out).toContain('0 errors')
+    })
+
+    it('brings back a rule the config turned off', () => {
+      const file = duplicated()
+      const off = write('off.json', '{"rules":{"id-unique":"off"}}')
+      expect(lint(['--config', off, file]).out).toContain('0 errors')
+      expect(lint(['--config', off, '--enable', 'id-unique', file]).out).toContain('1 error')
+    })
+
+    it('takes the flag more than once', () => {
+      const file = write('two.podlite', '=for para :id<A>\none\n\n=for para :id<A>\ntwo\n\n=head3 skipped level\n')
+      const out = lint(['--disable', 'id-unique', '--disable', 'heading-hierarchy', file]).out
+      expect(out).not.toContain('id-unique')
+      expect(out).not.toContain('heading-hierarchy')
+    })
+  })
 })

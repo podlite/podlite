@@ -1,12 +1,32 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import type { LintConfig, RuleSetting, Severity, Violation } from './types'
 
 const SETTINGS: RuleSetting[] = ['off', 'error', 'warning', 'info']
 
+const CONFIG_NAMES = ['.podlitelintrc.json', '.podlitelintrc.js']
+
 export class ConfigError extends Error {}
+
+// Nearest config at or above the given directory. The first name of CONFIG_NAMES
+// present in a directory wins; a directory closer to the file wins over one above.
+export function findConfig(startDir: string): string | undefined {
+  let dir = path.resolve(startDir)
+  for (;;) {
+    for (const name of CONFIG_NAMES) {
+      const candidate = path.join(dir, name)
+      if (fs.existsSync(candidate)) return candidate
+    }
+    const up = path.dirname(dir)
+    if (up === dir) return undefined
+    dir = up
+  }
+}
 
 export function readConfig(configPath?: string): LintConfig {
   if (!configPath) return {}
+
+  if (configPath.endsWith('.js')) return readJsConfig(configPath)
 
   let raw: string
   try {
@@ -22,6 +42,22 @@ export function readConfig(configPath?: string): LintConfig {
     throw new ConfigError(`cannot read config ${configPath}: ${(e as Error).message}`)
   }
 
+  return checkConfigShape(parsed, configPath)
+}
+
+function readJsConfig(configPath: string): LintConfig {
+  let loaded: unknown
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    loaded = require(path.resolve(configPath))
+  } catch (e) {
+    throw new ConfigError(`cannot read config ${configPath}: ${(e as Error).message}`)
+  }
+  const value = (loaded as { default?: unknown })?.default ?? loaded
+  return checkConfigShape(value, configPath)
+}
+
+function checkConfigShape(parsed: unknown, configPath: string): LintConfig {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new ConfigError(`config ${configPath} must hold an object`)
   }
@@ -43,6 +79,15 @@ export function readConfig(configPath?: string): LintConfig {
     checked[id] = setting as RuleSetting
   }
   return { rules: checked }
+}
+
+// Flags stand above the file: they are typed for this run and mean it.
+export function applyRuleFlags(config: LintConfig, enable: string[], disable: string[]): LintConfig {
+  if (enable.length === 0 && disable.length === 0) return config
+  const rules = { ...(config.rules || {}) }
+  for (const id of disable) rules[id] = 'off'
+  for (const id of enable) delete rules[id]
+  return { ...config, rules }
 }
 
 export const isRuleOff = (config: LintConfig, ruleId: string): boolean => config.rules?.[ruleId] === 'off'

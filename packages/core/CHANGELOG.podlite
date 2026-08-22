@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint finds .podlitelintrc.json or .podlitelintrc.js by itself — the nearest one at or above the first checked file, json before js. --config still wins, and --enable and --disable name a rule for one run
+
 =item =include takes a recursive mask: file:./dir/**/*.podlite reaches the nested directories too, skipping hidden ones. A single-level mask stays within its own directory
 
 =item =include takes a directory mask: file:./dir/*.podlite reads every matching file of that directory in name order, applies the selector to each, and leaves nothing behind when the mask names no file. Files the mask does not name are never read

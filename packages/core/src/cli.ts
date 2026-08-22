@@ -23,6 +23,7 @@ function usage() {
   console.log(`Usage:
   podlite convert <files...|-> --to <format> [-o <output|->] [--render-mode <production|draft>]
   podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
+                           [--enable <rule>] [--disable <rule>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
 
 Commands:
@@ -36,7 +37,10 @@ Options:
                query:   podlite (default), md, html, json
   --format   lint output format: text (default), json
   --strict   lint: promote warnings to errors
-  --config   lint: path to .podlitelintrc.{json,js}
+  --config   lint: path to .podlitelintrc.{json,js}; without it the nearest one
+             at or above the first checked file is used
+  --enable   lint: run a rule the config turned off (repeatable)
+  --disable  lint: turn a rule off for this run (repeatable)
   --base     convert: prefix for relative file: image paths (or env PODLITE_BASE)
   --render-mode
              convert: production (default, covered content is masked) or draft
@@ -74,6 +78,8 @@ function parseArgs(argv: string[]) {
     configPath: '',
     base: '',
     renderMode: '',
+    enable: [] as string[],
+    disable: [] as string[],
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
@@ -103,6 +109,12 @@ function parseArgs(argv: string[]) {
       args.base = argv[++i] || ''
     } else if (arg === '--render-mode') {
       args.renderMode = argv[++i] || ''
+    } else if (arg === '--enable') {
+      const rule = argv[++i]
+      if (rule) args.enable.push(rule)
+    } else if (arg === '--disable') {
+      const rule = argv[++i]
+      if (rule) args.disable.push(rule)
     } else if (arg === '--help' || arg === '-h') {
       return null
     } else if (!arg.startsWith('-')) {
@@ -284,6 +296,8 @@ function main() {
       format,
       configPath: args.configPath || undefined,
       stdinContent,
+      enable: args.enable,
+      disable: args.disable,
     })
     return
   }

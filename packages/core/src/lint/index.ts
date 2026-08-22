@@ -1,3 +1,4 @@
+import * as path from 'path'
 import type { LintConfig, Violation, LintContext } from './types'
 import { makeSyntaxViolation } from './rules/syntax-valid'
 import { DEFAULT_RULES } from './rules'
@@ -6,7 +7,7 @@ import { detectFileType, readFile, parseContent } from './loader'
 import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
 import { scanSourceRules } from './grammar/scan'
-import { applyConfig, ConfigError, readConfig } from './config'
+import { applyConfig, applyRuleFlags, ConfigError, findConfig, readConfig } from './config'
 import { applyMutes } from './mute'
 
 export type LintFormat = 'text' | 'json'
@@ -16,6 +17,8 @@ export type LintOptions = {
   format: LintFormat
   configPath?: string
   stdinContent?: string
+  enable?: string[]
+  disable?: string[]
 }
 
 // text handed to the command instead of a path is reported under this name
@@ -56,9 +59,12 @@ function lintFile(filePath: string, config: LintConfig): FileReport {
 }
 
 export function runLint(files: string[], options: LintOptions): number {
+  const searchFrom = files.length > 0 ? path.dirname(path.resolve(files[0])) : process.cwd()
+  const configPath = options.configPath || findConfig(searchFrom)
+
   let config: LintConfig
   try {
-    config = readConfig(options.configPath)
+    config = applyRuleFlags(readConfig(configPath), options.enable || [], options.disable || [])
   } catch (e) {
     if (!(e instanceof ConfigError)) throw e
     console.error(`podlite lint: ${e.message}`)
