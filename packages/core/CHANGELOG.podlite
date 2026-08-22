@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite query --to json names the file every block came from, so a query over several files can be traced back to its documents. Text handed in on stdin is named <stdin>; the other output formats are unchanged
+
 =item podlite lint checks a long list of files on several threads, which cuts a 126-file run from 1.64 to 1.14 seconds. Short lists stay on one thread, and the report reads the same either way
 
 =item podlite lint finds .podlitelintrc.json or .podlitelintrc.js by itself — the nearest one at or above the first checked file, json before js. --config still wins, and --enable and --disable name a rule for one run

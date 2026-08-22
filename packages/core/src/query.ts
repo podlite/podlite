@@ -38,8 +38,11 @@ const renderViaRoot = (block: PodNode, serializer: 'md' | 'html'): string => {
 
 const formatBlocks = (format: QueryFormat, matches: Array<{ source: Source; block: PodNode }>): string => {
   if (format === 'json') {
+    // without the source, a query over several files answers "here are the
+    // blocks" and drops "from where", which leaves the caller no way back to
+    // the document
     return JSON.stringify(
-      matches.map(m => m.block),
+      matches.map(m => ({ file: m.source.file, ...(m.block as object) })),
       null,
       2,
     )

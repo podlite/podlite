@@ -148,6 +148,51 @@ describe('runQuery exit codes', () => {
   })
 })
 
+describe('runQuery names the source of every block', () => {
+  const two = () => {
+    const a = write('a.podlite', `=begin pod\n=head1 Alpha\n=end pod\n`)
+    const b = write('b.podlite', `=begin pod\n=head1 Beta\n=head1 Gamma\n=end pod\n`)
+    return { a, b }
+  }
+  const asJson = (files: string[], stdinContent?: string) =>
+    JSON.parse(
+      runQuery({ selector: 'head1', files, format: 'json', failOnEmpty: false, quiet: true, stdinContent }).output,
+    )
+
+  it('carries the file each block came from', () => {
+    const { a, b } = two()
+    const blocks = asJson([a, b])
+    expect(blocks).toHaveLength(3)
+    expect(blocks.map((x: { file: string }) => x.file)).toEqual([a, b, b])
+  })
+
+  it('writes the path as it was given', () => {
+    const { a } = two()
+    const [block] = asJson([a])
+    expect(block.file).toBe(a)
+  })
+
+  it('keeps the fields of the block itself', () => {
+    const { a } = two()
+    const [block] = asJson([a])
+    expect(block.type).toBe('block')
+    expect(block.name).toBe('head')
+    expect(block.content).toBeDefined()
+  })
+
+  it('names text handed in instead of a path', () => {
+    const [block] = asJson([], '=begin pod\n=head1 Piped\n=end pod\n')
+    expect(block.file).toBe('<stdin>')
+  })
+
+  it('leaves the other formats as they were', () => {
+    const { a, b } = two()
+    const raw = runQuery({ selector: 'head1', files: [a, b], format: 'podlite', failOnEmpty: false, quiet: true })
+    expect(raw.output).toContain('=head1 Alpha')
+    expect(raw.output).not.toContain(a)
+  })
+})
+
 describe('runQuery errors', () => {
   it('throws on invalid selector', () => {
     const f = write('x.podlite', `=begin pod\n=para hi\n=end pod\n`)
