@@ -419,5 +419,8 @@ export const podliteTreeLang = (codeLanguages: any = languages): Extension =>
   markdown({
     base: markdownLanguage,
     codeLanguages,
+    // in Podlite the angle opens a markup code and an attribute value, not an
+    // HTML tag, so the tag list would follow the caret through ordinary writing
+    completeHTMLTags: false,
     extensions: [podliteMarkdownExtension as any, podliteCodeLanguage(codeLanguages)],
   })
