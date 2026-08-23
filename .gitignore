@@ -43,3 +43,6 @@ index.pod6
 logo.png
 styles.css
 
+# bench numbers are per machine
+bench-report.json
+bench-baseline.json

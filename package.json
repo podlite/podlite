@@ -26,6 +26,7 @@
     "watch": "npx nodemon -e js,ts --exec 'yarn' watch:changed",
     "g:watch": "cd $INIT_CWD && npx nodemon -e js,ts --exec 'yarn' watch:update",
     "test": "jest",
+    "bench": "node scripts/bench.mjs",
     "g:jest": "cd $INIT_CWD && jest",
     "g:inject-version": "cd $INIT_CWD && node ../../scripts/inject-version.mjs",
     "g:build": "cd $INIT_CWD &&  yarn g:tsc && yarn g:tsc_esm",
