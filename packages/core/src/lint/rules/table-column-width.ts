@@ -27,9 +27,13 @@ const isEdge = (char: string) => char === '|' || char === '+' || char === ' '
 
 const collides = (line: string, boundary: number): boolean => {
   if (boundary >= line.length) return false
-  // content standing on the boundary, or pressed against it with no space left
+  // content standing on the boundary is wrong however the row is written
   if (!isEdge(line[boundary])) return true
-  return boundary > 0 && !isEdge(line[boundary - 1])
+  // pressed against the boundary only matters where the row draws a bar of its
+  // own: a row whose cells are held apart by spaces may fill its column to the
+  // last position, and the parser reads it correctly
+  const drawsBar = line[boundary] === '|' || line[boundary] === '+'
+  return drawsBar && boundary > 0 && !isEdge(line[boundary - 1])
 }
 
 type TableLine = { text: string; line: number }
