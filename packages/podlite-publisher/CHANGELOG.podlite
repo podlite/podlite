@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a publish address written with a space in it is reported at build time instead of being shortened in silence: an unquoted value is read as a list and only its first word became the address. The message names the document and the address it got; quoting the value keeps it whole
+
 =item the page index carries the record fields a site names in C<indexFields>, on top of the built-in ones
 
 =head1 0.0.46

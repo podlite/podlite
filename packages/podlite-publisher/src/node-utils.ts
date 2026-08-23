@@ -218,7 +218,24 @@ export function parseFile(filePath: string, fileContent?: string, mime?: MimeTyp
   const src = fileContent || fs.readFileSync(filePath).toString()
   return typeToParserMap[parser_type](src)
 }
-export function getDocumentAttributes(node: PodliteDocument) {
+// An address written without quotes is cut into a list at every space, and only
+// its first word reaches the page. The page then lands on a short address, or on
+// none at all, and nothing says so — that silence is what is being broken here.
+const readPublishUrl = (conf, filePath?: string): string | undefined => {
+  const name = conf.exists('puburl') ? 'puburl' : conf.exists('publishUrl') ? 'publishUrl' : undefined
+  if (!name) return undefined
+  const first = conf.getFirstValue(name)
+  const all = conf.getAllValues(name)
+  if (Array.isArray(all) && all.length > 1) {
+    const where = filePath ? ` in ${filePath}` : ''
+    console.warn(
+      `[publish] :${name} was read as ${all.length} values${where}; the address becomes "${first}". Put the value in quotes to keep it whole`,
+    )
+  }
+  return first
+}
+
+export function getDocumentAttributes(node: PodliteDocument, filePath?: string) {
   // filling title
   let title = ''
   let description = ''
@@ -264,12 +281,7 @@ export function getDocumentAttributes(node: PodliteDocument) {
   if (podnode) {
     // prepare publishUrl
     const conf = makeAttrs(podnode, {})
-    props.puburl = conf.exists('puburl')
-      ? conf.getFirstValue('puburl')
-      : // check old publishUrl attribute
-      conf.exists('publishUrl')
-      ? conf.getFirstValue('publishUrl')
-      : undefined
+    props.puburl = readPublishUrl(conf, filePath)
     const a_pubdate = conf.getFirstValue('pubdate')
     // Due to cover some cases whan new Date fail on safari, i.e.
     // new Date("2022-05-07 10:00:00").getFullYear() -> NaN
@@ -280,7 +292,7 @@ export function getDocumentAttributes(node: PodliteDocument) {
   }
   return props
 }
-export function getPublishAttributes(node: PodNode) {
+export function getPublishAttributes(node: PodNode, filePath?: string) {
   // filling title
   let title = ''
   let description = ''
@@ -321,12 +333,7 @@ export function getPublishAttributes(node: PodNode) {
   if (podnode) {
     // prepare publishUrl
     const conf = makeAttrs(podnode, {})
-    props.puburl = conf.exists('puburl')
-      ? conf.getFirstValue('puburl')
-      : // check old publishUrl attribute
-      conf.exists('publishUrl')
-      ? conf.getFirstValue('publishUrl')
-      : undefined
+    props.puburl = readPublishUrl(conf, filePath)
     const a_pubdate = conf.getFirstValue('pubdate')
     // Due to cover some cases whan new Date fail on safari, i.e.
     // new Date("2022-05-07 10:00:00").getFullYear() -> NaN
@@ -347,7 +354,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
       const { data } = matter(content || fs.readFileSync(f).toString())
       return data
     } else {
-      return getDocumentAttributes(podlite_document)
+      return getDocumentAttributes(podlite_document, f)
     }
   })(f, podlite_document)
   // prepare attributes
