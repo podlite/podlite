@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the document schema describes the tree the parser builds. An item carrying a checkbox, the terms of a definition, nineteen of the twenty-one markup codes, a semantic block holding more than one paragraph, and the entries of a table of contents were all outside it, and the check reported hundreds of errors on a sound document. The schema is generated from the types, so the types were brought to what the parser emits
+
 =head1 0.0.67
 
 =item a selector reads the value it is given by the same grammar that read the declaration, and compares the value as a whole. An attribute holding a list is not equal to a string, whatever the list holds and in whatever order; membership, written with the tilde form, runs over the values as declared and no longer cuts a quoted string into words; a value of one kind is not equal to a value of another

@@ -134,12 +134,20 @@ export interface Image {
   link?: string
 }
 
+// A paragraph the parser builds rather than reads: it carries its content and
+// nothing else, having no place in the source to take a margin or a location from
+export interface ParaBuilt {
+  type: 'para'
+  content: Array<Node | FormattingCodes>
+}
+
 // Table of contents
 export interface Toc {
   type: 'toc'
   title?: string
   folded?: boolean
   foldedLevels?: Record<number, boolean>
+  location?: Location
   content: TocList
 }
 export interface TocList {
@@ -150,8 +158,8 @@ export interface TocList {
 
 export interface TocItem {
   type: 'toc-item'
-  node: PodNode
-  content: Array<Node>
+  node: PodNode | ParaBuilt
+  content: Array<Node | ParaBuilt>
 }
 
 // extra definitions
@@ -205,7 +213,7 @@ export interface FormattingCodeB {
 export interface FormattingCodeC {
   type: 'fcode'
   name: 'C'
-  content?: Array<FormattingCodes | string>
+  content?: Array<Node>
 }
 
 export interface FormattingCodeE {
@@ -238,26 +246,26 @@ export interface FormattingCodeF {
 export interface FormattingCodeN {
   type: 'fcode'
   name: 'N'
-  content?: Array<FormattingCodes | string>
+  content?: Array<Node>
 }
 
 export interface FormattingCodeX {
   type: 'fcode'
   name: 'X'
   entry: Array<string> | null
-  content?: Array<FormattingCodes | string>
+  content?: Array<Node>
 }
 
 export interface FormattingCodeZ {
   type: 'fcode'
   name: 'Z'
-  content?: string
+  content?: string | Text
 }
 
 export interface FormattingCodeV {
   type: 'fcode'
   name: 'V'
-  content?: string
+  content?: string | Text
 }
 
 export interface FormattingCodeS {
@@ -276,7 +284,7 @@ export interface FormattingCodeD {
   type: 'fcode'
   name: 'D'
   synonyms: Array<string>
-  content: string
+  content: Array<Node>
 }
 
 export interface FormattingCodeL {
@@ -292,19 +300,19 @@ export interface FormattingCodeW {
   name: 'W'
   meta: string | null
   config?: ConfigItem[]
-  content: string | Text | [Text]
+  content: Array<Node>
 }
 
 export interface FormattingCodeI {
   type: 'fcode'
   name: 'I'
-  meta: string
-  content: string | Text
+  meta?: string
+  content: Array<Node>
 }
 export interface FormattingCodeAny {
   type: 'fcode'
   name: string
-  content?: Array<FormattingCodes | string>
+  content?: Array<Node>
 }
 
 export interface Ambient {
@@ -332,6 +340,15 @@ export interface Para {
   content: Array<Node | FormattingCodes>
 }
 
+// The term of a definition: the parser marks it by name and gives it neither
+// a margin nor a location, because it is cut out of the line the term stands on
+export interface ParaTerm {
+  type: 'para'
+  name: 'term'
+  text: string
+  content: Array<Node | FormattingCodes>
+}
+
 export interface Code {
   type: 'code'
   text: string
@@ -349,8 +366,10 @@ export interface BlankLine {
 export interface List {
   type: 'list'
   level: string | number // TODO: eliminate string
-  content: Array<BlockItem | BlankLine | List>
-  list: 'itemized'
+  content: Array<BlockItem | BlockDefn | BlankLine | List>
+  // the parser groups three kinds of list: plain items, items carrying a
+  // checkbox, and the terms of a definition
+  list: 'itemized' | 'task' | 'variable'
 }
 
 export interface ConfigItemKV {
@@ -486,8 +505,11 @@ export type BlockAny = BlockNamed
 
 export interface BlockNamed extends Omit<Block, 'content'> {
   name: string
-  // using RootBlock for MD chunks or Include for documents
-  content: [(Verbatim | Para | Code)?] | Array<Image | BlockCaption> | RootBlock // TODO: use one of Verbatim or Code types
+  // A semantic block holds whatever a block holds: the tuple of at most one
+  // element that stood here described no document the parser produces, and
+  // =begin DESCRIPTION with two items was already outside it.
+  // RootBlock is kept for markdown chunks and included documents.
+  content: Array<Node> | RootBlock
 }
 
 // TODO:deprecated
@@ -542,6 +564,8 @@ export type PodNode =
   | BlockDefn
   | string
   | Para
+  | ParaTerm
+  | ParaBuilt
   | Text
   | Code
   | BlockNamed

@@ -52,6 +52,12 @@
                     "$ref": "#/definitions/Para"
                 },
                 {
+                    "$ref": "#/definitions/ParaTerm"
+                },
+                {
+                    "$ref": "#/definitions/ParaBuilt"
+                },
+                {
                     "$ref": "#/definitions/Text"
                 },
                 {
@@ -1082,6 +1088,12 @@
                                 "$ref": "#/definitions/Para"
                             },
                             {
+                                "$ref": "#/definitions/ParaTerm"
+                            },
+                            {
+                                "$ref": "#/definitions/ParaBuilt"
+                            },
+                            {
                                 "$ref": "#/definitions/Text"
                             },
                             {
@@ -1192,6 +1204,361 @@
                 "type"
             ]
         },
+        "ParaTerm": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "para"
+                },
+                "name": {
+                    "type": "string",
+                    "const": "term"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Ambient"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPod"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockData"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockFormula"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockCode"
+                            },
+                            {
+                                "$ref": "#/definitions/BlankLine"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockNested"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockMarkdown"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockOutput"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockInput"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockInclude"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPara"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockHead"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockComment"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockDefn"
+                            },
+                            {
+                                "$ref": "#/definitions/Para"
+                            },
+                            {
+                                "$ref": "#/definitions/ParaTerm"
+                            },
+                            {
+                                "$ref": "#/definitions/ParaBuilt"
+                            },
+                            {
+                                "$ref": "#/definitions/Text"
+                            },
+                            {
+                                "$ref": "#/definitions/Code"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockNamed"
+                            },
+                            {
+                                "$ref": "#/definitions/Verbatim"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockTable"
+                            },
+                            {
+                                "$ref": "#/definitions/List"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockConfig"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockItem"
+                            },
+                            {
+                                "$ref": "#/definitions/Alias"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockToc"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPicture"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockImage"
+                            },
+                            {
+                                "$ref": "#/definitions/Image"
+                            },
+                            {
+                                "$ref": "#/definitions/RootBlock"
+                            },
+                            {
+                                "$ref": "#/definitions/Separator"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockCaption"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeF"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeI"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeW"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "$ref": "#/definitions/Toc"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "text",
+                "type"
+            ]
+        },
+        "ParaBuilt": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "para"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Ambient"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPod"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockData"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockFormula"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockCode"
+                            },
+                            {
+                                "$ref": "#/definitions/BlankLine"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockNested"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockMarkdown"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockOutput"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockInput"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockInclude"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPara"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockHead"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockComment"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockDefn"
+                            },
+                            {
+                                "$ref": "#/definitions/Para"
+                            },
+                            {
+                                "$ref": "#/definitions/ParaTerm"
+                            },
+                            {
+                                "$ref": "#/definitions/ParaBuilt"
+                            },
+                            {
+                                "$ref": "#/definitions/Text"
+                            },
+                            {
+                                "$ref": "#/definitions/Code"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockNamed"
+                            },
+                            {
+                                "$ref": "#/definitions/Verbatim"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockTable"
+                            },
+                            {
+                                "$ref": "#/definitions/List"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockConfig"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockItem"
+                            },
+                            {
+                                "$ref": "#/definitions/Alias"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockToc"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockPicture"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockImage"
+                            },
+                            {
+                                "$ref": "#/definitions/Image"
+                            },
+                            {
+                                "$ref": "#/definitions/RootBlock"
+                            },
+                            {
+                                "$ref": "#/definitions/Separator"
+                            },
+                            {
+                                "$ref": "#/definitions/BlockCaption"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeA"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeC"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeB"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeD"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeE"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeF"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeI"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeL"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeW"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeN"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeX"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeZ"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeV"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeAny"
+                            },
+                            {
+                                "$ref": "#/definitions/Toc"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "type"
+            ]
+        },
         "Text": {
             "type": "object",
             "properties": {
@@ -1262,35 +1629,8 @@
                         },
                         {
                             "type": "array",
-                            "items": [
-                                {
-                                    "anyOf": [
-                                        {
-                                            "$ref": "#/definitions/Para"
-                                        },
-                                        {
-                                            "$ref": "#/definitions/Code"
-                                        },
-                                        {
-                                            "$ref": "#/definitions/Verbatim"
-                                        }
-                                    ]
-                                }
-                            ],
-                            "minItems": 0,
-                            "maxItems": 1
-                        },
-                        {
-                            "type": "array",
                             "items": {
-                                "anyOf": [
-                                    {
-                                        "$ref": "#/definitions/Image"
-                                    },
-                                    {
-                                        "$ref": "#/definitions/BlockCaption"
-                                    }
-                                ]
+                                "$ref": "#/definitions/PodNode"
                             }
                         }
                     ]
@@ -1419,55 +1759,6 @@
                 "location",
                 "message",
                 "severity"
-            ]
-        },
-        "Image": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "image"
-                },
-                "src": {
-                    "type": "string"
-                },
-                "alt": {
-                    "type": "string"
-                },
-                "link": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "src",
-                "type"
-            ]
-        },
-        "BlockCaption": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "const": "caption"
-                },
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/PodNode"
-                    }
-                },
-                "type": {
-                    "type": "string",
-                    "const": "block"
-                },
-                "guarded": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "content",
-                "name",
-                "type"
             ]
         },
         "BlockTable": {
@@ -1664,6 +1955,9 @@
                                 "$ref": "#/definitions/BlankLine"
                             },
                             {
+                                "$ref": "#/definitions/BlockDefn"
+                            },
+                            {
                                 "$ref": "#/definitions/List"
                             },
                             {
@@ -1673,8 +1967,12 @@
                     }
                 },
                 "list": {
-                    "type": "string",
-                    "const": "itemized"
+                    "enum": [
+                        "itemized",
+                        "task",
+                        "variable"
+                    ],
+                    "type": "string"
                 }
             },
             "required": [
@@ -1914,6 +2212,55 @@
                 "type"
             ]
         },
+        "Image": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "image"
+                },
+                "src": {
+                    "type": "string"
+                },
+                "alt": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "src",
+                "type"
+            ]
+        },
+        "BlockCaption": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "const": "caption"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "type": {
+                    "type": "string",
+                    "const": "block"
+                },
+                "guarded": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
         "BlockImage": {
             "type": "object",
             "properties": {
@@ -2046,56 +2393,7 @@
                 "content": {
                     "type": "array",
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/FormattingCodeA"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeC"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeB"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeD"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeE"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeF"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeI"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeL"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeW"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeN"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeX"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeZ"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeV"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeS"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeAny"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "$ref": "#/definitions/PodNode"
                     }
                 }
             },
@@ -2145,7 +2443,10 @@
                     }
                 },
                 "content": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
@@ -2280,19 +2581,14 @@
                     "type": "string"
                 },
                 "content": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/Text"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
                 "content",
-                "meta",
                 "name",
                 "type"
             ]
@@ -2372,24 +2668,10 @@
                     }
                 },
                 "content": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/Text"
-                        },
-                        {
-                            "type": "array",
-                            "items": [
-                                {
-                                    "$ref": "#/definitions/Text"
-                                }
-                            ],
-                            "minItems": 1,
-                            "maxItems": 1
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
@@ -2413,56 +2695,7 @@
                 "content": {
                     "type": "array",
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/FormattingCodeA"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeC"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeB"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeD"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeE"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeF"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeI"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeL"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeW"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeN"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeX"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeZ"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeV"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeS"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeAny"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "$ref": "#/definitions/PodNode"
                     }
                 }
             },
@@ -2498,56 +2731,7 @@
                 "content": {
                     "type": "array",
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/FormattingCodeA"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeC"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeB"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeD"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeE"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeF"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeI"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeL"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeW"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeN"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeX"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeZ"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeV"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeS"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeAny"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "$ref": "#/definitions/PodNode"
                     }
                 }
             },
@@ -2569,7 +2753,14 @@
                     "const": "Z"
                 },
                 "content": {
-                    "type": "string"
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -2589,7 +2780,14 @@
                     "const": "V"
                 },
                 "content": {
-                    "type": "string"
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Text"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -2637,56 +2835,7 @@
                 "content": {
                     "type": "array",
                     "items": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/definitions/FormattingCodeA"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeC"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeB"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeD"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeE"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeF"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeI"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeL"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeW"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeN"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeX"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeZ"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeV"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeS"
-                            },
-                            {
-                                "$ref": "#/definitions/FormattingCodeAny"
-                            },
-                            {
-                                "type": "string"
-                            }
-                        ]
+                        "$ref": "#/definitions/PodNode"
                     }
                 }
             },
@@ -2716,6 +2865,9 @@
                             "type": "boolean"
                         }
                     }
+                },
+                "location": {
+                    "$ref": "#/definitions/Location"
                 },
                 "content": {
                     "$ref": "#/definitions/TocList"
