@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a section folded by :folded on its heading is grouped while the tree is built, so every reader of the tree sees it, not only the editor. The html export writes it as a native disclosure; markdown, which has none, writes the section out in full rather than losing the text
+
 =item the document schema describes the tree the parser builds. An item carrying a checkbox, the terms of a definition, nineteen of the twenty-one markup codes, a semantic block holding more than one paragraph, and the entries of a table of contents were all outside it, and the check reported hundreds of errors on a sound document. The schema is generated from the types, so the types were brought to what the parser emits
 
 =head1 0.0.67

@@ -221,6 +221,18 @@ const rules = {
   pod: content,
   ':code': wrapContent('<pre><code>', '</code></pre>'),
   code: handleNested(setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<code>`, '</code></pre>'))),
+  // a folded section is a heading plus the nodes under it; the disclosure is
+  // native so the reader needs no script to open it
+  _folded_section: (writer, processor) => (node, ctx, interator) => {
+    const [heading, ...rest] = (node.content || []) as any[]
+    const open = node.foldedState === false || node.foldedState === 0 || node.foldedState === '0'
+    writer.writeRaw(`<details class="folded-section"${open ? ' open' : ''}>`)
+    writer.writeRaw('<summary class="folded-section-summary">')
+    if (heading) interator([heading], ctx)
+    writer.writeRaw('</summary><div class="folded-section-content">')
+    interator(rest, ctx)
+    writer.writeRaw('</div></details>')
+  },
   data: emptyContent,
   ':verbatim': (writer, processor) => (node, ctx, interator) => {
     if (node.error) {

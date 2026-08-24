@@ -213,6 +213,11 @@ const rules = {
     }
     writer.writeRaw('```\n')
   }),
+  // markdown has no disclosure of its own, so the section is written out in
+  // full: hiding it would lose the text, and that is worse than losing the fold
+  _folded_section: (writer, processor) => (node, ctx, interator) => {
+    interator(node.content || [], ctx)
+  },
   data: emptyContent,
   ':verbatim': (writer, processor) => (node, ctx, interator) => {
     if (node.error) {

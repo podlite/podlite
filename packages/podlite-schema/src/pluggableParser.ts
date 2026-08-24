@@ -6,6 +6,7 @@ import { propagateConfigDefaults } from './helpers/configPropagation'
 import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
+import { applyFoldedSections } from './folded-sections'
 export { cleanIds, frozenIds } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -106,6 +107,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         promoteOrderedLists(resultAfter.interator)
         attachHeadingNumberPrefix(resultAfter.interator)
         markGuarded(resultAfter.interator)
+        resultAfter.interator = applyFoldedSections(resultAfter.interator)
       }
       return resultAfter
     }
@@ -115,6 +117,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
       promoteOrderedLists(result.interator)
       attachHeadingNumberPrefix(result.interator)
       markGuarded(result.interator)
+      result.interator = applyFoldedSections(result.interator)
     }
     return result
   }
