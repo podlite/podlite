@@ -20,7 +20,7 @@ describe('the tree keeps the heading name', () => {
   })
 
   it('keeps cyrillic as written', () => {
-    expect(headingIds(heading('Приветствие Мир'))).toEqual(['Приветствие Мир'])
+    expect(headingIds(heading('Καλημέρα Κόσμε'))).toEqual(['Καλημέρα Κόσμε'])
   })
 
   it('keeps case and brackets', () => {
@@ -35,14 +35,14 @@ describe('the tree keeps the heading name', () => {
 describe('an output shapes the name into a fragment', () => {
   const cases: Array<[string, string]> = [
     ['infix //', 'infix'],
-    ['Приветствие Мир', 'Приветствие-Мир'],
+    ['Καλημέρα Κόσμε', 'Καλημέρα-Κόσμε'],
     ['Section 1.2 (draft)', 'Section-12-draft'],
     ['A — B', 'A-B'],
     ['A   B', 'A-B'],
     ['  A  ', 'A'],
     ['A-B', 'A-B'],
     ['A - B', 'A-B'],
-    ['1. Введение', '1-Введение'],
+    ['1. Εισαγωγή', '1-Εισαγωγή'],
     ['///', ''],
   ]
 
@@ -61,8 +61,8 @@ describe('repeated names get numbered', () => {
 
   it('numbers plain repeats', () => {
     const ctx = {}
-    expect(getSafeNodeId({ name: 'head', id: 'Введение' } as any, ctx)).toBe('Введение')
-    expect(getSafeNodeId({ name: 'head', id: 'Введение' } as any, ctx)).toBe('Введение-2')
+    expect(getSafeNodeId({ name: 'head', id: 'Εισαγωγή' } as any, ctx)).toBe('Εισαγωγή')
+    expect(getSafeNodeId({ name: 'head', id: 'Εισαγωγή' } as any, ctx)).toBe('Εισαγωγή-2')
   })
 
   it('restarts numbering for another document', () => {
@@ -88,18 +88,18 @@ describe('repeated names get numbered', () => {
 
 describe('a link target finds its heading', () => {
   const index = indexAnchors([
-    { name: 'head', id: 'Приветствие Мир' },
+    { name: 'head', id: 'Καλημέρα Κόσμε' },
     { name: 'head', id: 'Getting Started' },
     { name: 'head', id: 'infix //' },
     { name: 'head', id: 'infix ^' },
   ])
 
   it('takes the exact name', () => {
-    expect(resolveFragment('Приветствие Мир', index)).toBe('Приветствие-Мир')
+    expect(resolveFragment('Καλημέρα Κόσμε', index)).toBe('Καλημέρα-Κόσμε')
   })
 
   it('takes a name written in another case', () => {
-    expect(resolveFragment('приветствие мир', index)).toBe('Приветствие-Мир')
+    expect(resolveFragment('καλημέρα κόσμε', index)).toBe('Καλημέρα-Κόσμε')
   })
 
   it('takes a fragment written in another case', () => {
@@ -133,9 +133,9 @@ describe('an output writes the shaped anchor', () => {
 
 =head2 infix ^
 
-=head2 Приветствие Мир
+=head2 Καλημέρα Κόσμε
 
-L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир>, L<d|#nothing here>, L<e|#>, L<f|https://example.com/x#frag>
+L<a|#Getting Started>, L<b|#getting-started>, L<c|#καλημέρα-κόσμε>, L<d|#nothing here>, L<e|#>, L<f|https://example.com/x#frag>
 
 =end pod
 `
@@ -156,7 +156,7 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир
   })
 
   it('keeps cyrillic letters in the anchor', () => {
-    expect(exported().html).toContain('<h2 id="Приветствие-Мир">')
+    expect(exported().html).toContain('<h2 id="Καλημέρα-Κόσμε">')
   })
 
   it('sends a link to the heading it names', () => {
@@ -166,7 +166,7 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#приветствие-мир
   it('finds the heading when the target is written in another case', () => {
     const { html } = exported()
     expect(html).toContain('<a href="#Getting-Started">b</a>')
-    expect(html).toContain('<a href="#Приветствие-Мир">c</a>')
+    expect(html).toContain('<a href="#Καλημέρα-Κόσμε">c</a>')
   })
 
   it('shapes a target that names no heading', () => {
@@ -184,14 +184,14 @@ describe('markdown shapes the name the way a markdown reader will', () => {
   const cases: Array<[string, string]> = [
     ['Getting Started', 'getting-started'],
     ['infix //', 'infix-'],
-    ['Приветствие Мир', 'приветствие-мир'],
+    ['Καλημέρα Κόσμε', 'καλημέρα-κόσμε'],
     ['Section 1.2 (draft)', 'section-12-draft'],
     ['A — B', 'a--b'],
     ['A   B', 'a---b'],
     ['  A  ', '--a--'],
     ['A-B', 'a-b'],
     ['A - B', 'a---b'],
-    ['1. Введение', '1-введение'],
+    ['1. Εισαγωγή', '1-εισαγωγή'],
     ['///', ''],
     ['A_B', 'a_b'],
     ['C++ and C#', 'c-and-c'],
@@ -211,9 +211,9 @@ describe('the markdown output carries its own anchors', () => {
 
 =head2 infix ^
 
-=head2 Приветствие Мир
+=head2 Καλημέρα Κόσμε
 
-L<a|#Getting Started>, L<b|#getting-started>, L<c|#Приветствие Мир>, L<d|#infix ^>, L<e|#nothing here>, L<f|#>, L<g|https://x/y#z>
+L<a|#Getting Started>, L<b|#getting-started>, L<c|#Καλημέρα Κόσμε>, L<d|#infix ^>, L<e|#nothing here>, L<f|#>, L<g|https://x/y#z>
 
 =end pod
 `
@@ -226,7 +226,7 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#Приветствие Мир
   it('lowercases the target', () => {
     const { md } = exported()
     expect(md).toContain('[a](#getting-started)')
-    expect(md).toContain('[c](#приветствие-мир)')
+    expect(md).toContain('[c](#καλημέρα-κόσμε)')
   })
 
   it('numbers a repeat from one, not from two', () => {

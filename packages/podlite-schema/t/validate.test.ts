@@ -48,18 +48,18 @@ describe('table cell content', () => {
   const table = (cell: string) => `=begin table\n A | B\n ==|==\n 1 | ${cell}\n=end table\n`
 
   it('plain text cell', () => {
-    expect(validate(table('текст'))).toEqual([])
+    expect(validate(table('text'))).toEqual([])
   })
   it('cell with code markup', () => {
-    expect(validate(table('каталог C<cron> пуст'))).toEqual([])
+    expect(validate(table('the C<cron> folder is empty'))).toEqual([])
   })
   it('cell with two markup codes', () => {
-    expect(validate(table('C<a> и B<b>'))).toEqual([])
+    expect(validate(table('C<a> and B<b>'))).toEqual([])
   })
   it('cell with a link', () => {
-    expect(validate(table('L<текст|http://example.org>'))).toEqual([])
+    expect(validate(table('L<text|http://example.org>'))).toEqual([])
   })
   it('cell written as a block', () => {
-    expect(validate('=begin table\n=begin row :header\n=cell Имя\n=end row\n=end table\n')).toEqual([])
+    expect(validate('=begin table\n=begin row :header\n=cell Name\n=end row\n=end table\n')).toEqual([])
   })
 })

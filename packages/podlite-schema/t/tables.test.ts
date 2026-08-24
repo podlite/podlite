@@ -206,7 +206,7 @@ describe('two whitespace characters separate columns', () => {
   })
 
   it('splits a row of non-latin cells', () => {
-    expect(cellsOf(table('Данные корпуса  метка'))).toEqual(['A', 'B', 'Данные корпуса', 'метка'])
+    expect(cellsOf(table('Corpus data  label'))).toEqual(['A', 'B', 'Corpus data', 'label'])
   })
 
   it('keeps a single space inside a cell', () => {

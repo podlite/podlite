@@ -10,11 +10,11 @@ const doc = `=begin pod
 
 =head2 infix ^
 
-=head2 Приветствие Мир
+=head2 Καλημέρα Κόσμε
 
 =head2 Getting Started
 
-L<by name|#Приветствие Мир>, L<lowercased|#приветствие-мир>, L<github style|#getting-started>, L<unknown|#nothing here>, L<empty|#>
+L<by name|#Καλημέρα Κόσμε>, L<lowercased|#καλημέρα-κόσμε>, L<github style|#getting-started>, L<unknown|#nothing here>, L<empty|#>
 
 =end pod
 `
@@ -27,18 +27,18 @@ describe('heading anchors', () => {
   })
 
   it('keeps cyrillic letters in the anchor', () => {
-    expect(render(doc)).toContain('<h2 id="Приветствие-Мир">')
+    expect(render(doc)).toContain('<h2 id="Καλημέρα-Κόσμε">')
   })
 })
 
 describe('a link inside the document finds its heading', () => {
   it('matches the name as written', () => {
-    expect(render(doc)).toContain('<a href="#Приветствие-Мир">by name</a>')
+    expect(render(doc)).toContain('<a href="#Καλημέρα-Κόσμε">by name</a>')
   })
 
   it('matches without regard to case', () => {
     const html = render(doc)
-    expect(html).toContain('<a href="#Приветствие-Мир">lowercased</a>')
+    expect(html).toContain('<a href="#Καλημέρα-Κόσμε">lowercased</a>')
     expect(html).toContain('<a href="#Getting-Started">github style</a>')
   })
 
