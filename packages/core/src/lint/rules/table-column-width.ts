@@ -1,4 +1,4 @@
-import { VERBATIM_BLOCKS } from '@podlite/schema'
+import { isVerbatimBlock } from '@podlite/schema'
 import type { Violation, SourceRule } from '../types'
 
 export const TABLE_COLUMN_WIDTH_RULE_ID = 'table-column-width'
@@ -68,7 +68,7 @@ const checkTable = (lines: TableLine[]): Violation[] => {
 export function scanTableColumns(content: string): Violation[] {
   const lines = content.split(/\r?\n/)
   // a table keeps its content verbatim too, and it is the one being read here
-  const verbatim = new Set<string>(VERBATIM_BLOCKS.filter(name => name !== 'table'))
+  const verbatim = (name: string) => name !== 'table' && isVerbatimBlock(name)
   const openBlocks: string[] = []
   const violations: Violation[] = []
   let table: TableLine[] | null = null
@@ -92,10 +92,10 @@ export function scanTableColumns(content: string): Violation[] {
     if (begin) {
       closeTable()
       openBlocks.push(begin[1])
-      if (begin[1] === 'table' && !openBlocks.some(b => verbatim.has(b))) table = []
+      if (begin[1] === 'table' && !openBlocks.some(verbatim)) table = []
       continue
     }
-    if (openBlocks.some(b => verbatim.has(b))) continue
+    if (openBlocks.some(verbatim)) continue
     if (abbreviated) {
       closeTable()
       table = []

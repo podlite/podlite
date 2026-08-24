@@ -137,3 +137,30 @@ describe('runLint delimited-block-balance integration', () => {
     expect(code).toBe(0)
   })
 })
+
+describe('a named block keeps its body as content', () => {
+  const balance = (src: string) => scanSourceRules(src).filter(v => v.rule === DELIMITED_BLOCK_BALANCE_RULE_ID)
+
+  it('takes a begin marker inside a named block as text', () => {
+    const src = '=begin Markdown\n\nsample:\n\n=begin markdown\n    a line\n\n=end Markdown\n'
+    expect(balance(src)).toEqual([])
+  })
+
+  it('reads the closing marker of the named block itself', () => {
+    const src = '=begin Xhtml\n<p>text</p>\n=end Xhtml\n'
+    expect(balance(src)).toEqual([])
+  })
+
+  it('still reports a named block left unclosed', () => {
+    expect(balance('=begin Xhtml\n<p>text</p>\n')).toHaveLength(1)
+  })
+
+  it('keeps reading an all-uppercase block as structure', () => {
+    const src = '=begin DESCRIPTION\n\n=begin pod\nno end here\n\n=end DESCRIPTION\n'
+    expect(balance(src).length).toBeGreaterThan(0)
+  })
+
+  it('leaves an ordinary lowercase block alone', () => {
+    expect(balance('=begin pod\n\n=begin para\ntext\n=end para\n\n=end pod\n')).toEqual([])
+  })
+})

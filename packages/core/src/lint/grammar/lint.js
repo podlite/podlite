@@ -161,7 +161,7 @@ function peg$parse(input, options) {
     peg$c9 = function (name, value) {
       // only a real attribute list is checked: `<` and `>` in running text or in
       // a verbatim block are not markup
-      const verbatim = options._blockStack.some(b => options.verbatimBlocks.indexOf(b.name) !== -1)
+      const verbatim = options._blockStack.some(b => options.isVerbatim(b.name))
       if (!options._inDirective || verbatim) return null
       const advice = 'use a non-conflicting delimiter ("...", (...), <<...>>) or plain text'
       // the mirror case: the value ended at a `>` written inside it, and the one
@@ -189,7 +189,7 @@ function peg$parse(input, options) {
     peg$c11 = peg$literalExpectation('=begin', false),
     peg$c12 = function (name) {
       const top = options._blockStack[options._blockStack.length - 1]
-      const verbatim = top && options.verbatimBlocks.indexOf(top.name) !== -1
+      const verbatim = top && options.isVerbatim(top.name)
       if (verbatim) {
         // the same name closes the enclosing block early and orphans the marker after it
         if (top.name === name) {
@@ -219,7 +219,7 @@ function peg$parse(input, options) {
     peg$c15 = function (name) {
       const top = options._blockStack[options._blockStack.length - 1]
       // a verbatim block runs to its own =end, so any other marker inside it is content
-      if (top && top.name !== name && options.verbatimBlocks.indexOf(top.name) !== -1) {
+      if (top && top.name !== name && options.isVerbatim(top.name)) {
         options._inDirective = false
         return null
       }
@@ -256,7 +256,7 @@ function peg$parse(input, options) {
     peg$c21 = function (name) {
       // any verbatim block on the stack makes this line content: markers written
       // inside such a block are an example, not structure
-      const verbatim = options._blockStack.some(b => options.verbatimBlocks.indexOf(b.name) !== -1)
+      const verbatim = options._blockStack.some(b => options.isVerbatim(b.name))
       if (options._inDirective && !verbatim) {
         options.diagnostics.push({
           rule: 'attr-continuation-dropped',
@@ -1177,6 +1177,9 @@ function peg$parse(input, options) {
   options.diagnostics = options.diagnostics || []
   options._blockStack = options._blockStack || []
   options.verbatimBlocks = options.verbatimBlocks || []
+  // a predicate, not a list: a named block is spelled by its case, so its names
+  // cannot be enumerated ahead of time
+  options.isVerbatim = options.isVerbatim || (name => options.verbatimBlocks.indexOf(name) !== -1)
   if (typeof options._inDirective !== 'boolean') options._inDirective = false
 
   peg$result = peg$startRuleFunction()

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a block whose name carries both cases holds its body as written, and the helpers say so: the specification hands such a body to a renderer or a plug-in, so a =begin written inside it is content
+
 =item a table cell keeps the spaces inside it when the document is converted to markdown. Each fragment of the cell used to be trimmed on its own, which ate the space between a word and a markup code and around a sign the parser split the text on; only the edges of the cell are stripped now
 
 =item covered content keeps its cover when it is taken out of the document it was written in. A block carrying :masked and a G<> code now mark the nodes below them, and the mark travels with the node through =include, through a selector and through a table built from a covered =data block. Draft mode still shows what production hides

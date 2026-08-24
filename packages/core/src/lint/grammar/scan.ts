@@ -1,5 +1,5 @@
 import type { Violation, SourceRule } from '../types'
-import { VERBATIM_BLOCKS, type Location } from '@podlite/schema'
+import { VERBATIM_BLOCKS, isVerbatimBlock, type Location } from '@podlite/schema'
 import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-width'
 
 const lintGrammar = require('./lint.js')
@@ -36,6 +36,7 @@ type GrammarOptions = {
   _blockStack: BlockMarker[]
   _inDirective: boolean
   verbatimBlocks: string[]
+  isVerbatim: (name: string) => boolean
 }
 
 export function scanSourceRules(content: string): Violation[] {
@@ -44,6 +45,7 @@ export function scanSourceRules(content: string): Violation[] {
     _blockStack: [],
     _inDirective: false,
     verbatimBlocks: [...VERBATIM_BLOCKS],
+    isVerbatim: isVerbatimBlock,
   }
   try {
     lintGrammar.parse(content, opts)

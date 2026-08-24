@@ -41,6 +41,13 @@ export const VERBATIM_BLOCKS = [
   'table',
 ] as const
 
-export const isVerbatimBlock = (name: string): boolean => (VERBATIM_BLOCKS as readonly string[]).includes(name)
+// A name carrying both cases is a named block: the specification hands its body
+// to a renderer or a parser plug-in, and without one the body degrades to
+// verbatim. So a =begin written inside it is content, not structure — the same
+// answer the listed names give, reached by a different road.
+export const isNamedBlockName = (name: string): boolean => /[a-z]/.test(name) && /[A-Z]/.test(name)
+
+export const isVerbatimBlock = (name: string): boolean =>
+  (VERBATIM_BLOCKS as readonly string[]).includes(name) || isNamedBlockName(name)
 
 export const isKnownBlockName = (name: string): boolean => (BLOCK_NAMES as readonly string[]).includes(name)
