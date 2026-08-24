@@ -80,7 +80,7 @@ export const validateSource = (text: string): ValidateReport => {
   const problems: Violation[] = [...scanSourceRules(text)]
   try {
     const ast = parseContent(text, 'podlite')
-    const ctx: LintContext = { filePath: virtualFile, fileType: 'podlite', config: {} }
+    const ctx: LintContext = { filePath: virtualFile, fileType: 'podlite', config: {}, source: text }
     problems.push(...runRules(ast, DEFAULT_RULES, ctx))
     for (const err of validatePodliteAst(ast)) {
       problems.push({

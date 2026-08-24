@@ -6,6 +6,7 @@ import { mediaAbsoluteFileRule } from './media-absolute-file'
 import { linkTargetResolvesRule } from './link-target-resolves'
 import { attrValueDroppedRule } from './attr-value-dropped'
 import { tableShapeRule } from './table-shape'
+import { deadDefinitionsRule } from './dead-definitions'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -15,4 +16,5 @@ export const DEFAULT_RULES: Rule[] = [
   linkTargetResolvesRule,
   attrValueDroppedRule,
   tableShapeRule,
+  deadDefinitionsRule,
 ]

@@ -14,6 +14,10 @@ export type LintContext = {
   filePath: string
   fileType: FileType
   config: LintConfig
+  // the document as written: a rule that asks what the source says, not what
+  // the tree kept, needs it — a reference can be consumed while the tree is
+  // built. Optional, so a caller that builds a context by hand keeps working
+  source?: string
 }
 
 export type Violation = {
