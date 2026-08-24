@@ -3,6 +3,7 @@ import { VERBATIM_BLOCKS, isVerbatimBlock, type Location } from '@podlite/schema
 import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-width'
 import { scanAbbreviatedAttrs, abbreviatedAttrsRule } from '../rules/abbreviated-attrs'
 import { scanMarkdownInPod, markdownInPodRule } from '../rules/markdown-in-pod'
+import { scanUnclosedMarkupCodes, unclosedMarkupCodeRule } from '../rules/unclosed-markup-code'
 
 const lintGrammar = require('./lint.js')
 
@@ -32,6 +33,7 @@ export const SOURCE_RULES: SourceRule[] = [
   tableColumnWidthRule,
   abbreviatedAttrsRule,
   markdownInPodRule,
+  unclosedMarkupCodeRule,
 ]
 
 type BlockMarker = { name: string; location: Location }
@@ -69,5 +71,6 @@ export function scanSourceRules(content: string, fileType: 'md' | 'podlite' = 'p
   opts.diagnostics.push(...scanTableColumns(content))
   opts.diagnostics.push(...scanAbbreviatedAttrs(content))
   if (fileType !== 'md') opts.diagnostics.push(...scanMarkdownInPod(content))
+  opts.diagnostics.push(...scanUnclosedMarkupCodes(content))
   return opts.diagnostics
 }
