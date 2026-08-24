@@ -2,6 +2,59 @@
 
 =head1 Upcoming
 
+=head1 0.0.87
+
+
+=head2 podlite
+
+=item podlite lint adds the markdown-in-pod rule: a heading written with hashes, a row of bars and dashes, and a pair of asterisks arrive as text inside a pod block, and the message names the Podlite construct to write instead. Blocks that keep their content as written, the separator of a real table, and markup shown inside a code span are left alone
+
+=item podlite lint adds the abbreviated-attrs rule: an abbreviated block takes the rest of its line as data, so attributes written there arrive as text. Reported only where the line holds nothing but attributes and content follows below; a named block, an example inside a code block, and an attribute written with nothing inside are left alone
+
+=item the command no longer raises the diagram renderer, and with it mermaid and React, before it has read its arguments: only a conversion renders, so the plugin registry is loaded there. A check or a query now starts on a runtime that forbids loading an ESM package through require
+
+=item podlite lint adds the dead-definitions rule: an =alias that no A<> calls, and a =data whose key no data: reference names, are reported. A mistyped key at the reference shows up as the definition going unused, which is the shape the mistake takes
+
+=item podlite lint delimited-block-balance takes the markers inside a block whose name carries both cases as content, not as structure: such a block keeps its body as written, and an example written in it no longer reads as an unclosed block. An all-uppercase name is still read as structure
+
+=item podlite lint table-column-width no longer reports a row whose cells are held apart by spaces while only the separator line draws bars: such a cell may fill its column to the last place and the table still parses. A cell standing on the boundary, and a cell pressed against a bar the row itself draws, are still reported
+
+=item the check is reachable as podlite/lint — runLint for a whole run, lintFile and lintSource for the findings as data, with the types that describe them. The path no longer spells the build layout, and the check stays out of the package entry
+
+=item podlite query --to json names the file every block came from, so a query over several files can be traced back to its documents. Text handed in on stdin is named <stdin>; the other output formats are unchanged
+
+=item podlite lint checks a long list of files on several threads, which cuts a 126-file run from 1.64 to 1.14 seconds. Short lists stay on one thread, and the report reads the same either way
+
+=item podlite lint finds .podlitelintrc.json or .podlitelintrc.js by itself — the nearest one at or above the first checked file, json before js. --config still wins, and --enable and --disable name a rule for one run
+
+=item =include takes a recursive mask: file:./dir/**/*.podlite reaches the nested directories too, skipping hidden ones. A single-level mask stays within its own directory
+
+=item =include takes a directory mask: file:./dir/*.podlite reads every matching file of that directory in name order, applies the selector to each, and leaves nothing behind when the mask names no file. Files the mask does not name are never read
+
+=item podlite convert takes --render-mode with production or draft, and reads the same choice from PODLITE_RENDER_MODE when the flag is absent. Production stays the default and masks covered content; the flag wins over the environment
+
+=head2 @podlite/editor-react
+
+=item the HTML tag list no longer opens on every angle typed in a Podlite document, where the angle opens a markup code or an attribute value. A markdown file keeps the tag list, since raw HTML belongs there
+
+=head2 @podlite/publisher
+
+=item a publish address written with a space in it is reported at build time instead of being shortened in silence: an unquoted value is read as a list and only its first word became the address. The message names the document and the address it got; quoting the value keeps it whole
+
+=item the page index carries the record fields a site names in C<indexFields>, on top of the built-in ones
+
+=head2 @podlite/schema
+
+=item a selector reads the value it is given by the same grammar that read the declaration, and compares the value as a whole. An attribute holding a list is not equal to a string, whatever the list holds and in whatever order; membership, written with the tilde form, runs over the values as declared and no longer cuts a quoted string into words; a value of one kind is not equal to a value of another
+
+=item a block whose name carries both cases holds its body as written, and the helpers say so: the specification hands such a body to a renderer or a plug-in, so a =begin written inside it is content
+
+=item a table cell keeps the spaces inside it when the document is converted to markdown. Each fragment of the cell used to be trimmed on its own, which ate the space between a word and a markup code and around a sign the parser split the text on; only the edges of the cell are stripped now
+
+=item covered content keeps its cover when it is taken out of the document it was written in. A block carrying :masked and a G<> code now mark the nodes below them, and the mark travels with the node through =include, through a selector and through a table built from a covered =data block. Draft mode still shows what production hides
+
+=item name the header columns that were parsed when C«:columns» or C«:rename» cannot match one: leading spaces from an indented body stay in the field, so the name that fails looks identical to the one in the source
+
 =head1 0.0.86
 
 

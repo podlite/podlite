@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.80
+
 =item podlite lint adds the markdown-in-pod rule: a heading written with hashes, a row of bars and dashes, and a pair of asterisks arrive as text inside a pod block, and the message names the Podlite construct to write instead. Blocks that keep their content as written, the separator of a real table, and markup shown inside a code span are left alone
 
 =item podlite lint adds the abbreviated-attrs rule: an abbreviated block takes the rest of its line as data, so attributes written there arrive as text. Reported only where the line holds nothing but attributes and content follows below; a named block, an example inside a code block, and an attribute written with nothing inside are left alone

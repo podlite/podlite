@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.73
+
 =item the HTML tag list no longer opens on every angle typed in a Podlite document, where the angle opens a markup code or an attribute value. A markdown file keeps the tag list, since raw HTML belongs there
 
 =head1 0.0.71

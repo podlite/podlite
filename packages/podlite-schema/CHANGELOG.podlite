@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.67
+
 =item a selector reads the value it is given by the same grammar that read the declaration, and compares the value as a whole. An attribute holding a list is not equal to a string, whatever the list holds and in whatever order; membership, written with the tilde form, runs over the values as declared and no longer cuts a quoted string into words; a value of one kind is not equal to a value of another
 
 =item a block whose name carries both cases holds its body as written, and the helpers say so: the specification hands such a body to a renderer or a plug-in, so a =begin written inside it is content
