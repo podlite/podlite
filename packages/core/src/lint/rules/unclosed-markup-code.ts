@@ -36,10 +36,7 @@ const unclosed = (text: string): Array<{ name: string; at: number }> => {
     const closed = open === '«' ? rest.includes('»') : rest.includes('>'.repeat(open.length))
     if (!closed) {
       missing.push({ name, at: match.index + before.length })
-      continue
     }
-    // an empty code names the code rather than marks anything up
-    if (open === '«' ? rest.startsWith('»') : rest.startsWith('>'.repeat(open.length))) continue
   }
   return missing
 }
