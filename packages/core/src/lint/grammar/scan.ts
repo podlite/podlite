@@ -2,6 +2,7 @@ import type { Violation, SourceRule } from '../types'
 import { VERBATIM_BLOCKS, isVerbatimBlock, type Location } from '@podlite/schema'
 import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-width'
 import { scanAbbreviatedAttrs, abbreviatedAttrsRule } from '../rules/abbreviated-attrs'
+import { scanMarkdownInPod, markdownInPodRule } from '../rules/markdown-in-pod'
 
 const lintGrammar = require('./lint.js')
 
@@ -30,6 +31,7 @@ export const SOURCE_RULES: SourceRule[] = [
   attrContinuationDroppedRule,
   tableColumnWidthRule,
   abbreviatedAttrsRule,
+  markdownInPodRule,
 ]
 
 type BlockMarker = { name: string; location: Location }
@@ -41,7 +43,9 @@ type GrammarOptions = {
   isVerbatim: (name: string) => boolean
 }
 
-export function scanSourceRules(content: string): Violation[] {
+// The file type decides whether markup of another language is out of place:
+// in a markdown file markdown is the language, not a stray.
+export function scanSourceRules(content: string, fileType: 'md' | 'podlite' = 'podlite'): Violation[] {
   const opts: GrammarOptions = {
     diagnostics: [],
     _blockStack: [],
@@ -64,5 +68,6 @@ export function scanSourceRules(content: string): Violation[] {
   }
   opts.diagnostics.push(...scanTableColumns(content))
   opts.diagnostics.push(...scanAbbreviatedAttrs(content))
+  if (fileType !== 'md') opts.diagnostics.push(...scanMarkdownInPod(content))
   return opts.diagnostics
 }

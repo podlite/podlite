@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite lint adds the markdown-in-pod rule: a heading written with hashes, a row of bars and dashes, and a pair of asterisks arrive as text inside a pod block, and the message names the Podlite construct to write instead. Blocks that keep their content as written, the separator of a real table, and markup shown inside a code span are left alone
+
 =item podlite lint adds the abbreviated-attrs rule: an abbreviated block takes the rest of its line as data, so attributes written there arrive as text. Reported only where the line holds nothing but attributes and content follows below; a named block, an example inside a code block, and an attribute written with nothing inside are left alone
 
 =item the command no longer raises the diagram renderer, and with it mermaid and React, before it has read its arguments: only a conversion renders, so the plugin registry is loaded there. A check or a query now starts on a runtime that forbids loading an ESM package through require

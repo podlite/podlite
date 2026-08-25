@@ -31,8 +31,8 @@ export type LintOptions = {
 export const STDIN_NAME = '<stdin>'
 
 export function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
-  const violations: Violation[] = [...applyConfig(scanSourceRules(content), config)]
   const fileType = detectFileType(filePath)
+  const violations: Violation[] = [...applyConfig(scanSourceRules(content, fileType), config)]
   try {
     const ast = parseContent(content, fileType)
     const ctx: LintContext = { filePath, fileType, config, source: content }

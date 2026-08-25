@@ -78,7 +78,7 @@ describe('delimited-block-balance rule', () => {
 
   it('pure markdown text produces no violations', () => {
     const src = '# Heading\n\nParagraph with > a literal angle.\n\n- item\n'
-    expect(scanSourceRules(src)).toEqual([])
+    expect(scanSourceRules(src, 'md')).toEqual([])
   })
 
   it('descending names balanced through stack', () => {
