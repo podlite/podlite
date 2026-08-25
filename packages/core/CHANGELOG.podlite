@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the command no longer raises the diagram renderer, and with it mermaid and React, before it has read its arguments: only a conversion renders, so the plugin registry is loaded there. A check or a query now starts on a runtime that forbids loading an ESM package through require
+
 =item podlite lint adds the dead-definitions rule: an =alias that no A<> calls, and a =data whose key no data: reference names, are reported. A mistyped key at the reference shows up as the definition going unused, which is the shape the mistake takes
 
 =item podlite lint delimited-block-balance takes the markers inside a block whose name carries both cases as content, not as structure: such a block keeps its body as written, and an example written in it no longer reads as an unclosed block. An all-uppercase name is still read as structure

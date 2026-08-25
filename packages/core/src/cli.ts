@@ -1,12 +1,22 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { toMarkdown, toHtml } from '@podlite/schema'
-import { podlite } from './index'
 import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './lint'
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
 import { resolveIncludes } from './resolve-includes'
+
+// The plugin registry brings the diagram renderer, and with it mermaid and
+// React. Only conversion renders anything, so the registry is raised there and
+// not at startup — a check or a query used to pay for it, and on a runtime that
+// forbids loading an ESM package through require the command died before it
+// had read its arguments.
+const parserWithPlugins = () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { podlite } = require('./index')
+  return podlite({ importPlugins: true })
+}
 
 const FORMATS: Record<string, string> = {
   md: '.md',
@@ -142,7 +152,7 @@ function convertFile(
 
   const fromStdin = inputPath === STDIN_MARKER
   const content = fromStdin ? readStdinSync() : fs.readFileSync(inputPath, 'utf-8')
-  const p = podlite({ importPlugins: true })
+  const p = parserWithPlugins()
   const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
 
   let tree = parseToAst(content)
