@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the editor offers the names of settings in the header of a block, where until now it went quiet after the block name. Names already written in the document come first, then the ones the specification gives; the body of the document is left alone
+
 =head1 0.0.73
 
 =item the HTML tag list no longer opens on every angle typed in a Podlite document, where the angle opens a markup code or an attribute value. A markdown file keeps the tag list, since raw HTML belongs there

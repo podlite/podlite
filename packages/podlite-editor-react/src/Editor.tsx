@@ -17,7 +17,15 @@ import dictionary from './dict'
 import { listContinuationKeymap, itemLevelKeymap } from './listContinuation'
 import { podliteFoldService } from './foldPodlite'
 import { dictionaryFor } from './helpers'
-import { podliteTreeLang, suggestionContextAt, markdownHeadingStyle, SuggestionContext } from './podliteMarkdown'
+import {
+  podliteTreeLang,
+  suggestionContextAt,
+  markdownHeadingStyle,
+  SuggestionContext,
+  inAttributeZone,
+  attributeNamesInDocument,
+} from './podliteMarkdown'
+import { ATTRIBUTE_NAMES } from '@podlite/schema'
 import { podliteDecorations } from './podliteDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
@@ -622,7 +630,29 @@ function PodliteEditorInternal(
       pod6: optionsFor('pod6'),
       md: optionsFor('md'),
     }
+    // In the header of a block everything after the block name is settings, so
+    // the names of settings belong there — the block names do not.
+    function attributeCompletions(context) {
+      const before = context.matchBefore(/:[\w-]*/)
+      if (!before && !context.explicit) return null
+      if (language === 'markdown') return null
+      if (!inAttributeZone(context.state, context.pos)) return null
+      const inDocument = attributeNamesInDocument(context.state)
+      const seen = new Set(inDocument)
+      const options = [
+        ...inDocument.map(name => ({ label: `:${name}`, type: 'property', detail: 'in this document' })),
+        ...ATTRIBUTE_NAMES.filter(name => !seen.has(name)).map(name => ({
+          label: `:${name}`,
+          type: 'property',
+          detail: 'standard',
+        })),
+      ]
+      return { from: before ? before.from : context.pos, options, validFor: /^:[\w-]*$/ }
+    }
+
     function myCompletions(context) {
+      const inHeader = attributeCompletions(context)
+      if (inHeader) return inHeader
       let before = context.matchBefore(/^\s*=\w*/)
       if (!context.explicit && !before) return null
       // a markdown file is markdown throughout; inside a Podlite document the

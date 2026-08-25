@@ -353,6 +353,35 @@ export const podliteMarkdownExtension: any = {
 
 export type SuggestionContext = 'pod6' | 'md'
 
+// The header of a block is settings from the block name to the end of the line,
+// and the tree already marks those pieces. Asking it beats a second regular
+// expression that would drift from the one the highlighting uses.
+export const inAttributeZone = (state: EditorState, pos: number): boolean => {
+  const line = state.doc.lineAt(pos)
+  const head = line.text.match(/^\s*=(\w+)/)
+  if (!head || !TAKES_SETTINGS.has(head[1])) {
+    // a continuation line carries settings too: it opens with = and a space
+    if (!/^\s*=\s/.test(line.text)) return false
+  }
+  return pos > line.from + (head ? head[0].length : 1)
+}
+
+// Names already written in this document, so a name chosen once is spelled the
+// same way the next time.
+export const attributeNamesInDocument = (state: EditorState): string[] => {
+  const found = new Set<string>()
+  const tree = syntaxTree(state)
+  tree.iterate({
+    enter: (node: any) => {
+      if (node.name !== 'PodAttrName') return
+      const text = state.doc.sliceString(node.from, node.to)
+      const name = text.replace(/^:/, '').replace(/[<({].*$/, '')
+      if (/^[a-zA-Z][\w-]*$/.test(name)) found.add(name)
+    },
+  })
+  return [...found].sort()
+}
+
 // the tree already knows where the caret stands, so nothing is parsed a second time
 export const suggestionContextAt = (state: EditorState, pos: number): SuggestionContext => {
   // the tree may not have reached the caret yet; give the parse a moment to get there
