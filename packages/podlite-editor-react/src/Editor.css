@@ -136,3 +136,22 @@
 .cm-pod-fence-attr-value {
   color: var(--color-prettylights-syntax-string);
 }
+
+/* A picture shown under the line that names it. It is a widget, so it must not
+   take the caret or push the text around more than its own height. */
+.cm-pod-image {
+  padding: 0.25em 0 0.5em 0;
+}
+.cm-pod-image img {
+  max-width: 100%;
+  max-height: 20em;
+  display: block;
+  border-radius: 3px;
+}
+/* an address that cannot be fetched, and one still being resolved, read as a
+   quiet line rather than a broken icon */
+.cm-pod-image-missing,
+.cm-pod-image-waiting {
+  opacity: 0.55;
+  font-style: italic;
+}

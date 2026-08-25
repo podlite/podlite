@@ -27,6 +27,7 @@ import {
 } from './podliteMarkdown'
 import { ATTRIBUTE_NAMES } from '@podlite/schema'
 import { podliteDecorations } from './podliteDecorations'
+import { podliteImages } from './imageDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
 import HighlightedCode from './HighlightedCode'
@@ -101,6 +102,9 @@ export interface IPodliteEditor extends ReactCodeMirrorProps {
   imageSrc?: ImageSrcResolver
   /** Base directory for relative paths passed to `imageSrc`. */
   imageBaseDir?: string
+  /** Show the picture a directive names, under the line that names it. Apart
+   * from any switch over the raw text: the two are separate choices. */
+  showInlineImages?: boolean
 }
 
 export type IncludeReader = (path: string, baseDir?: string) => string | null
@@ -148,6 +152,7 @@ function PodliteEditorInternal(
     expandPaths,
     imageSrc,
     imageBaseDir,
+    showInlineImages = false,
     ...codemirrorProps
   } = props
   const full_preview = previewWidth === '100%'
@@ -682,6 +687,7 @@ function PodliteEditorInternal(
       // covered content and the settings of a fenced block; a markdown file has
       // fences too, so this is not kept to Podlite documents
       podliteDecorations(),
+      podliteImages({ show: showInlineImages, resolve: imageSrc, baseDir: imageBaseDir }),
       keepScrollInside,
     ]
 
