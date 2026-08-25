@@ -15,6 +15,14 @@ const render = (doc: string, display: Parameters<typeof podliteImages>[0]): HTML
 
 const shown = (dom: HTMLElement) => dom.querySelectorAll('.cm-pod-image')
 
+// the resolver answers in a microtask, so the view has to stay alive to see it
+const open = (doc: string, display: Parameters<typeof podliteImages>[0]): EditorView => {
+  const state = EditorState.create({ doc, extensions: [podliteImages(display)] })
+  return new EditorView({ state, parent: document.body })
+}
+const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+const addressOf = (view: EditorView) => view.dom.querySelector('.cm-pod-image img')?.getAttribute('src')
+
 beforeEach(() => forgetResolvedImages())
 
 describe('the line that names a picture', () => {
@@ -60,6 +68,19 @@ describe('showing the picture in the body', () => {
     const box = dom.querySelector('.cm-pod-image')
     expect(box?.classList.contains('cm-pod-image-waiting')).toBe(true)
     expect(box?.textContent).toBe('photo.png')
+  })
+
+  it('keeps two editors apart when one address sits in two directories', async () => {
+    const under = (baseDir: string) =>
+      open('=Image photo.png\n', { show: true, baseDir, resolve: (src, dir) => `${dir}/${src}` })
+    const first = under('/docs/a')
+    await settle()
+    const second = under('/docs/b')
+    await settle()
+    expect(addressOf(first)).toBe('/docs/a/photo.png')
+    expect(addressOf(second)).toBe('/docs/b/photo.png')
+    first.destroy()
+    second.destroy()
   })
 
   it('hands the address and the base directory to the host', () => {

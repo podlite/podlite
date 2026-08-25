@@ -14,7 +14,10 @@ export type ImageDisplay = {
   baseDir?: string
 }
 
+// the same relative address stands for a different file under another base
+// directory, so the directory belongs in the key
 const resolved = new Map<string, string>()
+const cacheKey = (src: string, baseDir?: string) => `${baseDir ?? ''}\u0000${src}`
 
 export const imageResolvedEffect = StateEffect.define<{ src: string; url: string }>()
 
@@ -63,12 +66,13 @@ const build = (view: EditorView, display: ImageDisplay): DecorationSet => {
       const found = line.text.match(IMAGE_LINE)
       if (found) {
         const src = found[2]
-        const url = resolved.get(src)
+        const key = cacheKey(src, display.baseDir)
+        const url = resolved.get(key)
         if (url === undefined && display.resolve) {
           Promise.resolve(display.resolve(src, display.baseDir))
             .then(value => {
-              if (typeof value !== 'string' || resolved.get(src) === value) return
-              resolved.set(src, value)
+              if (typeof value !== 'string' || resolved.get(key) === value) return
+              resolved.set(key, value)
               view.dispatch({ effects: imageResolvedEffect.of({ src, url: value }) })
             })
             .catch(() => undefined)
