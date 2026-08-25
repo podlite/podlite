@@ -25,8 +25,23 @@ const transformIgnores = [
   'nanoid',
 ].join('|')
 
+// Coverage counts what a person wrote and can change. Build output under lib/
+// and esm/ duplicates src/, and a generated parser is the generator's product,
+// not code anyone edits — counting either turns the figure into a measure of
+// the instrument rather than of the tests.
+const notWrittenByHand = [
+  '/node_modules/',
+  '/packages/[^/]+/(lib|esm|dist|built)/',
+  '/packages/[^/]+/src/grammar\\.js$',
+  '/packages/[^/]+/src/grammarfc\\.js$',
+  '/packages/core/src/lint/grammar/lint\\.js$',
+  '\\.test\\.(t|j)sx?$',
+  '\\.spec\\.(t|j)sx?$',
+]
+
 module.exports = {
   moduleDirectories: ['node_modules'],
+  coveragePathIgnorePatterns: notWrittenByHand,
   snapshotSerializers: ['jest-serializer-html'],
   snapshotFormat: { printBasicPrototype: true, escapeString: true },
   moduleNameMapper: {
