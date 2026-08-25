@@ -1,6 +1,7 @@
 import type { Violation, SourceRule } from '../types'
 import { VERBATIM_BLOCKS, isVerbatimBlock, type Location } from '@podlite/schema'
 import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-width'
+import { scanAbbreviatedAttrs, abbreviatedAttrsRule } from '../rules/abbreviated-attrs'
 
 const lintGrammar = require('./lint.js')
 
@@ -28,6 +29,7 @@ export const SOURCE_RULES: SourceRule[] = [
   delimitedBlockBalanceRule,
   attrContinuationDroppedRule,
   tableColumnWidthRule,
+  abbreviatedAttrsRule,
 ]
 
 type BlockMarker = { name: string; location: Location }
@@ -61,5 +63,6 @@ export function scanSourceRules(content: string): Violation[] {
     })
   }
   opts.diagnostics.push(...scanTableColumns(content))
+  opts.diagnostics.push(...scanAbbreviatedAttrs(content))
   return opts.diagnostics
 }
