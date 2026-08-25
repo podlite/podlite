@@ -1,5 +1,6 @@
 import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, PodliteDocument, PodNode } from './index'
 import { ConfigItem } from './types'
+import { parseAttributes } from './helpers/parseAttributes'
 
 /*
 =begin pod
@@ -278,6 +279,44 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
 
 type SelectorContext = { config?: Record<string, ConfigItem[]> }
 
+type Typed = { value: unknown; type?: string }
+
+// The operand is read by the same grammar as a declaration: the delimiters
+// around it decide whether it is a string, a list or a number. Reading it as
+// raw text would put values out of reach that a document can hold — a quoted
+// string among them.
+const readOperand = (raw: string): Typed | undefined => {
+  const [item] = parseAttributes(`:x<${raw}>`)
+  return item ? { value: item.value, type: item.type } : undefined
+}
+
+// The declared value with its kind kept. makeAttrs flattens a list into the
+// surrounding values, which loses the very thing equality compares.
+const declaredValue = (node: PodNode, name: string, ctx: SelectorContext): Typed | undefined => {
+  const anyNode = node as unknown as { name?: string; config?: ConfigItem[] }
+  const own = (Array.isArray(anyNode.config) ? anyNode.config : []).find(c => c && c.name === name)
+  if (own) return { value: own.value, type: own.type }
+  const configured = (anyNode.name && ctx.config?.[anyNode.name]) || []
+  const inherited = configured.find(c => c && c.name === name)
+  return inherited ? { value: inherited.value, type: inherited.type } : undefined
+}
+
+const sameScalar = (a: unknown, b: unknown): boolean => typeof a === typeof b && a === b
+
+// A list equals another list when their elements match one by one, in order; a
+// value of one kind never equals a value of another.
+const sameValue = (a: Typed, b: Typed): boolean => {
+  if (Array.isArray(a.value) || Array.isArray(b.value)) {
+    if (!Array.isArray(a.value) || !Array.isArray(b.value)) return false
+    return a.value.length === b.value.length && a.value.every((item, i) => sameScalar(item, (b.value as unknown[])[i]))
+  }
+  return sameScalar(a.value, b.value)
+}
+
+// Membership runs over the values as declared. A string is one value, even
+// when it holds spaces, so a word taken from its middle is not a member.
+const valuesOf = (typed: Typed): unknown[] => (Array.isArray(typed.value) ? typed.value : [typed.value])
+
 const matchCondition = (node: PodNode, cond: Condition, ctx: SelectorContext): boolean => {
   const attrs = makeAttrs(node, ctx)
   const exists = attrs.exists(cond.attrName)
@@ -295,26 +334,19 @@ const matchCondition = (node: PodNode, cond: Condition, ctx: SelectorContext): b
     }
   }
 
+  const declared = declaredValue(node, cond.attrName, ctx)
+  const operand = readOperand(cond.valueSpec.value)
+
   if (cond.valueSpec.kind === 'angle') {
-    if (!exists) return false
-    const equal = String(attrs.getFirstValue(cond.attrName)) === cond.valueSpec.value
+    if (!exists || !declared || !operand) return false
+    const equal = sameValue(declared, operand)
     return cond.modifier === '!' ? !equal : equal
   }
 
   if (cond.valueSpec.kind === 'contains') {
-    if (!exists) return false
-    // Author-facing semantics: `:tags<a b c>` is a list of three elements.
-    // Grammar parses unquoted identifier sequences as a single string, so
-    // split string values on whitespace/comma to recover list shape.
-    const tokens: string[] = []
-    for (const v of attrs.getAllValues(cond.attrName) as unknown[]) {
-      if (typeof v === 'string') {
-        for (const t of v.split(/[\s,]+/)) if (t) tokens.push(t)
-      } else {
-        tokens.push(String(v))
-      }
-    }
-    const present = tokens.includes(cond.valueSpec.value)
+    if (!exists || !declared || !operand) return false
+    const values = valuesOf(declared)
+    const present = valuesOf(operand).every(wanted => values.some(held => sameScalar(held, wanted)))
     return cond.modifier === '!' ? !present : present
   }
 
