@@ -32,6 +32,12 @@ describe('unclosed-markup-code rule', () => {
       expect(check('=head1 Heading with B<unclosed code\n')).toHaveLength(1)
     })
 
+    // an angle after a capital reads as markup whatever the prose meant by it;
+    // no document in the corpus writes a comparison that way
+    it('takes a capital before an angle as an opening, not as a comparison', () => {
+      expect(check('The guard holds while A<B and nothing else.\n')).toHaveLength(1)
+    })
+
     it('points at the line the code was opened on', () => {
       const found = check('=begin pod\n\nfirst line\nsecond with B<unclosed\nthird line\n\n=end pod\n')
       expect(found[0].location?.start.line).toBe(4)
@@ -62,6 +68,15 @@ describe('unclosed-markup-code rule', () => {
 
     it('leaves an example inside a block kept as written', () => {
       expect(check('=begin code\ntext with B<unclosed\n=end code\n')).toEqual([])
+    })
+
+    it('leaves the same example written in the short forms of that block', () => {
+      expect(check('=for code\ntext with B<unclosed\n')).toEqual([])
+      expect(check('=code text with B<unclosed\n')).toEqual([])
+    })
+
+    it('reads the line after such a block again', () => {
+      expect(check('=for code\nkept as written B<here\n\nprose with C<unclosed\n')).toHaveLength(1)
     })
 
     it('leaves a document with no markup codes at all', () => {

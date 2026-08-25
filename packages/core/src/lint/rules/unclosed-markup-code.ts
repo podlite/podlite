@@ -51,6 +51,7 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
   const open: string[] = []
   const violations: Violation[] = []
   let chunk: Chunk | null = null
+  let inAbbreviatedVerbatim = false
 
   const close = () => {
     if (!chunk) return
@@ -76,12 +77,14 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
 
     if (/^\s*=end\s+[\w-]+/.test(line)) {
       close()
+      inAbbreviatedVerbatim = false
       open.pop()
       continue
     }
     const begin = line.match(/^\s*=begin\s+([\w-]+)/)
     if (begin) {
       close()
+      inAbbreviatedVerbatim = false
       open.push(begin[1])
       continue
     }
@@ -90,13 +93,18 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
     // a directive starts a chunk of its own; a blank line ends the one running
     if (/^\s*=/.test(line)) {
       close()
-      chunk = { text: line, line: i + 1 }
+      const named = line.match(/^\s*=(?:for\s+)?([\w-]+)/)
+      // the short forms carry verbatim text just as the paired ones do
+      inAbbreviatedVerbatim = Boolean(named && isVerbatimBlock(named[1]))
+      if (!inAbbreviatedVerbatim) chunk = { text: line, line: i + 1 }
       continue
     }
     if (line.trim() === '') {
       close()
+      inAbbreviatedVerbatim = false
       continue
     }
+    if (inAbbreviatedVerbatim) continue
     if (chunk) chunk.text += '\n' + line
     else chunk = { text: line, line: i + 1 }
   }
