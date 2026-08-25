@@ -724,6 +724,9 @@ function PodliteEditorInternal(
     keepScrollInside,
     language,
     imagePasteDropHandler,
+    showInlineImages,
+    imageSrc,
+    imageBaseDir,
   ])
 
   // Debounced preview update: check ref every 300ms, update value state only when text changed
