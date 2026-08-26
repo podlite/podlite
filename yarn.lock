@@ -2368,6 +2368,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@podlite/highlight@workspace:packages/podlite-highlight":
+  version: 0.0.0-use.local
+  resolution: "@podlite/highlight@workspace:packages/podlite-highlight"
+  dependencies:
+    "@podlite/schema": "workspace:*"
+  peerDependencies:
+    "@podlite/schema": "*"
+    react: ^16.0.0 || ^17.0.0 || ^18
+    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    shiki: ^3.0.0
+  peerDependenciesMeta:
+    shiki:
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@podlite/image@workspace:^, @podlite/image@workspace:packages/podlite-image":
   version: 0.0.0-use.local
   resolution: "@podlite/image@workspace:packages/podlite-image"

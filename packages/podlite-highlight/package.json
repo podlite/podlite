@@ -1,0 +1,77 @@
+{
+  "name": "@podlite/highlight",
+  "version": "0.0.1",
+  "description": "Syntax highlighting for Podlite code blocks, shared by the renderer and the editor",
+  "main": "./lib/index.js",
+  "sideEffects": false,
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-highlight"
+  },
+  "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
+  "scripts": {
+    "build": "yarn g:build",
+    "test": "yarn g:jest  --passWithNoTests"
+  },
+  "dependencies": {
+    "@podlite/schema": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./index": {
+      "import": "./esm/index.js",
+      "require": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./lib/*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    }
+  },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.podlite",
+    "LICENSE"
+  ],
+  "keywords": [
+    "podlite",
+    "syntax-highlighting",
+    "shiki",
+    "react",
+    "react-component",
+    "code",
+    "markup-language"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@podlite/schema": "*",
+    "react": "^16.0.0 || ^17.0.0 || ^18",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18",
+    "shiki": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "shiki": {
+      "optional": true
+    }
+  },
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts"
+}

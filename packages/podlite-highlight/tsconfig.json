@@ -1,0 +1,25 @@
+{
+  "include": ["src"],
+  "exclude": ["lib", "t"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "jsx": "react",
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "declaration": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "composite": true
+  },
+  "references": [
+    {
+      "path": "../podlite-schema"
+    }
+  ]
+}

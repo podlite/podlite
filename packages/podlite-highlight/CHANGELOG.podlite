@@ -1,0 +1,5 @@
+# @podlite/highlight
+
+=head1 Upcoming
+
+=item the package carries the syntax highlighting that the renderer and the editor used to hold a copy of each. shiki is an optional peer: without it a code block renders as plain text instead of throwing, and a block with no lang attribute loads no grammar at all
