@@ -2,7 +2,9 @@
 
 =head1 Upcoming
 
-=item syntax highlighting comes from @podlite/highlight instead of a copy kept here. shiki is no longer a direct dependency: install it alongside to keep colour, or leave it out and code blocks render as plain text
+=item the modules that held syntax highlighting are gone from this package: the shiki module and the code component moved to @podlite/highlight. Both were reachable as deep imports and now are not; the component is still exported from the package root
+
+=item syntax highlighting comes from @podlite/highlight instead of a copy kept here. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle
 
 =head1 0.0.70
 

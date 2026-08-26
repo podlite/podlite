@@ -2,4 +2,4 @@
 
 =head1 Upcoming
 
-=item the package carries the syntax highlighting that the renderer and the editor used to hold a copy of each. shiki is an optional peer: without it a code block renders as plain text instead of throwing, and a block with no lang attribute loads no grammar at all
+=item the package carries the syntax highlighting that the renderer and the editor used to hold a copy of each, so both share one highlighter and one grammar cache. shiki is a peer declared optional: type checking passes without it and a chunk that fails to load leaves plain text, though the name still has to resolve when you bundle. A block with no lang attribute loads no grammar at all

@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item syntax highlighting comes from @podlite/highlight instead of a copy kept here, so the editor and its preview share one highlighter. shiki is no longer a direct dependency: install it alongside to keep colour, or leave it out and code blocks render as plain text
+=item syntax highlighting comes from @podlite/highlight instead of a copy kept here, so the editor and its preview share one highlighter. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle
 
 =item the editor can show the picture a directive names, under the line that names it, behind showInlineImages. An address the host cannot resolve leaves a quiet line rather than a broken icon, and the switch is apart from any switch over the raw text
 

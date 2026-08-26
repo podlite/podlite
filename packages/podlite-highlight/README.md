@@ -10,8 +10,18 @@ the same in a preview as it does in an editor.
 npm install @podlite/highlight shiki
 ```
 
-`shiki` is an optional peer. Without it the component renders the code as plain
-`<pre><code>` and nothing throws — install it when you want colour.
+`shiki` is a peer, declared optional so it is never pulled in unnoticed. What
+that does and does not buy you:
+
+- **Types.** This package describes the parts of shiki it uses, so type checking
+  passes with shiki absent.
+- **Bundling.** The loader names `shiki` in a plain dynamic import, which lets a
+  bundler split it into its own chunk. That same plain name has to resolve at
+  build time, so install shiki if you bundle this package.
+- **Runtime.** If the chunk fails to load, the component renders the code as
+  plain `<pre><code>` instead of throwing.
+
+A block with no `:lang` never loads a grammar at all.
 
 ## Use
 

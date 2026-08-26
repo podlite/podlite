@@ -936,9 +936,8 @@ function PodliteEditorInternal(
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], ctx)
       }
-      // block wrapping keeps the caption, which the preview has always shown
       const hcode = mkComponent(({ children, key, ...node }, ctx) => (
-        <HighlightedCode node={node} keyProp={key} ctx={ctx} wrap="block">
+        <HighlightedCode node={node} keyProp={key} ctx={ctx}>
           {children}
         </HighlightedCode>
       ))

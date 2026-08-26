@@ -33,4 +33,11 @@ describe('the editor and the renderer highlight from one module', () => {
   it('resolves to the same file from both packages', () => {
     expect(resolvedFrom('podlite-editor-react')).toBe(resolvedFrom('podlite-to-jsx'))
   })
+
+  it('hands out the shared component, not a copy of its own', () => {
+    const fromEditor = require('@podlite/editor-react').HighlightedCode
+    const shared = require('@podlite/highlight').HighlightedCode
+    expect(fromEditor).toBeDefined()
+    expect(fromEditor).toBe(shared)
+  })
 })

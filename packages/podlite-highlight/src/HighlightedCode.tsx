@@ -81,8 +81,10 @@ export type HighlightedCodeProps = {
   wrap?: 'pre-code' | 'block'
 }
 
+// Block wrapping is the default because it is the one that shows a caption:
+// a caller that says nothing gets the caption rather than silently losing it.
 const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
-  ({ node, children, keyProp, ctx, id, wrap = 'pre-code' }) => {
+  ({ node, children, keyProp, ctx, id, wrap = 'block' }) => {
     const conf = makeAttrs(node, ctx)
     const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
     const lang = conf.getFirstValue('lang')
