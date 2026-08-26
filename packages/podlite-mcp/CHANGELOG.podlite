@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the package declares an exports map and its own type entry, and no longer points at an esm build it never produced. A bundler that preferred that entry resolved to a missing file
+
 =head1 0.0.3
 
 =item declare public npm access so the package publishes to the registry
