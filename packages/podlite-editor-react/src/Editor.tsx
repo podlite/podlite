@@ -30,7 +30,7 @@ import { podliteDecorations } from './podliteDecorations'
 import { podliteImages } from './imageDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
-import HighlightedCode from './HighlightedCode'
+import { HighlightedCode } from '@podlite/highlight'
 import { createImagePasteDropHandler } from './imagePasteHandler'
 import { SaveAssetCallback } from './imagePaste'
 
@@ -936,8 +936,9 @@ function PodliteEditorInternal(
         // check if node.content defined
         return makeComponent(src, node, 'content' in node ? interator(node.content, { ...ctx }) : [], ctx)
       }
+      // block wrapping keeps the caption, which the preview has always shown
       const hcode = mkComponent(({ children, key, ...node }, ctx) => (
-        <HighlightedCode node={node} keyProp={key} ctx={ctx}>
+        <HighlightedCode node={node} keyProp={key} ctx={ctx} wrap="block">
           {children}
         </HighlightedCode>
       ))

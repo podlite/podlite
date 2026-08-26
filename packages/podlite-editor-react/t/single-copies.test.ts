@@ -24,3 +24,13 @@ describe('one copy of each package the editor builds on', () => {
     })
   }
 })
+
+describe('the editor and the renderer highlight from one module', () => {
+  // Two copies would mean two highlighters, each fetching the same grammar and
+  // keeping its own cache, which is the thing the shared package removes
+  const resolvedFrom = (pkg: string) => require.resolve('@podlite/highlight', { paths: [join(root, 'packages', pkg)] })
+
+  it('resolves to the same file from both packages', () => {
+    expect(resolvedFrom('podlite-editor-react')).toBe(resolvedFrom('podlite-to-jsx'))
+  })
+})

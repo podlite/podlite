@@ -29,6 +29,9 @@
   "references": [
     {
       "path": "../podlite-schema"
+    },
+    {
+      "path": "../podlite-highlight"
     }
   ]
 }

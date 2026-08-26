@@ -29,7 +29,7 @@ import { parseSelector, runSelector, getTextContentFromNode, maskText, collectTe
 import { applyFoldedSections } from '@podlite/schema'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
-import HighlightedCode from './HighlightedCode'
+import { HighlightedCode } from '@podlite/highlight'
 
 // interface SetFn { <T>(<T>node, ctx:any) => () => () =>void
 // }

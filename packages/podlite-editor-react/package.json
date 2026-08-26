@@ -86,14 +86,19 @@
     "@codemirror/search": "^6.7.1",
     "@codemirror/view": "^6.43.8",
     "@lezer/highlight": "^1.2.1",
+    "@podlite/highlight": "workspace:*",
+    "@podlite/schema": "workspace:*",
+    "@podlite/to-jsx": "workspace:*",
     "@uiw/codemirror-extensions-events": "^4.23.8",
     "@uiw/codemirror-themes": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
     "dom-to-image-more": "^3.7.2",
-    "react-is": "^18.0.0",
-    "shiki": "^3.21.0"
+    "react-is": "^18.0.0"
   },
   "peerDependencies": {
+    "@podlite/highlight": "*",
+    "@podlite/schema": "*",
+    "@podlite/to-jsx": "*",
     "react": "^16.0.0 || ^17.0.0 || ^18",
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   },

@@ -26,11 +26,11 @@
   },
   "dependencies": {
     "@podlite/diagram": "workspace:^",
+    "@podlite/highlight": "workspace:*",
     "@podlite/schema": "workspace:*",
     "entities": "^4.5.0",
     "podlite": "workspace:*",
-    "react-is": "^18.0.0",
-    "shiki": "^3.21.0"
+    "react-is": "^18.0.0"
   },
   "exports": {
     ".": {
@@ -75,6 +75,7 @@
   },
   "peerDependencies": {
     "@podlite/diagram": "*",
+    "@podlite/highlight": "*",
     "@podlite/schema": "*",
     "react": "^16.0.0 || ^17.0.0 || ^18",
     "react-dom": "^16.0.0 || ^17.0.0 || ^18"

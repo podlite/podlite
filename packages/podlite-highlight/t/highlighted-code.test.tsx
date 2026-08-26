@@ -29,6 +29,42 @@ describe('extractPlainAndDecorations', () => {
     expect(result.decorations).toEqual([{ start: 4, end: 7, tagName: 'strong', properties: { class: 'fc-B' } }])
   })
 
+  it('maps I<> to em, C<> to code, U<> to u', () => {
+    const result = extractPlainAndDecorations([
+      { type: 'fcode', name: 'I', content: [{ type: 'verbatim', value: 'a' }] },
+      { type: 'fcode', name: 'C', content: [{ type: 'verbatim', value: 'b' }] },
+      { type: 'fcode', name: 'U', content: [{ type: 'verbatim', value: 'c' }] },
+    ])
+    expect(result.plain).toBe('abc')
+    expect(result.decorations.map(d => d.tagName)).toEqual(['em', 'code', 'u'])
+  })
+
+  it('falls back to span with fc-X class for unknown fcodes', () => {
+    const result = extractPlainAndDecorations([
+      { type: 'fcode', name: 'X', content: [{ type: 'verbatim', value: 'hi' }] },
+    ])
+    expect(result.decorations[0].tagName).toBe('span')
+    expect(result.decorations[0].properties).toEqual({ class: 'fc-X' })
+  })
+
+  it('handles nested fcodes', () => {
+    const result = extractPlainAndDecorations([
+      {
+        type: 'fcode',
+        name: 'B',
+        content: [
+          { type: 'verbatim', value: 'aa ' },
+          { type: 'fcode', name: 'I', content: [{ type: 'verbatim', value: 'bb' }] },
+        ],
+      },
+    ])
+    expect(result.plain).toBe('aa bb')
+    expect(result.decorations).toEqual([
+      { start: 3, end: 5, tagName: 'em', properties: { class: 'fc-I' } },
+      { start: 0, end: 5, tagName: 'strong', properties: { class: 'fc-B' } },
+    ])
+  })
+
   it('skips empty fcodes', () => {
     const result = extractPlainAndDecorations([{ type: 'fcode', name: 'B', content: [] }])
     expect(result.decorations).toEqual([])

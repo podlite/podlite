@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item syntax highlighting comes from @podlite/highlight instead of a copy kept here. shiki is no longer a direct dependency: install it alongside to keep colour, or leave it out and code blocks render as plain text
+
 =head1 0.0.70
 
 =item a code block wraps at spaces instead of breaking inside a word, so a long command stays readable
