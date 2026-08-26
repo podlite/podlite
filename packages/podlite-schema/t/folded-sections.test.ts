@@ -7,6 +7,18 @@ const parse = (src: string) => {
 const asHtml = (src: string) => String(toHtml({}).run(parse(src)).toString())
 const asMarkdown = (src: string) => String(toMarkdown({}).run(parse(src)).toString())
 
+const namesIn = (tree: any): string[] => {
+  const found: string[] = []
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) return node.forEach(walk)
+    if (node.name) found.push(node.name)
+    if (Array.isArray(node.content)) node.content.forEach(walk)
+  }
+  walk(tree)
+  return found
+}
+
 const folded = [
   '=for head1 :folded',
   'Folded section',
@@ -21,15 +33,7 @@ const folded = [
 
 describe('a section folded by its heading', () => {
   it('is grouped while the tree is built, before any renderer sees it', () => {
-    const found: string[] = []
-    const walk = (node: any) => {
-      if (!node || typeof node !== 'object') return
-      if (Array.isArray(node)) return node.forEach(walk)
-      if (node.name) found.push(node.name)
-      if (Array.isArray(node.content)) node.content.forEach(walk)
-    }
-    walk(parse(folded))
-    expect(found).toContain('_folded_section')
+    expect(namesIn(parse(folded))).toContain('_folded_section')
   })
 
   it('renders as a native disclosure in html', () => {
@@ -42,6 +46,7 @@ describe('a section folded by its heading', () => {
   it('leaves the following heading outside the fold', () => {
     const html = asHtml(folded)
     const closed = html.indexOf('</details>')
+    expect(closed).toBeGreaterThan(-1)
     expect(html.indexOf('Next')).toBeGreaterThan(closed)
   })
 
@@ -51,9 +56,11 @@ describe('a section folded by its heading', () => {
   })
 
   it('writes the whole section out in markdown, which has no disclosure', () => {
+    expect(namesIn(parse(folded))).toContain('_folded_section')
     const md = asMarkdown(folded)
     expect(md).toContain('# Folded section')
     expect(md).toContain('text under the heading')
+    expect(md).not.toContain('<details')
   })
 
   it('leaves a document with no folded heading untouched', () => {
