@@ -43,6 +43,23 @@ describe('once the highlighter has answered', () => {
     expect(dom.querySelector('.shiki')).not.toBeNull()
     expect(dom.querySelector('#block-one')).not.toBeNull()
   })
+
+  it('still shows the caption', async () => {
+    const dom = await mount(
+      <HighlightedCode
+        node={codeNode([
+          { name: 'lang', value: 'javascript' },
+          { name: 'caption', value: 'Example' },
+        ])}
+        ctx={{}}
+        keyProp="k"
+      >
+        const x = 42
+      </HighlightedCode>,
+    )
+    expect(dom.querySelector('.shiki')).not.toBeNull()
+    expect(dom.querySelector('.code-block .caption')?.textContent).toBe('Example')
+  })
 })
 
 describe('a block with no language declared', () => {
