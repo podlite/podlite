@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<headingId> is reachable from the package entry, so any parser that builds a heading can apply the same rule the tree walker applies
+
 =item the names of settings the specification gives are exported beside the block names, so the parser, the checker and the editor read one list
 
 =item a section folded by :folded on its heading is grouped while the tree is built, so every reader of the tree sees it, not only the editor. The html export writes it as a native disclosure; markdown, which has none, writes the section out in full rather than losing the text

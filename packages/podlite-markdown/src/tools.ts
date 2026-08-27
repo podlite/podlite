@@ -15,6 +15,8 @@ import {
   mkMarkupCodeF,
   mkFormulaBlock,
   parseAttributes,
+  headingId,
+  getTextContentFromNode,
 } from '@podlite/schema'
 import { mkRootBlock } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
@@ -83,10 +85,12 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
 
       ':heading': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
-        return mkBlock(
+        const block = mkBlock(
           { type: 'block', level: node.depth, name: 'head', location: applyLineOffset(position) },
           interator(children, ctx),
         )
+        // a link to a heading is written against its text, so a generated id points at nothing
+        return { ...block, id: headingId(getTextContentFromNode(block)) }
       },
       ':text': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node

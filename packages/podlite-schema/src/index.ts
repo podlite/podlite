@@ -24,7 +24,7 @@ export type { LinkConfig } from './helpers/link-config'
 export { pluginCleanLocation } from './plugin-clean-location'
 export { toAnyRules } from './helpers/plugins'
 
-export { podlitePluggable, Podlite, PodliteExport, cleanIds, frozenIds } from './pluggableParser'
+export { podlitePluggable, Podlite, PodliteExport, cleanIds, frozenIds, headingId } from './pluggableParser'
 
 import * as parser from './grammar'
 import { parse as parseFcodes } from './grammarfc'

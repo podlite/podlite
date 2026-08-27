@@ -7,7 +7,7 @@ import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
 import { applyFoldedSections } from './folded-sections'
-export { cleanIds, frozenIds } from './helpers/ids'
+export { cleanIds, frozenIds, headingId } from './helpers/ids'
 
 export interface podlitePluggableOpt {
   plugins?: Plugins
