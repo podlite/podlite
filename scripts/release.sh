@@ -36,7 +36,7 @@ fi
 if [[ -n "$DRY_RUN" ]]; then
   echo ""
   echo "=== DRY RUN: would do the following ==="
-  echo "1. yarn update:version-patch (bump versions)"
+  echo "1. yarn workspaces foreach --no-private run g:set-upversion (bump versions)"
   echo "2. node scripts/extract-changelog.mjs --update (rename Upcoming → version)"
   echo "3. yarn build && yarn test"
   echo "4. git commit + push"
