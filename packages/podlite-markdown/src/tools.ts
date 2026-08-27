@@ -90,7 +90,10 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
           interator(children, ctx),
         )
         // a link to a heading is written against its text, so a generated id points at nothing
-        return { ...block, id: headingId(getTextContentFromNode(block)) }
+        const id = headingId(getTextContentFromNode(block))
+        // a heading holding only an image has no text to be named by, and an empty id would
+        // repeat across every such heading
+        return id ? { ...block, id } : block
       },
       ':text': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
