@@ -46,6 +46,11 @@ describe('link-not-empty rule', () => {
       expect(check('=for para :id<A>\nSee L<there|#A>.\n')).toEqual([])
     })
 
+    it('on a link whose address is its only content', () => {
+      expect(check('=for para :id<A>\nSee L<#A> here.\n')).toEqual([])
+      expect(check('See L<https://example.com> here.\n')).toEqual([])
+    })
+
     it('on a document with no links at all', () => {
       expect(check('=head1 Title\n\nplain prose\n')).toEqual([])
     })

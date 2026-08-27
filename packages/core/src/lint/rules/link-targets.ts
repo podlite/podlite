@@ -12,20 +12,12 @@ export type LinkSite = {
   at?: Violation['location']
 }
 
-const textOf = (value: unknown): string => {
-  if (typeof value === 'string') return value
-  if (value && typeof value === 'object') {
-    const inner = (value as { value?: unknown }).value
-    if (typeof inner === 'string') return inner
-  }
-  return ''
-}
-
 // A link without display text carries the target in its content instead of meta.
 const linkTarget = (node: LinkNode): string => {
   if (typeof node.meta === 'string') return node.meta.trim()
   const content = Array.isArray(node.content) ? node.content : []
-  return textOf(content[0]).trim()
+  const first = content[0]
+  return typeof first === 'string' ? first.trim() : ''
 }
 
 const isLink = (node: LinkNode & { type?: string }): boolean =>
@@ -42,6 +34,9 @@ export const collectLinks = (node: unknown, at?: Violation['location']): LinkSit
 }
 
 const SCHEME = /^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$/
+// A single letter before the colon is a Windows drive, not a scheme, and a
+// document written on Windows would otherwise go unchecked.
+const DRIVE = /^[a-zA-Z]:[\\/]/
 
 export type LinkAddress = {
   scheme: string | null
@@ -52,7 +47,7 @@ export type LinkAddress = {
 // The specification separates the internal address from the external one with a
 // `#`, so what is left of it is the part a filesystem can answer for.
 export const readAddress = (target: string): LinkAddress => {
-  const matched = SCHEME.exec(target)
+  const matched = DRIVE.test(target) ? null : SCHEME.exec(target)
   const scheme = matched ? matched[1].toLowerCase() : null
   const rest = matched ? matched[2] : target
   return { scheme, path: rest.split('#')[0].split('?')[0] }

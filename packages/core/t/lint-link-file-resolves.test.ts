@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { parseContent } from '../src/lint/loader'
@@ -9,6 +9,11 @@ import type { LintContext } from '../src/lint/types'
 const dir = mkdtempSync(join(tmpdir(), 'podlite-links-'))
 writeFileSync(join(dir, 'there.podlite'), '=head1 There\n')
 writeFileSync(join(dir, 'there.md'), '# There\n')
+mkdirSync(join(dir, 'sub'))
+// the document under test has to be on disk: the rule answers relative targets
+// from its directory and stays silent when it has none
+writeFileSync(join(dir, 'doc.podlite'), '')
+writeFileSync(join(dir, 'doc.md'), '')
 
 const check = (src: string, fileType: LintContext['fileType'] = 'podlite', filePath = join(dir, 'doc.podlite')) =>
   linkFileResolvesRule.check(parseContent(src, fileType), { filePath, fileType, config: {} })
@@ -40,6 +45,16 @@ describe('link-file-resolves rule', () => {
     it('ignores the part after a hash when asking the disk', () => {
       expect(check('See L<there|file:./there.podlite#Missing>.\n')).toEqual([])
       expect(check('See L<there|file:./nowhere.podlite#Missing>.\n')).toHaveLength(1)
+    })
+
+    it('ignores a query string, which belongs to an address and not to a name', () => {
+      expect(check('See L<there|file:./there.podlite?v=2>.\n')).toEqual([])
+      expect(check('[there](./there.md?v=2)\n', 'md', join(dir, 'doc.md'))).toEqual([])
+    })
+
+    it('reads a windows drive as a path rather than a scheme', () => {
+      expect(check('[there](C:/nowhere-at-all/x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
+      expect(check('[there](C:\\nowhere-at-all\\x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
     })
   })
 
@@ -78,8 +93,16 @@ describe('link-file-resolves rule', () => {
       expect(check('See L<there|~/nowhere.podlite>.\n')).toEqual([])
     })
 
+    it('on a directory that is there, which is a target an author may mean', () => {
+      expect(check('See L<there|./sub>.\n')).toEqual([])
+    })
+
     it('on input read from a pipe, where there is no directory to resolve against', () => {
       expect(check('See L<there|./nowhere.podlite>.\n', 'podlite', STDIN_NAME)).toEqual([])
+    })
+
+    it('when the caller named the document instead of pointing at one', () => {
+      expect(check('See L<there|./nowhere.podlite>.\n', 'podlite', 'not-a-real-document.podlite')).toEqual([])
     })
 
     it('on a document with no links at all', () => {
