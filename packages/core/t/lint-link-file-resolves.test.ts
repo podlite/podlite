@@ -57,8 +57,8 @@ describe('link-file-resolves rule', () => {
       expect(check('[there](C:\\nowhere-at-all\\x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
     })
 
-    it('reads a drive-relative path, which carries no separator', () => {
-      expect(check('[there](C:nowhere-at-all.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
+    it('reads a drive-relative path, where a backslash says windows', () => {
+      expect(check('[there](C:nowhere-at-all\\x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
     })
   })
 
@@ -77,6 +77,11 @@ describe('link-file-resolves rule', () => {
       expect(check('See L<there|mailto:a@example.com>.\n')).toEqual([])
       expect(check('See L<there|ftp://example.com/none>.\n')).toEqual([])
       expect(check('See L<there|doc:Something>.\n')).toEqual([])
+    })
+
+    it('on a scheme one letter long, which is a scheme and not a drive', () => {
+      expect(check('[there](a:b)\n', 'md', join(dir, 'doc.md'))).toEqual([])
+      expect(check('[there](x:)\n', 'md', join(dir, 'doc.md'))).toEqual([])
     })
 
     it('on a bare word in a podlite document, which declares no path', () => {

@@ -12,14 +12,10 @@ export type LinkSite = {
   at?: Violation['location']
 }
 
-// Content is a bare string before the tree is processed and a node with a value
-// after, and the walk is reachable from both sides.
+// Content is a bare string before the tree is processed and a node after it.
 const textOf = (value: unknown): string => {
   if (typeof value === 'string') return value
-  if (value && typeof value === 'object') {
-    const inner = (value as { value?: unknown }).value
-    if (typeof inner === 'string') return inner
-  }
+  if (value && typeof value === 'object' && 'value' in value && typeof value.value === 'string') return value.value
   return ''
 }
 
@@ -44,10 +40,11 @@ export const collectLinks = (node: unknown, at?: Violation['location']): LinkSit
 }
 
 const SCHEME = /^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$/
-// A single letter before the colon is a Windows drive, not a scheme, and a
-// document written on Windows would otherwise go unchecked. No separator is
-// required: `C:notes` names a path relative to that drive.
-const DRIVE = /^[a-zA-Z]:/
+// A single letter before the colon is a Windows drive, but only where something
+// else says Windows: a separator, or a backslash further along. Without one,
+// `a:b` is a scheme and reading it as a path would warn about a target that is
+// not on this disk at all.
+const DRIVE = /^[a-zA-Z]:([\\/]|[^\\]*\\)/
 
 export type LinkAddress = {
   scheme: string | null
