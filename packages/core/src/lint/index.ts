@@ -8,6 +8,7 @@ import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
 import { scanSourceRules } from './grammar/scan'
 import { applyConfig, applyRuleFlags, ConfigError, findConfig, readConfig } from './config'
+import { STDIN_NAME } from './types'
 import { applyMutes } from './mute'
 
 // The entry a consumer outside the package is meant to reach: everything it
@@ -28,7 +29,6 @@ export type LintOptions = {
 }
 
 // text handed to the command instead of a path is reported under this name
-export const STDIN_NAME = '<stdin>'
 
 export function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
   const fileType = detectFileType(filePath)

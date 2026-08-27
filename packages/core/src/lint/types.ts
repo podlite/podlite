@@ -10,6 +10,10 @@ export type LintConfig = {
   rules?: Record<string, RuleSetting>
 }
 
+// The name a report carries when the document came from a pipe: there is no
+// directory to resolve a relative path against.
+export const STDIN_NAME = '<stdin>'
+
 export type LintContext = {
   filePath: string
   fileType: FileType
