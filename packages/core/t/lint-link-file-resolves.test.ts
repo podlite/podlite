@@ -56,6 +56,10 @@ describe('link-file-resolves rule', () => {
       expect(check('[there](C:/nowhere-at-all/x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
       expect(check('[there](C:\\nowhere-at-all\\x.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
     })
+
+    it('reads a drive-relative path, which carries no separator', () => {
+      expect(check('[there](C:nowhere-at-all.md)\n', 'md', join(dir, 'doc.md'))).toHaveLength(1)
+    })
   })
 
   describe('stays quiet', () => {

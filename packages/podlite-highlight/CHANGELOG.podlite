@@ -2,4 +2,6 @@
 
 =head1 Upcoming
 
+=item a caller that does not say how to wrap a code block gets the wrapping that shows a caption. The other wrapping drops it, and a caption written on a block was disappearing for callers that said nothing
+
 =item the package carries the syntax highlighting that the renderer and the editor used to hold a copy of each, so both share one highlighter and one grammar cache. shiki is a peer declared optional: type checking passes without it and a chunk that fails to load leaves plain text, though the name still has to resolve when you bundle. A block with no lang attribute loads no grammar at all

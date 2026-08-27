@@ -12,12 +12,22 @@ export type LinkSite = {
   at?: Violation['location']
 }
 
+// Content is a bare string before the tree is processed and a node with a value
+// after, and the walk is reachable from both sides.
+const textOf = (value: unknown): string => {
+  if (typeof value === 'string') return value
+  if (value && typeof value === 'object') {
+    const inner = (value as { value?: unknown }).value
+    if (typeof inner === 'string') return inner
+  }
+  return ''
+}
+
 // A link without display text carries the target in its content instead of meta.
 const linkTarget = (node: LinkNode): string => {
   if (typeof node.meta === 'string') return node.meta.trim()
   const content = Array.isArray(node.content) ? node.content : []
-  const first = content[0]
-  return typeof first === 'string' ? first.trim() : ''
+  return textOf(content[0]).trim()
 }
 
 const isLink = (node: LinkNode & { type?: string }): boolean =>
@@ -35,8 +45,9 @@ export const collectLinks = (node: unknown, at?: Violation['location']): LinkSit
 
 const SCHEME = /^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$/
 // A single letter before the colon is a Windows drive, not a scheme, and a
-// document written on Windows would otherwise go unchecked.
-const DRIVE = /^[a-zA-Z]:[\\/]/
+// document written on Windows would otherwise go unchecked. No separator is
+// required: `C:notes` names a path relative to that drive.
+const DRIVE = /^[a-zA-Z]:/
 
 export type LinkAddress = {
   scheme: string | null

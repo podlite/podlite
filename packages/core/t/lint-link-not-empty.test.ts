@@ -1,3 +1,4 @@
+import { podlite } from '../src/index'
 import { parseContent } from '../src/lint/loader'
 import { linkNotEmptyRule, LINK_NOT_EMPTY_RULE_ID } from '../src/lint/rules/link-not-empty'
 import type { LintContext } from '../src/lint/types'
@@ -53,6 +54,15 @@ describe('link-not-empty rule', () => {
 
     it('on a document with no links at all', () => {
       expect(check('=head1 Title\n\nplain prose\n')).toEqual([])
+    })
+
+    // the walk is reachable from a processed tree too, where the address is a
+    // node with a value rather than the bare string the parser leaves
+    it('on a link whose address the tree carries as a node', () => {
+      const processed = podlite({ importPlugins: true }).toAst(
+        parseContent('=for para :id<A>\nSee L<#A> here.\n', 'podlite'),
+      )
+      expect(linkNotEmptyRule.check(processed, ctx)).toEqual([])
     })
   })
 })
