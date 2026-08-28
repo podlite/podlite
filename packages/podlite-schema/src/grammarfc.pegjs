@@ -6,6 +6,15 @@
     const  map = {'<':'>', '«':'»','>':'<', '»':'«'}
     return map[tag]
   }
+  // The closing run mirrors the opening one, so the pair is decided while parsing
+  // instead of by generating a copy of the rule for every pair the language allows.
+  function closeFor (open) {
+    return open[0] === '«' ? '»' : '>'.repeat(open.length)
+  }
+  function closeAt (src, pos, open) {
+    const close = closeFor(open)
+    return src.substr(pos, close.length) === close
+  }
   function link_target (spec) {
     const trimmed = spec.replace(/\s+$/, '')
     const quote = trimmed[0]
@@ -93,15 +102,23 @@ looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}
      /
      (!allowed_code_C .)  '«' not_code '»'  {return text()}  
 text_C = text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / not_code )+ {return text}
-CodeCRun<Open, Close>
-  = name:$(allowed_code) &{ return name === "C" } Open
+// longest run first, so a doubled opening is not read as a single one
+code_open  = $('<<<' / '<<' / '<' / '«')
+
+CodeCRun
+  = name:$(allowed_code) &{ return name === "C" } open:code_open
     content:(
         code_E
         /
         inner_code_C
         /
-        text:$( (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ (!'«' !inner_start_C .)? '«' text_C? '»' / (!start_code_E !inner_start_C looks_like_code_C) / text:$(!Close !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
-    Close
+        text:$( (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ (!'«' !inner_start_C .)? '«' text_C? '»' / (!start_code_E !inner_start_C looks_like_code_C) / text:$(!{ return closeAt(input, location().start.offset, open) } !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
+    // the check sits inside the choice: a longer run matched first must be able to
+    // give way to a shorter one, and after the choice there is nothing to give way to
+    ( '>>>' &{ return open === '<<<' }
+    / '>>'  &{ return open === '<<'  }
+    / '>'   &{ return open === '<'   }
+    / '»'   &{ return open === '«'   } )
      {
          return  {
                 content,
@@ -110,7 +127,7 @@ CodeCRun<Open, Close>
              }
     }
 
-code_C = CodeCRun<"<<<", ">>>"> / CodeCRun<"<<", ">>"> / CodeCRun<"<", ">"> / CodeCRun<"«", "»">
+code_C = CodeCRun
 separator = '|'
 text_L = text:$(
         (!'<' !allowed_code .) '<' text_L '>'
@@ -258,19 +275,21 @@ end_code = '>' / '»'
 // A code is delimited by a run of angles, and the closing run has to be as long
 // as the opening one. The pair is a parameter, so the literals consume their own
 // length and a shorter run inside stays part of the content.
-CodeRun<Open, Close>
-      = name:$(allowed_code) &{ return name !== 'C' } Open
+CodeRun
+      = name:$(allowed_code) &{ return name !== 'C' } open:code_open
         content:(
                   allowed_rules / code_2 /
                   text:$( '<' text '>' / '«' text '»' / looks_like_code /
-                    ( text:$(!Close !start_code_2 !looks_like_code .)+ {return text})
+                    ( text:$(!{ return closeAt(input, location().start.offset, open) } !start_code_2 !looks_like_code .)+ {return text})
                                                                          )+ {return text}
            )*
-        Close
+        ( '>>>' &{ return open === '<<<' }
+        / '>>'  &{ return open === '<<'  }
+        / '>'   &{ return open === '<'   }
+        / '»'   &{ return open === '«'   } )
 { return {content, type:'fcode', name }}
 
-// longest run first, so a doubled opening is not read as a single one
-code_2 = CodeRun<"<<<", ">>>"> / CodeRun<"<<", ">>"> / CodeRun<"<", ">"> / CodeRun<"«", "»">
+code_2 = CodeRun
 
 
 empty =  $(!end_code .)*

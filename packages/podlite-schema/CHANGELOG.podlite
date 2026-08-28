@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the formatting-code parser picks the closing delimiter while parsing instead of carrying a copy of two rules for every pair the language allows. The generated parser is less than half its former size and parsing is faster; what it accepts is unchanged
+
 =item C<headingId> is reachable from the package entry, so any parser that builds a heading can apply the same rule the tree walker applies
 
 =item the names of settings the specification gives are exported beside the block names, so the parser, the checker and the editor read one list

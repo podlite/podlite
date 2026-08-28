@@ -37,4 +37,20 @@ describe('a markup code delimited by a run of angles', () => {
   it('does not close on a run shorter than the opening one', () => {
     expect(render('C<< a > b >>')).toContain('a &gt; b')
   })
+
+  // The closing run is chosen while parsing, so a longer run than the opening
+  // one has to give way to the length that matches instead of swallowing it.
+  it('closes on the matching length when the run is longer', () => {
+    expect(render('C<<a>>>')).toContain('<code>a</code>&gt;')
+    expect(render('B<a>>')).toContain('<strong>a</strong>&gt;')
+  })
+
+  it('takes the opening run from the left, leaving the rest to the content', () => {
+    expect(render('C<<<<a>>>>')).toContain('<code>&lt;a&gt;</code>')
+  })
+
+  it('lets a code inside close on its own pair', () => {
+    expect(render('C<<xB«y»z>>')).toContain('<code>xB«y»z</code>')
+    expect(render('B<<I«y»>>')).toContain('<em>y</em>')
+  })
 })
