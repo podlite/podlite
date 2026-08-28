@@ -5,6 +5,23 @@ const render = (src: string): string => {
   return String(p.toHtml(p.toAst(p.parse(`=para\n${src}\n`, { podMode: 1 })))).replace(/\n/g, '')
 }
 
+describe('the delimiter pairs a markup code may take', () => {
+  it('accepts all four and reads the same content from each', () => {
+    for (const src of ['C<a>', 'C<<a>>', 'C<<<a>>>', 'C«a»']) {
+      expect(render(src)).toContain('<code>a</code>')
+    }
+  })
+
+  it('does not let a pair be mixed', () => {
+    expect(render('C<a»')).not.toContain('<code>')
+    expect(render('C«a>')).not.toContain('<code>')
+  })
+
+  it('reads angles inside guillemets as text', () => {
+    expect(render('C«<a>»')).toContain('<code>&lt;a&gt;</code>')
+  })
+})
+
 describe('a markup code delimited by a run of angles', () => {
   it('carries a closing angle inside the content', () => {
     expect(render('C<<$foo > $bar>>')).toContain('<code>$foo &gt; $bar</code>')
@@ -52,5 +69,19 @@ describe('a markup code delimited by a run of angles', () => {
   it('lets a code inside close on its own pair', () => {
     expect(render('C<<xB«y»z>>')).toContain('<code>xB«y»z</code>')
     expect(render('B<<I«y»>>')).toContain('<em>y</em>')
+  })
+
+  // The run that opens is the run that has to close. A code whose content cannot
+  // fill the run it opened is not a code, and the text stays as written.
+  it('does not fall back to a shorter opening run', () => {
+    for (const src of ['C<<>>', 'C<<<>>>', 'B<<>']) {
+      expect(render(src)).not.toContain('<code>')
+      expect(render(src)).not.toContain('<strong>')
+    }
+  })
+
+  it('takes no content at all as no code, for every pair', () => {
+    expect(render('C<>')).not.toContain('<code>')
+    expect(render('C«»')).not.toContain('<code>')
   })
 })
