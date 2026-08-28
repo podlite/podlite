@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item rendering the editor again with the same props no longer reconfigures CodeMirror. Two values in the extension list were rebuilt on every render, so the whole set was resolved again each time: 2.8 ms per render on a 400-line document, now 0.08 ms
+=item rendering the editor again with the same props no longer reconfigures CodeMirror
 
 =item syntax highlighting comes from @podlite/highlight instead of a copy kept here, so the editor and its preview share one highlighter. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle
 
