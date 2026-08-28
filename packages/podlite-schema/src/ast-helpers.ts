@@ -124,6 +124,21 @@ export const sameDocTarget = <T>(target: T, ctx, index: AnchorIndex | undefined 
   return `#${resolveFragment(target.slice(1), index)}`
 }
 
+// A link written without a bar keeps its target in the content, and by the time a
+// renderer sees it the content is a node array. Only the first node is read; a
+// target spread over several nodes is a separate question.
+export const linkTarget = (node: { meta?: unknown; content?: unknown }): string | undefined => {
+  if (typeof node.meta === 'string') return node.meta
+  const content = node.content
+  const first = Array.isArray(content) ? content[0] : content
+  if (typeof first === 'string') return first
+  if (first && typeof first === 'object' && 'value' in first) {
+    const { value } = first as { value?: unknown }
+    if (typeof value === 'string') return value
+  }
+  return undefined
+}
+
 export const getSafeNodeId = (node: Node, ctx): string | null => {
   const assigned = ctx?.__anchors?.byNode?.get(node)
   if (assigned !== undefined) return assigned

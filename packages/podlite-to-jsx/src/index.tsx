@@ -22,6 +22,7 @@ import {
   frozenIds,
   JSXHelper,
   getSafeNodeId,
+  linkTarget,
   sameDocTarget,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
@@ -169,6 +170,13 @@ const linkConfigProps = (config: any) => {
   if (lang !== undefined) props.hrefLang = lang
   if (download !== undefined) props.download = download
   return props
+}
+
+// React drops an undefined href, which is the anchor HTML gives a link whose
+// target the author never wrote.
+const hrefOf = (node, ctx): string | undefined => {
+  const target = linkTarget(node)
+  return target === undefined ? undefined : String(sameDocTarget(target, ctx))
 }
 
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
@@ -608,18 +616,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       return makeComponent('dfn', node, interator(node.content, ctx))
     },
     'L<>': setFn((node, ctx) => {
-      let { meta } = node
-      if (meta === null) {
-        meta = node.content
-      }
-      //TODO: extract text from content array
-      if (Array.isArray(meta)) {
-        meta = meta[0]
-      }
-      if (meta && typeof meta !== 'string' && 'value' in meta) {
-        meta = meta.value
-      }
-      const href = sameDocTarget(meta, ctx)
+      const href = hrefOf(node, ctx)
       const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
       return mkComponent(({ children, key }) => (
         <a href={href} key={key} {...linkProps}>
@@ -628,17 +625,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       ))
     }),
     'W<>': setFn((node, ctx) => {
-      let { meta } = node
-      if (meta === null) {
-        meta = node.content
-      }
-      if (Array.isArray(meta)) {
-        meta = meta[0]
-      }
-      if (meta && typeof meta !== 'string' && 'value' in meta) {
-        meta = meta.value
-      }
-      const href = sameDocTarget(meta, ctx)
+      const href = hrefOf(node, ctx)
       const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
       return mkComponent(({ children, key }) => (
         <a href={href} key={key} className="backlink" {...linkProps}>

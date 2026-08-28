@@ -14,7 +14,7 @@ import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, markdownStyle, restyleAnchors, sameDocTarget } from './ast-helpers'
+import { getNodeId, linkTarget, markdownStyle, restyleAnchors, sameDocTarget } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
@@ -24,6 +24,15 @@ const markdownAnchors = ctx => ctx && (ctx.__markdownAnchors ||= restyleAnchors(
 const linkTitle = config => {
   const { title } = readLinkConfig(config)
   return title === undefined ? '' : ` "${title.replace(/"/g, '\\"')}"`
+}
+
+// Markdown has no form for a link whose target the author never wrote — an empty
+// address there claims the current document — so the text is written on its own.
+const linkWrap = (node, ctx) => {
+  const target = linkTarget(node)
+  if (target === undefined) return wrapContent('', '')
+  const address = sameDocTarget(target, ctx, markdownAnchors(ctx))
+  return wrapContent(`[`, `](${address}${linkTitle(codeConfigWithDefaults(node, ctx))})`)
 }
 
 // A cell's own text is written whole. Trimming each fragment on its own eats the
@@ -93,26 +102,8 @@ const rules = {
   },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
-  'L<>': setFn((node, ctx) => {
-    let { meta } = node
-    if (meta === null) {
-      meta = node.content
-    }
-    return wrapContent(
-      `[`,
-      `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(codeConfigWithDefaults(node, ctx))})`,
-    )
-  }),
-  'W<>': setFn((node, ctx) => {
-    let { meta } = node
-    if (meta === null) {
-      meta = node.content
-    }
-    return wrapContent(
-      `[`,
-      `](${sameDocTarget(meta, ctx, markdownAnchors(ctx))}${linkTitle(codeConfigWithDefaults(node, ctx))})`,
-    )
-  }),
+  'L<>': setFn((node, ctx) => linkWrap(node, ctx)),
+  'W<>': setFn((node, ctx) => linkWrap(node, ctx)),
 
   'N<>': (writer, processor) => {
     writer.addListener('end', () => {

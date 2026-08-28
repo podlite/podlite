@@ -15,7 +15,14 @@ import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, getExplicitNodeId, getSafeNodeId, sameDocTarget } from './ast-helpers'
+import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget } from './ast-helpers'
+
+// HTML gives an anchor without href to a link whose target the author never
+// wrote; an empty href would claim the current document instead.
+const hrefAttr = (node, ctx): string => {
+  const target = linkTarget(node)
+  return target === undefined ? '' : ` href="${sameDocTarget(target, ctx)}"`
+}
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
@@ -115,24 +122,12 @@ const rules = {
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
   'L<>': setFn((node, ctx) => {
-    let { meta } = node
-    if (meta === null) {
-      meta = node.content
-    }
-    return wrapContent(
-      `<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(codeConfigWithDefaults(node, ctx))}>`,
-      `</a>`,
-    )
+    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx))
+    return wrapContent(`<a${hrefAttr(node, ctx)}${attrs}>`, `</a>`)
   }),
   'W<>': setFn((node, ctx) => {
-    let { meta } = node
-    if (meta === null) {
-      meta = node.content
-    }
-    return wrapContent(
-      `<a href="${sameDocTarget(meta, ctx)}"${linkConfigAttrs(codeConfigWithDefaults(node, ctx))} class="backlink">`,
-      `</a>`,
-    )
+    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx))
+    return wrapContent(`<a${hrefAttr(node, ctx)}${attrs} class="backlink">`, `</a>`)
   }),
 
   /**
