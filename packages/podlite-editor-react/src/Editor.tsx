@@ -497,9 +497,13 @@ function PodliteEditorInternal(
     }
   }, [preview, enableScroll, previewScrollHandle, enablePreview])
 
-  const scrollExtensions = events.scroll({
-    scroll: previewScrollHandle,
-  })
+  const scrollExtensions = React.useMemo(
+    () =>
+      events.scroll({
+        scroll: previewScrollHandle,
+      }),
+    [previewScrollHandle],
+  )
 
   // A DOM change the editor did not make arrives as typing, and typing brings the
   // caret into view by walking up to whatever scrolls — the page, when the editor
@@ -509,22 +513,26 @@ function PodliteEditorInternal(
   // put the line where they want it themselves.
   const keepScrollInside = React.useMemo(() => EditorView.scrollHandler.of(view => !view.hasFocus), [])
   // Create custom keymap that prevents the toggle comment shortcut
-  const preventToggleComment = keymap.of([
-    {
-      key: 'Ctrl-/',
-      run: () => true, // Return true to indicate key was handled
-      preventDefault: true,
-    },
-    {
-      key: 'Cmd-/',
-      run: () => true, // Return true to indicate key was handled
-      preventDefault: false,
-    },
-    ...defaultKeymap,
-  ])
+  const preventToggleComment = React.useMemo(
+    () =>
+      keymap.of([
+        {
+          key: 'Ctrl-/',
+          run: () => true, // Return true to indicate key was handled
+          preventDefault: true,
+        },
+        {
+          key: 'Cmd-/',
+          run: () => true, // Return true to indicate key was handled
+          preventDefault: false,
+        },
+        ...defaultKeymap,
+      ]),
+    [],
+  )
 
-  // Memoized extensions to prevent CodeMirror reconfiguration on re-render
-  // (reconfiguration closes panels like search)
+  // A new list reaches CodeMirror as a reconfiguration, which resolves every
+  // extension again; every value below has to keep its identity for that to stop
 
   const modKeyClass = React.useMemo(
     () =>
