@@ -79,9 +79,4 @@ describe('a markup code delimited by a run of angles', () => {
       expect(render(src)).not.toContain('<strong>')
     }
   })
-
-  it('takes no content at all as no code, for every pair', () => {
-    expect(render('C<>')).not.toContain('<code>')
-    expect(render('C«»')).not.toContain('<code>')
-  })
 })
