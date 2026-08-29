@@ -30,9 +30,11 @@ const linkTitle = config => {
 // address there claims the current document — so the text is written on its own.
 // A bracket or a space inside the address would end it where markdown looks for
 // the closing one, so such an address is written in angle brackets, the form
-// markdown keeps for exactly that.
+// markdown keeps for exactly that. An angle of its own is percent-encoded rather
+// than dropped, so the address survives the round trip — no source text reaches
+// here holding one today, since the parser ends the code on it.
 const markdownAddress = (address: string): string =>
-  /[()\s]/.test(address) ? `<${address.replace(/[<>]/g, '')}>` : address
+  /[()\s]/.test(address) ? `<${address.replace(/</g, '%3C').replace(/>/g, '%3E')}>` : address
 
 const linkWrap = (node, ctx) => {
   const target = linkTarget(node)
