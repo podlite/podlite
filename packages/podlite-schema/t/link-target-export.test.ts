@@ -48,6 +48,13 @@ describe('the address a link carries into an export', () => {
     expect(html('L<|url>')).toContain('href="|url"')
   })
 
+  // a quote inside the address would close the attribute and let the document
+  // write markup of its own
+  it('quotes the address like every other attribute value', () => {
+    expect(html('L<text|a"b>')).toContain('href="a&quot;b"')
+    expect(html('L<text|x" onmouseover="alert(1)>')).not.toContain('onmouseover="alert(1)"')
+  })
+
   it('never writes the word undefined as an address', () => {
     for (const src of ['L<>', 'L<|url>', 'W<>']) {
       expect(html(src)).not.toContain('undefined')

@@ -6,6 +6,8 @@
 
 =item a link whose target the author never wrote is exported as an anchor with no address, the form html gives that case, instead of one pointing at the word `undefined`. Markdown has no such form, so the text is written on its own
 
+=item a quotation mark inside a link address is escaped in the html export, as every other attribute value already was. Without it a document could close the attribute and write markup of its own
+
 =item the formatting-code parser picks the closing delimiter while parsing instead of carrying a copy of two rules for every pair the language allows. The generated parser is less than half its former size and parsing is faster
 
 =item a markup code that opens with a run of angles now has to close with a run of the same length. It used to fall back to a shorter one, so C<< C<<>> >> read as a code holding C<< <> >>; it reads as text now. All four delimiter pairs and the runs that carry a closing angle inside the content are unchanged

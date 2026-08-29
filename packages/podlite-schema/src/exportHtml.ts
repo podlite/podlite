@@ -16,17 +16,19 @@ import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget } from './ast-helpers'
-
-// HTML gives an anchor without href to a link whose target the author never
-// wrote; an empty href would claim the current document instead.
-const hrefAttr = (node, ctx): string => {
-  const target = linkTarget(node)
-  return target === undefined ? '' : ` href="${sameDocTarget(target, ctx)}"`
-}
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
 const quoteValue = (value: string) => value.replace(/"/g, '&quot;')
+
+// HTML gives an anchor without href to a link whose target the author never
+// wrote; an empty href would claim the current document instead. The address is
+// quoted like every other attribute value: a quote inside it would otherwise
+// close the attribute and let the document write markup of its own.
+const hrefAttr = (node, ctx): string => {
+  const target = linkTarget(node)
+  return target === undefined ? '' : ` href="${quoteValue(String(sameDocTarget(target, ctx)))}"`
+}
 
 const linkConfigAttrs = config => {
   const { newContext, title, lang, download } = readLinkConfig(config)
