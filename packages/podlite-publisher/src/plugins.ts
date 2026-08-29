@@ -25,8 +25,10 @@ export type publishRecord = pubRecord & {
 // The record's `type` cannot answer this: it says whether the address was declared
 // or built, and it is the letter the short url is made of. Only the author can call
 // a document a page, with :type('page'); a document with no date is not published.
-export const isEntry = (record: { pubdate?: string | null; isPage?: boolean }): boolean =>
-  Boolean(record.pubdate) && record.isPage !== true
+// An index written before isPage existed carries no answer at all; there the old
+// field is still the best available one, and reading it keeps such a site as it was.
+export const isEntry = (record: { pubdate?: string | null; isPage?: boolean; type?: string }): boolean =>
+  Boolean(record.pubdate) && (record.isPage === undefined ? record.type !== 'page' : !record.isPage)
 
 export interface PodliteWebPluginContext {
   [name: string]: any
