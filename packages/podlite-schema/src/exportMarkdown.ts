@@ -14,7 +14,7 @@ import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, linkTarget, markdownStyle, restyleAnchors, sameDocTarget } from './ast-helpers'
+import { getNodeId, linkTarget, markdownStyle, restyleAnchors, sameDocTarget, writtenValue } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
@@ -434,9 +434,7 @@ const rules = {
   ':image': (writer, processor) => (node, ctx, interator) => {
     // the alternative text sits between square brackets, where a `]` of its own
     // would end it, and the address between round ones — the same shape a link has
-    // an attribute written without a value arrives here as a boolean, and printing
-    // it puts the word "true" where the description of the picture belongs
-    const alt = (typeof node.alt === 'string' ? node.alt : '').replace(/([[\]\\])/g, '\\$1')
+    const alt = (writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
     const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''))
     writer.writeRaw(`![${alt}](${src})`)
   },

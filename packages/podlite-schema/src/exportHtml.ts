@@ -15,7 +15,7 @@ import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget } from './ast-helpers'
+import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget, writtenValue } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
@@ -421,10 +421,10 @@ const rules = {
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
     const src = quoteValue(String(applyImageBase(node.src, ctx?.base) ?? ''))
-    // only a written alternative text is carried: html reads a missing alt as "this
-    // image is part of the content" and an empty one as "decorative", and an
-    // attribute written without a value arrives here as a boolean
-    const alt = typeof node.alt !== 'string' ? '' : ` alt="${quoteValue(node.alt)}"`
+    // html reads a missing alt as "this image is part of the content" and an empty
+    // one as "decorative", so an alternative text the author never wrote is left out
+    const altText = writtenValue(node.alt)
+    const alt = altText === undefined ? '' : ` alt="${quoteValue(altText)}"`
     writer.writeRaw(`<img src="${src}"${alt}/>`)
   },
 }

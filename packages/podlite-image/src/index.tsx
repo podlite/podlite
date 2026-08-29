@@ -13,6 +13,7 @@ import {
   wrapContent,
   parseFormattingCodes,
   quoteAttribute,
+  writtenValue,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -87,10 +88,11 @@ const Image: Plugin = {
             writer.write(linkTo)
             writer.writeRaw('">')
           }
-          // only a written alternative text is carried: html reads a missing alt as
-          // "this image is part of the content" and an empty one as "decorative",
-          // and an attribute written without a value arrives here as a boolean
-          const alt = typeof node.alt !== 'string' ? '' : ` alt="${quoteAttribute(node.alt)}"`
+          // html reads a missing alt as "this image is part of the content" and an
+          // empty one as "decorative", so an alternative text the author never
+          // wrote is left out
+          const altText = writtenValue(node.alt)
+          const alt = altText === undefined ? '' : ` alt="${quoteAttribute(altText)}"`
           writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')
@@ -126,6 +128,7 @@ const Image: Plugin = {
           const hook = ctx.imageSrc as ImageSrcResolver | undefined
           const baseDir = ctx.imageBaseDir as string | undefined
           const isVideo = node.src.match(/(mp4|mov)$/)
+          const alt = writtenValue(node.alt)
           return mkComponent(({ key }) => {
             const renderInner = (src: string) =>
               isVideo ? (
@@ -134,10 +137,10 @@ const Image: Plugin = {
                   <source src={src} type="video/mp4" />{' '}
                 </video>
               ) : (
-                <img key={key} src={src} alt={node.alt} />
+                <img key={key} src={src} alt={alt} />
               )
             const Img = hook ? (
-              <HookedImage key={key} src={node.src} alt={node.alt} hook={hook} baseDir={baseDir} render={renderInner} />
+              <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={baseDir} render={renderInner} />
             ) : (
               renderInner(node.src)
             )

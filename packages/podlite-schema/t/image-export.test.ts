@@ -53,6 +53,15 @@ describe('an image whose alternative text was written without a value', () => {
     expect(markdown('=for Image :alt\nok.png')).toContain('![](ok.png)')
     expect(markdown('=for Image :!alt\nok.png')).toContain('![](ok.png)')
   })
+
+  it('keeps a value the author did write, even a number', () => {
+    expect(img(html('=for Image :alt(2)\nok.png'))).toContain('alt="2"')
+    expect(markdown('=for Image :alt(2)\nok.png')).toContain('![2](ok.png)')
+  })
+
+  it('keeps an alternative text the author wrote as empty', () => {
+    expect(img(html('=for Image :alt("")\nok.png'))).toContain('alt=""')
+  })
 })
 
 describe('an image the markdown parser built', () => {

@@ -139,6 +139,12 @@ export const linkTarget = (node: { meta?: unknown; content?: unknown }): string 
   return undefined
 }
 
+// An attribute written without a value reaches the node as a boolean, which is the
+// reader reporting that nothing was written rather than the author writing it. A
+// number is a value the author did write, and stays.
+export const writtenValue = (value: unknown): string | undefined =>
+  value == null || typeof value === 'boolean' ? undefined : String(value)
+
 export const getSafeNodeId = (node: Node, ctx): string | null => {
   const assigned = ctx?.__anchors?.byNode?.get(node)
   if (assigned !== undefined) return assigned

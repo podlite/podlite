@@ -26,7 +26,15 @@ import {
   sameDocTarget,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
-import { parseSelector, runSelector, getTextContentFromNode, maskText, collectText, isCovered } from '@podlite/schema'
+import {
+  parseSelector,
+  runSelector,
+  getTextContentFromNode,
+  maskText,
+  collectText,
+  isCovered,
+  writtenValue,
+} from '@podlite/schema'
 import { applyFoldedSections } from '@podlite/schema'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
@@ -341,12 +349,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     image: nodeContent,
     ':image': setFn((node, ctx) => {
       const hook = opts.imageSrc
+      const alt = writtenValue(node.alt)
       if (hook) {
         return mkComponent(({ key }) => (
-          <HookedImage key={key} src={node.src} alt={node.alt} hook={hook} baseDir={opts.imageBaseDir} />
+          <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={opts.imageBaseDir} />
         ))
       }
-      return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={node.alt} />)
+      return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={alt} />)
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {
