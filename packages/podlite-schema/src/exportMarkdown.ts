@@ -28,11 +28,17 @@ const linkTitle = config => {
 
 // Markdown has no form for a link whose target the author never wrote — an empty
 // address there claims the current document — so the text is written on its own.
+// A bracket or a space inside the address would end it where markdown looks for
+// the closing one, so such an address is written in angle brackets, the form
+// markdown keeps for exactly that.
+const markdownAddress = (address: string): string =>
+  /[()\s]/.test(address) ? `<${address.replace(/[<>]/g, '')}>` : address
+
 const linkWrap = (node, ctx) => {
   const target = linkTarget(node)
   if (target === undefined) return wrapContent('', '')
-  const address = sameDocTarget(target, ctx, markdownAnchors(ctx))
-  return wrapContent(`[`, `](${address}${linkTitle(codeConfigWithDefaults(node, ctx))})`)
+  const address = String(sameDocTarget(target, ctx, markdownAnchors(ctx)))
+  return wrapContent(`[`, `](${markdownAddress(address)}${linkTitle(codeConfigWithDefaults(node, ctx))})`)
 }
 
 // A cell's own text is written whole. Trimming each fragment on its own eats the

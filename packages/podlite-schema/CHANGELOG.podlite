@@ -6,7 +6,9 @@
 
 =item a link whose target the author never wrote is exported as an anchor with no address, the form html gives that case, instead of one pointing at the word `undefined`. Markdown has no such form, so the text is written on its own
 
-=item a quotation mark inside a link address is escaped in the html export, as every other attribute value already was. Without it a document could close the attribute and write markup of its own
+=item a quotation mark or an ampersand inside an attribute value is escaped in the html export. Without it a document could close the attribute and write markup of its own, and an address holding `&copy;` reached the browser as a copyright sign
+
+=item an address holding a bracket or a space is written in angle brackets in the markdown export, the form markdown keeps for it. `man:find(1)` used to end the link at the first bracket
 
 =item the formatting-code parser picks the closing delimiter while parsing instead of carrying a copy of two rules for every pair the language allows. The generated parser is less than half its former size and parsing is faster
 

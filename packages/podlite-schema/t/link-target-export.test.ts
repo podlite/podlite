@@ -55,6 +55,15 @@ describe('the address a link carries into an export', () => {
     expect(html('L<text|x" onmouseover="alert(1)>')).not.toContain('onmouseover="alert(1)"')
   })
 
+  it('escapes an ampersand so the browser reads the address as written', () => {
+    expect(html('L<text|a&copy;b>')).toContain('href="a&amp;copy;b"')
+  })
+
+  it('brackets an address markdown would otherwise cut short', () => {
+    expect(markdown('L<text|man:find(1)>')).toContain('](<man:find(1)>)')
+    expect(markdown('L<text|plain>')).toContain('](plain)')
+  })
+
   it('never writes the word undefined as an address', () => {
     for (const src of ['L<>', 'L<|url>', 'W<>']) {
       expect(html(src)).not.toContain('undefined')

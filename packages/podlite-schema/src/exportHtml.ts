@@ -19,7 +19,10 @@ import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget 
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
-const quoteValue = (value: string) => value.replace(/"/g, '&quot;')
+// The ampersand goes first: escaping it after the quote would rewrite the
+// `&quot;` this produced. A value arrives as document text, so every `&` in it
+// is a literal one the browser must not read as a character reference.
+const quoteValue = (value: string) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 
 // HTML gives an anchor without href to a link whose target the author never
 // wrote; an empty href would claim the current document instead. The address is
