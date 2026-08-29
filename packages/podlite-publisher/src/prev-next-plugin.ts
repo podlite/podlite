@@ -1,13 +1,13 @@
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
+import { PodliteWebPlugin, PodliteWebPluginContext, isEntry, publishRecord } from '.'
 
 const plugin = (): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
   const onExit = ctx => ({ ...ctx, ...outCtx })
   const onProcess = (recs: publishRecord[]) => {
-    const notPages = recs.filter(({ type = '' }: any) => type !== 'page')
+    const notPages = recs.filter(isEntry)
     recs.forEach(item => {
       if (item.publishUrl) {
-        const allData = (item.type !== 'page' ? notPages : recs).filter(({ publishUrl }) => Boolean(publishUrl))
+        const allData = (isEntry(item) ? notPages : recs).filter(({ publishUrl }) => Boolean(publishUrl))
         const articleIndex = allData.findIndex(({ publishUrl }) => publishUrl === item.publishUrl)
         const prepareReference = (item: publishRecord): any | boolean => {
           if (item) {

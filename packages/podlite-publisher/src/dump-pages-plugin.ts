@@ -15,6 +15,7 @@ export const buildPagesIndex = (records: publishRecord[], places: object[], inde
     title: r.title,
     subtitle: r.subtitle,
     type: r.type,
+    isPage: r.isPage,
     file: r.file,
     sources: r.sources,
     pubdate: r.pubdate,

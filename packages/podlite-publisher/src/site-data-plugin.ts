@@ -1,7 +1,7 @@
 import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@podlite/schema'
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
-import { PodliteWebPlugin, PodliteWebPluginContext, processFile, publishRecord, streamWriteArray } from '.'
+import { PodliteWebPlugin, PodliteWebPluginContext, isEntry, processFile, publishRecord, streamWriteArray } from '.'
 import pathFs from 'path'
 
 export function buildStylesContent(theme: string | undefined, globalStylesPath: string | undefined): string {
@@ -160,7 +160,7 @@ const plugin = ({
     }
     indexPage.publishUrl = '/'
 
-    const articlesJSON = JSON.stringify(recs.filter(i => i.publishUrl).filter(({ type = '' }: any) => type !== 'page'))
+    const articlesJSON = JSON.stringify(recs.filter(i => i.publishUrl).filter(isEntry))
 
     const storeFile = `
 =begin pod

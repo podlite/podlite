@@ -8,6 +8,7 @@ export type pubRecord = {
 }
 
 export type publishRecord = pubRecord & {
+  isPage?: boolean
   title: string | null
   publishUrl?: string | null
   sources: string[]
@@ -20,6 +21,12 @@ export type publishRecord = pubRecord & {
   pluginsData?: { [name: string]: any }
   template_file?: string
 }
+
+// The record's `type` cannot answer this: it says whether the address was declared
+// or built, and it is the letter the short url is made of. Only the author can call
+// a document a page, with :type('page'); a document with no date is not published.
+export const isEntry = (record: { pubdate?: string | null; isPage?: boolean }): boolean =>
+  Boolean(record.pubdate) && record.isPage !== true
 
 export interface PodliteWebPluginContext {
   [name: string]: any

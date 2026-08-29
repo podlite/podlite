@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item ask the document whether it is a page: a dated document is an entry unless it declares :type('page'), which until now nothing read
+=item carry that answer on the record and in the page index, and export one predicate for it; the test used to be written by hand against a field that says whether the address was declared, not whether the document is a page
+
 =head1 0.0.48
 
 =item a publish address written with a space in it is reported at build time instead of being shortened in silence: an unquoted value is read as a list and only its first word became the address. The message names the document and the address it got; quoting the value keeps it whole

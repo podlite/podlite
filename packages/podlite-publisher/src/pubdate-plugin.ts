@@ -37,6 +37,7 @@ export function getArticles(item: publishRecord) {
             pubdate,
             title: getTextContentFromNode(nodePublished).trim(),
             type: 'page',
+            isPage: false,
             publishUrl: '',
             sources: [],
             node: mkRootBlock({}, articleContent),
@@ -74,6 +75,7 @@ export function getNotes(item: publishRecord): publishRecord[] {
       return {
         pubdate,
         type: 'note',
+        isPage: false,
         title: null,
         node: mkRootBlock({}, [n]),
         description: n,
@@ -90,11 +92,12 @@ export function getPages(item: publishRecord): publishRecord[] {
   const pages = getFromTree(item.node, 'pod')
     .filter(n => makeAttrs(n, {}).exists('pubdate'))
     .map((n: PodNode) => {
-      const { title, description, puburl, pubdate } = getPublishAttributes(n)
+      const { title, description, puburl, pubdate, isPage } = getPublishAttributes(n)
       //TODO: use footer and header of document for generated pages
       return {
         pubdate: pubdate || '',
         type: 'page',
+        isPage,
         title,
         node: mkRootBlock({}, [n]),
         description,

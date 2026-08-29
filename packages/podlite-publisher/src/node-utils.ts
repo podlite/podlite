@@ -221,6 +221,11 @@ export function parseFile(filePath: string, fileContent?: string, mime?: MimeTyp
 // An address written without quotes is cut into a list at every space, and only
 // its first word reaches the page. The page then lands on a short address, or on
 // none at all, and nothing says so — that silence is what is being broken here.
+// Only the author can say a document is a static page, and :type('page') is how
+// they say it. Every other value of :type belongs to the site's own taxonomy and
+// carries no meaning here.
+const readDeclaredPage = (conf): boolean => conf.getFirstValue('type') === 'page'
+
 const readPublishUrl = (conf, filePath?: string): string | undefined => {
   const name = conf.exists('puburl') ? 'puburl' : conf.exists('publishUrl') ? 'publishUrl' : undefined
   if (!name) return undefined
@@ -275,12 +280,14 @@ export function getDocumentAttributes(node: PodliteDocument, filePath?: string) 
     footer,
     puburl: undefined,
     pubdate: undefined,
+    isPage: false,
     ...(header && { header }),
   }
   const [podnode] = getFromTree(node.content, 'pod')
   if (podnode) {
     // prepare publishUrl
     const conf = makeAttrs(podnode, {})
+    props.isPage = readDeclaredPage(conf)
     props.puburl = readPublishUrl(conf, filePath)
     const a_pubdate = conf.getFirstValue('pubdate')
     // Due to cover some cases whan new Date fail on safari, i.e.
@@ -328,11 +335,13 @@ export function getPublishAttributes(node: PodNode, filePath?: string) {
     footer,
     puburl: undefined,
     pubdate: undefined,
+    isPage: false,
   }
   const podnode = node
   if (podnode) {
     // prepare publishUrl
     const conf = makeAttrs(podnode, {})
+    props.isPage = readDeclaredPage(conf)
     props.puburl = readPublishUrl(conf, filePath)
     const a_pubdate = conf.getFirstValue('pubdate')
     // Due to cover some cases whan new Date fail on safari, i.e.
@@ -348,7 +357,8 @@ export function getPublishAttributes(node: PodNode, filePath?: string) {
 export function processFile(f: string, content?: string, mime?: MimeTypes) {
   const podlite_document = parseFile(f, content, mime)
   // now extract some extra meta inforamtion, like pubdate, puburl
-  const attr = ((f, node) => {
+  // markdown front matter and pod attributes reach here as different shapes
+  const attr: { [name: string]: any } = ((f, node) => {
     if (getParserTypeforFile(f, mime) === PARSER_TYPES.MARKDOWN) {
       // try to extract from markdown front matter
       const { data } = matter(content || fs.readFileSync(f).toString())
@@ -361,6 +371,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
   const { title, description, subtitle, author, footer, puburl, pubdate, header } = attr
   return {
     type: 'page',
+    isPage: attr.isPage === true || attr.type === 'page',
     title,
     description,
     subtitle,
