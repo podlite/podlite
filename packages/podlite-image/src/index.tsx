@@ -87,10 +87,10 @@ const Image: Plugin = {
             writer.write(linkTo)
             writer.writeRaw('">')
           }
-          // an alternative text the author never wrote is left out: html reads a
-          // missing alt as "this image is part of the content", an empty one as
-          // "decorative", which is a different statement
-          const alt = node.alt === undefined ? '' : ` alt="${quoteAttribute(String(node.alt))}"`
+          // only a written alternative text is carried: html reads a missing alt as
+          // "this image is part of the content" and an empty one as "decorative",
+          // and an attribute written without a value arrives here as a boolean
+          const alt = typeof node.alt !== 'string' ? '' : ` alt="${quoteAttribute(node.alt)}"`
           writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')

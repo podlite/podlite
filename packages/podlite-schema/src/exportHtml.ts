@@ -421,9 +421,10 @@ const rules = {
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
     const src = quoteValue(String(applyImageBase(node.src, ctx?.base) ?? ''))
-    // an alternative text the author never wrote is left out: html reads a missing
-    // alt as "this image is part of the content", an empty one as "decorative"
-    const alt = node.alt === undefined ? '' : ` alt="${quoteValue(String(node.alt))}"`
+    // only a written alternative text is carried: html reads a missing alt as "this
+    // image is part of the content" and an empty one as "decorative", and an
+    // attribute written without a value arrives here as a boolean
+    const alt = typeof node.alt !== 'string' ? '' : ` alt="${quoteValue(node.alt)}"`
     writer.writeRaw(`<img src="${src}"${alt}/>`)
   },
 }

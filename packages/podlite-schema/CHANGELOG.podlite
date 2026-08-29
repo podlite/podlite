@@ -6,6 +6,8 @@
 
 =item the address and the alternative text of an image are escaped in both exports, as a link already was. A quotation mark used to close the attribute, and a bracket used to end the address in markdown
 
+=item an image `:alt` written without a value counts as not written. It used to put the word `true` where the description of the picture goes, and `:!alt` the word `false`
+
 =item a link written without a bar keeps its address when the document is exported. Both the html and the markdown export used to put the node array itself where the address goes, so `L<#Setup>` came out pointing at `[object Object]`
 
 =item a link whose target the author never wrote is exported as an anchor with no address, the form html gives that case, instead of one pointing at the word `undefined`. Markdown has no such form, so the text is written on its own

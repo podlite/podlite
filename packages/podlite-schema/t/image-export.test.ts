@@ -43,6 +43,18 @@ describe('an image carried into an export', () => {
   })
 })
 
+describe('an image whose alternative text was written without a value', () => {
+  it('says nothing rather than reading the word "true" aloud', () => {
+    expect(img(html('=for Image :alt\nok.png'))).toBe('<img src="ok.png"/>')
+    expect(img(html('=for Image :!alt\nok.png'))).toBe('<img src="ok.png"/>')
+  })
+
+  it('says nothing in markdown either', () => {
+    expect(markdown('=for Image :alt\nok.png')).toContain('![](ok.png)')
+    expect(markdown('=for Image :!alt\nok.png')).toContain('![](ok.png)')
+  })
+})
+
 describe('an image the markdown parser built', () => {
   const md = (src: string) => `=begin markdown\n${src}\n=end markdown\n`
 

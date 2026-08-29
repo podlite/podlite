@@ -434,7 +434,9 @@ const rules = {
   ':image': (writer, processor) => (node, ctx, interator) => {
     // the alternative text sits between square brackets, where a `]` of its own
     // would end it, and the address between round ones — the same shape a link has
-    const alt = String(node.alt ?? '').replace(/([[\]\\])/g, '\\$1')
+    // an attribute written without a value arrives here as a boolean, and printing
+    // it puts the word "true" where the description of the picture belongs
+    const alt = (typeof node.alt === 'string' ? node.alt : '').replace(/([[\]\\])/g, '\\$1')
     const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''))
     writer.writeRaw(`![${alt}](${src})`)
   },
