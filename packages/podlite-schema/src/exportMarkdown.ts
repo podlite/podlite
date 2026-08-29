@@ -432,7 +432,11 @@ const rules = {
   ':toc-list': emptyContent,
   ':toc-item': emptyContent,
   ':image': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw(`![${node.alt || ''}](${applyImageBase(node.src, ctx?.base)})`)
+    // the alternative text sits between square brackets, where a `]` of its own
+    // would end it, and the address between round ones — the same shape a link has
+    const alt = String(node.alt ?? '').replace(/([[\]\\])/g, '\\$1')
+    const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''))
+    writer.writeRaw(`![${alt}](${src})`)
   },
 }
 

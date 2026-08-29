@@ -44,9 +44,7 @@ test`
     <div class="image_block"
          id="id"
     >
-      <img src="test"
-           alt="undefined"
-      >
+      <img src="test">
     </div>
   `)
 })

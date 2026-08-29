@@ -19,10 +19,7 @@ import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget 
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
-// The ampersand goes first: escaping it after the quote would rewrite the
-// `&quot;` this produced. A value arrives as document text, so every `&` in it
-// is a literal one the browser must not read as a character reference.
-const quoteValue = (value: string) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+import { quoteAttribute as quoteValue } from './helpers/html-attr'
 
 // HTML gives an anchor without href to a link whose target the author never
 // wrote; an empty href would claim the current document instead. The address is
@@ -423,7 +420,11 @@ const rules = {
   ':toc-list': setFn((node, ctx) => wrapContent(`<ul class="toc-list listlevel${node.level}">`, '</ul>')),
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw(`<img src="${applyImageBase(node.src, ctx?.base)}" alt="${node.alt || ''}"/>`)
+    const src = quoteValue(String(applyImageBase(node.src, ctx?.base) ?? ''))
+    // an alternative text the author never wrote is left out: html reads a missing
+    // alt as "this image is part of the content", an empty one as "decorative"
+    const alt = node.alt === undefined ? '' : ` alt="${quoteValue(String(node.alt))}"`
+    writer.writeRaw(`<img src="${src}"${alt}/>`)
   },
 }
 

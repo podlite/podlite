@@ -220,9 +220,7 @@ Image Diagram
     <div class="image_block"
          id="1"
     >
-      <img src="https://example.com.image.png"
-           alt="undefined"
-      >
+      <img src="https://example.com.image.png">
       <div class="caption">
         Image caption
       </div>

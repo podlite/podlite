@@ -12,6 +12,7 @@ import {
   setFn,
   wrapContent,
   parseFormattingCodes,
+  quoteAttribute,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -86,7 +87,11 @@ const Image: Plugin = {
             writer.write(linkTo)
             writer.writeRaw('">')
           }
-          writer.writeRaw(`<img src="${node.src}" alt="${node.alt}"/>`)
+          // an alternative text the author never wrote is left out: html reads a
+          // missing alt as "this image is part of the content", an empty one as
+          // "decorative", which is a different statement
+          const alt = node.alt === undefined ? '' : ` alt="${quoteAttribute(String(node.alt))}"`
+          writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')
           }
