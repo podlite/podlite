@@ -1,6 +1,5 @@
-import { PodliteDocument, findAnchor, indexAnchors, toFragment } from '@podlite/schema'
+import { PodliteDocument, bindTarget, buildBindingIndex } from '@podlite/schema'
 import type { Rule, Violation, LintContext } from '../types'
-import { collectExplicitIds } from './id-unique'
 import { collectLinks } from './link-targets'
 
 export const LINK_TARGET_RESOLVES_RULE_ID = 'link-target-resolves'
@@ -13,12 +12,11 @@ export const linkTargetResolvesRule: Rule = {
     if (anchors.length === 0) return []
     // Both ways an anchor can exist: written by the author as :id, or carried by a
     // heading under its own name. Matched the way the exporter matches them.
-    const written = new Set(collectExplicitIds(ast).map(entry => toFragment(entry.value)))
-    const headings = indexAnchors(ast)
-    const resolves = (target: string): boolean => {
-      const name = target.slice(1)
-      return written.has(toFragment(name)) || findAnchor(name, headings) !== undefined
-    }
+    // Asked of the same binding the exporters ask, rather than worked out again here.
+    // Two answers to one question is how this rule came to call a link sound that the
+    // export could not resolve: it shaped both sides itself, and the export did not.
+    const index = buildBindingIndex(ast)
+    const resolves = (target: string): boolean => bindTarget(target.slice(1), index).found
     return anchors
       .filter(({ target }) => !resolves(target))
       .map(({ target, at }) => ({

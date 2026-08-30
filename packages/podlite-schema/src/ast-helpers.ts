@@ -183,8 +183,14 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
     else if (via === 'explicit-id') byKey.set(key, { node, via })
   }
   walkNodes(tree, node => {
+    // The raw value the author wrote, and the form the anchor takes: getExplicitNodeId
+    // already turns whitespace into a hyphen, so a link written the way the id was
+    // written would otherwise miss it.
+    const written = makeAttrsPod(node, {}).exists('id') ? makeAttrsPod(node, {}).getFirstValue('id') : null
     const explicit = getExplicitNodeId(node, {})
-    if (explicit) put(explicit.normalize('NFC').trim(), node, 'explicit-id')
+    for (const key of [written == null ? null : String(written), explicit]) {
+      if (key) put(key.normalize('NFC').trim(), node, 'explicit-id')
+    }
     if (node.name !== 'head') return
     const name = getTextContentFromNode(node).normalize('NFC').trim()
     put(name, node, 'heading')
