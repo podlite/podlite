@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a link pointing inside the document can carry a preview. The renderer takes a `linkPreview` handler, hands it the target and the text found there, and shows whatever the handler returns. Without a handler a link renders as before and nothing is looked up
+
 =item the modules that held syntax highlighting are gone from this package: the shiki module and the code component moved to @podlite/highlight. Both were reachable as deep imports and now are not; the component is still exported from the package root
 
 =item syntax highlighting comes from @podlite/highlight instead of a copy kept here. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle

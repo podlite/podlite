@@ -35,6 +35,8 @@ import {
   isCovered,
   writtenValue,
 } from '@podlite/schema'
+import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
+export type { LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 import { applyFoldedSections } from '@podlite/schema'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
@@ -123,6 +125,7 @@ export const Podlite: React.FC<{
   expandPaths?: ExpandPaths
   imageSrc?: ImageSrcResolver
   imageBaseDir?: string
+  linkPreview?: LinkPreviewResolver
   renderMode?: 'production' | 'draft'
 }> = ({ children, ...options }) => {
   const result: any = podlite(children, options)
@@ -140,6 +143,7 @@ type MapToReactOptions = {
   expandPaths?: ExpandPaths
   imageSrc?: ImageSrcResolver
   imageBaseDir?: string
+  linkPreview?: LinkPreviewResolver
   parser?: any
 }
 
@@ -187,6 +191,25 @@ const hrefOf = (node, ctx): string | undefined => {
   return target === undefined ? undefined : String(sameDocTarget(target, ctx))
 }
 
+// Both link codes ask for the same index over the same document, and each rule is
+// initialised separately. Keyed by the tree so the walk happens once; weak so a
+// document that is done with is not held here.
+const previewIndexes = new WeakMap<object, Map<string, LinkPreviewTarget>>()
+const previewIndexFor = (tree: unknown): Map<string, LinkPreviewTarget> => {
+  if (!tree || typeof tree !== 'object') return new Map()
+  const known = previewIndexes.get(tree)
+  if (known) return known
+  const built = buildLinkPreviewIndex(tree)
+  previewIndexes.set(tree, built)
+  return built
+}
+
+const previewOf = (node, ctx, index: Map<string, LinkPreviewTarget>): LinkPreviewTarget | undefined => {
+  const href = hrefOf(node, ctx)
+  if (href === undefined || !href.startsWith('#') || href === '#') return undefined
+  return index.get(href.slice(1))
+}
+
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
 
 const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
@@ -202,6 +225,38 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     const id = getSafeNodeId(node, ctx)
     return makeComponent(src, node, undefined, { id }, ctx)
   }
+  // Both link codes render the same anchor and differ only by class. The preview
+  // of the target is the renderer's own behaviour until a resolver is supplied:
+  // once one is, it decides alone, and returning null from it means nothing shows.
+  const linkRule =
+    (className?: string) =>
+    (writer, processor, tree) => {
+      const resolver = opts.linkPreview
+      // Built where the tree is in hand. Memoising on the context instead built it
+      // four times over: rules clone the context before recursing, so links in
+      // different blocks each got their own. Nothing is built without a resolver.
+      const index = resolver ? previewIndexFor(tree) : undefined
+      return (node, ctx, interator) => {
+      const href = hrefOf(node, ctx)
+      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
+      const supplied = resolver && index ? resolver(linkTarget(node) ?? '', previewOf(node, ctx, index)) : null
+      const src = ({ children, key }) =>
+        supplied ? (
+          <React.Fragment key={key}>
+            <a href={href} className={className} {...linkProps}>
+              {children}
+            </a>
+            {supplied}
+          </React.Fragment>
+        ) : (
+          <a href={href} key={key} className={className} {...linkProps}>
+            {children}
+          </a>
+        )
+      return mkComponent(src)(writer, processor)(node, ctx, interator)
+      }
+    }
+
   // Handle nested block and :nested block attribute
   const handleNested = (defaultHandler, implicitLevel?: number) => {
     return (writer, processor) => {
@@ -624,24 +679,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       writer.DEFINITIONS.push({ definition })
       return makeComponent('dfn', node, interator(node.content, ctx))
     },
-    'L<>': setFn((node, ctx) => {
-      const href = hrefOf(node, ctx)
-      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
-      return mkComponent(({ children, key }) => (
-        <a href={href} key={key} {...linkProps}>
-          {children}
-        </a>
-      ))
-    }),
-    'W<>': setFn((node, ctx) => {
-      const href = hrefOf(node, ctx)
-      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
-      return mkComponent(({ children, key }) => (
-        <a href={href} key={key} className="backlink" {...linkProps}>
-          {children}
-        </a>
-      ))
-    }),
+    'L<>': linkRule(),
+    'W<>': linkRule('backlink'),
     'S<>': (writer, processor) => (node, ctx, interator) => {
       let content = node.content || ''
       if (typeof content !== 'string' && 'value' in content) {
@@ -949,6 +988,7 @@ function podlite(
     expandPaths,
     imageSrc,
     imageBaseDir,
+    linkPreview,
     renderMode = 'production',
   }: {
     file?: string
@@ -961,6 +1001,7 @@ function podlite(
     expandPaths?: ExpandPaths
     imageSrc?: ImageSrcResolver
     imageBaseDir?: string
+    linkPreview?: LinkPreviewResolver
     renderMode?: 'production' | 'draft'
   },
   ...args
@@ -991,6 +1032,7 @@ function podlite(
       expandPaths,
       imageSrc,
       imageBaseDir,
+      linkPreview,
       parser: podliteParser,
     }),
     ...plugins(makeComponent),
