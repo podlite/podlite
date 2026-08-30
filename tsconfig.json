@@ -3,6 +3,7 @@
         "jsx": "react",
         "esModuleInterop": true,
       },
+  "files": [],
   "references": [
     {
         "path": "./packages/podlite-schema"
