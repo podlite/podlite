@@ -172,6 +172,7 @@ export type BindingIndex = { byKey: Map<string, { node: object; via: 'heading' |
 export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle): BindingIndex => {
   const byKey = new Map<string, { node: object; via: 'heading' | 'explicit-id' }>()
   const ambiguous = new Set<string>()
+  const anchors = indexAnchors(tree, style)
   const put = (key: string, node: object, via: 'heading' | 'explicit-id') => {
     const known = byKey.get(key)
     if (known === undefined) {
@@ -179,8 +180,11 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
       return
     }
     if (known.node === node) return
-    if (known.via === via) ambiguous.add(key)
-    else if (via === 'explicit-id') byKey.set(key, { node, via })
+    // Two nodes claiming one name is an ambiguity whether or not they claim it the
+    // same way. An explicit id still wins the address; the flag says the document
+    // said the name twice.
+    ambiguous.add(key)
+    if (via === 'explicit-id' && known.via !== 'explicit-id') byKey.set(key, { node, via })
   }
   walkNodes(tree, node => {
     // The raw value the author wrote, and the form the anchor takes: getExplicitNodeId
@@ -201,6 +205,11 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
     for (const shaped of [toFragment(name), toMarkdownFragment(name)]) {
       if (shaped && shaped !== name) put(shaped, node, 'heading')
     }
+    // And the anchor actually handed out, which carries the number when a name
+    // repeats: a link written against the second «Parameters» asks for Parameters-2,
+    // and only the assignment knows that.
+    const assigned = anchors.byNode.get(node)
+    if (assigned) put(assigned, node, 'heading')
   })
   return { byKey, ambiguous }
 }

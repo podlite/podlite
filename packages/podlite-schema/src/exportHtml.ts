@@ -46,11 +46,16 @@ const linkConfigAttrs = config => {
   return attrs.join('')
 }
 
-const openTag = (tag: string, node, ctx, attrs = '') => {
-  // Shaped by the same rule the address is: an anchor keeping a dot the address
-  // drops is how :id<v1.2> came to render an unreachable target.
+// Shaped by the same rule the address is: an anchor keeping a dot the address drops
+// is how :id<v1.2> came to render an unreachable target. Every place that writes an
+// anchor goes through here, or the two sides part again.
+const anchorOf = (node, ctx): string | null => {
   const written = getExplicitNodeId(node, ctx)
-  const id = written === null ? null : (ctx?.__anchors?.shape || toFragment)(written)
+  return written === null ? null : (ctx?.__anchors?.shape || toFragment)(written)
+}
+
+const openTag = (tag: string, node, ctx, attrs = '') => {
+  const id = anchorOf(node, ctx)
   return `<${tag}${id ? ` id="${id}"` : ''}${attrs}>`
 }
 
@@ -272,7 +277,7 @@ const rules = {
   // the inner paragraph renders as before.
   para: handleNested(
     setFn((node, ctx) =>
-      getExplicitNodeId(node, ctx)
+      anchorOf(node, ctx)
         ? subUse({ ':para': content }, wrapContent(openTag('p', node, ctx), '</p>'))
         : content,
     ),
@@ -321,7 +326,7 @@ const rules = {
   'comment:block': emptyContent,
   'boundary:block': (writer, processor) => (node, ctx) => {
     const conf = makeAttrs(node, ctx)
-    const id = getExplicitNodeId(node, ctx)
+    const id = anchorOf(node, ctx)
     const idAttr = id ? ` id="${id}"` : ''
     if (conf.exists('caption')) {
       writer.writeRaw(`<hr${idAttr} title="`)
@@ -333,7 +338,7 @@ const rules = {
   },
   // The term opens the pair, so an :id on the definition lands on its <dt>.
   defn: setFn((node, ctx) => {
-    const id = getExplicitNodeId(node, ctx)
+    const id = anchorOf(node, ctx)
     return id
       ? subUse({ 'term:para': wrapContent(`<dt id="${id}">`, '</dt><dd>') }, wrapContent('', '</dd>'))
       : wrapContent('', '</dd>')
