@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { getExplicitNodeId, getTextContentFromNode, indexAnchors } from '@podlite/schema'
 
 /*
-=begin pod :kind<module> :id<@podlite/to-jsx/link-preview>
+=begin pod :kind<module>
 
 =head2 What a link preview shows
 
@@ -30,7 +30,7 @@ markup: nothing here produces markup.
 */
 
 /*
-=begin pod :kind<export> :id<@podlite/to-jsx/link-preview#LinkPreviewTarget>
+=begin pod :kind<export>
 
 =head2 LinkPreviewTarget
 
@@ -43,7 +43,7 @@ the author wrote as C<:id>.
 export type LinkPreviewTarget = { text: string; kind: 'heading' | 'explicit-id' }
 
 /*
-=begin pod :kind<export> :id<@podlite/to-jsx/link-preview#LinkPreviewResolver>
+=begin pod :kind<export>
 
 =head2 LinkPreviewResolver
 
