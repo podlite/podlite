@@ -8,7 +8,9 @@ export const linkTargetResolvesRule: Rule = {
   id: LINK_TARGET_RESOLVES_RULE_ID,
   severity: 'error',
   check: (ast: PodliteDocument, _ctx: LintContext): Violation[] => {
-    const anchors = collectLinks(ast).filter(({ target }) => target.startsWith('#'))
+    // A bare # is left alone by the export — it is not a target and not a mistake —
+    // so the rule has nothing to say about it either.
+    const anchors = collectLinks(ast).filter(({ target }) => target.startsWith('#') && target !== '#')
     if (anchors.length === 0) return []
     // Both ways an anchor can exist: written by the author as :id, or carried by a
     // heading under its own name. Matched the way the exporter matches them.
