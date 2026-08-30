@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { getExplicitNodeId, getTextContentFromNode, indexAnchors } from '@podlite/schema'
 
 /*
-=begin pod
+=begin pod :kind<module> :id<@podlite/to-jsx/link-preview>
 
 =head2 What a link preview shows
 
@@ -30,7 +30,7 @@ markup: nothing here produces markup.
 */
 
 /*
-=begin pod
+=begin pod :kind<export> :id<@podlite/to-jsx/link-preview#LinkPreviewTarget>
 
 =head2 LinkPreviewTarget
 
@@ -43,7 +43,7 @@ the author wrote as C<:id>.
 export type LinkPreviewTarget = { text: string; kind: 'heading' | 'explicit-id' }
 
 /*
-=begin pod
+=begin pod :kind<export> :id<@podlite/to-jsx/link-preview#LinkPreviewResolver>
 
 =head2 LinkPreviewResolver
 
@@ -94,17 +94,7 @@ const textAfter = (siblings: any[], at: number, stopAtOrAbove?: number): string 
   return ''
 }
 
-/*
-=begin pod
-
-=head2 buildLinkPreviewIndex
-
-Walks the document once and answers, for every target a link can name, what
-text stands there. Called before the first link is drawn; the walk is not
-repeated per link.
-
-=end pod
-*/
+// Walked once per document, before the first link is drawn.
 export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTarget> => {
   const found = new Map<string, LinkPreviewTarget>()
   const anchorOf = indexAnchors(tree).byNode
