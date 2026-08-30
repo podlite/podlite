@@ -117,10 +117,22 @@ export const findAnchor = (target: string, index?: AnchorIndex): string | undefi
 export const resolveFragment = (target: string, index?: AnchorIndex): string =>
   findAnchor(target, index) ?? (index?.shape || toFragment)(target)
 
-// A link inside the same document points at a heading by name, so it goes through
-// the rules that shaped that heading's anchor.
-export const sameDocTarget = <T>(target: T, ctx, index: AnchorIndex | undefined = ctx?.__anchors): T | string => {
+// Level two: the address, shaped for this format. It is asked for only once level
+// one has said the link points at something. A refusal comes back as undefined, and
+// a link with no address is what the reader gets — not an address to nowhere.
+export const sameDocTarget = <T>(
+  target: T,
+  ctx,
+  index: AnchorIndex | undefined = ctx?.__anchors,
+): T | string | undefined => {
   if (typeof target !== 'string' || !target.startsWith('#') || target === '#') return target
+  const shape = index?.shape || toFragment
+  const bindings: BindingIndex | undefined = ctx?.__bindings
+  if (bindings) {
+    const bound = bindTarget(target.slice(1), bindings)
+    if (!bound.found) return undefined
+    return `#${bound.via === 'heading' ? resolveFragment(bound.key, index) : shape(bound.key)}`
+  }
   return `#${resolveFragment(target.slice(1), index)}`
 }
 
@@ -144,6 +156,62 @@ export const linkTarget = (node: { meta?: unknown; content?: unknown }): string 
 // number is a value the author did write, and stays.
 export const writtenValue = (value: unknown): string | undefined =>
   value == null || typeof value === 'boolean' ? undefined : String(value)
+
+// Level one: what a link points at, answered on the tree and before any shaping.
+// A refusal is part of the answer — an address invented for a target that is not
+// there is how a broken link used to reach the output looking like a working one.
+export type LinkBinding =
+  | { found: true; document: 'self'; key: string; via: 'heading' | 'explicit-id'; ambiguous: boolean }
+  | { found: false; why: 'no-target' }
+
+export type BindingIndex = { byKey: Map<string, { node: object; via: 'heading' | 'explicit-id' }>; ambiguous: Set<string> }
+
+// Both forms the specification describes: a section addressed by its name, and a
+// block the author named with :id. The author's name wins — it was written on
+// purpose, where a section name is derived from prose.
+export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle): BindingIndex => {
+  const byKey = new Map<string, { node: object; via: 'heading' | 'explicit-id' }>()
+  const ambiguous = new Set<string>()
+  const put = (key: string, node: object, via: 'heading' | 'explicit-id') => {
+    const known = byKey.get(key)
+    if (known === undefined) {
+      byKey.set(key, { node, via })
+      return
+    }
+    if (known.node === node) return
+    if (known.via === via) ambiguous.add(key)
+    else if (via === 'explicit-id') byKey.set(key, { node, via })
+  }
+  walkNodes(tree, node => {
+    const explicit = getExplicitNodeId(node, {})
+    if (explicit) put(explicit.normalize('NFC').trim(), node, 'explicit-id')
+    if (node.name !== 'head') return
+    const name = getTextContentFromNode(node).normalize('NFC').trim()
+    put(name, node, 'heading')
+    // A heading answers to its own name and to the form an output would give it: a
+    // link copied out of a rendered page carries the shaped name, and the author who
+    // pastes it means the same section. Both keys name one node, so this is a second
+    // name for the target rather than resolution decided by shaping.
+    for (const shaped of [toFragment(name), toMarkdownFragment(name)]) {
+      if (shaped && shaped !== name) put(shaped, node, 'heading')
+    }
+  })
+  return { byKey, ambiguous }
+}
+
+// Matching is exact: level one has to keep apart everything the tree keeps apart,
+// and folding case would erase that. Measured over the knowledge base — no working
+// link depended on a case-folded match.
+export const bindTarget = (target: string, index?: BindingIndex): LinkBinding => {
+  const key = target.normalize('NFC').trim()
+  if (!index) return { found: false, why: 'no-target' }
+  const hit = index.byKey.get(key)
+  if (!hit) return { found: false, why: 'no-target' }
+  // Two targets of one name is a fact about the document, not a reason to refuse it
+  // an address: the first still answers, as it always has, and the ambiguity travels
+  // with the answer for whoever reports it.
+  return { found: true, document: 'self', key, via: hit.via, ambiguous: index.ambiguous.has(key) }
+}
 
 export const getSafeNodeId = (node: Node, ctx): string | null => {
   const assigned = ctx?.__anchors?.byNode?.get(node)

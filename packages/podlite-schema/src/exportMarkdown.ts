@@ -39,7 +39,11 @@ const markdownAddress = (address: string): string =>
 const linkWrap = (node, ctx) => {
   const target = linkTarget(node)
   if (target === undefined) return wrapContent('', '')
-  const address = String(sameDocTarget(target, ctx, markdownAnchors(ctx)))
+  const resolved = sameDocTarget(target, ctx, markdownAnchors(ctx))
+  // Markdown has no anchor without an address either, so a refused link keeps its
+  // text and loses the brackets.
+  if (resolved === undefined) return wrapContent('', '')
+  const address = String(resolved)
   return wrapContent(`[`, `](${markdownAddress(address)}${linkTitle(codeConfigWithDefaults(node, ctx))})`)
 }
 

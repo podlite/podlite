@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item a link is bound to its target on the tree, before the address is shaped for a format. A target that is not there no longer produces an address that merely looks like one: the link renders without an address, which is the form html gives a link that leads nowhere. Across the knowledge base this cut links pointing at nothing from 63 to 13
+
+=item an identifier written with `:id` is shaped for the output the same way the address is. `:id<v1.2>` used to render the anchor `v1.2` against the address `#v12`, so a link to it never arrived
+
 =item an image carries an alternative text only when the author wrote one. Every image exported to html used to carry the word `undefined` where the text goes; an alt that is absent is now left out, which html reads as «this image is part of the content», and one written as empty stays empty, which html reads as «decorative»
 
 =item the address and the alternative text of an image are escaped in both exports, as a link already was. A quotation mark used to close the attribute, and a bracket used to end the address in markdown

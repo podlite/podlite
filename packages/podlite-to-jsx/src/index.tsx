@@ -188,7 +188,9 @@ const linkConfigProps = (config: any) => {
 // target the author never wrote.
 const hrefOf = (node, ctx): string | undefined => {
   const target = linkTarget(node)
-  return target === undefined ? undefined : String(sameDocTarget(target, ctx))
+  if (target === undefined) return undefined
+  const address = sameDocTarget(target, ctx)
+  return address === undefined ? undefined : String(address)
 }
 
 // Both link codes ask for the same index over the same document, and each rule is

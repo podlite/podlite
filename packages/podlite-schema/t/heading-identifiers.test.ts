@@ -169,8 +169,9 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#καλημέρα-κόσμε>,
     expect(html).toContain('<a href="#Καλημέρα-Κόσμε">c</a>')
   })
 
-  it('shapes a target that names no heading', () => {
-    expect(exported().html).toContain('<a href="#nothing-here">d</a>')
+  it('leaves a link with no address when the target names nothing', () => {
+    expect(exported().html).toContain('<a>d</a>')
+    expect(exported().html).not.toContain('#nothing-here')
   })
 
   it('leaves a bare anchor and an outside address alone', () => {
@@ -233,8 +234,8 @@ L<a|#Getting Started>, L<b|#getting-started>, L<c|#Καλημέρα Κόσμε>,
     expect(exported().md).toContain('[d](#infix--1)')
   })
 
-  it('shapes a target that names no heading', () => {
-    expect(exported().md).toContain('[e](#nothing-here)')
+  it('leaves a link with no address when the target names nothing', () => {
+    expect(exported().md).not.toContain('#nothing-here')
   })
 
   it('leaves a bare anchor and an outside address alone', () => {

@@ -102,7 +102,7 @@ it('[check default list]=toc', () => {
       <ul class="toc-list listlevel1">
         <li class="toc-item">
           <p>
-            <a href="#id">
+            <a>
               head
             </a>
           </p>
@@ -110,7 +110,7 @@ it('[check default list]=toc', () => {
         <ul class="toc-list listlevel2">
           <li class="toc-item">
             <p>
-              <a href="#id">
+              <a>
                 head
               </a>
             </p>
@@ -118,7 +118,7 @@ it('[check default list]=toc', () => {
           <ul class="toc-list listlevel3">
             <li class="toc-item">
               <p>
-                <a href="#id">
+                <a>
                   head
                 </a>
               </p>
@@ -126,7 +126,7 @@ it('[check default list]=toc', () => {
             <ul class="toc-list listlevel4">
               <li class="toc-item">
                 <p>
-                  <a href="#id">
+                  <a>
                     head
                   </a>
                 </p>
@@ -134,7 +134,7 @@ it('[check default list]=toc', () => {
               <ul class="toc-list listlevel5">
                 <li class="toc-item">
                   <p>
-                    <a href="#id">
+                    <a>
                       head
                     </a>
                   </p>
@@ -142,7 +142,7 @@ it('[check default list]=toc', () => {
                 <ul class="toc-list listlevel6">
                   <li class="toc-item">
                     <p>
-                      <a href="#id">
+                      <a>
                         head
                       </a>
                     </p>

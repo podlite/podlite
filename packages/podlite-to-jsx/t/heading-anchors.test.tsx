@@ -42,8 +42,9 @@ describe('a link inside the document finds its heading', () => {
     expect(html).toContain('<a href="#Getting-Started">github style</a>')
   })
 
-  it('shapes a target that matches no heading', () => {
-    expect(render(doc)).toContain('<a href="#nothing-here">unknown</a>')
+  it('leaves a link with no address when the target matches nothing', () => {
+    expect(render(doc)).toContain('<a>unknown</a>')
+    expect(render(doc)).not.toContain('#nothing-here')
   })
 
   it('leaves a bare anchor alone', () => {

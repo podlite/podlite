@@ -29,7 +29,7 @@ describe('item markers keep the parsed line', () => {
   })
 
   it('formatting survives after a checkbox', () => {
-    const html = render(`=pod\n=for item\n[ ] ${inline}\n`)
+    const html = render(`=pod\n=head1 A\n=for item\n[ ] ${inline}\n`)
     expect(html).toContain('<a href="#A">label</a>')
     expect(html).toContain('<code>code</code>')
     expect(html).toContain('<strong>bold</strong>')

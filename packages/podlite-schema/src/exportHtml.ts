@@ -15,7 +15,7 @@ import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget, writtenValue } from './ast-helpers'
+import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget, toFragment, writtenValue } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
@@ -27,7 +27,12 @@ import { quoteAttribute as quoteValue } from './helpers/html-attr'
 // close the attribute and let the document write markup of its own.
 const hrefAttr = (node, ctx): string => {
   const target = linkTarget(node)
-  return target === undefined ? '' : ` href="${quoteValue(String(sameDocTarget(target, ctx)))}"`
+  if (target === undefined) return ''
+  const address = sameDocTarget(target, ctx)
+  // A link level one refused points at nothing, and an anchor with no href is what
+  // html gives that case. An address shaped from a target that was never there only
+  // looks like a working link.
+  return address === undefined ? '' : ` href="${quoteValue(String(address))}"`
 }
 
 const linkConfigAttrs = config => {
@@ -42,7 +47,10 @@ const linkConfigAttrs = config => {
 }
 
 const openTag = (tag: string, node, ctx, attrs = '') => {
-  const id = getExplicitNodeId(node, ctx)
+  // Shaped by the same rule the address is: an anchor keeping a dot the address
+  // drops is how :id<v1.2> came to render an unreachable target.
+  const written = getExplicitNodeId(node, ctx)
+  const id = written === null ? null : (ctx?.__anchors?.shape || toFragment)(written)
   return `<${tag}${id ? ` id="${id}"` : ''}${attrs}>`
 }
 
