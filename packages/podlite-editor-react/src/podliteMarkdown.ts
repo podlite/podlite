@@ -335,6 +335,37 @@ export const podliteMarkdownExtension: any = {
           if (!closed) cx.nextLine()
           return true
         }
+        // the same holds for the abbreviated forms, which carry the name in
+        // `blockName` after `=for` and in `word` on their own
+        const abbrevName = cont || TAKES_A_NAME.has(word) ? (word === 'for' ? blockName : '') : word
+        if (abbrevName && !isMarkdownName(abbrevName) && isVerbatimBlock(abbrevName)) {
+          cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
+          cx.nextLine()
+          // settings may go on over the next lines: they head the block, they are not its body
+          while (cx.line && continuationRe.test(cx.line.text.slice(cx.line.pos))) {
+            const from = cx.lineStart + cx.line.pos
+            const m2 = continuationRe.exec(cx.line.text.slice(cx.line.pos)) as RegExpExecArray
+            const kids = [cx.elt('PodKeyword', from, from + 1)]
+            for (const a of m2[1].matchAll(attrRe)) {
+              const at2 = from + 1 + (a.index as number)
+              kids.push(cx.elt(a[0][0] === ':' ? 'PodAttrName' : 'PodAttrValue', at2, at2 + a[0].length))
+            }
+            cx.addElement(cx.elt('PodDirective', from, cx.lineStart + cx.line.text.length, kids))
+            if (!cx.nextLine()) break
+          }
+          let bodyStart = -1
+          let bodyEnd = -1
+          // the specification ends the content at the next directive or the first
+          // blank line; a rule of `=` is neither, so it stays inside
+          while (cx.line && cx.line.text.trim() && !directiveRe.test(cx.line.text.slice(cx.line.pos))) {
+            if (bodyStart < 0) bodyStart = cx.lineStart
+            bodyEnd = cx.lineStart + cx.line.text.length
+            if (!cx.nextLine()) break
+          }
+          if (bodyStart >= 0 && bodyEnd > bodyStart)
+            cx.addElement(cx.elt('PodVerbatim', bodyStart, bodyEnd, [cx.elt('PodCodeBody', bodyStart, bodyEnd)]))
+          return true
+        }
         cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
         cx.nextLine()
         // the body of a markdown block is markdown; it gets a node of its own so

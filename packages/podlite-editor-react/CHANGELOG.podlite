@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the body of an abbreviated block whose content is read as written — C<=table>, C<=for code> and the rest — is no longer handed to the markdown parser. A rule of equals between two rows of a table was read as the underline of a heading, and the row above it took the size and weight of one. Settings that go on over the next line keep their own reading and stay out of the body
+
 =head1 0.0.75
 
 =item shiki is a dependency again. Dropping it in 0.0.74 left every consumer without it, and their builds stopped resolving the module

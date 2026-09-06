@@ -300,4 +300,33 @@ describe('markup codes', () => {
   it('leaves a lone capital letter alone', () => {
     expect(codeNodes('Just X and text\n')).toEqual([])
   })
+
+  describe('the body of an abbreviated block read as written', () => {
+    const table = ['    X   O', '   ===========', '        X   O', '   ===========', '            X'].join('\n')
+
+    it('keeps a rule of equals inside the body instead of reading it as a heading', () => {
+      for (const src of [`=table\n${table}\n`, `=for table\n${table}\n`, `=begin table\n${table}\n=end table\n`]) {
+        expect(nodes(src)).toContain('PodVerbatim')
+        expect(nodes(src).filter(n => /Heading/.test(n))).toEqual([])
+      }
+    })
+
+    it('reads it the same way inside a delimited block', () => {
+      const src = `=begin pod\n\n=table\n${table}\n\n=end pod\n`
+      expect(nodes(src)).toContain('PodVerbatim')
+      expect(nodes(src).filter(n => /Heading/.test(n))).toEqual([])
+    })
+
+    it('leaves the settings that go on over the next line out of the body', () => {
+      const src = `=for table :caption('x')\n=    :id<y>\n${table}\n`
+      expect(textOf(src, 'PodVerbatim')).toBe(table)
+      expect(nodes(src)).toContain('PodAttrValue')
+    })
+
+    it('does not touch the body of an abbreviated markdown block', () => {
+      const src = '=markdown\ntext\n\n=para after\n'
+      expect(nodes(src)).toContain('PodMarkdownBody')
+      expect(nodes(src)).not.toContain('PodVerbatim')
+    })
+  })
 })
