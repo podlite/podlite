@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item shiki is a dependency again. Dropping it in 0.0.72 left every consumer without it, and their builds stopped resolving the module
+
 =head1 0.0.72
 
 =item a link pointing inside the document can carry a preview. The renderer takes a `linkPreview` handler, hands it the target and the text found there, and shows whatever the handler returns. Without a handler a link renders as before and nothing is looked up

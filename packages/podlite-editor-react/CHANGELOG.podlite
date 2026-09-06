@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item shiki is a dependency again. Dropping it in 0.0.74 left every consumer without it, and their builds stopped resolving the module
+
 =head1 0.0.74
 
 =item rendering the editor again with the same props no longer reconfigures CodeMirror

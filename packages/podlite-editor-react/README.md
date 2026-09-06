@@ -65,6 +65,13 @@ npm install @podlite/editor-react
 </td></tr></table>
 </div>
 
+## Code highlighting
+
+Code blocks are rendered through `@podlite/highlight`, which loads `shiki` on
+demand. `shiki` ships as a dependency of this package, so there is nothing for
+you to install and nothing to configure. It is split into its own chunk: a
+reader who never meets a code block downloads none of it.
+
 ## Author
 
 Copyright (c) 2021–2026 Aliaksandr Zahatski

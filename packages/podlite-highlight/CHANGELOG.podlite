@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the README says what the runtime fallback covers: a chunk that fails to load after a successful build, not a missing install
+
 =head1 0.0.2
 
 =item a caller that does not say how to wrap a code block gets the wrapping that shows a caption. The other wrapping drops it, and a caption written on a block was disappearing for callers that said nothing
