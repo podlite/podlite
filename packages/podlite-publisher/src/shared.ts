@@ -7,7 +7,7 @@ import {
   PodliteDocument,
   PodNode,
 } from '@podlite/schema'
-import { publishRecord, pubRecord } from '.'
+import { pubRecord, publishRecord } from './record'
 import { podlite as podlite_core } from 'podlite'
 // now we add base60 letters
 

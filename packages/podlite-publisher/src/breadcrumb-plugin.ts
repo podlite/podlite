@@ -1,5 +1,5 @@
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
-
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 const plugin = (): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
   const cacheBreadcrumb: { [key: string]: { title: string | null; publishUrl: string }[] } = {}

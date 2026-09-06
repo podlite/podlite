@@ -2,6 +2,14 @@
 
 =head1 Upcoming
 
+=item the record contract, its types and the entry-or-page predicate, moved into its own module and is reachable as C<@podlite/publisher/record>
+
+=item node-only code moved behind C<@podlite/publisher/node>. The package root no longer carries it, so importing the root from browser code no longer pulls in C<fs>
+
+=item the plugin machinery got its own entry point, C<@podlite/publisher/plugins>
+
+=item B<Breaking:> twelve names left the package root and now live behind C<@podlite/publisher/node>: C<convertFileLinksToUrl>, C<getDocumentAttributes>, C<getParserTypeforFile>, C<getPathToOpen>, C<getPublishAttributes>, C<makeLinksMap>, C<parseFile>, C<parseFiles>, C<parseSources>, C<processFile>, C<streamWriteArray>, C<streamWriteLines>. Code that took them from the root imports them from the node entry instead
+
 =head1 0.0.49
 
 =item read the old field when a stored index predates the new one, so a site built from it keeps the behaviour it had

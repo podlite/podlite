@@ -1,7 +1,9 @@
 import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@podlite/schema'
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
-import { PodliteWebPlugin, PodliteWebPluginContext, isEntry, processFile, publishRecord, streamWriteArray } from '.'
+import { isEntry, publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
+import { processFile, streamWriteArray } from './node-utils'
 import pathFs from 'path'
 
 export function buildStylesContent(theme: string | undefined, globalStylesPath: string | undefined): string {

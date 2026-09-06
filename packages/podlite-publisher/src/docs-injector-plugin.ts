@@ -1,5 +1,5 @@
-import { PodliteWebPlugin, publishRecord } from '.'
-
+import { publishRecord } from './record'
+import { PodliteWebPlugin } from './plugins'
 interface docsInjectorPluginInitParams {
   docs: publishRecord[]
 }

@@ -1,7 +1,8 @@
 import { BUILT_PATH } from './constants'
 import * as fs from 'fs'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord, streamWriteLines } from '.'
-
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
+import { streamWriteLines } from './node-utils'
 interface dumpPagesPluginInitParams {
   built_path: string // built path
   indexFields?: string[] // small record fields the site wants in the index

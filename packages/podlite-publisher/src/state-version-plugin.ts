@@ -2,7 +2,8 @@ import * as CRC32 from 'crc-32'
 import * as fs from 'fs'
 import pathFs from 'path'
 import { getFromTree, getTextContentFromNode, makeAttrs } from '@podlite/schema'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { version } from './version'
 const plugin = (appVersion?: string, indexFilePath?: string): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}

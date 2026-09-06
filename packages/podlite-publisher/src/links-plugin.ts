@@ -1,4 +1,5 @@
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { getTextContentFromNode, makeAttrs, makeInterator, PodNode, Text } from '@podlite/schema'
 import { convertFileLinksToUrl, getPathToOpen, makeLinksMap } from './node-utils'
 

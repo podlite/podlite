@@ -4,11 +4,11 @@ import {
   PluginConfig,
   PodliteWebPlugin,
   PodliteWebPluginContext,
-  processFile,
   processPlugin,
   publishRecord,
   runSelector,
 } from '../src'
+import { processFile } from '../src/node'
 import resolvePlugin from '../src/include-resolve-plugin'
 
 const file1 = `

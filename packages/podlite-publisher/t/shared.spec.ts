@@ -1,4 +1,5 @@
-import { isExistsDocBlocks, processFile } from '../src'
+import { isExistsDocBlocks } from '../src'
+import { processFile } from '../src/node'
 
 const file1 = `
   import { getFromTree, makeAttrs } from '@podlite/schema'

@@ -3,7 +3,8 @@ import { COMPONENTS_LIB } from './constants'
 
 import * as fs from 'fs'
 import { getPathToOpen } from './node-utils'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { makeAstFromSrc } from './shared'
 
 const plugin = (): PodliteWebPlugin => {

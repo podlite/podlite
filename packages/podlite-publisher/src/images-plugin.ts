@@ -3,8 +3,8 @@ import { ASSETS_PATH, IMAGE_LIB } from './constants'
 import pathMod from 'path'
 import * as fs from 'fs'
 import { getPathToOpen } from './node-utils'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord } from '.'
-
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 const ORIENTATION_TAG = 0x0112
 
 export const readOrientation = (file: string): number | null => {

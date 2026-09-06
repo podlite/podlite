@@ -1,4 +1,5 @@
-import { publishRecord, PodliteWebPlugin, PodliteWebPluginContext } from '.'
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { getFromTree, getTextContentFromNode, makeAttrs, mkRootBlock, PodNode } from '@podlite/schema'
 import { getPublishAttributes } from './node-utils'
 import { addUrl } from './shared'

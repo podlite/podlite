@@ -1,6 +1,7 @@
 import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, makeInterator, PodNode } from '@podlite/schema'
-import { PodliteWebPlugin, PodliteWebPluginContext, publishRecord, runSelector } from '.'
-
+import { publishRecord } from './record'
+import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
+import { runSelector } from './shared'
 const plugin = (): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
   const docsMap = new Map()

@@ -11,6 +11,24 @@
       "require": "./lib/index.js",
       "default": "./lib/index.js"
     },
+    "./record": {
+      "types": "./lib/record.d.ts",
+      "import": "./esm/record.js",
+      "require": "./lib/record.js",
+      "default": "./lib/record.js"
+    },
+    "./plugins": {
+      "types": "./lib/plugins.d.ts",
+      "import": "./esm/plugins.js",
+      "require": "./lib/plugins.js",
+      "default": "./lib/plugins.js"
+    },
+    "./node": {
+      "types": "./lib/node.d.ts",
+      "import": "./esm/node.js",
+      "require": "./lib/node.js",
+      "default": "./lib/node.js"
+    },
     "./package.json": "./package.json",
     "./lib/*": {
       "types": "./lib/*.d.ts",
