@@ -2351,6 +2351,7 @@ __metadata:
     "@uiw/react-codemirror": ^4.23.8
     dom-to-image-more: ^3.7.2
     react-is: ^18.0.0
+    shiki: ^3.21.0
   peerDependencies:
     "@podlite/highlight": "*"
     "@podlite/schema": "*"
@@ -2483,6 +2484,7 @@ __metadata:
     entities: ^4.5.0
     podlite: "workspace:*"
     react-is: ^18.0.0
+    shiki: ^3.21.0
   peerDependencies:
     "@podlite/diagram": "*"
     "@podlite/highlight": "*"

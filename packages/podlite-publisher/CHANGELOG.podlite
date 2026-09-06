@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.50
+
 =item the record contract, its types and the entry-or-page predicate, moved into its own module and is reachable as C<@podlite/publisher/record>
 
 =item node-only code moved behind C<@podlite/publisher/node>. The package root no longer carries it, so importing the root from browser code no longer pulls in C<fs>

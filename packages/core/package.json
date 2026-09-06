@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.81",
+  "version": "0.0.82",
   "description": "Podlite markup language parser — Markdown-compatible, with native support for diagrams, formulas, and custom blocks",
   "homepage": "https://podlite.org",
   "repository": {

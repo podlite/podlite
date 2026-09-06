@@ -2,6 +2,31 @@
 
 =head1 Upcoming
 
+=head1 0.0.89
+
+
+=head2 @podlite/editor-react
+
+=item shiki is a dependency again. Dropping it in 0.0.74 left every consumer without it, and their builds stopped resolving the module
+
+=head2 @podlite/highlight
+
+=item the README says what the runtime fallback covers: a chunk that fails to load after a successful build, not a missing install
+
+=head2 @podlite/publisher
+
+=item the record contract, its types and the entry-or-page predicate, moved into its own module and is reachable as C<@podlite/publisher/record>
+
+=item node-only code moved behind C<@podlite/publisher/node>. The package root no longer carries it, so importing the root from browser code no longer pulls in C<fs>
+
+=item the plugin machinery got its own entry point, C<@podlite/publisher/plugins>
+
+=item B<Breaking:> twelve names left the package root and now live behind C<@podlite/publisher/node>: C<convertFileLinksToUrl>, C<getDocumentAttributes>, C<getParserTypeforFile>, C<getPathToOpen>, C<getPublishAttributes>, C<makeLinksMap>, C<parseFile>, C<parseFiles>, C<parseSources>, C<processFile>, C<streamWriteArray>, C<streamWriteLines>. Code that took them from the root imports them from the node entry instead
+
+=head2 @podlite/to-jsx
+
+=item shiki is a dependency again. Dropping it in 0.0.72 left every consumer without it, and their builds stopped resolving the module
+
 =head1 0.0.88
 
 

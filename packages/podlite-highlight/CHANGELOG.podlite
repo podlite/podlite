@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.3
+
 =item the README says what the runtime fallback covers: a chunk that fails to load after a successful build, not a missing install
 
 =head1 0.0.2

@@ -1,6 +1,6 @@
 {
   "name": "@podlite/highlight",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Syntax highlighting for Podlite code blocks, shared by the renderer and the editor",
   "main": "./lib/index.js",
   "sideEffects": false,
