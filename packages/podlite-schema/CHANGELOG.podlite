@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.68
+
 =item a link is bound to its target on the tree, before the address is shaped for a format. A target that is not there no longer produces an address that merely looks like one: the link renders without an address, which is the form html gives a link that leads nowhere. Across the knowledge base this cut links pointing at nothing from 63 to 13
 
 =item an identifier written with `:id` is shaped for the output the same way the address is, wherever the anchor is written. `:id<v1.2>` used to render the anchor `v1.2` against the address `#v12`, so a link to it never arrived

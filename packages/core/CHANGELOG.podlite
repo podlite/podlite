@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.81
+
 =item podlite lint reports a link whose local file is not there, and a link with no address at all. The file check is a warning, since a document under construction points at files that do not exist yet; the empty link is an error. A target with a scheme other than file, a bare word in a Podlite document, a home-relative path and input read from a pipe are all left alone
 
 =item podlite lint adds the unclosed-markup-code rule, which the specification requires of a parser: a markup code terminated by the end of its block rather than by its own bracket is reported, so the line does not go out carrying the opening letter. Closure is counted the way the specification defines it, by matching bracket count or the closing guillemet

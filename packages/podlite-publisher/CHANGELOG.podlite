@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.49
+
 =item read the old field when a stored index predates the new one, so a site built from it keeps the behaviour it had
 
 =item ask the document whether it is a page. A dated document is an entry unless it declares :type('page'). Nothing read that attribute before.

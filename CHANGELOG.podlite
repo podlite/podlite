@@ -2,6 +2,86 @@
 
 =head1 Upcoming
 
+=head1 0.0.88
+
+
+=head2 podlite
+
+=item podlite lint reports a link whose local file is not there, and a link with no address at all. The file check is a warning, since a document under construction points at files that do not exist yet; the empty link is an error. A target with a scheme other than file, a bare word in a Podlite document, a home-relative path and input read from a pipe are all left alone
+
+=item podlite lint adds the unclosed-markup-code rule, which the specification requires of a parser: a markup code terminated by the end of its block rather than by its own bracket is reported, so the line does not go out carrying the opening letter. Closure is counted the way the specification defines it, by matching bracket count or the closing guillemet
+
+=head2 @podlite/editor-react
+
+=item rendering the editor again with the same props no longer reconfigures CodeMirror
+
+=item syntax highlighting comes from @podlite/highlight instead of a copy kept here, so the editor and its preview share one highlighter. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle
+
+=item the editor can show the picture a directive names, under the line that names it, behind showInlineImages. An address the host cannot resolve leaves a quiet line rather than a broken icon, and the switch is apart from any switch over the raw text
+
+=item the editor offers the names of settings in the header of a block, where until now it went quiet after the block name. Names already written in the document come first, then the ones the specification gives; the body of the document is left alone
+
+=head2 @podlite/highlight
+
+=item a caller that does not say how to wrap a code block gets the wrapping that shows a caption. The other wrapping drops it, and a caption written on a block was disappearing for callers that said nothing
+
+=item the package carries the syntax highlighting that the renderer and the editor used to hold a copy of each, so both share one highlighter and one grammar cache. shiki is a peer declared optional: type checking passes without it and a chunk that fails to load leaves plain text, though the name still has to resolve when you bundle. A block with no lang attribute loads no grammar at all
+
+=head2 @podlite/markdown
+
+=item a markdown heading takes its own text as the id instead of a generated one, so a link written against the heading reaches it
+
+=head2 @podlite/mcp
+
+=item the package declares an exports map and its own type entry, and no longer points at an esm build it never produced. A bundler that preferred that entry resolved to a missing file
+
+=head2 @podlite/publisher
+
+=item read the old field when a stored index predates the new one, so a site built from it keeps the behaviour it had
+
+=item ask the document whether it is a page. A dated document is an entry unless it declares :type('page'). Nothing read that attribute before.
+=item carry that answer on the record and in the page index, and export one predicate for it. The test used to be written by hand, against a field that says whether the address was declared.
+
+=head2 @podlite/schema
+
+=item a link is bound to its target on the tree, before the address is shaped for a format. A target that is not there no longer produces an address that merely looks like one: the link renders without an address, which is the form html gives a link that leads nowhere. Across the knowledge base this cut links pointing at nothing from 63 to 13
+
+=item an identifier written with `:id` is shaped for the output the same way the address is, wherever the anchor is written. `:id<v1.2>` used to render the anchor `v1.2` against the address `#v12`, so a link to it never arrived
+
+=item an image carries an alternative text only when the author wrote one. Every image exported to html used to carry the word `undefined` where the text goes; an alt that is absent is now left out, which html reads as «this image is part of the content», and one written as empty stays empty, which html reads as «decorative»
+
+=item the address and the alternative text of an image are escaped in both exports, as a link already was. A quotation mark used to close the attribute, and a bracket used to end the address in markdown
+
+=item an image `:alt` written without a value counts as not written. It used to put the word `true` where the description of the picture goes, and `:!alt` the word `false`
+
+=item a link written without a bar keeps its address when the document is exported. Both the html and the markdown export used to put the node array itself where the address goes, so `L<#Setup>` came out pointing at `[object Object]`
+
+=item a link whose target the author never wrote is exported as an anchor with no address, the form html gives that case, instead of one pointing at the word `undefined`. Markdown has no such form, so the text is written on its own
+
+=item a quotation mark or an ampersand inside an attribute value is escaped in the html export. Without it a document could close the attribute and write markup of its own, and an address holding `&copy;` reached the browser as a copyright sign
+
+=item an address holding a bracket or a space is written in angle brackets in the markdown export, the form markdown keeps for it. `man:find(1)` used to end the link at the first bracket
+
+=item the formatting-code parser picks the closing delimiter while parsing instead of carrying a copy of two rules for every pair the language allows. The generated parser is less than half its former size and parsing is faster
+
+=item a markup code that opens with a run of angles now has to close with a run of the same length. It used to fall back to a shorter one, so C<< C<<>> >> read as a code holding C<< <> >>; it reads as text now. All four delimiter pairs and the runs that carry a closing angle inside the content are unchanged
+
+=item C<headingId> is reachable from the package entry, so any parser that builds a heading can apply the same rule the tree walker applies
+
+=item the names of settings the specification gives are exported beside the block names, so the parser, the checker and the editor read one list
+
+=item a section folded by :folded on its heading is grouped while the tree is built, so every reader of the tree sees it, not only the editor. The html export writes it as a native disclosure; markdown, which has none, writes the section out in full rather than losing the text
+
+=item the document schema describes the tree the parser builds. An item carrying a checkbox, the terms of a definition, nineteen of the twenty-one markup codes, a semantic block holding more than one paragraph, and the entries of a table of contents were all outside it, and the check reported hundreds of errors on a sound document. The schema is generated from the types, so the types were brought to what the parser emits
+
+=head2 @podlite/to-jsx
+
+=item a link pointing inside the document can carry a preview. The renderer takes a `linkPreview` handler, hands it the target and the text found there, and shows whatever the handler returns. Without a handler a link renders as before and nothing is looked up
+
+=item the modules that held syntax highlighting are gone from this package: the shiki module and the code component moved to @podlite/highlight. Both were reachable as deep imports and now are not; the component is still exported from the package root
+
+=item syntax highlighting comes from @podlite/highlight instead of a copy kept here. shiki is no longer a direct dependency but a peer of @podlite/highlight: install it alongside. Type checking passes without it, and a chunk that fails to load leaves plain text rather than an error, but the name still has to resolve when you bundle
+
 =head1 0.0.87
 
 

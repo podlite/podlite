@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.61
+
 =item a markdown heading takes its own text as the id instead of a generated one, so a link written against the heading reaches it
 
 =head1 0.0.41
