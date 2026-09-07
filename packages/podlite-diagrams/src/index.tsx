@@ -10,7 +10,9 @@ let i = 0
 // resolves.
 type MermaidApi = {
   initialize: (config: { securityLevel: string; startOnLoad: boolean }) => void
-  render: (id: string, chart: string) => Promise<{ svg: string }>
+  // bindFunctions attaches the listeners a diagram declares; mermaid marks it
+  // optional, and a diagram without handlers comes back without it
+  render: (id: string, chart: string) => Promise<{ svg: string; bindFunctions?: (element: Element) => void }>
 }
 
 // Mermaid publishes a default export, so the namespace itself carries nothing
@@ -55,8 +57,19 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
       if (cancelled) return
       try {
         mermaid.initialize({ securityLevel: 'loose', startOnLoad: false })
-        const { svg } = await mermaid.render('graph-div' + i++, chart)
-        if (!cancelled && inputEl.current) inputEl.current.innerHTML = svg
+        const { svg, bindFunctions } = await mermaid.render('graph-div' + i++, chart)
+        if (cancelled) return
+        // one container for both steps: the ref may point elsewhere by the
+        // time the second line runs
+        const container = inputEl.current
+        if (!container) return
+        container.innerHTML = svg
+        try {
+          bindFunctions?.(container)
+        } catch {
+          // a diagram without its handlers still reads; an empty box does not,
+          // so a failed binding must not reach the error branch
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e))
       }
