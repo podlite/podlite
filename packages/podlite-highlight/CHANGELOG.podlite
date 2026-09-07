@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+
 =head1 0.0.3
 
 =item the README says what the runtime fallback covers: a chunk that fails to load after a successful build, not a missing install

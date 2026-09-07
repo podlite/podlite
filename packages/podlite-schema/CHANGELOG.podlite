@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+
 =item ajv moved from 7 to 8. Under the old version an ESM consumer got a namespace object where a constructor was expected, so the package could not be imported from Node at all
 
 

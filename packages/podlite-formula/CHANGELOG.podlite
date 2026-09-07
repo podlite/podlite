@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+
 =head1 0.0.30
 
 =item add C<exports> map (with C<./default.css> subpath), top-level C<types>, and C<sideEffects: ["**/*.css"]> to package manifest
