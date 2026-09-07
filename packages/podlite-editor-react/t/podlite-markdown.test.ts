@@ -1,5 +1,5 @@
 import { parser as mdParser } from '@lezer/markdown'
-import { podliteMarkdownExtension, suggestionContextForLine } from '../src/podliteMarkdown'
+import { podliteMarkdownExtension, podliteCodeLanguage, suggestionContextForLine } from '../src/podliteMarkdown'
 
 const parser = mdParser.configure(podliteMarkdownExtension as any)
 
@@ -238,6 +238,46 @@ describe('where the caret stands', () => {
     expect(suggestionContextForLine(src, 4)).toBe('pod6')
     expect(suggestionContextForLine(src, 5)).toBe('pod6')
   })
+  describe('the language of an abbreviated block comes from its own header', () => {
+    const langs = (src: string): string[] => {
+      const seen: string[] = []
+      const p = mdParser.configure([
+        podliteMarkdownExtension as any,
+        podliteCodeLanguage((n: string) => {
+          seen.push(n)
+          return null
+        }),
+      ])
+      p.parse(src)
+      return seen
+    }
+
+    it('a neighbour does not inherit the language of the block above it', () => {
+      expect(langs('=for code :lang<js>\nconst a = 1\n\n=for code :lang<python>\nx = 2\n')).toEqual([
+        'js',
+        'python',
+      ])
+    })
+
+    it('a table after a code block gets no language at all', () => {
+      expect(langs('=for code :lang<js>\nconst a = 1\n\n=table\nx | y\n')).toEqual(['js'])
+    })
+
+    it('a continuation line between the marker and the body does not hide the header', () => {
+      expect(langs('=for code :lang<python>\n= :n<1>\nx = 2\n')).toEqual(['python'])
+    })
+
+    it('a delimited block still reads its own marker', () => {
+      expect(langs('=begin code :lang<js>\nconst a = 1\n=end code\n')).toEqual(['js'])
+    })
+
+    it('one delimited block does not take the language of the one before it', () => {
+      const src =
+        '=begin code :lang<js>\nconst a = 1\n=end code\n\n=begin code :lang<python>\nx = 2\n=end code\n'
+      expect(langs(src)).toEqual(['js', 'python'])
+    })
+  })
+
 })
 
 describe('markup codes', () => {

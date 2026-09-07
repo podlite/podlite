@@ -454,8 +454,21 @@ const lineStartOf = (text: string, line: number): number => {
 export const podliteCodeLanguage = (codeLanguages: any): any => ({
   wrap: parseMixed((node: any, input: any) => {
     if (node.name !== 'PodCodeBody' || !codeLanguages) return null
-    const block = node.node.parent?.parent
-    const marker = input.read(block ? block.from : node.from, node.from)
+    // a delimited block holds the body inside itself, so its marker is the parent.
+    // an abbreviated one puts the body next to the marker, and settings that go on
+    // over the next line become siblings of their own, so walk back over those
+    // until the marker line itself — anything before it belongs to another block
+    const body = node.node.parent
+    let head = body?.parent?.name === 'PodDirective' ? body.parent : null
+    if (!head) {
+      let prev = body?.prevSibling
+      while (prev?.name === 'PodDirective') {
+        head = prev
+        if (!/^=\s/.test(input.read(prev.from, Math.min(prev.from + 2, prev.to)))) break
+        prev = prev.prevSibling
+      }
+    }
+    const marker = input.read(head ? head.from : node.from, node.from)
     const named = /:lang\s*(?:<([^>]*)>|\(\s*'([^']*)'\s*\)|"([^"]*)"|｢([^｣]*)｣)/.exec(marker)
     const name = ((named && (named[1] || named[2] || named[3] || named[4])) || '').trim()
     if (!name) return null
