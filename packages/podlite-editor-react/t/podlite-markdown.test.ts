@@ -323,6 +323,20 @@ describe('markup codes', () => {
       expect(nodes(src)).toContain('PodAttrValue')
     })
 
+    it('keeps a row that opens with an equals sign, where no settings can go on', () => {
+      // =table takes no settings, so a line below it is data, not a header that goes on
+      const src = '=table\n=  5 | 6\n    7 | 8\n'
+      expect(textOf(src, 'PodVerbatim')).toBe('=  5 | 6\n    7 | 8')
+    })
+
+    it('takes the body up to the end of the file without a closing newline', () => {
+      expect(textOf('=table\n    X | O', 'PodVerbatim')).toBe('    X | O')
+    })
+
+    it('leaves no body node behind when there is nothing to take', () => {
+      expect(nodes('=table\n\n=para x\n')).not.toContain('PodVerbatim')
+    })
+
     it('does not touch the body of an abbreviated markdown block', () => {
       const src = '=markdown\ntext\n\n=para after\n'
       expect(nodes(src)).toContain('PodMarkdownBody')
