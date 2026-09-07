@@ -47,7 +47,9 @@ export function toAst() {
 }
 
 export type SchemaValidationError = ErrorObject<string, Record<string, any>>
-const ajv = new Ajv({ strict: true, allowUnionTypes: true })
+// ajv 8 refuses a tuple whose minItems is below its length, and a picture carries
+// an optional second element. ajv 7 had no such check, so nothing is being relaxed.
+const ajv = new Ajv({ strict: true, allowUnionTypes: true, strictTuples: false })
 
 export function getTextContentFromNode(node: PodNode) {
   let text = ''

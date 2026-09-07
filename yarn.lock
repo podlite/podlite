@@ -2459,7 +2459,7 @@ __metadata:
   resolution: "@podlite/schema@workspace:packages/podlite-schema"
   dependencies:
     "@types/node": ^17.0.7
-    ajv: ^7.2.3
+    ajv: ^8.20.0
     entities: ^4.5.0
     events: ^3.1.0
     glob: ^7.2.0
@@ -3398,19 +3398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^7.2.3":
-  version: 7.2.4
-  resolution: "ajv@npm:7.2.4"
-  dependencies:
-    fast-deep-equal: ^3.1.1
-    json-schema-traverse: ^1.0.0
-    require-from-string: ^2.0.2
-    uri-js: ^4.2.2
-  checksum: 3c5be34cc37779e167be4406e620e2f4e69f04b50092e5e9cab609c8be822166ad850dac15e60c49642f46f5735eda2ca89efcd399189b116a56ac843a9a5023
-  languageName: node
-  linkType: hard
-
-"ajv@npm:^8.0.0, ajv@npm:^8.17.1":
+"ajv@npm:^8.0.0, ajv@npm:^8.17.1, ajv@npm:^8.20.0":
   version: 8.20.0
   resolution: "ajv@npm:8.20.0"
   dependencies:
@@ -5588,7 +5576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
+"fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
   checksum: e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
@@ -8928,7 +8916,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"punycode@npm:^2.1.0, punycode@npm:^2.1.1":
+"punycode@npm:^2.1.1":
   version: 2.1.1
   resolution: "punycode@npm:2.1.1"
   checksum: 823bf443c6dd14f669984dea25757b37993f67e8d94698996064035edd43bed8a5a17a9f12e439c2b35df1078c6bec05a6c86e336209eb1061e8025c481168e8
@@ -10528,15 +10516,6 @@ __metadata:
   bin:
     update-browserslist-db: cli.js
   checksum: 6f209a97ae8eacdd3a1ef2eb365adf49d1e2a757e5b2dd4ac87dc8c99236cbe3e572d3e605a87dd7b538a11751b71d9f93edc47c7405262a293a493d155316cd
-  languageName: node
-  linkType: hard
-
-"uri-js@npm:^4.2.2":
-  version: 4.4.1
-  resolution: "uri-js@npm:4.4.1"
-  dependencies:
-    punycode: ^2.1.0
-  checksum: 7167432de6817fe8e9e0c9684f1d2de2bb688c94388f7569f7dbdb1587c9f4ca2a77962f134ec90be0cc4d004c939ff0d05acc9f34a0db39a3c797dada262633
   languageName: node
   linkType: hard
 

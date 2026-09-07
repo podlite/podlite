@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item ajv moved from 7 to 8. Under the old version an ESM consumer got a namespace object where a constructor was expected, so the package could not be imported from Node at all
+
+
 =head1 0.0.68
 
 =item a link is bound to its target on the tree, before the address is shaped for a format. A target that is not there no longer produces an address that merely looks like one: the link renders without an address, which is the form html gives a link that leads nowhere. Across the knowledge base this cut links pointing at nothing from 63 to 13
