@@ -36,21 +36,30 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
   const inputEl = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [unavailable, setUnavailable] = useState(false)
+  // while a redraw is in flight the previous diagram is hidden but keeps its
+  // space: dropping it would make the page jump, and leaving it visible would
+  // pass it off as current
+  const [pending, setPending] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setError(null)
     setUnavailable(false)
     if (!chart.trim()) {
+      setPending(false)
       if (inputEl.current) inputEl.current.innerHTML = ''
       return
     }
+    setPending(true)
     const draw = async () => {
       let mermaid: MermaidApi
       try {
         mermaid = await loadMermaid()
       } catch {
-        if (!cancelled) setUnavailable(true)
+        if (!cancelled) {
+          setUnavailable(true)
+          setPending(false)
+        }
         return
       }
       // the load is awaited, so the component may already be gone by now
@@ -64,6 +73,7 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
         const container = inputEl.current
         if (!container) return
         container.innerHTML = svg
+        setPending(false)
         try {
           bindFunctions?.(container)
         } catch {
@@ -71,7 +81,10 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
           // so a failed binding must not reach the error branch
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : String(e))
+          setPending(false)
+        }
       }
     }
     void draw()
@@ -87,7 +100,7 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
       ) : error ? (
         <div className="mermaid error">{error}</div>
       ) : (
-        <div className="mermaid" ref={inputEl} />
+        <div className="mermaid" ref={inputEl} style={pending ? { visibility: 'hidden' } : undefined} />
       )}
       {caption ? <div className="caption">{caption}</div> : null}
     </div>
