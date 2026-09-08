@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the published build no longer carries a test file
+
+
 =item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
 
 

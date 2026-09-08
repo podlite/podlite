@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the C<./lint> entry can be reached with C<import>. Its ESM build called C<require> in two places, and a module does not have that word, so the entry died on load. Reading a config written as code stays synchronous, so C<readConfig> and C<resolveConfig> keep their shape
+
+
 =head1 0.0.81
 
 =item podlite lint reports a link whose local file is not there, and a link with no address at all. The file check is a warning, since a document under construction points at files that do not exist yet; the empty link is an error. A target with a scheme other than file, a bare word in a Podlite document, a home-relative path and input read from a pipe are all left alone

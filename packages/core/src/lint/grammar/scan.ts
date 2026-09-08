@@ -4,8 +4,8 @@ import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-wi
 import { scanAbbreviatedAttrs, abbreviatedAttrsRule } from '../rules/abbreviated-attrs'
 import { scanMarkdownInPod, markdownInPodRule } from '../rules/markdown-in-pod'
 import { scanUnclosedMarkupCodes, unclosedMarkupCodeRule } from '../rules/unclosed-markup-code'
+import lintGrammar from './lint.js'
 
-const lintGrammar = require('./lint.js')
 
 export const ATTR_NESTED_ANGLE_RULE_ID = 'attr-nested-angle'
 export const DELIMITED_BLOCK_BALANCE_RULE_ID = 'delimited-block-balance'

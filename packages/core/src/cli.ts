@@ -12,6 +12,11 @@ import { resolveIncludes } from './resolve-includes'
 // not at startup — a check or a query used to pay for it, and on a runtime that
 // forbids loading an ESM package through require the command died before it
 // had read its arguments.
+//
+// This one require survives in the ESM build, where the word does not exist. It
+// stays because nothing reaches that copy through a declared entry: esm/cli.js is
+// not named in exports, and bin/podlite.js loads the CommonJS build. Converting it
+// would mean import(), which is asynchronous, and the caller at convertFile is not.
 const parserWithPlugins = () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { podlite } = require('./index')

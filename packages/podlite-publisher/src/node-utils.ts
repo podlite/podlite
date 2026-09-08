@@ -11,12 +11,12 @@ import {
 } from '@podlite/schema'
 import * as fs from 'fs'
 import path from 'path'
+import glob from 'glob'
 import { getAllArticles, isExistsPubdate, makeAstFromSrc } from './shared'
 import { parseMd } from '@podlite/markdown'
 import { podlite } from 'podlite'
 import matter from 'gray-matter'
 import { pubRecord, publishRecord } from './record'
-const glob = require('glob')
 
 export const getPathToOpen = (filepath, parentDocPath) => {
   const isRemoteReg = new RegExp(/^(https?|ftp):/)
@@ -24,7 +24,6 @@ export const getPathToOpen = (filepath, parentDocPath) => {
   if (isRemote) {
     return { isRemote, path: filepath }
   }
-  const path = require('path')
   const docDirPath = path.dirname(parentDocPath)
   return {
     isRemote,

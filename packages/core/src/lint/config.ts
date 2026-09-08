@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import type { LintConfig, RuleSetting, Severity, Violation } from './types'
+import { createRequire } from 'module'
 
 const SETTINGS: RuleSetting[] = ['off', 'error', 'warning', 'info']
 
@@ -47,9 +48,12 @@ export function readConfig(configPath?: string): LintConfig {
 
 function readJsConfig(configPath: string): LintConfig {
   let loaded: unknown
+  const resolved = path.resolve(configPath)
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    loaded = require(path.resolve(configPath))
+    // The same source is built for both module systems, and one of them has no
+    // require at all. This builds one that works in either, anchored at the config
+    // itself, and keeps the load synchronous so readConfig stays synchronous too.
+    loaded = createRequire(resolved)(resolved)
   } catch (e) {
     throw new ConfigError(`cannot read config ${configPath}: ${(e as Error).message}`)
   }
