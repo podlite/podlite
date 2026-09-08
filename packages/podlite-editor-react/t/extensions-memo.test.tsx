@@ -4,7 +4,7 @@
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
-import type { ViewUpdate } from '@uiw/react-codemirror'
+import type { ViewUpdate } from '@codemirror/view'
 import PodliteEditor from '../src/Editor'
 
 class NoResize {

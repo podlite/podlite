@@ -2,6 +2,13 @@
 
 =head1 Upcoming
 
+=item the editor no longer goes through C<@uiw/react-codemirror>. It holds the layer between React and CodeMirror itself. Ordinary element attributes are still passed on, and C<basicSetup> is still accepted and still overridden, because the editor installs its own keymap over the standard one. Two things do change: a theme named as a string (C<light>, C<dark>, C<none>) is accepted but no longer selects a theme, and C<placeholder>, C<selection>, C<initialState>, C<onStatistics>, C<root> and the size bounds other than C<height> are accepted and do nothing
+
+=item switching files while typing no longer leaves the cursor at the end of the new file. Incoming text now arrives before the saved position is restored against it, by construction rather than by timing
+
+=item a file that saved no folded regions no longer inherits the folds of the one opened before it
+
+
 =item declare the packages the editor imports but left to its neighbours to install: C<podlite>, C<@codemirror/commands>, C<@codemirror/state>, C<@lezer/common>, C<@lezer/markdown>, and C<tslib>, which the compiler puts in the emitted output. A consumer installing this package no longer depends on something else pulling them in
 
 

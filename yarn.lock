@@ -1163,7 +1163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.18.6, @babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.8.4":
   version: 7.26.7
   resolution: "@babel/runtime@npm:7.26.7"
   dependencies:
@@ -1609,24 +1609,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/state@npm:^6.0.0, @codemirror/state@npm:^6.1.1, @codemirror/state@npm:^6.4.0, @codemirror/state@npm:^6.7.0":
+"@codemirror/state@npm:^6.0.0, @codemirror/state@npm:^6.4.0, @codemirror/state@npm:^6.7.0":
   version: 6.7.1
   resolution: "@codemirror/state@npm:6.7.1"
   dependencies:
     "@marijn/find-cluster-break": ^1.0.0
   checksum: 9e14da291d0af8db1fdebdb6a121e6a16e60430394b2958f26f41b3c529a9fc75a9efa75549368304a43f1bbcd332b8dec65755f939753ba6ed9a644f38aebd1
-  languageName: node
-  linkType: hard
-
-"@codemirror/theme-one-dark@npm:^6.0.0":
-  version: 6.1.2
-  resolution: "@codemirror/theme-one-dark@npm:6.1.2"
-  dependencies:
-    "@codemirror/language": ^6.0.0
-    "@codemirror/state": ^6.0.0
-    "@codemirror/view": ^6.0.0
-    "@lezer/highlight": ^1.0.0
-  checksum: 29bc09f79534115f62658caf3d0db527fe347d058b69a8c7f580ae636827377aadd0606fd0d83dbab8d6f3b0a5df53d3253c619341b5fb93d2c8291a8efb9556
   languageName: node
   linkType: hard
 
@@ -2351,9 +2339,9 @@ __metadata:
     "@podlite/highlight": "workspace:*"
     "@podlite/schema": "workspace:*"
     "@podlite/to-jsx": "workspace:*"
+    "@uiw/codemirror-extensions-basic-setup": ^4.23.8
     "@uiw/codemirror-extensions-events": ^4.23.8
     "@uiw/codemirror-themes": ^4.23.8
-    "@uiw/react-codemirror": ^4.23.8
     dom-to-image-more: ^3.7.2
     podlite: "workspace:*"
     react-is: ^18.0.0
@@ -3218,9 +3206,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@uiw/codemirror-extensions-basic-setup@npm:4.23.8":
-  version: 4.23.8
-  resolution: "@uiw/codemirror-extensions-basic-setup@npm:4.23.8"
+"@uiw/codemirror-extensions-basic-setup@npm:^4.23.8":
+  version: 4.25.11
+  resolution: "@uiw/codemirror-extensions-basic-setup@npm:4.25.11"
   dependencies:
     "@codemirror/autocomplete": ^6.0.0
     "@codemirror/commands": ^6.0.0
@@ -3237,7 +3225,7 @@ __metadata:
     "@codemirror/search": ">=6.0.0"
     "@codemirror/state": ">=6.0.0"
     "@codemirror/view": ">=6.0.0"
-  checksum: 4bfcde00da5697348deddeea10fe4c9fc59a9d66ff772a241c9a02abb8dc88af37a354dc7bd9939470167cd5460efae6a626435f834d1e41e355cf7077558266
+  checksum: 3ce365df477d3282ec222b06c086700e7cea08d4ed869ef2636323dec1f47df678a3d18ee84b956117e7f2c3db3000ebe3895aa56db883d246d6da1bb7e025fb
   languageName: node
   linkType: hard
 
@@ -3262,28 +3250,6 @@ __metadata:
     "@codemirror/state": ">=6.0.0"
     "@codemirror/view": ">=6.0.0"
   checksum: cffeed6693950c8dfa77d7880d48211019055099d6f3d9f76717d718d8145716ca19ea50e97b6ef50036115f2c2fe67e3d560f344f5c7145429f98b8e43a3240
-  languageName: node
-  linkType: hard
-
-"@uiw/react-codemirror@npm:^4.23.8":
-  version: 4.23.8
-  resolution: "@uiw/react-codemirror@npm:4.23.8"
-  dependencies:
-    "@babel/runtime": ^7.18.6
-    "@codemirror/commands": ^6.1.0
-    "@codemirror/state": ^6.1.1
-    "@codemirror/theme-one-dark": ^6.0.0
-    "@uiw/codemirror-extensions-basic-setup": 4.23.8
-    codemirror: ^6.0.0
-  peerDependencies:
-    "@babel/runtime": ">=7.11.0"
-    "@codemirror/state": ">=6.0.0"
-    "@codemirror/theme-one-dark": ">=6.0.0"
-    "@codemirror/view": ">=6.0.0"
-    codemirror: ">=6.0.0"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 6059969bfd881c76fab898b841d90b0e84a409383be614593c7dd770a2bba5925fc705ab7d5ea6e64c3791fe9b6ef98492a31ce0bcbc33652d375f60ef4f3368
   languageName: node
   linkType: hard
 
@@ -4019,21 +3985,6 @@ __metadata:
   version: 5.63.3
   resolution: "codemirror@npm:5.63.3"
   checksum: f805b92f1aea98a6c21b0bf79263ccd428c7fe38aa664f4aa91397746ecba867389da3c0f8c605acbdc8c15590800fcb19b063fa3273e4733e42789abb5ff2ba
-  languageName: node
-  linkType: hard
-
-"codemirror@npm:^6.0.0":
-  version: 6.0.1
-  resolution: "codemirror@npm:6.0.1"
-  dependencies:
-    "@codemirror/autocomplete": ^6.0.0
-    "@codemirror/commands": ^6.0.0
-    "@codemirror/language": ^6.0.0
-    "@codemirror/lint": ^6.0.0
-    "@codemirror/search": ^6.0.0
-    "@codemirror/state": ^6.0.0
-    "@codemirror/view": ^6.0.0
-  checksum: 1a78f7077ac5801bdbff162aa0c61bf2b974603c7e9a477198c3ce50c789af674a061d7c293c58b73807eda345c2b5228c38ad2aabb9319d552d5486f785cbef
   languageName: node
   linkType: hard
 

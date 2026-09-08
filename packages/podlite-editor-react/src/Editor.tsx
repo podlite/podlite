@@ -1,5 +1,7 @@
 import React, { useState, useRef, useImperativeHandle, useEffect, useCallback } from 'react'
-import CodeMirror, { ViewUpdate, ReactCodeMirrorProps, ReactCodeMirrorRef } from '@uiw/react-codemirror'
+import type { ViewUpdate } from '@codemirror/view'
+import type { EditorState } from '@codemirror/state'
+import CodeMirror, { type CodeMirrorProps, type CodeMirrorRef } from './codemirror'
 import Podlite from '@podlite/to-jsx'
 import { podlite as podlite_core } from 'podlite'
 import * as events from '@uiw/codemirror-extensions-events'
@@ -50,7 +52,9 @@ export interface ConverterResult {
   result: JSX.Element | string //React.ReactNode
 }
 
-export interface IPodliteEditor extends ReactCodeMirrorProps {
+export interface IPodliteEditor extends CodeMirrorProps {
+  /** Passed on, but the editor sets its own: it installs its keymap over the standard one */
+  basicSetup?: CodeMirrorProps['basicSetup']
   value?: string
   /** Source language for editor syntax highlighting @default `podlite` */
   language?: 'podlite' | 'markdown'
@@ -112,14 +116,14 @@ export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
 export type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
 
 export interface PodliteEditorRef {
-  editor: React.RefObject<ReactCodeMirrorRef>
+  editor: React.RefObject<CodeMirrorRef>
   preview: React.RefObject<HTMLDivElement> | null
 }
 const PodliteEditor: PodliteEditorComponent = React.forwardRef<PodliteEditorRef, IPodliteEditor>(
   PodliteEditorInternal,
-) as unknown as PodliteEditorComponent
+) as PodliteEditorComponent
 
-type PodliteEditorComponent = React.FC<React.PropsWithRef<IPodliteEditor>>
+type PodliteEditorComponent = React.ForwardRefExoticComponent<IPodliteEditor & React.RefAttributes<PodliteEditorRef>>
 
 export default PodliteEditor
 
@@ -158,7 +162,18 @@ function PodliteEditorInternal(
   const full_preview = previewWidth === '100%'
   const [value, setValue] = useState(props.value || '')
   const pendingTextRef = useRef(props.value || '')
-  const codeMirror = useRef<ReactCodeMirrorRef>(null)
+  const codeMirror = useRef<CodeMirrorRef>(null)
+  // Held as state, not read off the ref: an effect has to re-run when the editor
+  // appears, and a ref read during render cannot tell anyone that it did
+  const [editorView, setEditorView] = useState<EditorView>()
+  // Both: we need the view, and a caller that asked for it still gets it
+  const handleCreateEditor = useCallback(
+    (view: EditorView, state: EditorState) => {
+      setEditorView(view)
+      codemirrorProps.onCreateEditor?.(view, state)
+    },
+    [codemirrorProps],
+  )
   const container = useRef<HTMLDivElement>(null)
   const containerEditor = useRef<HTMLDivElement>(null)
   const preview = useRef<HTMLDivElement>(null)
@@ -215,7 +230,7 @@ function PodliteEditorInternal(
   // Restore editor session state once after mount or file change
   useEffect(() => {
     if (initialStateApplied.current || !initialEditorState) return
-    const view = codeMirror.current?.view
+    const view = editorView
     if (!view) return
     initialStateApplied.current = true
 
@@ -225,14 +240,14 @@ function PodliteEditorInternal(
       view.dispatch({ selection: { anchor: offset } })
     }
 
-    // Restore fold ranges
-    if (initialEditorState.foldedRanges && initialEditorState.foldedRanges.length > 0) {
-      const effects = initialEditorState.foldedRanges
-        .filter(r => r.from < view.state.doc.length && r.to <= view.state.doc.length)
-        .map(r => foldEffect.of({ from: r.from, to: r.to }))
-      if (effects.length > 0) {
-        view.dispatch({ effects })
-      }
+    // Restore fold ranges. What is folded now belongs to whatever was open before,
+    // so it goes first: a file that saved no folds must not inherit the last one's
+    const standing = serializeFoldedRanges(view).map(r => unfoldEffect.of({ from: r.from, to: r.to }))
+    const wanted = (initialEditorState.foldedRanges || [])
+      .filter(r => r.from < view.state.doc.length && r.to <= view.state.doc.length)
+      .map(r => foldEffect.of({ from: r.from, to: r.to }))
+    if (standing.length > 0 || wanted.length > 0) {
+      view.dispatch({ effects: [...standing, ...wanted] })
     }
 
     // Restore scroll position (after folds applied, so layout is correct)
@@ -243,12 +258,12 @@ function PodliteEditorInternal(
       }
       view.focus()
     })
-  }, [initialEditorState, codeMirror.current?.view])
+  }, [initialEditorState, editorView])
 
   // Expose editor state changes via callback
   useEffect(() => {
     if (!onEditorStateChange) return
-    const view = codeMirror.current?.view
+    const view = editorView
     if (!view) return
 
     const emitState = (): void => {
@@ -271,7 +286,7 @@ function PodliteEditorInternal(
       view.scrollDOM.removeEventListener('scroll', handleScroll)
       if (scrollTimer) clearTimeout(scrollTimer)
     }
-  }, [onEditorStateChange, codeMirror.current?.view, serializeFoldedRanges])
+  }, [onEditorStateChange, editorView, serializeFoldedRanges])
 
   const height = isFullscreen
     ? '100%'
@@ -394,7 +409,7 @@ function PodliteEditorInternal(
   // All CodeMirror measure work is concentrated in these two transitions so
   // nothing expensive runs during the scroll itself.
   useEffect(() => {
-    const view = codeMirror.current?.view
+    const view = editorView
     if (!view) return
 
     if (full_preview) {
@@ -998,6 +1013,7 @@ function PodliteEditorInternal(
           extensions={extensionsData}
           height={height}
           ref={codeMirror}
+          onCreateEditor={handleCreateEditor}
           onChange={handleChange}
         />
       </div>
