@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
+
+
 =head1 0.0.50
 
 =item the record contract, its types and the entry-or-page predicate, moved into its own module and is reachable as C<@podlite/publisher/record>

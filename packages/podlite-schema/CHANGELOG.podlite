@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
+
+
 =item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
 
 
