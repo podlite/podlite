@@ -15,12 +15,18 @@ const run = (pkgDir: string): { code: number; out: string } => {
   }
 }
 
-describe('the editor declares what it imports', () => {
-  it('has nothing undeclared', () => {
-    const { code, out } = run(join(root, 'packages', 'podlite-editor-react'))
-    expect(out).toContain('every import is declared')
-    expect(code).toBe(0)
-  })
+// Packages whose manifests are known to match their code. The rest of the monorepo
+// is not clean yet, so the gate names what it guards instead of checking everything
+const GUARDED = ['podlite-editor-react', 'podlite-publisher']
+
+describe('a guarded package declares what it imports', () => {
+  for (const pkg of GUARDED) {
+    it(pkg, () => {
+      const { code, out } = run(join(root, 'packages', pkg))
+      expect(out).toContain('every import is declared')
+      expect(code).toBe(0)
+    })
+  }
 })
 
 // Without this the gate above could go green because the checker stopped

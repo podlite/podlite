@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item declare C<glob> as a runtime dependency, so that C<< require('@podlite/publisher/node') >> loads where the package is installed on its own. It was declared for development only, and worked until now because something else happened to install it. The same entry still cannot be reached with C<import>: its ESM build calls C<require>, which a module does not have. That is a separate fix
+
+
 =item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
 
 
