@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item declare the packages the editor imports but left to its neighbours to install: C<podlite>, C<@codemirror/commands>, C<@codemirror/state>, C<@lezer/common>, C<@lezer/markdown>, and C<tslib>, which the compiler puts in the emitted output. A consumer installing this package no longer depends on something else pulling them in
+
+
 =item the body of an abbreviated block whose content is read as written — C<=table>, C<=for code> and the rest — is no longer handed to the markdown parser. A rule of equals between two rows of a table was read as the underline of a heading, and the row above it took the size and weight of one. Settings that go on over the next line keep their own reading and stay out of the body
 
 =head1 0.0.75
