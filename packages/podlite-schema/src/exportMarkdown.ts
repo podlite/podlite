@@ -16,6 +16,7 @@ import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { getNodeId, linkTarget, markdownStyle, restyleAnchors, sameDocTarget, writtenValue } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
+import { testCaption, longestBacktickRun } from './test-display'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
@@ -63,6 +64,23 @@ const writeCellParts = (cell, writer, interator, ctx) => {
     if (i === last) text = text.replace(/\s+$/, '')
     writer.write(text)
   })
+}
+
+// The body of a fixture or a resource is source, written as it stands inside a
+// fence no run of backticks in it can close.
+const writeSourceBlock = (writer, node, ctx) => {
+  const text = collectText(node.content)
+  const fence = '`'.repeat(Math.max(3, longestBacktickRun(text) + 1))
+  writer.writeRaw(`${fence}podlite\n`)
+  writer.writeRaw(isCovered(node, ctx) ? maskText(text) : text)
+  if (!text.endsWith('\n')) writer.writeRaw('\n')
+  writer.writeRaw(`${fence}\n`)
+}
+
+const inlineCode = (text: string): string => {
+  const ticks = '`'.repeat(longestBacktickRun(text) + 1)
+  const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : ''
+  return `${ticks}${pad}${text}${pad}${ticks}`
 }
 
 const rules = {
@@ -291,11 +309,33 @@ const rules = {
     if (node.content) interator(node.content, ctx)
   },
   'comment:block': emptyContent,
-  // the blocks of a test are not shown until a way to show them is chosen
-  'test:block': emptyContent,
-  'fixture:block': emptyContent,
-  'assert:block': emptyContent,
-  'resource:block': emptyContent,
+  'test:block': (writer, processor) => (node, ctx, interator) => {
+    writer.writeRaw('\n**Test** ')
+    writer.write(testCaption(node, ctx))
+    writer.writeRaw('\n\n')
+    interator(node.content, ctx)
+    writer.writeRaw('\n')
+  },
+  'fixture:block': (writer, processor) => (node, ctx) => writeSourceBlock(writer, node, ctx),
+  'assert:block': (writer, processor) => (node, ctx, interator) => {
+    const conf = makeAttrs(node, ctx)
+    const absent = conf.exists('absent') && Boolean(conf.getFirstValue('absent'))
+    const selector = collectText(node.content).trim()
+    writer.writeRaw(`- ${inlineCode(isCovered(node, ctx) ? maskText(selector) : selector)} `)
+    writer.writeRaw(absent ? 'must find no block' : 'must find a block')
+    if (conf.exists('caption')) {
+      writer.writeRaw(': ')
+      writer.write(conf.getFirstValue('caption'))
+    }
+    writer.writeRaw('\n')
+  },
+  'resource:block': (writer, processor) => (node, ctx, interator) => {
+    const conf = makeAttrs(node, ctx)
+    writer.writeRaw('\nResource')
+    if (conf.exists('name')) writer.writeRaw(` ${inlineCode(String(conf.getFirstValue('name')))}`)
+    writer.writeRaw(':\n\n')
+    writeSourceBlock(writer, node, ctx)
+  },
   'boundary:block': (writer, processor) => (node, ctx) => {
     writer.writeRaw('\n---\n')
   },

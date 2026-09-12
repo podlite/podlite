@@ -25,6 +25,7 @@ import {
   writtenValue,
 } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
+import { testCaption, testFoldedByAuthor } from './test-display'
 import { decodeHTMLStrict } from 'entities'
 
 import { quoteAttribute as quoteValue } from './helpers/html-attr'
@@ -330,11 +331,46 @@ const rules = {
     writer.writeRaw('</li>')
   },
   'comment:block': emptyContent,
-  // the blocks of a test are not shown until a way to show them is chosen
-  'test:block': emptyContent,
-  'fixture:block': emptyContent,
-  'assert:block': emptyContent,
-  'resource:block': emptyContent,
+  // a test is written open: a reader without scripts gets the rule and its test together
+  'test:block': (writer, processor) => (node, ctx, interator) => {
+    const open = testFoldedByAuthor(node, ctx) === true ? '' : ' open'
+    writer.writeRaw(openTag('details', node, ctx, ` class="test"${open}`))
+    writer.writeRaw('<summary class="test-summary"><span class="test-label">test</span> <span class="test-caption">')
+    writer.write(testCaption(node, ctx))
+    writer.writeRaw('</span></summary><div class="test-body">')
+    interator(node.content, ctx)
+    writer.writeRaw('</div></details>')
+  },
+  'fixture:block': (writer, processor) => (node, ctx, interator) => {
+    writer.writeRaw('<div class="test-fixture"><pre><code>')
+    interator(node.content, ctx)
+    writer.writeRaw('</code></pre></div>')
+  },
+  'assert:block': (writer, processor) => (node, ctx, interator) => {
+    const conf = makeAttrs(node, ctx)
+    const absent = conf.exists('absent') && Boolean(conf.getFirstValue('absent'))
+    writer.writeRaw(`<div class="test-assert${absent ? ' test-absent' : ''}"><code class="test-selector">`)
+    interator(node.content, ctx)
+    writer.writeRaw(`</code> <span class="test-expect">${absent ? 'must find no block' : 'must find a block'}</span>`)
+    if (conf.exists('caption')) {
+      writer.writeRaw(' <span class="test-assert-caption">')
+      writer.write(conf.getFirstValue('caption'))
+      writer.writeRaw('</span>')
+    }
+    writer.writeRaw('</div>')
+  },
+  'resource:block': (writer, processor) => (node, ctx, interator) => {
+    const conf = makeAttrs(node, ctx)
+    writer.writeRaw('<div class="test-resource">')
+    if (conf.exists('name')) {
+      writer.writeRaw('<span class="test-resource-name">')
+      writer.write(conf.getFirstValue('name'))
+      writer.writeRaw('</span>')
+    }
+    writer.writeRaw('<pre><code>')
+    interator(node.content, ctx)
+    writer.writeRaw('</code></pre></div>')
+  },
   'boundary:block': (writer, processor) => (node, ctx) => {
     const conf = makeAttrs(node, ctx)
     const id = anchorOf(node, ctx)

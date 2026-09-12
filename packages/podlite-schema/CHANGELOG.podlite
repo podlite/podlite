@@ -2,7 +2,9 @@
 
 =head1 Upcoming
 
-=item C<=test>, C<=fixture>, C<=assert> and C<=resource> are parsed as blocks. The last three keep their body as written, and the body of a fixture is not read as markup even under C<:allow>. The html and markdown output leave them out
+=item C<=test>, C<=fixture>, C<=assert> and C<=resource> are parsed as blocks. The last three keep their body as written, and the body of a fixture is not read as markup even under C<:allow>.
+
+=item html and markdown output show a test open where it stands: its caption, the fixture and each resource as source, and what each assertion must or must not find
 
 =head1 0.0.70
 

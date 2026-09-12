@@ -268,7 +268,7 @@ describe('the blocks of a test in html and markdown', () => {
   const src = `=begin pod
 =head1 Doc
 
-=begin test
+=begin test :id<v1.2> :caption('a heading inside a fixture stays source')
 =begin resource :name<a.podlite>
 =head1 Guide
 =end resource
@@ -277,17 +277,67 @@ describe('the blocks of a test in html and markdown', () => {
 =head2 Overview
 =end fixture
 
-=for assert :absent
+=for assert :absent :caption('no third level')
 head3
 =end test
 =end pod`
 
-  it('are not shown', () => {
-    for (const out of [toHtml({}).run(src).toString(), toMarkdown({}).run(src).toString()]) {
-      expect(out).toContain('Doc')
-      expect(out).not.toContain('Guide')
-      expect(out).not.toContain('Overview')
-      expect(out).not.toContain('head3')
-    }
+  const html = () => toHtml({}).run(src).toString()
+  const md = () => toMarkdown({}).run(src).toString()
+
+  it('show a test open, anchored the way a link to it is', () => {
+    expect(html()).toContain('<details id="v12" class="test" open><summary class="test-summary">')
+    expect(html()).toContain('<span class="test-caption">a heading inside a fixture stays source</span>')
+  })
+
+  it('show a fixture and a resource as source, not as markup', () => {
+    const out = html()
+    expect(out).toContain('<div class="test-fixture"><pre><code>=head2 Overview')
+    expect(out).toContain('<span class="test-resource-name">a.podlite</span><pre><code>=head1 Guide')
+    expect(out).not.toContain('<h2')
+  })
+
+  it('show what an assertion expects', () => {
+    expect(html()).toContain(
+      '<div class="test-assert test-absent"><code class="test-selector">head3\n</code> <span class="test-expect">must find no block</span> <span class="test-assert-caption">no third level</span></div>',
+    )
+    expect(toHtml({}).run('=begin test\n=for assert\npara\n=end test').toString()).toContain(
+      '<span class="test-expect">must find a block</span>',
+    )
+  })
+
+  it('leave a test folded when the author folds it', () => {
+    const out = toHtml({}).run('=begin test :folded\n=for assert\npara\n=end test').toString()
+    expect(out).toContain('<details class="test"><summary')
+  })
+
+  it('name a test by its id, then by the word test', () => {
+    expect(toHtml({}).run('=begin test :id<t9>\n=for assert\npara\n=end test').toString()).toContain(
+      '<span class="test-caption">t9</span>',
+    )
+    expect(toHtml({}).run('=begin test\n=for assert\npara\n=end test').toString()).toContain(
+      '<span class="test-caption">test</span>',
+    )
+  })
+
+  it('keep the body of an assertion that allows markup codes', () => {
+    const out = toHtml({}).run('=begin test\n=for assert :allow<B>\npara[ :x<B<y>> ]\n=end test').toString()
+    expect(out).toContain('<code class="test-selector">para[ :x&lt;<strong>y</strong>&gt; ]')
+  })
+
+  it('write a test open in markdown', () => {
+    const out = md()
+    expect(out).toContain('**Test** a heading inside a fixture stays source')
+    expect(out).toContain('```podlite\n=head2 Overview\n```')
+    expect(out).toContain('Resource `a.podlite`:\n\n```podlite\n=head1 Guide\n```')
+    expect(out).toContain('- `head3` must find no block: no third level')
+  })
+
+  it('fence a body longer than any run of backticks in it', () => {
+    const out = toMarkdown({})
+      .run('=begin test\n=begin fixture\nC<```>\n=end fixture\n=for assert\npara[ :x<`> ]\n=end test')
+      .toString()
+    expect(out).toContain('````podlite\nC<```>\n````')
+    expect(out).toContain('- ``para[ :x<`> ]`` must find a block')
   })
 })
