@@ -71,6 +71,15 @@ describe('what a resolver is told about the target', () => {
     expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
   })
 
+  it('steps over a test', () => {
+    const { seen, linkPreview } = collect()
+    render(
+      `=head1 Setup\n\n=begin test\n=begin fixture\nFixture text.\n=end fixture\n\n=for assert\npara\n=end test\n\nVisible text.\n\nL<go|#Setup>`,
+      { linkPreview },
+    )
+    expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
+  })
+
   it('stops at the next heading of the same level', () => {
     const { seen, linkPreview } = collect()
     render(`=head1 One\n\n=head1 Two\n\nBelongs to Two.\n\nL<go|#One>`, { linkPreview })

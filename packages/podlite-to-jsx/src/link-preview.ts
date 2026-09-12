@@ -58,16 +58,13 @@ The renderer imposes no markup and no styling on what comes back.
 
 =end pod
 */
-export type LinkPreviewResolver = (
-  target: string,
-  resolved: LinkPreviewTarget | undefined,
-) => ReactNode | null
+export type LinkPreviewResolver = (target: string, resolved: LinkPreviewTarget | undefined) => ReactNode | null
 
 // Longer than a popup can show without becoming a page of its own. Chosen by
 // measuring the first visible text under headings across the knowledge base.
 const CUT_AT = 200
 
-const RENDERS_NOTHING = new Set(['blankline', 'comment'])
+const RENDERS_NOTHING = new Set(['blankline', 'comment', 'test', 'fixture', 'assert', 'resource'])
 
 const rendersNothing = (node: any): boolean =>
   !node || typeof node !== 'object' || RENDERS_NOTHING.has(node.type) || RENDERS_NOTHING.has(node.name)
