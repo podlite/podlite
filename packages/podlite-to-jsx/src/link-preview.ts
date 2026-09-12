@@ -64,13 +64,12 @@ export type LinkPreviewResolver = (target: string, resolved: LinkPreviewTarget |
 // measuring the first visible text under headings across the knowledge base.
 const CUT_AT = 200
 
-const RENDERS_NOTHING = new Set(['blankline', 'comment', 'test', 'fixture', 'assert', 'resource'])
+const HIDDEN_BLOCKS = new Set(['comment', 'test', 'fixture', 'assert', 'resource'])
+
+const isHidden = (node: any): boolean => !!node && typeof node === 'object' && HIDDEN_BLOCKS.has(node.name)
 
 const rendersNothing = (node: any): boolean =>
-  !node || typeof node !== 'object' || RENDERS_NOTHING.has(node.type) || RENDERS_NOTHING.has(node.name)
-
-const isHidden = (node: any): boolean =>
-  !!node && typeof node === 'object' && (RENDERS_NOTHING.has(node.type) || RENDERS_NOTHING.has(node.name))
+  !node || typeof node !== 'object' || node.type === 'blankline' || isHidden(node)
 
 const withoutHidden = (node: any): any =>
   node && typeof node === 'object' && Array.isArray(node.content)
