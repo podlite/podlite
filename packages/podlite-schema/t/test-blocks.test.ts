@@ -340,4 +340,13 @@ head3
     expect(out).toContain('````podlite\nC<```>\n````')
     expect(out).toContain('- ``para[ :x<`> ]`` must find a block')
   })
+
+  it('hide the words of a test inside masked content', () => {
+    const masked =
+      "=begin pod :masked\n=begin test :caption('secret caption')\n=for assert :caption('secret assert')\npara\n\n=begin resource :name<secret.pod6>\nx\n=end resource\n=end test\n=end pod"
+    for (const out of [toHtml({}).run(masked).toString(), toMarkdown({}).run(masked).toString()]) {
+      expect(out).not.toContain('secret')
+      expect(out).toContain('██████ ███████')
+    }
+  })
 })

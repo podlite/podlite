@@ -77,6 +77,9 @@ const writeSourceBlock = (writer, node, ctx) => {
   writer.writeRaw(`${fence}\n`)
 }
 
+// the words a test is shown by are hidden with the content they stand beside
+const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
+
 const inlineCode = (text: string): string => {
   const ticks = '`'.repeat(longestBacktickRun(text) + 1)
   const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : ''
@@ -311,7 +314,7 @@ const rules = {
   'comment:block': emptyContent,
   'test:block': (writer, processor) => (node, ctx, interator) => {
     writer.writeRaw('\n**Test** ')
-    writer.write(testCaption(node, ctx))
+    writer.write(covered(node, ctx, testCaption(node, ctx)))
     writer.writeRaw('\n\n')
     interator(node.content, ctx)
     writer.writeRaw('\n')
@@ -325,14 +328,14 @@ const rules = {
     writer.writeRaw(absent ? 'must find no block' : 'must find a block')
     if (conf.exists('caption')) {
       writer.writeRaw(': ')
-      writer.write(conf.getFirstValue('caption'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
     }
     writer.writeRaw('\n')
   },
   'resource:block': (writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     writer.writeRaw('\nResource')
-    if (conf.exists('name')) writer.writeRaw(` ${inlineCode(String(conf.getFirstValue('name')))}`)
+    if (conf.exists('name')) writer.writeRaw(` ${inlineCode(covered(node, ctx, String(conf.getFirstValue('name'))))}`)
     writer.writeRaw(':\n\n')
     writeSourceBlock(writer, node, ctx)
   },

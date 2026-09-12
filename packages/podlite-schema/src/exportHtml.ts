@@ -63,6 +63,9 @@ const anchorOf = (node, ctx): string | null => {
   return written === null ? null : (ctx?.__anchors?.shape || toFragment)(written)
 }
 
+// the words a test is shown by are hidden with the content they stand beside
+const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
+
 const openTag = (tag: string, node, ctx, attrs = '') => {
   const id = anchorOf(node, ctx)
   return `<${tag}${id ? ` id="${id}"` : ''}${attrs}>`
@@ -336,7 +339,7 @@ const rules = {
     const open = testFoldedByAuthor(node, ctx) === true ? '' : ' open'
     writer.writeRaw(openTag('details', node, ctx, ` class="test"${open}`))
     writer.writeRaw('<summary class="test-summary"><span class="test-label">test</span> <span class="test-caption">')
-    writer.write(testCaption(node, ctx))
+    writer.write(covered(node, ctx, testCaption(node, ctx)))
     writer.writeRaw('</span></summary><div class="test-body">')
     interator(node.content, ctx)
     writer.writeRaw('</div></details>')
@@ -354,7 +357,7 @@ const rules = {
     writer.writeRaw(`</code> <span class="test-expect">${absent ? 'must find no block' : 'must find a block'}</span>`)
     if (conf.exists('caption')) {
       writer.writeRaw(' <span class="test-assert-caption">')
-      writer.write(conf.getFirstValue('caption'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('</span>')
     }
     writer.writeRaw('</div>')
@@ -364,7 +367,7 @@ const rules = {
     writer.writeRaw('<div class="test-resource">')
     if (conf.exists('name')) {
       writer.writeRaw('<span class="test-resource-name">')
-      writer.write(conf.getFirstValue('name'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('name'))))
       writer.writeRaw('</span>')
     }
     writer.writeRaw('<pre><code>')
