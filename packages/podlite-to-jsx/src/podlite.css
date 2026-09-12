@@ -423,3 +423,21 @@ li.task-list-item p {
 
   /* End of podlite */
   
+/* Tests: the site styles them; here only what the behaviour needs. The card is
+   placed by the renderer, and print shows a folded test without a script. */
+.test-card {
+  position: absolute;
+  z-index: 10;
+  background: Canvas;
+  color: CanvasText;
+}
+
+@media print {
+  details.test::details-content {
+    content-visibility: visible;
+    display: block;
+  }
+  .test-card {
+    display: none;
+  }
+}

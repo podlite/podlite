@@ -37,7 +37,9 @@ import {
 } from '@podlite/schema'
 import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 export type { LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
-import { applyFoldedSections } from '@podlite/schema'
+import { applyFoldedSections, testCaption, testFoldedByAuthor } from '@podlite/schema'
+import { groupTests } from './test-groups'
+import { TestBlock } from './test-block'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import { HighlightedCode } from '@podlite/highlight'
@@ -213,6 +215,9 @@ const previewOf = (node, ctx, index: Map<string, LinkPreviewTarget>): LinkPrevie
 }
 
 const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
+
+// the words a test is shown by are hidden with the content they stand beside
+const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
 
 const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
@@ -445,11 +450,58 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ':para': mkComponent('p'),
     para: handleNested(mkComponent('div')),
     'comment:block': emptyContent(),
-    // the blocks of a test are not shown until a way to show them is chosen
-    'test:block': emptyContent(),
-    'fixture:block': emptyContent(),
-    'assert:block': emptyContent(),
-    'resource:block': emptyContent(),
+    _test_group: (writer, processor) => (node: any, ctx, interator) =>
+      (
+        <div className="test-group" key={getSafeNodeId(node, ctx)}>
+          {interator(node.content, { ...ctx })}
+        </div>
+      ),
+    'test:block': setFn((node, ctx) => {
+      const id = getSafeNodeId(node, ctx)
+      const caption = covered(node, ctx, testCaption(node, ctx))
+      const folded = testFoldedByAuthor(node, ctx)
+      return mkComponent(({ children, key }) => (
+        <TestBlock key={key} id={id} caption={caption} folded={folded}>
+          {children}
+        </TestBlock>
+      ))
+    }),
+    'fixture:block': mkComponent(({ children, key }) => (
+      <div className="test-fixture" key={key}>
+        <pre>
+          <code>{children}</code>
+        </pre>
+      </div>
+    )),
+    'assert:block': setFn((node, ctx) => {
+      const conf = makeAttrs(node, ctx)
+      const absent = conf.exists('absent') && Boolean(conf.getFirstValue('absent'))
+      const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
+      return mkComponent(({ children, key }) => (
+        <div className={absent ? 'test-assert test-absent' : 'test-assert'} key={key}>
+          <code className="test-selector">{children}</code>{' '}
+          <span className="test-expect">{absent ? 'must find no block' : 'must find a block'}</span>
+          {caption !== null && (
+            <>
+              {' '}
+              <span className="test-assert-caption">{caption}</span>
+            </>
+          )}
+        </div>
+      ))
+    }),
+    'resource:block': setFn((node, ctx) => {
+      const conf = makeAttrs(node, ctx)
+      const name = conf.exists('name') ? covered(node, ctx, String(conf.getFirstValue('name'))) : null
+      return mkComponent(({ children, key }) => (
+        <div className="test-resource" key={key}>
+          {name !== null && <span className="test-resource-name">{name}</span>}
+          <pre>
+            <code>{children}</code>
+          </pre>
+        </div>
+      ))
+    }),
     'boundary:block': mkVoidComponent('hr'),
     defn: subUse(
       [
@@ -509,7 +561,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const blocks = runSelector(selector, docs) as PodNode[]
       if (!blocks || blocks.length === 0) return null
 
-      return interator(blocks, { ...ctx, includeStack: [...stack, ...paths] })
+      return interator(groupTests(blocks), { ...ctx, includeStack: [...stack, ...paths] })
     },
 
     // Directives
@@ -1018,7 +1070,7 @@ function podlite(
     const treeAfterParsed = podliteParser.parse(children || file, parseOptions)
     return podliteParser.toAst(treeAfterParsed)
   })(tree)
-  const ast = applyFoldedSections(astRaw)
+  const ast = groupTests(applyFoldedSections(astRaw))
 
   // const   ast = parse( children || content )
   let i_key_i = 10000
