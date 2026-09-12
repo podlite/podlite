@@ -52,6 +52,27 @@ it('listfiles comp: parse', () => {
   `)
 })
 
+it('an include inside the fixture of a test is not resolved', () => {
+  const tests = `
+=begin test
+=begin fixture
+=include doc:File1#data2
+
+=end fixture
+
+=for assert
+data
+=end test
+`
+  const state = [processFile('src/file1.podlite', file1), processFile('src/tests.podlite', tests)]
+  const config: PluginConfig = {
+    plugin: resolvePlugin(),
+    includePatterns: '.*',
+  }
+  const [res] = processPlugin(config, state, tctx)
+  expect(getFromTree(res[1].node, 'data')).toHaveLength(0)
+})
+
 const termsFile = `
 =begin pod :type('glossary')
 =head1 Terms

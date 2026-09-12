@@ -9,6 +9,15 @@
       )
   }
 
+  // the body of these blocks is kept as written
+  function isRawBlock(name) {
+    return (
+      Boolean(name.match(/code|comment|formula|output|input|markdown|picture|toc|data|fixture|assert|resource/))
+        ||
+        isNamedBlock(name)
+    )
+  }
+
   // the following names: =AUTHOR  =DESCRIPTION are reserved
   function isSemanticBlock(name) {
     return name === name.toUpperCase()
@@ -43,12 +52,14 @@
   // direct call and is kept equal to it by a test
   function knownBlockNames() {
     return (options && options.blockNames) || [
+        'assert',
         'boundary',
         'code',
         'comment',
         'data',
         'data-table',
         'defn',
+        'fixture',
         'formula',
         'head',
         'include',
@@ -60,10 +71,12 @@
         'para',
         'picture',
         'pod',
+        'resource',
         'row',
         'cell',
         'set',
         'table',
+        'test',
         'toc',
       ]
   }
@@ -331,11 +344,7 @@ delimitedBlockRaw =
     vmargin:$(_) 
     markerBegin name:strictIdentifier _ config:pod_configuration 
     &{ 
-     return ( 
-       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-        || 
-        isNamedBlock(name)
-      )
+     return isRawBlock(name)
      }
     content:(
         margins:$(_) 
@@ -589,11 +598,7 @@ abbreviatedBlockRaw =
   vmargin:$(_) !markers
   name:markerAbbreviatedBlock _ emptyline? 
     &{  
-     return ( 
-       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-        || 
-        isNamedBlock(name)
-      )
+     return isRawBlock(name)
      }
   content:$(!emptyline text:text_content )*
   { 
@@ -738,11 +743,7 @@ paragraphBlockRaw =
   vmargin:$(_)
   marker:markerFor  name:strictIdentifier _ config:pod_configuration 
       &{  
-     return ( 
-       (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-        || 
-        isNamedBlock(name)
-      )
+     return isRawBlock(name)
      }
   content:$(!emptyline text_content)*
   { 

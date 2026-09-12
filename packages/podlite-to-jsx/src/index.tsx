@@ -230,15 +230,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
   // Both link codes render the same anchor and differ only by class. The preview
   // of the target is the renderer's own behaviour until a resolver is supplied:
   // once one is, it decides alone, and returning null from it means nothing shows.
-  const linkRule =
-    (className?: string) =>
-    (writer, processor, tree) => {
-      const resolver = opts.linkPreview
-      // Built where the tree is in hand. Memoising on the context instead built it
-      // four times over: rules clone the context before recursing, so links in
-      // different blocks each got their own. Nothing is built without a resolver.
-      const index = resolver ? previewIndexFor(tree) : undefined
-      return (node, ctx, interator) => {
+  const linkRule = (className?: string) => (writer, processor, tree) => {
+    const resolver = opts.linkPreview
+    // Built where the tree is in hand. Memoising on the context instead built it
+    // four times over: rules clone the context before recursing, so links in
+    // different blocks each got their own. Nothing is built without a resolver.
+    const index = resolver ? previewIndexFor(tree) : undefined
+    return (node, ctx, interator) => {
       const href = hrefOf(node, ctx)
       const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
       const supplied = resolver && index ? resolver(linkTarget(node) ?? '', previewOf(node, ctx, index)) : null
@@ -256,8 +254,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
           </a>
         )
       return mkComponent(src)(writer, processor)(node, ctx, interator)
-      }
     }
+  }
 
   // Handle nested block and :nested block attribute
   const handleNested = (defaultHandler, implicitLevel?: number) => {
@@ -447,6 +445,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ':para': mkComponent('p'),
     para: handleNested(mkComponent('div')),
     'comment:block': emptyContent(),
+    // the blocks of a test are not shown until a way to show them is chosen
+    'test:block': emptyContent(),
+    'fixture:block': emptyContent(),
+    'assert:block': emptyContent(),
+    'resource:block': emptyContent(),
     'boundary:block': mkVoidComponent('hr'),
     defn: subUse(
       [

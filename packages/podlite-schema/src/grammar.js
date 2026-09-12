@@ -317,11 +317,7 @@ function peg$parse(input, options) {
       peg$c136 = function(numberFloat) { return parseFloat(numberFloat) },
       peg$c137 = function(number) { return parseInt(number,10) },
       peg$c138 = function(vmargin, name, config) { 
-           return ( 
-             (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-              || 
-              isNamedBlock(name)
-            )
+           return isRawBlock(name)
            },
       peg$c139 = function(vmargin, name, config, margins, ename) { return vmargin.length === margins.length &&  name === ename },
       peg$c140 = function(vmargin, name, config, margins, line) { return exludeVMargin(vmargin, `${margins}${line}`) },
@@ -493,11 +489,7 @@ function peg$parse(input, options) {
       peg$c177 = peg$classExpectation(["s"], false, false),
       peg$c178 = function(line) { return { text: text(), type: "ambient1"}},
       peg$c179 = function(vmargin, name) {  
-           return ( 
-             (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-              || 
-              isNamedBlock(name)
-            )
+           return isRawBlock(name)
            },
       peg$c180 = function(vmargin, name, content) { 
           return {
@@ -610,11 +602,7 @@ function peg$parse(input, options) {
             }
         },
       peg$c204 = function(vmargin, marker, name, config) {  
-           return ( 
-             (name.match(/code|comment|formula|output|input|markdown|picture|toc|data/))
-              || 
-              isNamedBlock(name)
-            )
+           return isRawBlock(name)
            },
       peg$c205 = function(vmargin, marker, name, config, content) { 
             return { 
@@ -7984,6 +7972,15 @@ function peg$parse(input, options) {
         )
     }
 
+    // the body of these blocks is kept as written
+    function isRawBlock(name) {
+      return (
+        Boolean(name.match(/code|comment|formula|output|input|markdown|picture|toc|data|fixture|assert|resource/))
+          ||
+          isNamedBlock(name)
+      )
+    }
+
     // the following names: =AUTHOR  =DESCRIPTION are reserved
     function isSemanticBlock(name) {
       return name === name.toUpperCase()
@@ -8018,12 +8015,14 @@ function peg$parse(input, options) {
     // direct call and is kept equal to it by a test
     function knownBlockNames() {
       return (options && options.blockNames) || [
+          'assert',
           'boundary',
           'code',
           'comment',
           'data',
           'data-table',
           'defn',
+          'fixture',
           'formula',
           'head',
           'include',
@@ -8035,10 +8034,12 @@ function peg$parse(input, options) {
           'para',
           'picture',
           'pod',
+          'resource',
           'row',
           'cell',
           'set',
           'table',
+          'test',
           'toc',
         ]
     }

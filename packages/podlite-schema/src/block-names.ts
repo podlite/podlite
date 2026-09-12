@@ -1,6 +1,7 @@
 // Names the parser treats as blocks. Kept here so the parser, the linter and the
 // editor read one list instead of each carrying a copy.
 export const BLOCK_NAMES = [
+  'assert',
   'boundary',
   'cell',
   'code',
@@ -8,6 +9,7 @@ export const BLOCK_NAMES = [
   'data',
   'data-table',
   'defn',
+  'fixture',
   'formula',
   'head',
   'include',
@@ -19,9 +21,11 @@ export const BLOCK_NAMES = [
   'para',
   'picture',
   'pod',
+  'resource',
   'row',
   'set',
   'table',
+  'test',
   'toc',
 ] as const
 
@@ -29,15 +33,18 @@ export const BLOCK_NAMES = [
 // The formatting-codes plugin keeps a narrower list of its own — the two answer
 // different questions and are reconciled separately.
 export const VERBATIM_BLOCKS = [
+  'assert',
   'code',
   'comment',
   'data',
   'data-table',
+  'fixture',
   'formula',
   'input',
   'markdown',
   'output',
   'picture',
+  'resource',
   'table',
 ] as const
 

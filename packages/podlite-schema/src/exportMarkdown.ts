@@ -291,6 +291,11 @@ const rules = {
     if (node.content) interator(node.content, ctx)
   },
   'comment:block': emptyContent,
+  // the blocks of a test are not shown until a way to show them is chosen
+  'test:block': emptyContent,
+  'fixture:block': emptyContent,
+  'assert:block': emptyContent,
+  'resource:block': emptyContent,
   'boundary:block': (writer, processor) => (node, ctx) => {
     writer.writeRaw('\n---\n')
   },

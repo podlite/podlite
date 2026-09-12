@@ -70,6 +70,10 @@ describe('unclosed-markup-code rule', () => {
       expect(check('=begin code\ntext with B<unclosed\n=end code\n')).toEqual([])
     })
 
+    it('leaves an example inside the fixture of a test', () => {
+      expect(check('=begin test\n=begin fixture\ntext with B<unclosed\n=end fixture\n=end test\n')).toEqual([])
+    })
+
     it('leaves the same example written in the short forms of that block', () => {
       expect(check('=for code\ntext with B<unclosed\n')).toEqual([])
       expect(check('=code text with B<unclosed\n')).toEqual([])

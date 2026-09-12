@@ -62,8 +62,10 @@ const middle: ParserPlugin = () => tree => {
       const name = 'name' in n ? n.name : ''
       // Blocks whose content is verbatim by default — fcode parsing only
       // kicks in when :allow opts in (per spec, "Formatting within code blocks").
-      const isVerbatimDefault = ['code', 'data', 'markdown', 'picture', 'formula'].includes(name)
+      const isVerbatimDefault = ['code', 'data', 'markdown', 'picture', 'formula', 'assert', 'resource'].includes(name)
       if (isNamedBlock(name)) return n
+      // a fixture body is a document of its own, so :allow does not reach it
+      if (name === 'fixture') return n
 
       // A table owns rows, and the text sits in the cells, so :allow written on
       // the table reaches them. The nearest declaration wins: cell, row, table.

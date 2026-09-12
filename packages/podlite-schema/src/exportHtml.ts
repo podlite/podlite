@@ -15,7 +15,15 @@ import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, getExplicitNodeId, getSafeNodeId, linkTarget, sameDocTarget, toFragment, writtenValue } from './ast-helpers'
+import {
+  getNodeId,
+  getExplicitNodeId,
+  getSafeNodeId,
+  linkTarget,
+  sameDocTarget,
+  toFragment,
+  writtenValue,
+} from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 import { decodeHTMLStrict } from 'entities'
 
@@ -277,9 +285,7 @@ const rules = {
   // the inner paragraph renders as before.
   para: handleNested(
     setFn((node, ctx) =>
-      anchorOf(node, ctx)
-        ? subUse({ ':para': content }, wrapContent(openTag('p', node, ctx), '</p>'))
-        : content,
+      anchorOf(node, ctx) ? subUse({ ':para': content }, wrapContent(openTag('p', node, ctx), '</p>')) : content,
     ),
   ),
   ':para': setFn((node, ctx) => wrapContent(openTag('p', node, ctx), '</p>')),
@@ -324,6 +330,11 @@ const rules = {
     writer.writeRaw('</li>')
   },
   'comment:block': emptyContent,
+  // the blocks of a test are not shown until a way to show them is chosen
+  'test:block': emptyContent,
+  'fixture:block': emptyContent,
+  'assert:block': emptyContent,
+  'resource:block': emptyContent,
   'boundary:block': (writer, processor) => (node, ctx) => {
     const conf = makeAttrs(node, ctx)
     const id = anchorOf(node, ctx)

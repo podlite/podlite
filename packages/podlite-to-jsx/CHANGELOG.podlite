@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<=test> block and the blocks inside it are not rendered
+
 =head1 0.0.73
 
 =item shiki is a dependency again. Dropping it in 0.0.72 left every consumer without it, and their builds stopped resolving the module

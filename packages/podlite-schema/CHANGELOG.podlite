@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=test>, C<=fixture>, C<=assert> and C<=resource> are parsed as blocks. The last three keep their body as written, and the body of a fixture is not read as markup even under C<:allow>. The html and markdown output leave them out
+
 =head1 0.0.70
 
 =item the published build no longer carries a test file
