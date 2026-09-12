@@ -1,6 +1,6 @@
 {
   "name": "@podlite/image",
-  "version": "0.0.68",
+  "version": "0.0.69",
   "description": "Image handling plugin for Podlite — caption and embed images",
   "main": "./lib/index.js",
   "sideEffects": false,

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.76
+
 =item the editor no longer goes through C<@uiw/react-codemirror>. It holds the layer between React and CodeMirror itself. Ordinary element attributes are still passed on, and C<basicSetup> is still accepted and still overridden, because the editor installs its own keymap over the standard one. Two things do change: a theme named as a string (C<light>, C<dark>, C<none>) is accepted but no longer selects a theme, and C<placeholder>, C<selection>, C<initialState>, C<onStatistics>, C<root> and the size bounds other than C<height> are accepted and do nothing
 
 =item switching files while typing no longer leaves the cursor at the end of the new file. Incoming text now arrives before the saved position is restored against it, by construction rather than by timing

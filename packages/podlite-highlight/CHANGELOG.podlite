@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.4
+
 =item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
 
 

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.63
+
 =item the ESM build leaves declared dependencies to the consumer instead of inlining them. It used to resolve them by browser rules and bake in a character decoder that reaches for document, so importing the package from Node failed at load. The file went from 1.2 MB to 12 KB
 
 

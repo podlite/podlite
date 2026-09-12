@@ -2,6 +2,74 @@
 
 =head1 Upcoming
 
+=head1 0.0.90
+
+
+=head2 podlite
+
+=item the C<./lint> entry can be reached with C<import>. Its ESM build called C<require> in two places, and a module does not have that word, so the entry died on load. Reading a config written as code stays synchronous, so C<readConfig> and C<resolveConfig> keep their shape
+
+=head2 @podlite/diagram
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+=head2 @podlite/editor-react
+
+=item the editor no longer goes through C<@uiw/react-codemirror>. It holds the layer between React and CodeMirror itself. Ordinary element attributes are still passed on, and C<basicSetup> is still accepted and still overridden, because the editor installs its own keymap over the standard one. Two things do change: a theme named as a string (C<light>, C<dark>, C<none>) is accepted but no longer selects a theme, and C<placeholder>, C<selection>, C<initialState>, C<onStatistics>, C<root> and the size bounds other than C<height> are accepted and do nothing
+
+=item switching files while typing no longer leaves the cursor at the end of the new file. Incoming text now arrives before the saved position is restored against it, by construction rather than by timing
+
+=item a file that saved no folded regions no longer inherits the folds of the one opened before it
+
+
+=item declare the packages the editor imports but left to its neighbours to install: C<podlite>, C<@codemirror/commands>, C<@codemirror/state>, C<@lezer/common>, C<@lezer/markdown>, and C<tslib>, which the compiler puts in the emitted output. A consumer installing this package no longer depends on something else pulling them in
+
+
+=item the body of an abbreviated block whose content is read as written — C<=table>, C<=for code> and the rest — is no longer handed to the markdown parser. A rule of equals between two rows of a table was read as the underline of a heading, and the row above it took the size and weight of one. Settings that go on over the next line keep their own reading and stay out of the body
+
+=head2 @podlite/formula
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+=head2 @podlite/highlight
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+=head2 @podlite/image
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+=head2 @podlite/markdown
+
+=item the ESM build leaves declared dependencies to the consumer instead of inlining them. It used to resolve them by browser rules and bake in a character decoder that reaches for document, so importing the package from Node failed at load. The file went from 1.2 MB to 12 KB
+
+=head2 @podlite/publisher
+
+=item the C<./node> entry can be reached with C<import> as well. Its ESM build called C<require>, which a module does not have, so loading it died on the first line
+
+
+=item declare C<glob> as a runtime dependency, so that C<< require('@podlite/publisher/node') >> loads where the package is installed on its own. It was declared for development only, and worked until now because something else happened to install it.
+
+
+=item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
+
+=head2 @podlite/schema
+
+=item the published build no longer carries a test file
+
+
+=item the package needs Node 20.19 or newer. Its ESM build relies on the loader recognising module syntax in a .js file, which older versions do not do
+
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
+
+=item ajv moved from 7 to 8. Under the old version an ESM consumer got a namespace object where a constructor was expected, so the package could not be imported from Node at all
+
+=head2 @podlite/toc
+
+=item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
+
 =head1 0.0.89
 
 

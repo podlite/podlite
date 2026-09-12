@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.83
+
 =item the C<./lint> entry can be reached with C<import>. Its ESM build called C<require> in two places, and a module does not have that word, so the entry died on load. Reading a config written as code stays synchronous, so C<readConfig> and C<resolveConfig> keep their shape
 
 
