@@ -80,6 +80,23 @@ describe('what a resolver is told about the target', () => {
     expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
   })
 
+  it('leaves out what renders nothing inside the block it reads', () => {
+    const { seen, linkPreview } = collect()
+    render(
+      `=head1 Setup\n\n=begin nested\n=comment hidden\n\n=begin test\n=begin fixture\nFixture text.\n=end fixture\n\n=assert para\n=end test\n\nVisible text.\n=end nested\n\nL<go|#Setup>`,
+      { linkPreview },
+    )
+    expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
+  })
+
+  it('finds nothing at the name of a block that renders nothing', () => {
+    const { seen, linkPreview } = collect()
+    render(`=begin test :id<t>\n=begin fixture\nFixture text.\n=end fixture\n\n=assert para\n=end test\n\nL<go|#t>`, {
+      linkPreview,
+    })
+    expect(seen[0]).toEqual(['#t', undefined])
+  })
+
   it('stops at the next heading of the same level', () => {
     const { seen, linkPreview } = collect()
     render(`=head1 One\n\n=head1 Two\n\nBelongs to Two.\n\nL<go|#One>`, { linkPreview })

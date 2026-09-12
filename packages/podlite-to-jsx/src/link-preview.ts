@@ -69,6 +69,16 @@ const RENDERS_NOTHING = new Set(['blankline', 'comment', 'test', 'fixture', 'ass
 const rendersNothing = (node: any): boolean =>
   !node || typeof node !== 'object' || RENDERS_NOTHING.has(node.type) || RENDERS_NOTHING.has(node.name)
 
+const isHidden = (node: any): boolean =>
+  !!node && typeof node === 'object' && (RENDERS_NOTHING.has(node.type) || RENDERS_NOTHING.has(node.name))
+
+const withoutHidden = (node: any): any =>
+  node && typeof node === 'object' && Array.isArray(node.content)
+    ? { ...node, content: node.content.filter(n => !isHidden(n)).map(withoutHidden) }
+    : node
+
+const visibleText = (node: any): string => getTextContentFromNode(withoutHidden(node))
+
 const headingLevel = (node: any): number | undefined =>
   node && node.name === 'head' ? Number(node.level) || 1 : undefined
 
@@ -85,7 +95,7 @@ const textAfter = (siblings: any[], at: number, stopAtOrAbove?: number): string 
     const level = headingLevel(node)
     if (level !== undefined && stopAtOrAbove !== undefined && level <= stopAtOrAbove) return ''
     if (rendersNothing(node)) continue
-    const text = cut(getTextContentFromNode(node))
+    const text = cut(visibleText(node))
     if (text) return text
   }
   return ''
@@ -98,13 +108,13 @@ export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTar
 
   const visit = (siblings: any[]): void => {
     siblings.forEach((node, at) => {
-      if (!node || typeof node !== 'object') return
+      if (!node || typeof node !== 'object' || isHidden(node)) return
       const level = headingLevel(node)
       // A heading stands for what follows it, even when the author also named it:
       // a reader following such a link wants the section, not the title twice.
       const entry: LinkPreviewTarget =
         level === undefined
-          ? { text: cut(getTextContentFromNode(node)), kind: 'explicit-id' }
+          ? { text: cut(visibleText(node)), kind: 'explicit-id' }
           : { text: textAfter(siblings, at, level), kind: 'heading' }
       const explicit = getExplicitNodeId(node, {})
       if (explicit) found.set(explicit, entry)

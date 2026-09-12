@@ -4,6 +4,8 @@
 
 =item a C<=test> block and the blocks inside it are not rendered
 
+=item a link preview leaves out comments and tests: their text no longer shows up in the preview of a section that holds them, and a link to their name finds nothing
+
 =head1 0.0.73
 
 =item shiki is a dependency again. Dropping it in 0.0.72 left every consumer without it, and their builds stopped resolving the module
