@@ -31,7 +31,7 @@ describe('a test on the page', () => {
   it('shows what an assertion expects', () => {
     const out = html(`=begin pod\nA rule.\n\n${test('t1')}\n=end pod\n`)
     expect(out).toContain(
-      '<div class="test-assert test-absent"><code class="test-selector">head3\n</code> <span class="test-expect">must find no block</span> <span class="test-assert-caption">no third level</span></div>',
+      '<div class="test-assert test-absent"><code class="test-selector">head3\n</code> <span class="test-expect">must find no block</span>: <span class="test-assert-caption">no third level</span></div>',
     )
   })
 

@@ -483,7 +483,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
           <span className="test-expect">{absent ? 'must find no block' : 'must find a block'}</span>
           {caption !== null && (
             <>
-              {' '}
+              {': '}
               <span className="test-assert-caption">{caption}</span>
             </>
           )}

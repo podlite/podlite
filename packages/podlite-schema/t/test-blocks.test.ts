@@ -299,7 +299,7 @@ head3
 
   it('show what an assertion expects', () => {
     expect(html()).toContain(
-      '<div class="test-assert test-absent"><code class="test-selector">head3\n</code> <span class="test-expect">must find no block</span> <span class="test-assert-caption">no third level</span></div>',
+      '<div class="test-assert test-absent"><code class="test-selector">head3\n</code> <span class="test-expect">must find no block</span>: <span class="test-assert-caption">no third level</span></div>',
     )
     expect(toHtml({}).run('=begin test\n=for assert\npara\n=end test').toString()).toContain(
       '<span class="test-expect">must find a block</span>',

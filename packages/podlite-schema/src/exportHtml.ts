@@ -356,7 +356,7 @@ const rules = {
     interator(node.content, ctx)
     writer.writeRaw(`</code> <span class="test-expect">${absent ? 'must find no block' : 'must find a block'}</span>`)
     if (conf.exists('caption')) {
-      writer.writeRaw(' <span class="test-assert-caption">')
+      writer.writeRaw(': <span class="test-assert-caption">')
       writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('</span>')
     }
