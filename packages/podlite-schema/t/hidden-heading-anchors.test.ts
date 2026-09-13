@@ -148,6 +148,17 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[a](#twowords)')
   })
 
+  it('reads a hidden word as the export masks it, with what it holds', () => {
+    const out = markdown('=head1 Public G<Z<ignored>>\n\n=head1 Public\n\nSee L<jump|#Public>.')
+    expect(out).toContain('[jump](#public)')
+  })
+
+  it('reads a footnote in a heading as its number', () => {
+    const out = markdown('=head1 N<Footnote> title\n\nSee L<jump|#Footnote title>.')
+    expect(out).toContain('# [^1] title')
+    expect(out).toContain('[jump](#1-title)')
+  })
+
   it('counts a heading the export writes for a block named in capitals', () => {
     const out = markdown('=begin NOTE\nText\n=end NOTE\n\n=head1 NOTE\n\nSee L<jump|#NOTE>.')
     expect(out).toContain('[jump](#note-1)')

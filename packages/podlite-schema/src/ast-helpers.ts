@@ -1,7 +1,7 @@
 import { decodeHTMLStrict } from 'entities'
 import { getTextContentFromNode } from '.'
 import makeAttrsPod from './helpers/config'
-import { maskText } from './helpers/handlers'
+import { collectText, maskText } from './helpers/handlers'
 import { Node } from './types'
 
 export const getNodeId = (node, ctx) => {
@@ -66,7 +66,11 @@ export type AnchorIndex = {
   pageHeadings?: object[]
   // markdown only: headings the export writes a named anchor for
   named?: Set<object>
+  // the number the markdown export gives each footnote, by mode
+  footnotes?: Footnotes
 }
+
+type Footnotes = { production: Map<object, number>; draft: Map<object, number> }
 
 type TreeNode = { guarded?: boolean; type?: string; name?: string; value?: unknown; content?: unknown }
 
@@ -83,20 +87,42 @@ const decodeEntities = (content: unknown): string =>
     : ''
 
 // The text the markdown output puts into a heading, as a reader sees it. Hidden parts
-// come out masked when the output masks them. The markdown export writes nothing for
-// E<>, Z<> and N<> inside the heading, and S<> keeps its spaces unbreakable, which a
-// reader drops from the address.
-const markdownText = (node: unknown, masked: boolean, covered = false): string => {
+// come out masked when the output masks them, and G<> masks everything written inside
+// it at once. The markdown export writes nothing for E<> and Z<>, a footnote as its
+// number, and S<> with unbreakable spaces, which a reader drops from the address.
+const markdownText = (node: unknown, masked: boolean, footnotes: Map<object, number>, covered = false): string => {
   if (typeof node === 'string') return covered && masked ? maskText(node) : node
-  if (Array.isArray(node)) return node.map(child => markdownText(child, masked, covered)).join('')
+  if (Array.isArray(node)) return node.map(child => markdownText(child, masked, footnotes, covered)).join('')
   if (!node || typeof node !== 'object') return ''
   const n = node as TreeNode
   const hidden = covered || n.guarded === true
-  if (n.type === 'fcode' && (n.name === 'E' || n.name === 'Z' || n.name === 'N')) return ''
-  if (n.type === 'fcode' && n.name === 'S') return markdownText(n.content, masked, hidden).replace(/ /g, '\u00a0')
+  if (n.type === 'fcode') {
+    if (n.name === 'G' && masked) return maskText(collectText(n.content))
+    if (n.name === 'E' || n.name === 'Z') return ''
+    if (n.name === 'N') return String(footnotes.get(node) ?? '')
+    if (n.name === 'S') return markdownText(n.content, masked, footnotes, hidden).replace(/ /g, '\u00a0')
+  }
   if ((n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string')
     return hidden && masked ? maskText(n.value) : n.value
-  return markdownText(n.content, masked, hidden)
+  return markdownText(n.content, masked, footnotes, hidden)
+}
+
+// Footnotes are numbered in the order the markdown export meets them. In production
+// a G<> writes its text masked and never reaches a footnote inside it.
+const numberFootnotes = (tree: unknown): Footnotes => {
+  const footnotes: Footnotes = { production: new Map(), draft: new Map() }
+  const visit = (node: unknown, insideGuard: boolean): void => {
+    if (Array.isArray(node)) return node.forEach(child => visit(child, insideGuard))
+    if (!node || typeof node !== 'object') return
+    const n = node as TreeNode
+    if (n.type === 'fcode' && n.name === 'N' && Array.isArray(n.content) && n.content.length > 0) {
+      footnotes.draft.set(node, footnotes.draft.size + 1)
+      if (!insideGuard) footnotes.production.set(node, footnotes.production.size + 1)
+    }
+    visit(n.content, insideGuard || (n.type === 'fcode' && n.name === 'G'))
+  }
+  visit(tree, false)
+  return footnotes
 }
 
 // A block named in capitals comes out of the markdown export under a heading of its name.
@@ -178,14 +204,17 @@ const assignAnchors = (heads: Iterable<object>, style: AnchorStyle, reserved = n
 // The addresses a markdown reader builds out of the headings as the page shows them,
 // their numbers included, counting repeats over every heading the way github-slugger
 // does: an empty name takes a place as well.
-const readerSlugs = (headings: Iterable<object>, masked: boolean): string[] => {
+const readerSlugs = (headings: Iterable<object>, masked: boolean, footnotes?: Footnotes): string[] => {
+  const numbers = (masked ? footnotes?.production : footnotes?.draft) || new Map<object, number>()
   const occurrences = new Map<string, number>()
   const slugs: string[] = []
   for (const node of headings) {
     const n = node as TreeNode & { numberPrefix?: string }
     const prefix = n.numberPrefix
     const text =
-      n.name === 'head' ? `${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked)}`.trim() : String(n.name)
+      n.name === 'head'
+        ? `${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked, numbers)}`.trim()
+        : String(n.name)
     const base = toMarkdownFragment(text)
     let slug = base
     while (occurrences.has(slug)) {
@@ -221,13 +250,18 @@ export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): Anc
   // what a markdown reader will build, so a generated name never lands on a heading
   // the reader addresses the same way. Only the masked page is read: the draft one is
   // made of the hidden text, and the name must not depend on it.
-  for (const slug of readerSlugs(pageHeadings, true)) reserved.add(slug)
-  return { ...assignAnchors(heads, style, reserved), pageHeadings }
+  const footnotes = numberFootnotes(tree)
+  for (const slug of readerSlugs(pageHeadings, true, footnotes)) reserved.add(slug)
+  return { ...assignAnchors(heads, style, reserved), pageHeadings, footnotes }
 }
 
 // The same headings in the same order, shaped for another output.
 export const restyleAnchors = (index: AnchorIndex | undefined, style: AnchorStyle): AnchorIndex | undefined =>
-  index && { ...assignAnchors(index.byNode.keys(), style, index.reserved), pageHeadings: index.pageHeadings }
+  index && {
+    ...assignAnchors(index.byNode.keys(), style, index.reserved),
+    pageHeadings: index.pageHeadings,
+    footnotes: index.footnotes,
+  }
 
 /*
 =begin pod :kind<export>
@@ -250,7 +284,7 @@ before each of them.
 export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: string): AnchorIndex | undefined => {
   if (!index) return index
   const headings = index.pageHeadings || [...index.byNode.keys()]
-  const slugs = readerSlugs(headings, renderMode !== 'draft')
+  const slugs = readerSlugs(headings, renderMode !== 'draft', index.footnotes)
   const slugOf = new Map<object, string>()
   headings.forEach((node, at) => slugOf.set(node, slugs[at]))
   const named = new Set<object>([...index.byNode.keys()].filter(hasOwnAddress))
@@ -272,7 +306,15 @@ export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: strin
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
   }
-  return { byNode, byName, shape: toMarkdownFragment, reserved: index.reserved, pageHeadings: headings, named }
+  return {
+    byNode,
+    byName,
+    shape: toMarkdownFragment,
+    reserved: index.reserved,
+    pageHeadings: headings,
+    named,
+    footnotes: index.footnotes,
+  }
 }
 
 // Exact name first, then without regard to case: a link copied from markdown
