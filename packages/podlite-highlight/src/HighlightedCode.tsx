@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { makeAttrs } from '@podlite/schema'
+import { isCovered, makeAttrs, maskText } from '@podlite/schema'
 import { codeToThemedHtml } from './shiki'
 
 type Decoration = {
@@ -17,20 +17,26 @@ const fcodeToTag: Record<string, string> = {
   K: 'kbd',
 }
 
-export const extractPlainAndDecorations = (nodes: unknown): { plain: string; decorations: Decoration[] } => {
+// Text a node hides reaches the highlighter masked, one mask character per character,
+// so the decorations keep their places.
+export const extractPlainAndDecorations = (
+  nodes: unknown,
+  hides: (node: unknown) => boolean = () => false,
+): { plain: string; decorations: Decoration[] } => {
   const decorations: Decoration[] = []
   let plain = ''
 
-  const walk = (input: unknown): void => {
+  const walk = (input: unknown, covered = false): void => {
     if (input == null) return
     if (typeof input === 'string') {
-      plain += input
+      plain += covered ? maskText(input) : input
       return
     }
     if (Array.isArray(input)) {
-      for (const child of input) walk(child)
+      for (const child of input) walk(child, covered)
       return
     }
+    covered = covered || hides(input)
     const node = input as {
       type?: string
       name?: string
@@ -38,18 +44,14 @@ export const extractPlainAndDecorations = (nodes: unknown): { plain: string; dec
       text?: string
       content?: unknown
     }
-    if (node.type === 'text' && typeof node.value === 'string') {
-      plain += node.value
-      return
-    }
-    if (node.type === 'verbatim' && typeof node.value === 'string') {
-      plain += node.value
+    if ((node.type === 'text' || node.type === 'verbatim') && typeof node.value === 'string') {
+      plain += covered ? maskText(node.value) : node.value
       return
     }
     if (node.type === 'fcode' && typeof node.name === 'string') {
       const tagName = fcodeToTag[node.name] || 'span'
       const start = plain.length
-      walk(node.content)
+      walk(node.content, covered)
       const end = plain.length
       if (end > start) {
         decorations.push({
@@ -62,9 +64,9 @@ export const extractPlainAndDecorations = (nodes: unknown): { plain: string; dec
       return
     }
     if (node.content !== undefined) {
-      walk(node.content)
+      walk(node.content, covered)
     } else if (typeof node.text === 'string') {
-      plain += node.text
+      plain += covered ? maskText(node.text) : node.text
     }
   }
 
@@ -76,7 +78,7 @@ export type HighlightedCodeProps = {
   node: { content?: unknown; config?: unknown }
   children: React.ReactNode
   keyProp: string | number
-  ctx: unknown
+  ctx: { config?: unknown; maskMode?: boolean; renderMode?: string } | undefined
   id?: string
   wrap?: 'pre-code' | 'block'
 }
@@ -86,7 +88,10 @@ export type HighlightedCodeProps = {
 const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
   ({ node, children, keyProp, ctx, id, wrap = 'block' }) => {
     const conf = makeAttrs(node, ctx)
-    const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+    const written = conf.exists('caption') ? String(conf.getFirstValue('caption')) : null
+    const caption = written !== null && isCovered(node, ctx) ? maskText(written) : written
+    const maskMode = ctx?.maskMode
+    const renderMode = ctx?.renderMode
     const lang = conf.getFirstValue('lang')
 
     const [html, setHtml] = useState<string | null>(null)
@@ -99,7 +104,9 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
         try {
           const isDark =
             typeof document !== 'undefined' && document.body && document.body.className.toLowerCase().includes('dark')
-          const { plain, decorations } = extractPlainAndDecorations(node.content)
+          const { plain, decorations } = extractPlainAndDecorations(node.content, part =>
+            isCovered(part, { maskMode, renderMode }),
+          )
           const result = await codeToThemedHtml({
             code: plain,
             language: lang,
@@ -116,7 +123,7 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
       return () => {
         cancelled = true
       }
-    }, [lang, node.content])
+    }, [lang, node.content, maskMode, renderMode])
 
     // The id goes on whichever element the branch puts outermost, so a link to
     // the block keeps working once highlighting replaces the plain output.

@@ -14,6 +14,8 @@ import {
   parseFormattingCodes,
   quoteAttribute,
   writtenValue,
+  isCovered,
+  maskText,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -92,7 +94,8 @@ const Image: Plugin = {
           // empty one as "decorative", so an alternative text the author never
           // wrote is left out
           const altText = writtenValue(node.alt)
-          const alt = altText === undefined ? '' : ` alt="${quoteAttribute(altText)}"`
+          const shown = altText !== undefined && isCovered(node, ctx) ? maskText(altText) : altText
+          const alt = shown === undefined ? '' : ` alt="${quoteAttribute(shown)}"`
           writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')
@@ -128,7 +131,8 @@ const Image: Plugin = {
           const hook = ctx.imageSrc as ImageSrcResolver | undefined
           const baseDir = ctx.imageBaseDir as string | undefined
           const isVideo = node.src.match(/(mp4|mov)$/)
-          const alt = writtenValue(node.alt)
+          const written = writtenValue(node.alt)
+          const alt = written !== undefined && isCovered(node, ctx) ? maskText(written) : written
           return mkComponent(({ key }) => {
             const renderInner = (src: string) =>
               isVideo ? (

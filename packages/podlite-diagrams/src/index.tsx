@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Plugin, Plugins, makeAttrs, getSafeNodeId } from '@podlite/schema'
+import { Plugin, Plugins, makeAttrs, getSafeNodeId, isCovered, maskText } from '@podlite/schema'
 
 let i = 0
 
@@ -110,11 +110,23 @@ const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?:
 export const plugin: Plugin = {
   toJSX: helper => () => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
-    const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+    const hidden = isCovered(node, ctx)
+    const written = conf.exists('caption') ? String(conf.getFirstValue('caption')) : null
+    const caption = written !== null && hidden ? maskText(written) : written
     const id = getSafeNodeId(node, ctx)
+    const chart = node.content[0]?.value ?? ''
     return helper(
       ({ children, key }) => {
-        return <Diagram key={key} id={id} caption={caption} chart={node.content[0]?.value ?? ''} />
+        // hidden source is not handed to the drawing library: the page would show
+        // what it hides once the diagram is drawn
+        if (hidden)
+          return (
+            <div className="diagram" id={id} key={key}>
+              <pre className="mermaid source">{maskText(chart)}</pre>
+              {caption ? <div className="caption">{caption}</div> : null}
+            </div>
+          )
+        return <Diagram key={key} id={id} caption={caption} chart={chart} />
       },
       node,
       interator(node.content, { ...ctx }),

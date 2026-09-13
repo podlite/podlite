@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the alternative text of a hidden picture is masked
+
 =head1 0.0.69
 
 =item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
