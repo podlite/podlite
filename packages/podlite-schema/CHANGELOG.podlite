@@ -6,6 +6,12 @@
 
 =item html and markdown output show a test open where it stands: its caption, the fixture and each resource as source, and what each assertion must or must not find
 
+=item a heading with hidden text gets an address that is not made of its text, the same in production and draft, and it takes no place in the numbering of repeated headings
+
+=item markdown output writes a named anchor before a heading whose address it cannot build from the text: a hidden one, or one with an explicit C<:id>. Links to other headings follow the address a markdown reader builds, numbers of numbered headings included
+
+=item a link that names a heading exactly is no longer taken by another heading whose shaped name matches
+
 =head1 0.0.70
 
 =item the published build no longer carries a test file

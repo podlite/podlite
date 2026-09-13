@@ -14,13 +14,14 @@ import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, linkTarget, markdownStyle, restyleAnchors, sameDocTarget, writtenValue } from './ast-helpers'
+import { getNodeId, hasOwnAddress, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
+import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, longestBacktickRun } from './test-display'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
-const markdownAnchors = ctx => ctx && (ctx.__markdownAnchors ||= restyleAnchors(ctx.__anchors, markdownStyle))
+const markdownAnchors = ctx => ctx && (ctx.__markdownAnchors ||= readerAnchors(ctx.__anchors, ctx.renderMode))
 
 const linkTitle = config => {
   const { title } = readLinkConfig(config)
@@ -273,6 +274,9 @@ const rules = {
       const prefix = '#'.repeat(level) + ' '
       const numberPrefix = node.numberPrefix ? `${node.numberPrefix} ` : ''
       return (writer, processor) => (node, ctx, interator) => {
+        // the reader cannot build this address out of the heading, so it is written here
+        const own = hasOwnAddress(node) ? markdownAnchors(ctx)?.byNode.get(node) : undefined
+        if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
         writer.writeRaw(prefix)
         if (numberPrefix) writer.writeRaw(numberPrefix)
         if (node.content) interator(node.content, ctx)

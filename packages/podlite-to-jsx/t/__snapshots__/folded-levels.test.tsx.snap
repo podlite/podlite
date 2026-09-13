@@ -8,7 +8,7 @@ exports[`:folded-levels rendering in JSX (per-item conditional fold) full docume
     </div>
     <ul class="toc-list listlevel1">
       <li class="toc-item">
-        <a href="#Introduction">
+        <a href="#id">
           Introduction
         </a>
       </li>
@@ -16,13 +16,13 @@ exports[`:folded-levels rendering in JSX (per-item conditional fold) full docume
         <li class="toc-item toc-item-foldable">
           <details class="toc-fold">
             <summary class="toc-list-summary listlevel2">
-              <a href="#Background">
+              <a href="#id-2">
                 Background
               </a>
             </summary>
             <ul class="toc-list listlevel3">
               <li class="toc-item">
-                <a href="#History">
+                <a href="#id-3">
                   History
                 </a>
               </li>
@@ -31,7 +31,7 @@ exports[`:folded-levels rendering in JSX (per-item conditional fold) full docume
         </li>
       </ul>
       <li class="toc-item">
-        <a href="#Conclusion">
+        <a href="#id-4">
           Conclusion
         </a>
       </li>

@@ -1,5 +1,7 @@
+import { decodeHTMLStrict } from 'entities'
 import { getTextContentFromNode } from '.'
 import makeAttrsPod from './helpers/config'
+import { maskText } from './helpers/handlers'
 import { Node } from './types'
 
 export const getNodeId = (node, ctx) => {
@@ -58,7 +60,63 @@ export type AnchorIndex = {
   byNode: Map<object, string>
   byName: Map<string, string>
   shape: (value: string) => string
+  // anchors the author gave other blocks, which a generated name must not take
+  reserved?: Set<string>
 }
+
+type TreeNode = { guarded?: boolean; type?: string; name?: string; value?: unknown; content?: unknown }
+
+const decodeEntities = (content: unknown): string =>
+  Array.isArray(content)
+    ? content
+        .map((element: { type?: string; value?: unknown }) => {
+          if (element?.type === 'number' && typeof element.value === 'number') return String.fromCharCode(element.value)
+          if (element?.type === 'html_named' && typeof element.value === 'string')
+            return decodeHTMLStrict(`&${element.value};`)
+          return ''
+        })
+        .join('')
+    : ''
+
+// The text a node puts on the page. Hidden parts come out masked when the output
+// masks them, and a character written as a code counts as the character itself.
+const textOnPage = (node: unknown, masked: boolean, covered = false): string => {
+  if (typeof node === 'string') return covered && masked ? maskText(node) : node
+  if (Array.isArray(node)) return node.map(child => textOnPage(child, masked, covered)).join('')
+  if (!node || typeof node !== 'object') return ''
+  const n = node as TreeNode
+  const hidden = covered || n.guarded === true
+  const own =
+    n.type === 'fcode' && n.name === 'E'
+      ? decodeEntities(n.content)
+      : (n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string'
+      ? n.value
+      : undefined
+  if (own !== undefined) return hidden && masked ? maskText(own) : own
+  return textOnPage(n.content, masked, hidden)
+}
+
+const hiddenPart = (node: unknown, covered = false): string => {
+  if (typeof node === 'string') return covered ? node : ''
+  if (Array.isArray(node)) return node.map(child => hiddenPart(child, covered)).join('')
+  if (!node || typeof node !== 'object') return ''
+  const n = node as TreeNode
+  const hidden = covered || n.guarded === true
+  if (n.type === 'fcode' && n.name === 'E') return hidden ? decodeEntities(n.content) : ''
+  if ((n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string') return hidden ? n.value : ''
+  return hiddenPart(n.content, hidden)
+}
+
+// A heading hides something when a covered part of it shows a character. G<> with
+// nothing inside, or with a space, hides nothing and leaves the address alone.
+export const hidesText = (node: unknown): boolean => /\S/.test(hiddenPart(node))
+
+const hasExplicitId = (node: unknown): boolean =>
+  !!node && typeof node === 'object' && makeAttrsPod(node as never, {}).exists('id')
+
+// A heading whose address is not made of its text: the author named it, or its text
+// is hidden. The markdown reader cannot give it that address, so the export writes one.
+export const hasOwnAddress = (node: unknown): boolean => hasExplicitId(node) || hidesText(node)
 
 const walkNodes = (node: unknown, visit: (n: any) => void): void => {
   if (Array.isArray(node)) {
@@ -70,19 +128,37 @@ const walkNodes = (node: unknown, visit: (n: any) => void): void => {
   if ('content' in (node as any)) walkNodes((node as any).content, visit)
 }
 
-const assignAnchors = (heads: Iterable<object>, style: AnchorStyle): AnchorIndex => {
+// A heading with hidden text gets a name made of nothing it hides, and it takes no
+// place in the numbering of repeats: otherwise the number of an open neighbour would
+// say that a hidden heading above carries the same name.
+const assignAnchors = (heads: Iterable<object>, style: AnchorStyle, reserved = new Set<string>()): AnchorIndex => {
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
   const taken = new Map<string, number>()
+  const hidden: object[] = []
   for (const node of heads) {
+    if (!hasExplicitId(node) && hidesText(node)) {
+      // held in document order; the name comes once the open headings have theirs
+      byNode.set(node, '')
+      hidden.push(node)
+      continue
+    }
     const id = getNodeId(node, {})
     if (id == null) continue
     const name = id.toString()
     const anchor = takeUnique(style.shape(name), taken, style.firstRepeat)
     byNode.set(node, anchor)
-    if (!byName.has(name)) byName.set(name, anchor)
+    if (!hidesText(node) && !byName.has(name)) byName.set(name, anchor)
   }
-  return { byNode, byName, shape: style.shape }
+  let count = 0
+  for (const node of hidden) {
+    let anchor = ''
+    do anchor = style.shape(`masked-${++count}`)
+    while (taken.has(anchor) || reserved.has(anchor))
+    taken.set(anchor, 0)
+    byNode.set(node, anchor)
+  }
+  return { byNode, byName, shape: style.shape, reserved }
 }
 
 // Anchors are handed out in one walk before rendering. A renderer asks for the
@@ -90,15 +166,49 @@ const assignAnchors = (heads: Iterable<object>, style: AnchorStyle): AnchorIndex
 // stand before the heading it points to, so both need the whole tree first.
 export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): AnchorIndex => {
   const heads: object[] = []
+  const reserved = new Set<string>()
   walkNodes(tree, node => {
     if (node.name === 'head') heads.push(node)
+    else if (hasExplicitId(node)) {
+      const written = makeAttrsPod(node, {}).getFirstValue('id')
+      if (written != null) reserved.add(style.shape(String(written)))
+    }
   })
-  return assignAnchors(heads, style)
+  return assignAnchors(heads, style, reserved)
 }
 
 // The same headings in the same order, shaped for another output.
 export const restyleAnchors = (index: AnchorIndex | undefined, style: AnchorStyle): AnchorIndex | undefined =>
-  index && assignAnchors(index.byNode.keys(), style)
+  index && assignAnchors(index.byNode.keys(), style, index.reserved)
+
+// A markdown reader builds each address out of the heading as the page shows it, its
+// number included, and counts repeats over every heading it sees, hidden ones too, the
+// way github-slugger does: an empty name takes a place as well. A heading with an
+// address of its own keeps the one the html output gives it; the export writes it out.
+export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: string): AnchorIndex | undefined => {
+  if (!index) return index
+  const byNode = new Map<object, string>()
+  const byName = new Map<string, string>()
+  const occurrences = new Map<string, number>()
+  const masked = renderMode !== 'draft'
+  for (const [node, ownAddress] of index.byNode) {
+    const prefix = (node as { numberPrefix?: string }).numberPrefix
+    const text = `${prefix ? `${prefix} ` : ''}${textOnPage((node as TreeNode).content, masked)}`.trim()
+    const base = toMarkdownFragment(text)
+    let slug = base
+    while (occurrences.has(slug)) {
+      const count = (occurrences.get(base) || 0) + 1
+      occurrences.set(base, count)
+      slug = `${base}-${count}`
+    }
+    occurrences.set(slug, 0)
+    const anchor = hasOwnAddress(node) ? ownAddress : slug
+    byNode.set(node, anchor)
+    const id = getNodeId(node, {})
+    if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
+  }
+  return { byNode, byName, shape: toMarkdownFragment, reserved: index.reserved }
+}
 
 // Exact name first, then without regard to case: a link copied from markdown
 // carries a lowercased target, and one written by hand carries the name itself.
@@ -131,6 +241,9 @@ export const sameDocTarget = <T>(
   if (bindings) {
     const bound = bindTarget(target.slice(1), bindings)
     if (!bound.found) return undefined
+    // level one has named the node; its address is the one this output gave it
+    const anchor = index?.byNode.get(bound.node)
+    if (anchor !== undefined) return `#${anchor}`
     return `#${bound.via === 'heading' ? resolveFragment(bound.key, index) : shape(bound.key)}`
   }
   return `#${resolveFragment(target.slice(1), index)}`
@@ -161,10 +274,13 @@ export const writtenValue = (value: unknown): string | undefined =>
 // A refusal is part of the answer — an address invented for a target that is not
 // there is how a broken link used to reach the output looking like a working one.
 export type LinkBinding =
-  | { found: true; document: 'self'; key: string; via: 'heading' | 'explicit-id'; ambiguous: boolean }
+  | { found: true; document: 'self'; key: string; via: 'heading' | 'explicit-id'; ambiguous: boolean; node: object }
   | { found: false; why: 'no-target' }
 
-export type BindingIndex = { byKey: Map<string, { node: object; via: 'heading' | 'explicit-id' }>; ambiguous: Set<string> }
+export type BindingIndex = {
+  byKey: Map<string, { node: object; via: 'heading' | 'explicit-id' }>
+  ambiguous: Set<string>
+}
 
 // Both forms the specification describes: a section addressed by its name, and a
 // block the author named with :id. The author's name wins — it was written on
@@ -186,31 +302,42 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
     ambiguous.add(key)
     if (via === 'explicit-id' && known.via !== 'explicit-id') byKey.set(key, { node, via })
   }
+  // Keys come in three layers, and a lower one never takes a key a higher one holds:
+  // names written as they stand, then the anchors handed out, then shaped forms.
+  // Otherwise the shaped form of one heading could capture a link that names another
+  // heading exactly. A collision still marks the key ambiguous.
+  type Claim = [string, object, 'heading' | 'explicit-id']
+  const written: Claim[] = []
+  const handedOut: Claim[] = []
+  const shapedForms: Claim[] = []
   walkNodes(tree, node => {
     // The raw value the author wrote, and the form the anchor takes: getExplicitNodeId
     // already turns whitespace into a hyphen, so a link written the way the id was
     // written would otherwise miss it.
-    const written = makeAttrsPod(node, {}).exists('id') ? makeAttrsPod(node, {}).getFirstValue('id') : null
+    const raw = makeAttrsPod(node, {}).exists('id') ? makeAttrsPod(node, {}).getFirstValue('id') : null
     const explicit = getExplicitNodeId(node, {})
-    for (const key of [written == null ? null : String(written), explicit]) {
-      if (key) put(key.normalize('NFC').trim(), node, 'explicit-id')
+    for (const key of [raw == null ? null : String(raw), explicit]) {
+      if (key) written.push([key.normalize('NFC').trim(), node, 'explicit-id'])
     }
     if (node.name !== 'head') return
     const name = getTextContentFromNode(node).normalize('NFC').trim()
-    put(name, node, 'heading')
-    // A heading answers to its own name and to the form an output would give it: a
-    // link copied out of a rendered page carries the shaped name, and the author who
-    // pastes it means the same section. Both keys name one node, so this is a second
-    // name for the target rather than resolution decided by shaping.
-    for (const shaped of [toFragment(name), toMarkdownFragment(name)]) {
-      if (shaped && shaped !== name) put(shaped, node, 'heading')
-    }
-    // And the anchor actually handed out, which carries the number when a name
-    // repeats: a link written against the second «Parameters» asks for Parameters-2,
-    // and only the assignment knows that.
+    written.push([name, node, 'heading'])
+    // The anchor actually handed out, which carries the number when a name repeats: a
+    // link written against the second «Parameters» asks for Parameters-2, and only the
+    // assignment knows that.
     const assigned = anchors.byNode.get(node)
-    if (assigned) put(assigned, node, 'heading')
+    if (assigned) handedOut.push([assigned, node, 'heading'])
+    // A heading also answers to the form an output would give it: a link copied out of
+    // a rendered page carries the shaped name, and the author who pastes it means the
+    // same section. Both keys name one node, so this is a second name for the target
+    // rather than resolution decided by shaping.
+    for (const shaped of [toFragment(name), toMarkdownFragment(name)]) {
+      if (shaped && shaped !== name) shapedForms.push([shaped, node, 'heading'])
+    }
   })
+  for (const layer of [written, handedOut, shapedForms]) {
+    for (const [key, node, via] of layer) put(key, node, via)
+  }
   return { byKey, ambiguous }
 }
 
@@ -225,19 +352,22 @@ export const bindTarget = (target: string, index?: BindingIndex): LinkBinding =>
   // Two targets of one name is a fact about the document, not a reason to refuse it
   // an address: the first still answers, as it always has, and the ambiguity travels
   // with the answer for whoever reports it.
-  return { found: true, document: 'self', key, via: hit.via, ambiguous: index.ambiguous.has(key) }
+  return { found: true, document: 'self', key, via: hit.via, ambiguous: index.ambiguous.has(key), node: hit.node }
 }
 
 export const getSafeNodeId = (node: Node, ctx): string | null => {
   const assigned = ctx?.__anchors?.byNode?.get(node)
   if (assigned !== undefined) return assigned
+  const isHeading = typeof node === 'object' && (node as any).name === 'head'
+  // a heading brought in after the index was built, as an =include drawn on the page
+  // is, must not fall back to a name made of the text it hides
+  if (isHeading && !hasExplicitId(node) && hidesText(node)) return null
   const id = getNodeId(node, ctx)
   if (id == null) return null
   const fragment = toFragment(id.toString())
   // only a heading derives its identifier from its own text, so only there can two
   // blocks claim the same anchor. An author-written :id is the author's business,
   // and a generated one is unique already.
-  const isHeading = typeof node === 'object' && (node as any).name === 'head'
   if (!isHeading) return fragment
   const taken: Map<string, number> = ctx && typeof ctx === 'object' ? (ctx.__fragments ||= new Map()) : new Map()
   return takeUnique(fragment, taken, htmlStyle.firstRepeat)

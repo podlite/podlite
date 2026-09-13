@@ -54,7 +54,8 @@ head1, head2, head3
     )
     // Summary has an anchor link to the heading and NO inner <p> wrapper
     // (so the triangle and link render on the same line).
-    expect(root.innerHTML).toMatch(/<summary[^>]*><a[^>]*href="#Parent"[^>]*>Parent/)
+    const parentId = root.innerHTML.match(/<h2 id="([^"]*)">Parent/)?.[1]
+    expect(root.innerHTML).toMatch(new RegExp(`<summary[^>]*><a[^>]*href="#${parentId}"[^>]*>Parent`))
     expect(root.innerHTML).not.toMatch(/<summary[^>]*><p>/)
     // Child appears inside the details body (after the summary close tag)
     const details = root.innerHTML.split('<details class="toc-fold">')[1] || ''
