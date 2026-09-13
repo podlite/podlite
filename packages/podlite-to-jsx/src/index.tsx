@@ -176,13 +176,14 @@ export const HookedImage: React.FC<{
   return render ? render(resolved) : <img src={resolved} alt={alt} />
 }
 
-const linkConfigProps = (config: any) => {
+// A title or a file name written on a link inside hidden content is hidden with it.
+const linkConfigProps = (config: any, conceal: (text: string) => string = text => text) => {
   const { newContext, title, lang, download } = readLinkConfig(config)
   const props: { [key: string]: any } = {}
   if (newContext) props.target = '_blank'
-  if (title !== undefined) props.title = title
+  if (title !== undefined) props.title = conceal(title)
   if (lang !== undefined) props.hrefLang = lang
-  if (download !== undefined) props.download = download
+  if (download !== undefined) props.download = typeof download === 'string' ? conceal(download) : download
   return props
 }
 
@@ -198,13 +199,16 @@ const hrefOf = (node, ctx): string | undefined => {
 // Both link codes ask for the same index over the same document, and each rule is
 // initialised separately. Keyed by the tree so the walk happens once; weak so a
 // document that is done with is not held here.
-const previewIndexes = new WeakMap<object, Map<string, LinkPreviewTarget>>()
-const previewIndexFor = (tree: unknown): Map<string, LinkPreviewTarget> => {
+const previewIndexes = new WeakMap<object, Map<string, Map<string, LinkPreviewTarget>>>()
+const previewIndexFor = (tree: unknown, renderMode?: string): Map<string, LinkPreviewTarget> => {
   if (!tree || typeof tree !== 'object') return new Map()
-  const known = previewIndexes.get(tree)
+  const mode = renderMode === 'draft' ? 'draft' : 'production'
+  let byMode = previewIndexes.get(tree)
+  if (!byMode) previewIndexes.set(tree, (byMode = new Map()))
+  const known = byMode.get(mode)
   if (known) return known
-  const built = buildLinkPreviewIndex(tree)
-  previewIndexes.set(tree, built)
+  const built = buildLinkPreviewIndex(tree, { renderMode: mode })
+  byMode.set(mode, built)
   return built
 }
 
@@ -237,13 +241,14 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
   // once one is, it decides alone, and returning null from it means nothing shows.
   const linkRule = (className?: string) => (writer, processor, tree) => {
     const resolver = opts.linkPreview
-    // Built where the tree is in hand. Memoising on the context instead built it
-    // four times over: rules clone the context before recursing, so links in
-    // different blocks each got their own. Nothing is built without a resolver.
-    const index = resolver ? previewIndexFor(tree) : undefined
+    // Built once per tree and mode, keyed by the tree. Memoising on the context
+    // instead built it four times over: rules clone the context before recursing,
+    // so links in different blocks each got their own. The mode comes with the
+    // context, which is why it is looked up here. Nothing is built without a resolver.
     return (node, ctx, interator) => {
+      const index = resolver ? previewIndexFor(tree, ctx?.renderMode) : undefined
       const href = hrefOf(node, ctx)
-      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx))
+      const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))
       const supplied = resolver && index ? resolver(linkTarget(node) ?? '', previewOf(node, ctx, index)) : null
       const src = ({ children, key }) =>
         supplied ? (
@@ -286,7 +291,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       return (node, ctx, interator) => {
         const conf = makeAttrs(node, ctx)
         const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
-        const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+        const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
         const children = defaultHandlerInited(node, ctx, interator)
 
         // if :folded not specified - return children as is
@@ -322,7 +327,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         const conf = makeAttrs(node, ctx)
         const notify = conf.getFirstValue('notify')
         const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
-        const caption = conf.exists('caption') ? conf.getFirstValue('caption') : null
+        const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
         const children = defaultHandlerInited(node, ctx, interator)
         // if no notify attribute - simply return children
         if (!notify) {
@@ -409,7 +414,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     image: nodeContent,
     ':image': setFn((node, ctx) => {
       const hook = opts.imageSrc
-      const alt = writtenValue(node.alt)
+      const written = writtenValue(node.alt)
+      const alt = written === undefined ? undefined : covered(node, ctx, written)
       if (hook) {
         return mkComponent(({ key }) => (
           <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={opts.imageBaseDir} />
@@ -615,8 +621,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     'B<>': mkComponent('strong'),
     'C<>': mkComponent('code'),
     'E<>': (writer, processor) => (node, ctx, interator) => {
-      if ('content' in node && Array.isArray(node.content))
-        return node.content
+      if ('content' in node && Array.isArray(node.content)) {
+        const decoded = node.content
           .filter(Boolean)
           .map(element => {
             if (typeof element == 'string') {
@@ -635,6 +641,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
             return ''
           })
           .join('')
+        return covered(node, ctx, decoded)
+      }
     },
     'H<>': mkComponent('sup'),
     'I<>': mkComponent('i'),
@@ -743,6 +751,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (typeof content !== 'string' && 'value' in content) {
         content = content.value
       }
+      content = covered(node, ctx, String(content))
       const Content = content.split('').map((symbol, index) => {
         if (symbol === ' ') return '\u00a0'
         if (symbol === '\n') return <br key={index} />
@@ -795,7 +804,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // table section
     table: (writer, processor) => (node, ctx, interator) => {
       const conf = makeAttrs(node, ctx)
-      const caption = conf.exists('caption') ? conf.getFirstValue('caption') : ''
+      const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : ''
       const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
 
       if (typeof node === 'string') {
@@ -939,7 +948,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     },
     // table of content
     ':toc': setFn((node: Toc, ctx) => {
-      const tocTitle = node.title
+      const tocTitle = node.title ? covered(node, ctx, String(node.title)) : node.title
       if (node.foldedLevels) {
         ctx._tocFoldedLevels = node.foldedLevels
       }

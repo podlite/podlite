@@ -86,7 +86,19 @@ const withoutHidden = (node: any): any =>
     ? { ...node, content: node.content.filter(n => !isHidden(n)).map(withoutHidden) }
     : node
 
-const visibleText = (node: any): string => getTextContentFromNode(withoutHidden(node))
+// Hidden text comes out masked in production, as the page shows it.
+const maskedCopy = (node: any, masked: boolean, covered = false): any => {
+  if (Array.isArray(node)) return node.map(child => maskedCopy(child, masked, covered))
+  if (!node || typeof node !== 'object') return node
+  const hidden = covered || isCovered(node, { renderMode: masked ? 'production' : 'draft' })
+  const copy = { ...node }
+  if (hidden && masked && typeof copy.value === 'string') copy.value = maskText(copy.value)
+  if (Array.isArray(node.content)) copy.content = maskedCopy(node.content, masked, hidden)
+  return copy
+}
+
+const visibleText = (node: any, masked: boolean): string =>
+  getTextContentFromNode(withoutHidden(maskedCopy(node, masked)))
 
 const headingLevel = (node: any): number | undefined =>
   node && node.name === 'head' ? Number(node.level) || 1 : undefined
@@ -98,20 +110,25 @@ const cut = (text: string): string => {
 
 // The text a target stands for: its own, when the author named the node; the
 // first thing that renders, when the target is a heading.
-const textAfter = (siblings: any[], at: number, stopAtOrAbove?: number): string => {
+const textAfter = (siblings: any[], at: number, masked: boolean, stopAtOrAbove?: number): string => {
   for (let i = at + 1; i < siblings.length; i++) {
     const node = siblings[i]
     const level = headingLevel(node)
     if (level !== undefined && stopAtOrAbove !== undefined && level <= stopAtOrAbove) return ''
     if (rendersNothing(node)) continue
-    const text = cut(visibleText(node))
+    const text = cut(visibleText(node, masked))
     if (text) return text
   }
   return ''
 }
 
-// Walked once per document, before the first link is drawn.
-export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTarget> => {
+// Walked once per document and mode, before the first link is drawn. Hidden text is
+// masked unless the page is drawn in draft.
+export const buildLinkPreviewIndex = (
+  tree: unknown,
+  { renderMode }: { renderMode?: string } = {},
+): Map<string, LinkPreviewTarget> => {
+  const masked = renderMode !== 'draft'
   const found = new Map<string, LinkPreviewTarget>()
   const anchorOf = indexAnchors(tree).byNode
 
@@ -127,7 +144,7 @@ export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTar
       if (!node || typeof node !== 'object') return
       if (node.name === 'test') {
         const caption = testCaption(node, {})
-        record(node, { text: cut(isCovered(node, {}) ? maskText(caption) : caption), kind: 'explicit-id' })
+        record(node, { text: cut(isCovered(node, { renderMode }) ? maskText(caption) : caption), kind: 'explicit-id' })
         return
       }
       if (isHidden(node)) return
@@ -137,8 +154,8 @@ export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTar
       record(
         node,
         level === undefined
-          ? { text: cut(visibleText(node)), kind: 'explicit-id' }
-          : { text: textAfter(siblings, at, level), kind: 'heading' },
+          ? { text: cut(visibleText(node, masked)), kind: 'explicit-id' }
+          : { text: textAfter(siblings, at, masked, level), kind: 'heading' },
       )
       if (Array.isArray(node.content)) visit(node.content)
     })
