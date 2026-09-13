@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react'
-import { getExplicitNodeId, getTextContentFromNode, indexAnchors, testCaption } from '@podlite/schema'
+import {
+  getExplicitNodeId,
+  getTextContentFromNode,
+  indexAnchors,
+  isCovered,
+  maskText,
+  testCaption,
+} from '@podlite/schema'
 
 /*
 =begin pod :kind<module>
@@ -119,7 +126,8 @@ export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTar
     siblings.forEach((node, at) => {
       if (!node || typeof node !== 'object') return
       if (node.name === 'test') {
-        record(node, { text: cut(testCaption(node, {})), kind: 'explicit-id' })
+        const caption = testCaption(node, {})
+        record(node, { text: cut(isCovered(node, {}) ? maskText(caption) : caption), kind: 'explicit-id' })
         return
       }
       if (isHidden(node)) return

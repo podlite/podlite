@@ -113,6 +113,15 @@ describe('what a resolver is told about the target', () => {
     expect(seen[0]).toEqual(['#t', { text: 'the caption', kind: 'explicit-id' }])
   })
 
+  it('hides the caption of a test inside masked content', () => {
+    const { seen, linkPreview } = collect()
+    render(
+      `=begin pod :masked\n=begin test :id<t> :caption('secret caption')\n=assert para\n=end test\n\nL<go|#t>\n=end pod`,
+      { linkPreview },
+    )
+    expect(seen[0]).toEqual(['#t', { text: '██████ ███████', kind: 'explicit-id' }])
+  })
+
   it('shows the name of a test without a caption', () => {
     const { seen, linkPreview } = collect()
     render(`=begin test :id<t>\n=assert para\n=end test\n\nL<go|#t>`, { linkPreview })
