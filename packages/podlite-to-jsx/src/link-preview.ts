@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { getExplicitNodeId, getTextContentFromNode, indexAnchors } from '@podlite/schema'
+import { getExplicitNodeId, getTextContentFromNode, indexAnchors, testCaption } from '@podlite/schema'
 
 /*
 =begin pod :kind<module>
@@ -19,9 +19,12 @@ wins over one derived from a heading: the author said it on purpose.
 
 A heading in Podlite owns nothing below it. The nodes that follow are its
 siblings, not its children. So the text is looked for by walking forward from
-the target and taking the first node that renders anything at all. Blank lines
-and comments are stepped over; a heading of the same or higher level ends the
-search, because past it the reader is in another section.
+the target and taking the first node that gives text of its own. Blank lines,
+comments and tests are stepped over; a heading of the same or higher level ends
+the search, because past it the reader is in another section.
+
+A test gives no text to what stands around it: its fixture is a sample, not the
+section's prose. A link to the test itself is shown the caption of the test.
 
 The result is cut to a length that fits a popup. What is cut is text, not
 markup: nothing here produces markup.
@@ -64,9 +67,9 @@ export type LinkPreviewResolver = (target: string, resolved: LinkPreviewTarget |
 // measuring the first visible text under headings across the knowledge base.
 const CUT_AT = 200
 
-const HIDDEN_BLOCKS = new Set(['comment', 'test', 'fixture', 'assert', 'resource'])
+const NO_TEXT_OF_THEIR_OWN = new Set(['comment', 'test', 'fixture', 'assert', 'resource'])
 
-const isHidden = (node: any): boolean => !!node && typeof node === 'object' && HIDDEN_BLOCKS.has(node.name)
+const isHidden = (node: any): boolean => !!node && typeof node === 'object' && NO_TEXT_OF_THEIR_OWN.has(node.name)
 
 const rendersNothing = (node: any): boolean =>
   !node || typeof node !== 'object' || node.type === 'blankline' || isHidden(node)
@@ -105,20 +108,30 @@ export const buildLinkPreviewIndex = (tree: unknown): Map<string, LinkPreviewTar
   const found = new Map<string, LinkPreviewTarget>()
   const anchorOf = indexAnchors(tree).byNode
 
+  const record = (node: any, entry: LinkPreviewTarget): void => {
+    const explicit = getExplicitNodeId(node, {})
+    if (explicit) found.set(explicit, entry)
+    const anchor = anchorOf.get(node)
+    if (anchor && !found.has(anchor)) found.set(anchor, entry)
+  }
+
   const visit = (siblings: any[]): void => {
     siblings.forEach((node, at) => {
-      if (!node || typeof node !== 'object' || isHidden(node)) return
+      if (!node || typeof node !== 'object') return
+      if (node.name === 'test') {
+        record(node, { text: cut(testCaption(node, {})), kind: 'explicit-id' })
+        return
+      }
+      if (isHidden(node)) return
       const level = headingLevel(node)
       // A heading stands for what follows it, even when the author also named it:
       // a reader following such a link wants the section, not the title twice.
-      const entry: LinkPreviewTarget =
+      record(
+        node,
         level === undefined
           ? { text: cut(visibleText(node)), kind: 'explicit-id' }
-          : { text: textAfter(siblings, at, level), kind: 'heading' }
-      const explicit = getExplicitNodeId(node, {})
-      if (explicit) found.set(explicit, entry)
-      const anchor = anchorOf.get(node)
-      if (anchor && !found.has(anchor)) found.set(anchor, entry)
+          : { text: textAfter(siblings, at, level), kind: 'heading' },
+      )
       if (Array.isArray(node.content)) visit(node.content)
     })
   }

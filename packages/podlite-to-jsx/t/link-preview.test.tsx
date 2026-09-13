@@ -89,12 +89,34 @@ describe('what a resolver is told about the target', () => {
     expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
   })
 
-  it('finds nothing at the name of a block that renders nothing', () => {
+  it('takes the paragraph, not the test grouped with it', () => {
     const { seen, linkPreview } = collect()
-    render(`=begin test :id<t>\n=begin fixture\nFixture text.\n=end fixture\n\n=assert para\n=end test\n\nL<go|#t>`, {
-      linkPreview,
-    })
-    expect(seen[0]).toEqual(['#t', undefined])
+    render(
+      `=head1 Setup\n\nVisible text.\n\n=begin test :caption('the caption')\n=assert para\n=end test\n\nL<go|#Setup>`,
+      { linkPreview },
+    )
+    expect(seen[0][1]).toEqual({ text: 'Visible text.', kind: 'heading' })
+  })
+
+  it('finds nothing at the name of a comment', () => {
+    const { seen, linkPreview } = collect()
+    render(`=for comment :id<c>\nHidden note.\n\nL<go|#c>`, { linkPreview })
+    expect(seen[0]).toEqual(['#c', undefined])
+  })
+
+  it('shows the caption of a test a link points at', () => {
+    const { seen, linkPreview } = collect()
+    render(
+      `=begin test :id<t> :caption('the caption')\n=begin fixture\nFixture text.\n=end fixture\n\n=assert para\n=end test\n\nL<go|#t>`,
+      { linkPreview },
+    )
+    expect(seen[0]).toEqual(['#t', { text: 'the caption', kind: 'explicit-id' }])
+  })
+
+  it('shows the name of a test without a caption', () => {
+    const { seen, linkPreview } = collect()
+    render(`=begin test :id<t>\n=assert para\n=end test\n\nL<go|#t>`, { linkPreview })
+    expect(seen[0]).toEqual(['#t', { text: 't', kind: 'explicit-id' }])
   })
 
   it('stops at the next heading of the same level', () => {
