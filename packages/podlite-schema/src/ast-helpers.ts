@@ -150,15 +150,41 @@ const assignAnchors = (heads: Iterable<object>, style: AnchorStyle, reserved = n
     byNode.set(node, anchor)
     if (!hidesText(node) && !byName.has(name)) byName.set(name, anchor)
   }
+  // A markdown reader folds case, so a generated name is kept clear of every name in
+  // any case: the same name then serves both outputs.
+  const inUse = new Set([...taken.keys(), ...reserved].map(name => name.toLowerCase()))
   let count = 0
   for (const node of hidden) {
     let anchor = ''
     do anchor = style.shape(`masked-${++count}`)
-    while (taken.has(anchor) || reserved.has(anchor))
+    while (inUse.has(anchor.toLowerCase()))
+    inUse.add(anchor.toLowerCase())
     taken.set(anchor, 0)
     byNode.set(node, anchor)
   }
   return { byNode, byName, shape: style.shape, reserved }
+}
+
+// The addresses a markdown reader builds out of the headings as the page shows them,
+// their numbers included, counting repeats over every heading the way github-slugger
+// does: an empty name takes a place as well.
+const readerSlugs = (heads: Iterable<object>, masked: boolean): string[] => {
+  const occurrences = new Map<string, number>()
+  const slugs: string[] = []
+  for (const node of heads) {
+    const prefix = (node as { numberPrefix?: string }).numberPrefix
+    const text = `${prefix ? `${prefix} ` : ''}${textOnPage((node as TreeNode).content, masked)}`.trim()
+    const base = toMarkdownFragment(text)
+    let slug = base
+    while (occurrences.has(slug)) {
+      const count = (occurrences.get(base) || 0) + 1
+      occurrences.set(base, count)
+      slug = `${base}-${count}`
+    }
+    occurrences.set(slug, 0)
+    slugs.push(slug)
+  }
+  return slugs
 }
 
 // Anchors are handed out in one walk before rendering. A renderer asks for the
@@ -174,6 +200,10 @@ export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): Anc
       if (written != null) reserved.add(style.shape(String(written)))
     }
   })
+  // what a markdown reader will build, so a generated name never lands on a heading
+  // the reader addresses the same way. Only the masked page is read: the draft one is
+  // made of the hidden text, and the name must not depend on it.
+  for (const slug of readerSlugs(heads, true)) reserved.add(slug)
   return assignAnchors(heads, style, reserved)
 }
 
@@ -181,27 +211,17 @@ export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): Anc
 export const restyleAnchors = (index: AnchorIndex | undefined, style: AnchorStyle): AnchorIndex | undefined =>
   index && assignAnchors(index.byNode.keys(), style, index.reserved)
 
-// A markdown reader builds each address out of the heading as the page shows it, its
-// number included, and counts repeats over every heading it sees, hidden ones too, the
-// way github-slugger does: an empty name takes a place as well. A heading with an
-// address of its own keeps the one the html output gives it; the export writes it out.
+// The markdown addresses: each heading gets the one a reader builds, except a heading
+// with an address of its own, which keeps the one the html output gives it; the
+// export writes that one out.
 export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: string): AnchorIndex | undefined => {
   if (!index) return index
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
-  const occurrences = new Map<string, number>()
-  const masked = renderMode !== 'draft'
+  const slugs = readerSlugs(index.byNode.keys(), renderMode !== 'draft')
+  let at = 0
   for (const [node, ownAddress] of index.byNode) {
-    const prefix = (node as { numberPrefix?: string }).numberPrefix
-    const text = `${prefix ? `${prefix} ` : ''}${textOnPage((node as TreeNode).content, masked)}`.trim()
-    const base = toMarkdownFragment(text)
-    let slug = base
-    while (occurrences.has(slug)) {
-      const count = (occurrences.get(base) || 0) + 1
-      occurrences.set(base, count)
-      slug = `${base}-${count}`
-    }
-    occurrences.set(slug, 0)
+    const slug = slugs[at++]
     const anchor = hasOwnAddress(node) ? ownAddress : slug
     byNode.set(node, anchor)
     const id = getNodeId(node, {})

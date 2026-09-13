@@ -121,6 +121,25 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[jump](#-1-1)')
   })
 
+  it('keeps a generated name clear of a heading the reader addresses the same way', () => {
+    const out = markdown('=for head1 :masked\nSecret\n\n=head1 Masked-1\n\nSee L<jump|#Masked-1>.')
+    expect(out).toContain('<a name="masked-2"></a>')
+    expect(out).toContain('[jump](#masked-1)')
+    expect(headingIds(html('=for head1 :masked\nSecret\n\n=head1 Masked-1'))).toEqual(['masked-2', 'Masked-1'])
+  })
+
+  it('keeps a generated name clear of a number the reader gives a repeat', () => {
+    const doc = '=for head1 :masked\nSecret\n\n=head1 masked\n\n=head1 masked'
+    expect(headingIds(html(doc))).toEqual(['masked-3', 'masked', 'masked-2'])
+    expect(markdown(doc)).toContain('<a name="masked-3"></a>')
+  })
+
+  it('does not let the hidden text choose the generated name', () => {
+    const one = html('=for head1 :masked\nMasked 1\n\n=head1 Public')
+    const other = html('=for head1 :masked\nSomething else\n\n=head1 Public')
+    expect(headingIds(one)).toEqual(headingIds(other))
+  })
+
   it('counts a hidden heading by the text the page shows in each mode', () => {
     const doc = '=for head1 :masked\nA!\n\n=head1 A?\n\nSee L<jump|#A?>.'
     expect(markdown(doc)).toContain('[jump](#a)')
