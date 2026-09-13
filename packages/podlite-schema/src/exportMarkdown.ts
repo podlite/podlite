@@ -34,9 +34,10 @@ const markdownAnchors = ctx => {
   return byMode.get(mode)
 }
 
-const linkTitle = config => {
+// a title written on a link inside hidden content is hidden with it
+const linkTitle = (config, conceal: (text: string) => string = text => text) => {
   const { title } = readLinkConfig(config)
-  return title === undefined ? '' : ` "${title.replace(/"/g, '\\"')}"`
+  return title === undefined ? '' : ` "${conceal(title).replace(/"/g, '\\"')}"`
 }
 
 // Markdown has no form for a link whose target the author never wrote — an empty
@@ -57,7 +58,10 @@ const linkWrap = (node, ctx) => {
   // text and loses the brackets.
   if (resolved === undefined) return wrapContent('', '')
   const address = String(resolved)
-  return wrapContent(`[`, `](${markdownAddress(address)}${linkTitle(codeConfigWithDefaults(node, ctx))})`)
+  return wrapContent(
+    `[`,
+    `](${markdownAddress(address)}${linkTitle(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))})`,
+  )
 }
 
 // A cell's own text is written whole. Trimming each fragment on its own eats the
@@ -111,7 +115,7 @@ const rules = {
   'A<>': (writer, processor) => (node, ctx, interator) => {
     const term = collectText(node.content).trim()
     if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
-      writer.writeRaw(`A<${term}>`)
+      writer.writeRaw(`A<${covered(node, ctx, term)}>`)
     } else {
       const src = ctx.alias[term].join('\n')
       const tree_1 = processor(src)
@@ -189,7 +193,7 @@ const rules = {
     }
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
-    const text = collectText(node.content)
+    const text = covered(node, ctx, collectText(node.content))
     // preserve spaces and newlines
     writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
   },
@@ -389,7 +393,7 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     if (conf.exists('caption')) {
       writer.writeRaw('**')
-      writer.write(conf.getFirstValue('caption'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('**\n\n')
     }
 
@@ -502,7 +506,7 @@ const rules = {
   ':image': (writer, processor) => (node, ctx, interator) => {
     // the alternative text sits between square brackets, where a `]` of its own
     // would end it, and the address between round ones — the same shape a link has
-    const alt = (writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
+    const alt = covered(node, ctx, writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
     const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''))
     writer.writeRaw(`![${alt}](${src})`)
   },

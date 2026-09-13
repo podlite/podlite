@@ -44,14 +44,15 @@ const hrefAttr = (node, ctx): string => {
   return address === undefined ? '' : ` href="${quoteValue(String(address))}"`
 }
 
-const linkConfigAttrs = config => {
+// A title or a file name written on a link inside hidden content is hidden with it.
+const linkConfigAttrs = (config, conceal: (text: string) => string = text => text) => {
   const { newContext, title, lang, download } = readLinkConfig(config)
   const attrs: string[] = []
   if (newContext) attrs.push(' target="_blank"')
-  if (title !== undefined) attrs.push(` title="${quoteValue(title)}"`)
+  if (title !== undefined) attrs.push(` title="${quoteValue(conceal(title))}"`)
   if (lang !== undefined) attrs.push(` hreflang="${quoteValue(lang)}"`)
   if (download === true) attrs.push(' download')
-  else if (typeof download === 'string') attrs.push(` download="${quoteValue(download)}"`)
+  else if (typeof download === 'string') attrs.push(` download="${quoteValue(conceal(download))}"`)
   return attrs.join('')
 }
 
@@ -86,7 +87,7 @@ const rules = {
     //get replacement text
     const term = collectText(node.content).trim()
     if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
-      writer.write(`A<${term}>`)
+      writer.write(`A<${covered(node, ctx, term)}>`)
     } else {
       const src = ctx.alias[term].join('\n')
       const tree_1 = processor(src)
@@ -110,7 +111,7 @@ const rules = {
           return ''
         })
         .join('')
-      writer.write(decoded)
+      writer.write(covered(node, ctx, decoded))
     }
   },
   'D<>': (writer, processor) => (node, ctx, interator) => {
@@ -149,11 +150,11 @@ const rules = {
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
   'L<>': setFn((node, ctx) => {
-    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx))
+    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))
     return wrapContent(`<a${hrefAttr(node, ctx)}${attrs}>`, `</a>`)
   }),
   'W<>': setFn((node, ctx) => {
-    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx))
+    const attrs = linkConfigAttrs(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))
     return wrapContent(`<a${hrefAttr(node, ctx)}${attrs} class="backlink">`, `</a>`)
   }),
 
@@ -215,7 +216,7 @@ const rules = {
     }
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
-    const spaces = collectText(node.content).replace(/ /g, '&nbsp;')
+    const spaces = covered(node, ctx, collectText(node.content)).replace(/ /g, '&nbsp;')
     const newFeed = spaces.replace(/\n/g, '</br>')
     writer.writeRaw(newFeed)
   },
@@ -380,7 +381,7 @@ const rules = {
     const idAttr = id ? ` id="${id}"` : ''
     if (conf.exists('caption')) {
       writer.writeRaw(`<hr${idAttr} title="`)
-      writer.write(conf.getFirstValue('caption'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('">')
     } else {
       writer.writeRaw(`<hr${idAttr}>`)
@@ -409,7 +410,7 @@ const rules = {
     writer.writeRaw(openTag('table', node, ctx))
     if (conf.exists('caption')) {
       writer.writeRaw('<caption>')
-      writer.write(conf.getFirstValue('caption'))
+      writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('</caption>')
     }
     const innerCtx = { ...ctx, ...(node.align && { 'table.align': node.align }) }
@@ -487,7 +488,7 @@ const rules = {
     // html reads a missing alt as "this image is part of the content" and an empty
     // one as "decorative", so an alternative text the author never wrote is left out
     const altText = writtenValue(node.alt)
-    const alt = altText === undefined ? '' : ` alt="${quoteValue(altText)}"`
+    const alt = altText === undefined ? '' : ` alt="${quoteValue(covered(node, ctx, altText))}"`
     writer.writeRaw(`<img src="${src}"${alt}/>`)
   },
 }

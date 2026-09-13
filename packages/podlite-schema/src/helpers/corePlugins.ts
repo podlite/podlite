@@ -1,10 +1,12 @@
 import { content } from '..'
 import { writtenValue } from '../ast-helpers'
+import { isCovered } from '../guard'
+import { maskText } from './handlers'
 import { quoteAttribute } from './html-attr'
 
 export const core = {
   ':image': {
-    toHtml: writer => node => {
+    toHtml: writer => (node, ctx) => {
       if (typeof node !== 'string' && 'type' in node && node.type === 'image') {
         writer.writeRaw(`<img`)
         writer.writeRaw(` src="${quoteAttribute(String(node.src ?? ''))}"`)
@@ -13,7 +15,7 @@ export const core = {
         // is left out
         const alt = writtenValue(node.alt)
         if (alt !== undefined) {
-          writer.writeRaw(` alt="${quoteAttribute(alt)}"`)
+          writer.writeRaw(` alt="${quoteAttribute(isCovered(node, ctx) ? maskText(alt) : alt)}"`)
         }
         writer.writeRaw(`/>`)
       }

@@ -12,6 +12,8 @@
 
 =item a link that names a heading exactly is no longer taken by another heading whose shaped name matches
 
+=item html and markdown output hide the caption of a hidden table, the title of a hidden boundary, the alternative text of a hidden picture, the title and file name written on a link in hidden content, and text in hidden content written with C<< S<> >>, an unresolved C<< A<> >> or C<< E<> >>
+
 =head1 0.0.70
 
 =item the published build no longer carries a test file
