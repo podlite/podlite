@@ -62,6 +62,10 @@ export type AnchorIndex = {
   shape: (value: string) => string
   // anchors the author gave other blocks, which a generated name must not take
   reserved?: Set<string>
+  // everything the markdown output turns into a heading, in document order
+  pageHeadings?: object[]
+  // markdown only: headings the export writes a named anchor for
+  named?: Set<object>
 }
 
 type TreeNode = { guarded?: boolean; type?: string; name?: string; value?: unknown; content?: unknown }
@@ -78,23 +82,29 @@ const decodeEntities = (content: unknown): string =>
         .join('')
     : ''
 
-// The text a node puts on the page. Hidden parts come out masked when the output
-// masks them, and a character written as a code counts as the character itself.
-const textOnPage = (node: unknown, masked: boolean, covered = false): string => {
+// The text the markdown output puts into a heading, as a reader sees it. Hidden parts
+// come out masked when the output masks them. The markdown export writes nothing for
+// E<>, Z<> and N<> inside the heading, and S<> keeps its spaces unbreakable, which a
+// reader drops from the address.
+const markdownText = (node: unknown, masked: boolean, covered = false): string => {
   if (typeof node === 'string') return covered && masked ? maskText(node) : node
-  if (Array.isArray(node)) return node.map(child => textOnPage(child, masked, covered)).join('')
+  if (Array.isArray(node)) return node.map(child => markdownText(child, masked, covered)).join('')
   if (!node || typeof node !== 'object') return ''
   const n = node as TreeNode
   const hidden = covered || n.guarded === true
-  const own =
-    n.type === 'fcode' && n.name === 'E'
-      ? decodeEntities(n.content)
-      : (n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string'
-      ? n.value
-      : undefined
-  if (own !== undefined) return hidden && masked ? maskText(own) : own
-  return textOnPage(n.content, masked, hidden)
+  if (n.type === 'fcode' && (n.name === 'E' || n.name === 'Z' || n.name === 'N')) return ''
+  if (n.type === 'fcode' && n.name === 'S') return markdownText(n.content, masked, hidden).replace(/ /g, '\u00a0')
+  if ((n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string')
+    return hidden && masked ? maskText(n.value) : n.value
+  return markdownText(n.content, masked, hidden)
 }
+
+// A block named in capitals comes out of the markdown export under a heading of its name.
+const isSemanticBlock = (node: { type?: string; name?: unknown }): boolean =>
+  node.type === 'block' &&
+  typeof node.name === 'string' &&
+  node.name === node.name.toUpperCase() &&
+  /\p{Lu}/u.test(node.name)
 
 const hiddenPart = (node: unknown, covered = false): string => {
   if (typeof node === 'string') return covered ? node : ''
@@ -109,14 +119,14 @@ const hiddenPart = (node: unknown, covered = false): string => {
 
 // A heading hides something when a covered part of it shows a character. G<> with
 // nothing inside, or with a space, hides nothing and leaves the address alone.
-export const hidesText = (node: unknown): boolean => /\S/.test(hiddenPart(node))
+const hidesText = (node: unknown): boolean => /\S/.test(hiddenPart(node))
 
 const hasExplicitId = (node: unknown): boolean =>
   !!node && typeof node === 'object' && makeAttrsPod(node as never, {}).exists('id')
 
 // A heading whose address is not made of its text: the author named it, or its text
 // is hidden. The markdown reader cannot give it that address, so the export writes one.
-export const hasOwnAddress = (node: unknown): boolean => hasExplicitId(node) || hidesText(node)
+const hasOwnAddress = (node: unknown): boolean => hasExplicitId(node) || hidesText(node)
 
 const walkNodes = (node: unknown, visit: (n: any) => void): void => {
   if (Array.isArray(node)) {
@@ -168,12 +178,14 @@ const assignAnchors = (heads: Iterable<object>, style: AnchorStyle, reserved = n
 // The addresses a markdown reader builds out of the headings as the page shows them,
 // their numbers included, counting repeats over every heading the way github-slugger
 // does: an empty name takes a place as well.
-const readerSlugs = (heads: Iterable<object>, masked: boolean): string[] => {
+const readerSlugs = (headings: Iterable<object>, masked: boolean): string[] => {
   const occurrences = new Map<string, number>()
   const slugs: string[] = []
-  for (const node of heads) {
-    const prefix = (node as { numberPrefix?: string }).numberPrefix
-    const text = `${prefix ? `${prefix} ` : ''}${textOnPage((node as TreeNode).content, masked)}`.trim()
+  for (const node of headings) {
+    const n = node as TreeNode & { numberPrefix?: string }
+    const prefix = n.numberPrefix
+    const text =
+      n.name === 'head' ? `${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked)}`.trim() : String(n.name)
     const base = toMarkdownFragment(text)
     let slug = base
     while (occurrences.has(slug)) {
@@ -192,10 +204,16 @@ const readerSlugs = (heads: Iterable<object>, masked: boolean): string[] => {
 // stand before the heading it points to, so both need the whole tree first.
 export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): AnchorIndex => {
   const heads: object[] = []
+  const pageHeadings: object[] = []
   const reserved = new Set<string>()
   walkNodes(tree, node => {
-    if (node.name === 'head') heads.push(node)
-    else if (hasExplicitId(node)) {
+    if (node.name === 'head') {
+      heads.push(node)
+      pageHeadings.push(node)
+      return
+    }
+    if (isSemanticBlock(node)) pageHeadings.push(node)
+    if (hasExplicitId(node)) {
       const written = makeAttrsPod(node, {}).getFirstValue('id')
       if (written != null) reserved.add(style.shape(String(written)))
     }
@@ -203,31 +221,58 @@ export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): Anc
   // what a markdown reader will build, so a generated name never lands on a heading
   // the reader addresses the same way. Only the masked page is read: the draft one is
   // made of the hidden text, and the name must not depend on it.
-  for (const slug of readerSlugs(heads, true)) reserved.add(slug)
-  return assignAnchors(heads, style, reserved)
+  for (const slug of readerSlugs(pageHeadings, true)) reserved.add(slug)
+  return { ...assignAnchors(heads, style, reserved), pageHeadings }
 }
 
 // The same headings in the same order, shaped for another output.
 export const restyleAnchors = (index: AnchorIndex | undefined, style: AnchorStyle): AnchorIndex | undefined =>
-  index && assignAnchors(index.byNode.keys(), style, index.reserved)
+  index && { ...assignAnchors(index.byNode.keys(), style, index.reserved), pageHeadings: index.pageHeadings }
 
-// The markdown addresses: each heading gets the one a reader builds, except a heading
-// with an address of its own, which keeps the one the html output gives it; the
-// export writes that one out.
+/*
+=begin pod :kind<export>
+
+=head2 readerAnchors
+
+The addresses of headings in markdown output. A markdown reader builds each address
+itself, out of the heading as the page shows it, so these are the addresses it will
+build: the text of the heading with its number, hidden parts masked unless the mode
+is C<draft>, repeats counted the way github-slugger counts them, blocks named in
+capitals included, since the export writes a heading for each.
+
+A heading the reader cannot address that way keeps the address the html output gave
+it, and C<named> lists it: a hidden heading, one with an explicit C<:id>, and one
+whose built address would fall on such an address. The export writes a named anchor
+before each of them.
+
+=end pod
+*/
 export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: string): AnchorIndex | undefined => {
   if (!index) return index
+  const headings = index.pageHeadings || [...index.byNode.keys()]
+  const slugs = readerSlugs(headings, renderMode !== 'draft')
+  const slugOf = new Map<object, string>()
+  headings.forEach((node, at) => slugOf.set(node, slugs[at]))
+  const named = new Set<object>([...index.byNode.keys()].filter(hasOwnAddress))
+  const namedAddresses = () => new Set([...named].map(node => (index.byNode.get(node) || '').toLowerCase()))
+  for (let changed = true; changed; ) {
+    changed = false
+    const taken = namedAddresses()
+    for (const node of index.byNode.keys()) {
+      if (named.has(node) || !taken.has((slugOf.get(node) || '').toLowerCase())) continue
+      named.add(node)
+      changed = true
+    }
+  }
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
-  const slugs = readerSlugs(index.byNode.keys(), renderMode !== 'draft')
-  let at = 0
   for (const [node, ownAddress] of index.byNode) {
-    const slug = slugs[at++]
-    const anchor = hasOwnAddress(node) ? ownAddress : slug
+    const anchor = named.has(node) ? ownAddress : slugOf.get(node) || ''
     byNode.set(node, anchor)
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
   }
-  return { byNode, byName, shape: toMarkdownFragment, reserved: index.reserved }
+  return { byNode, byName, shape: toMarkdownFragment, reserved: index.reserved, pageHeadings: headings, named }
 }
 
 // Exact name first, then without regard to case: a link copied from markdown

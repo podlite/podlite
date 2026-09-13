@@ -14,14 +14,25 @@ import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
-import { getNodeId, hasOwnAddress, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
+import { getNodeId, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
 import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, longestBacktickRun } from './test-display'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
-const markdownAnchors = ctx => ctx && (ctx.__markdownAnchors ||= readerAnchors(ctx.__anchors, ctx.renderMode))
+// Built once per document and mode: a hidden block renders with a copy of the context,
+// and a cache kept on the context itself would be rebuilt for every one of them.
+const readerAnchorsCache = new WeakMap<object, Map<string, ReturnType<typeof readerAnchors>>>()
+const markdownAnchors = ctx => {
+  const index = ctx?.__anchors
+  if (!index) return undefined
+  const mode = ctx.renderMode === 'draft' ? 'draft' : 'production'
+  let byMode = readerAnchorsCache.get(index)
+  if (!byMode) readerAnchorsCache.set(index, (byMode = new Map()))
+  if (!byMode.has(mode)) byMode.set(mode, readerAnchors(index, mode))
+  return byMode.get(mode)
+}
 
 const linkTitle = config => {
   const { title } = readLinkConfig(config)
@@ -275,7 +286,8 @@ const rules = {
       const numberPrefix = node.numberPrefix ? `${node.numberPrefix} ` : ''
       return (writer, processor) => (node, ctx, interator) => {
         // the reader cannot build this address out of the heading, so it is written here
-        const own = hasOwnAddress(node) ? markdownAnchors(ctx)?.byNode.get(node) : undefined
+        const anchors = markdownAnchors(ctx)
+        const own = anchors?.named?.has(node) ? anchors.byNode.get(node) : undefined
         if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
         writer.writeRaw(prefix)
         if (numberPrefix) writer.writeRaw(numberPrefix)

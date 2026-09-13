@@ -140,6 +140,25 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(headingIds(one)).toEqual(headingIds(other))
   })
 
+  it('reads the heading as the markdown output writes it', () => {
+    const out = markdown(
+      '=for head1 :masked\nSecret\n\n=head1 Masked-Z<ignored>1\n\n=head1 S<two words>\n\nL<a|#two words>',
+    )
+    expect(out).not.toContain('<a name="masked-1">')
+    expect(out).toContain('[a](#twowords)')
+  })
+
+  it('counts a heading the export writes for a block named in capitals', () => {
+    const out = markdown('=begin NOTE\nText\n=end NOTE\n\n=head1 NOTE\n\nSee L<jump|#NOTE>.')
+    expect(out).toContain('[jump](#note-1)')
+  })
+
+  it('gives a heading its own anchor when its address falls on an author id', () => {
+    const out = markdown('=for head1 :id<target>\nNamed\n\n=head1 target\n\nL<first|#target> L<second|#target-2>')
+    expect(out).toContain('<a name="target-2"></a>\n\n# target')
+    expect(out).toContain('[first](#target) [second](#target-2)')
+  })
+
   it('counts a hidden heading by the text the page shows in each mode', () => {
     const doc = '=for head1 :masked\nA!\n\n=head1 A?\n\nSee L<jump|#A?>.'
     expect(markdown(doc)).toContain('[jump](#a)')
