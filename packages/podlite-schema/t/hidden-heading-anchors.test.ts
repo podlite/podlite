@@ -159,6 +159,18 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[jump](#1-title)')
   })
 
+  it('numbers footnotes in the order the export writes them', () => {
+    const afterComment = markdown(
+      '=begin comment\nN<Not printed>\n=end comment\n\n=head1 N<Footnote> title\n\nSee L<jump|#Footnote title>.',
+    )
+    expect(afterComment).toContain('[jump](#1-title)')
+    const afterNested = markdown(
+      'Before N<Outer N<Inner>>.\n\n=head1 N<Footnote> title\n\nSee L<jump|#Footnote title>.',
+    )
+    expect(afterNested).toContain('# [^2] title')
+    expect(afterNested).toContain('[jump](#2-title)')
+  })
+
   it('counts a heading the export writes for a block named in capitals', () => {
     const out = markdown('=begin NOTE\nText\n=end NOTE\n\n=head1 NOTE\n\nSee L<jump|#NOTE>.')
     expect(out).toContain('[jump](#note-1)')

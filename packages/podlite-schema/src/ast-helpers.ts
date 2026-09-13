@@ -107,17 +107,24 @@ const markdownText = (node: unknown, masked: boolean, footnotes: Map<object, num
   return markdownText(n.content, masked, footnotes, hidden)
 }
 
-// Footnotes are numbered in the order the markdown export meets them. In production
-// a G<> writes its text masked and never reaches a footnote inside it.
+// Footnotes are numbered in the order the markdown export meets them in the text. It
+// writes nothing for a comment or a data block, reaches a footnote inside another one
+// only when the notes are written at the end, and in production a G<> writes its text
+// masked and never reaches a footnote inside it. Only footnotes of the text are
+// numbered here: a heading holds no note written at the end.
 const numberFootnotes = (tree: unknown): Footnotes => {
   const footnotes: Footnotes = { production: new Map(), draft: new Map() }
   const visit = (node: unknown, insideGuard: boolean): void => {
     if (Array.isArray(node)) return node.forEach(child => visit(child, insideGuard))
     if (!node || typeof node !== 'object') return
     const n = node as TreeNode
-    if (n.type === 'fcode' && n.name === 'N' && Array.isArray(n.content) && n.content.length > 0) {
-      footnotes.draft.set(node, footnotes.draft.size + 1)
-      if (!insideGuard) footnotes.production.set(node, footnotes.production.size + 1)
+    if (n.type === 'block' && (n.name === 'comment' || n.name === 'data')) return
+    if (n.type === 'fcode' && n.name === 'N') {
+      if (Array.isArray(n.content) && n.content.length > 0) {
+        footnotes.draft.set(node, footnotes.draft.size + 1)
+        if (!insideGuard) footnotes.production.set(node, footnotes.production.size + 1)
+      }
+      return
     }
     visit(n.content, insideGuard || (n.type === 'fcode' && n.name === 'G'))
   }
