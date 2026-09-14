@@ -94,10 +94,12 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
     const { plain, decorations } = extractPlainAndDecorations(node.content, part =>
       isCovered(part, { maskMode: ctx?.maskMode, renderMode: ctx?.renderMode }),
     )
+    const isDark =
+      typeof document !== 'undefined' && !!document.body && document.body.className.toLowerCase().includes('dark')
     // What is asked of the highlighter, with hidden text already masked. A result is
-    // shown only for the request it answers: one made for another mode never reaches
-    // the page, and the same text drawn again keeps its highlight.
-    const request = JSON.stringify([lang, plain, decorations])
+    // shown only for the request it answers: one made for another mode or theme never
+    // reaches the page, and the same text drawn again keeps its highlight.
+    const request = JSON.stringify([lang, isDark, plain, decorations])
 
     const [result, setResult] = useState<{ request: string; html: string } | null>(null)
 
@@ -107,8 +109,6 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
 
       const highlight = async () => {
         try {
-          const isDark =
-            typeof document !== 'undefined' && document.body && document.body.className.toLowerCase().includes('dark')
           const html = await codeToThemedHtml({
             code: plain,
             language: lang,

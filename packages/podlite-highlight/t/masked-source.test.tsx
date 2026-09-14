@@ -6,11 +6,13 @@ import { createRoot } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 
 const received: string[] = []
+const themes: string[] = []
 // set by a test to hold the highlighter's answer back
 let holdAnswers = false
 jest.mock('../src/shiki', () => ({
-  codeToThemedHtml: ({ code }: { code: string }) => {
+  codeToThemedHtml: ({ code, theme }: { code: string; theme: string }) => {
     received.push(code)
+    themes.push(theme)
     return holdAnswers ? new Promise(() => undefined) : Promise.resolve(`<pre class="shiki"><code>${code}</code></pre>`)
   },
 }))
@@ -50,7 +52,9 @@ const mount = async (ctx: { renderMode?: string }): Promise<HTMLElement> => {
 
 beforeEach(() => {
   received.length = 0
+  themes.length = 0
   holdAnswers = false
+  window.document.body.className = ''
 })
 
 describe('hidden text in highlighted code', () => {
@@ -117,6 +121,24 @@ describe('hidden text in highlighted code', () => {
     await act(async () => render())
     expect(host.innerHTML).toContain('class="shiki"')
     expect(received).toHaveLength(1)
+    act(() => root.unmount())
+    host.remove()
+  })
+
+  it('highlights again when the page changes its theme', async () => {
+    const host = window.document.createElement('div')
+    window.document.body.appendChild(host)
+    const root = createRoot(host)
+    const render = () =>
+      root.render(
+        <HighlightedCode node={partlyHidden} ctx={{}} keyProp="k">
+          x
+        </HighlightedCode>,
+      )
+    await act(async () => render())
+    window.document.body.className = 'dark'
+    await act(async () => render())
+    expect(themes).toEqual(['light', 'dark'])
     act(() => root.unmount())
     host.remove()
   })
