@@ -334,8 +334,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
           return children
         }
 
-        // Determine the title for the notification
-        const title = caption || notify.charAt(0).toUpperCase() + notify.slice(1)
+        // Determine the title for the notification. In hidden content the kind the
+        // author wrote is hidden with the rest, in the title and in the class.
+        const hidden = isCovered(node, ctx)
+        const title = caption || covered(node, ctx, notify.charAt(0).toUpperCase() + notify.slice(1))
+        const kind = hidden ? '' : ` ${notify.toLowerCase()}`
 
         // :folded or :folded(1) = collapsed by default
         // :!folded or :folded(0) = expanded by default
@@ -345,7 +348,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         if (folded !== null) {
           return makeComponent(
             ({ children, key }) => (
-              <details className={`notify ${notify.toLowerCase()} folded`} key={key} open={isExpanded || undefined}>
+              <details className={`notify${kind} folded`} key={key} open={isExpanded || undefined}>
                 <summary className="notify-title">{title}</summary>
                 <div className="folded-content">{children}</div>
               </details>
@@ -360,7 +363,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         // Default rendering without folding
         return makeComponent(
           ({ children, key }) => (
-            <aside className={`notify ${notify.toLowerCase()}`} key={key}>
+            <aside className={`notify${kind}`} key={key}>
               <p className="notify-title">{title}</p>
               {children}
             </aside>
@@ -1121,7 +1124,7 @@ function podlite(
               return (
                 <div key={key}>
                   <h1 className={node.name} key={key}>
-                    {node.name}
+                    {covered(node, ctx, String(node.name))}
                   </h1>
                   {interator(node.content, { ...ctx })}
                 </div>

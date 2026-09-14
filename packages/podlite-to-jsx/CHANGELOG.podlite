@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item hidden content keeps its captions and titles hidden on the page: table captions, the summary of a folded block, the title of a note, the title of a table of contents, the alternative text of a picture, link titles and file names, and text written with C<< S<> >> or C<< E<> >>. A link preview shows hidden text masked, except in draft
+=item hidden content keeps its captions and titles hidden on the page: table captions, the summary of a folded block, the title of a note, the title of a table of contents, the alternative text of a picture, link titles and file names, text written with C<< S<> >> or C<< E<> >>, the kind of a hidden note, and the name a hidden block written in capitals shows as its heading. A link preview shows hidden text masked, a markdown block's included, except in draft
 
 =item a C<=test> is shown where it stands: a line with its caption that opens the test in place, the fixture and each resource as source, and what each assertion must or must not find. The test is open in server output and folds in the browser unless the author wrote C<:!folded> or the address points at it; a block and the tests under it share a C<test-group> element for the site to lay out
 

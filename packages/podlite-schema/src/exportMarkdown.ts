@@ -529,7 +529,7 @@ const toMarkdown = opt =>
         if (isSemanticBlock(node)) {
           const name = node.name
           writer.writeRaw('# ')
-          writer.write(name)
+          writer.write(covered(node, ctx, String(name)))
           writer.writeRaw('\n\n')
         }
         if (node.hasOwnProperty('content')) {

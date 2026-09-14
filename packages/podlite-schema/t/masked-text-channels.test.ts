@@ -56,6 +56,14 @@ describe('text a renderer writes from a hidden block is hidden with it', () => {
     hiddenIn(markdown, doc, ['Aliz'])
   })
 
+  it('hides the name a block written in capitals shows as its heading', () => {
+    const doc = '=begin SECRETNAME :masked\nBody\n=end SECRETNAME'
+    expect(html(doc)).toContain('">██████████</h1>')
+    expect(html(doc, 'draft')).toContain('">SECRETNAME</h1>')
+    expect(markdown(doc)).not.toContain('# SECRETNAME')
+    expect(markdown(doc, 'draft')).toContain('# SECRETNAME')
+  })
+
   it('hides a character written as a code, one mask for one character', () => {
     const doc = '=for para :masked\nE<81> E<alpha>'
     hiddenIn(html, doc, ['Q', 'α'])

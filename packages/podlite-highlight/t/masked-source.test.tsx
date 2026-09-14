@@ -6,10 +6,12 @@ import { createRoot } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 
 const received: string[] = []
+// set by a test to hold the highlighter's answer back
+let holdAnswers = false
 jest.mock('../src/shiki', () => ({
-  codeToThemedHtml: async ({ code }: { code: string }) => {
+  codeToThemedHtml: ({ code }: { code: string }) => {
     received.push(code)
-    return `<pre class="shiki"><code>${code}</code></pre>`
+    return holdAnswers ? new Promise(() => undefined) : Promise.resolve(`<pre class="shiki"><code>${code}</code></pre>`)
   },
 }))
 
@@ -48,6 +50,7 @@ const mount = async (ctx: { renderMode?: string }): Promise<HTMLElement> => {
 
 beforeEach(() => {
   received.length = 0
+  holdAnswers = false
 })
 
 describe('hidden text in highlighted code', () => {
@@ -68,5 +71,24 @@ describe('hidden text in highlighted code', () => {
     const dom = await mount({ renderMode: 'draft' })
     expect(received).toEqual(['const word = "Secret"'])
     expect(dom.innerHTML).toContain('Secret')
+  })
+
+  it('does not keep the draft highlight on the page after switching to production', async () => {
+    const host = window.document.createElement('div')
+    window.document.body.appendChild(host)
+    const root = createRoot(host)
+    const render = (renderMode: string) =>
+      root.render(
+        <HighlightedCode node={partlyHidden} ctx={{ renderMode }} keyProp="k">
+          x
+        </HighlightedCode>,
+      )
+    await act(async () => render('draft'))
+    expect(host.innerHTML).toContain('Secret')
+    holdAnswers = true
+    await act(async () => render('production'))
+    expect(host.innerHTML).not.toContain('Secret')
+    act(() => root.unmount())
+    host.remove()
   })
 })

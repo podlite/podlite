@@ -72,6 +72,28 @@ describe('text the page writes from a hidden block is hidden with it', () => {
     hidden('=for para :masked\nS<Snib Space> and E<9731>E<alpha>', ['Snib', '☃', 'α'])
   })
 
+  it('hides the kind of a note when it serves as the title', () => {
+    const out = hidden('=begin nested :masked :notify<Zecret>\nBody\n=end nested', ['Zecret'])
+    expect(out).toContain('class="notify"')
+  })
+
+  it('hides the name a block written in capitals shows as its heading', () => {
+    const out = page('=begin SECRETNAME :masked\nBody\n=end SECRETNAME')
+    expect(out).toContain('>██████████</h1>')
+    expect(page('=begin SECRETNAME :masked\nBody\n=end SECRETNAME', 'draft')).toContain('>SECRETNAME</h1>')
+  })
+
+  it('hides what a link preview shows of a hidden markdown block', () => {
+    const linkPreview = (_target: string, found?: { text: string }) => (found ? <aside>{found.text}</aside> : null)
+    hidden(
+      '=head1 Open\n\n=begin markdown :masked\nSecretPreview **SecretBold**\n=end markdown\n\nSee L<jump|#Open>.',
+      ['SecretPreview'],
+      {
+        linkPreview,
+      },
+    )
+  })
+
   it('hides what a link preview shows of a hidden paragraph', () => {
     const linkPreview = (_target: string, found?: { text: string }) => (found ? <aside>{found.text}</aside> : null)
     hidden('=head1 Open\n\n=for para :masked\nSecretPreview words\n\nSee L<jump|#Open>.', ['SecretPreview'], {

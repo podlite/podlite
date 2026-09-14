@@ -519,7 +519,7 @@ const toHtml = opt =>
           writer.writeRaw('<h1 class="')
           writer.write(name)
           writer.writeRaw('">')
-          writer.write(name)
+          writer.write(covered(node, ctx, String(name)))
           writer.writeRaw('</h1>')
         } else {
           console.warn('[podlite] Unhandled node' + JSON.stringify(node, null, 2))

@@ -221,6 +221,8 @@ const readerSlugs = (headings: Iterable<object>, masked: boolean, footnotes?: Fo
     const text =
       n.name === 'head'
         ? `${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked, numbers)}`.trim()
+        : n.guarded === true && masked
+        ? maskText(String(n.name))
         : String(n.name)
     const base = toMarkdownFragment(text)
     let slug = base

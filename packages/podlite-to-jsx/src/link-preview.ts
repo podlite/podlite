@@ -88,12 +88,15 @@ const withoutHidden = (node: any): any =>
 
 // Hidden text comes out masked in production, as the page shows it.
 const maskedCopy = (node: any, masked: boolean, covered = false): any => {
+  // a block that keeps its text as plain strings, as markdown does, is masked here too
+  if (typeof node === 'string') return covered && masked ? maskText(node) : node
   if (Array.isArray(node)) return node.map(child => maskedCopy(child, masked, covered))
   if (!node || typeof node !== 'object') return node
   const hidden = covered || isCovered(node, { renderMode: masked ? 'production' : 'draft' })
   const copy = { ...node }
   if (hidden && masked && typeof copy.value === 'string') copy.value = maskText(copy.value)
-  if (Array.isArray(node.content)) copy.content = maskedCopy(node.content, masked, hidden)
+  // a markdown block holds its tree in an object rather than an array
+  if (node.content && typeof node.content === 'object') copy.content = maskedCopy(node.content, masked, hidden)
   return copy
 }
 

@@ -97,6 +97,9 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
     const [html, setHtml] = useState<string | null>(null)
 
     useEffect(() => {
+      // what was highlighted for another mode must not stay on the page while the new
+      // result is on its way, or after it fails
+      setHtml(null)
       if (!lang) return
       let cancelled = false
 
