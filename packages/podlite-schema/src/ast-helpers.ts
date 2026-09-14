@@ -310,7 +310,9 @@ export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: strin
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
   for (const [node, ownAddress] of index.byNode) {
-    const anchor = named.has(node) ? ownAddress : slugOf.get(node) || ''
+    // lowercased: a reader such as GitHub finds a named anchor by the lowercased
+    // address, and one written in capitals is not reached
+    const anchor = named.has(node) ? ownAddress.toLowerCase() : slugOf.get(node) || ''
     byNode.set(node, anchor)
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)

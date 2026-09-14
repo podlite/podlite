@@ -111,6 +111,12 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[jump](#intro)')
   })
 
+  it('writes a named anchor in lowercase, the way a reader looks it up', () => {
+    const out = markdown('=for head1 :id<Custom-blocks>\nCustom blocks\n\nSee L<jump|#Custom-blocks>.')
+    expect(out).toContain('<a name="custom-blocks"></a>')
+    expect(out).toContain('[jump](#custom-blocks)')
+  })
+
   it('addresses a numbered heading with its number', () => {
     const out = markdown('=config head1 :numbered\n\n=head1 Intro\n\n=head1 Details\n\nSee L<jump|#Details>.')
     expect(out).toContain('[jump](#2-details)')
