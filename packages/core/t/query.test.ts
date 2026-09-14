@@ -207,3 +207,22 @@ describe('runQuery errors', () => {
     ).toThrow(/No input/)
   })
 })
+
+// Output that invokes no renderer carries the text as written, hidden or not: the
+// source format reproduces the source, and json is the document model. Rendered
+// formats conceal it.
+describe('runQuery and hidden content', () => {
+  const doc = '=begin pod\n=for para :masked :id<s1>\nZentrox lives here\n=end pod\n'
+  const query = (format: 'podlite' | 'json' | 'md' | 'html') =>
+    runQuery({ selector: 'para', files: [write('doc.podlite', doc)], format, failOnEmpty: false, quiet: true }).output
+
+  it('shows hidden text in the source format and in json', () => {
+    expect(query('podlite')).toContain('Zentrox')
+    expect(query('json')).toContain('Zentrox')
+  })
+
+  it('conceals hidden text in markdown and html', () => {
+    expect(query('md')).not.toContain('Zentrox')
+    expect(query('html')).not.toContain('Zentrox')
+  })
+})
