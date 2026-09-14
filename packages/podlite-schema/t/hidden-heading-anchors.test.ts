@@ -117,6 +117,15 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[jump](#custom-blocks)')
   })
 
+  it('numbers named anchors that meet once lowercased', () => {
+    const out = markdown(
+      '=for head1 :id<Custom-blocks>\nA\n\n=for head1 :id<custom-blocks>\nB\n\nL<x|#Custom-blocks> L<y|#custom-blocks>',
+    )
+    expect(out).toContain('<a name="custom-blocks"></a>\n\n# A')
+    expect(out).toContain('<a name="custom-blocks-2"></a>\n\n# B')
+    expect(out).toContain('[x](#custom-blocks) [y](#custom-blocks-2)')
+  })
+
   it('addresses a numbered heading with its number', () => {
     const out = markdown('=config head1 :numbered\n\n=head1 Intro\n\n=head1 Details\n\nSee L<jump|#Details>.')
     expect(out).toContain('[jump](#2-details)')

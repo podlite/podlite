@@ -309,10 +309,18 @@ export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: strin
   }
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
+  const namesGiven = new Set<string>()
   for (const [node, ownAddress] of index.byNode) {
     // lowercased: a reader such as GitHub finds a named anchor by the lowercased
-    // address, and one written in capitals is not reached
-    const anchor = named.has(node) ? ownAddress.toLowerCase() : slugOf.get(node) || ''
+    // address, and one written in capitals is not reached. Two addresses apart only
+    // by case would then meet, so a repeat gets a number, as the reader numbers slugs.
+    let anchor = slugOf.get(node) || ''
+    if (named.has(node)) {
+      const base = ownAddress.toLowerCase()
+      anchor = base
+      for (let count = 1; namesGiven.has(anchor); ) anchor = `${base}-${++count}`
+      namesGiven.add(anchor)
+    }
     byNode.set(node, anchor)
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
