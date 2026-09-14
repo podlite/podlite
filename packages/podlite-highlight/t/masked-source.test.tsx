@@ -77,17 +77,46 @@ describe('hidden text in highlighted code', () => {
     const host = window.document.createElement('div')
     window.document.body.appendChild(host)
     const root = createRoot(host)
-    const render = (renderMode: string) =>
-      root.render(
+    // what the page holds once it is laid out, before any effect of this render runs
+    const laidOut: string[] = []
+    const Probe = ({ renderMode }: { renderMode: string }) => {
+      React.useLayoutEffect(() => {
+        laidOut.push(host.innerHTML)
+      })
+      return (
         <HighlightedCode node={partlyHidden} ctx={{ renderMode }} keyProp="k">
           x
-        </HighlightedCode>,
+        </HighlightedCode>
       )
+    }
+    const render = (renderMode: string) => root.render(<Probe renderMode={renderMode} />)
     await act(async () => render('draft'))
     expect(host.innerHTML).toContain('Secret')
     holdAnswers = true
+    laidOut.length = 0
     await act(async () => render('production'))
+    expect(laidOut[0]).not.toContain('Secret')
     expect(host.innerHTML).not.toContain('Secret')
+    act(() => root.unmount())
+    host.remove()
+  })
+
+  it('keeps the highlight when the same text is drawn again', async () => {
+    const host = window.document.createElement('div')
+    window.document.body.appendChild(host)
+    const root = createRoot(host)
+    const render = () =>
+      root.render(
+        <HighlightedCode node={{ ...partlyHidden, content: [...partlyHidden.content] }} ctx={{}} keyProp="k">
+          x
+        </HighlightedCode>,
+      )
+    await act(async () => render())
+    expect(host.innerHTML).toContain('class="shiki"')
+    holdAnswers = true
+    await act(async () => render())
+    expect(host.innerHTML).toContain('class="shiki"')
+    expect(received).toHaveLength(1)
     act(() => root.unmount())
     host.remove()
   })

@@ -90,16 +90,18 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
     const conf = makeAttrs(node, ctx)
     const written = conf.exists('caption') ? String(conf.getFirstValue('caption')) : null
     const caption = written !== null && isCovered(node, ctx) ? maskText(written) : written
-    const maskMode = ctx?.maskMode
-    const renderMode = ctx?.renderMode
     const lang = conf.getFirstValue('lang')
+    const { plain, decorations } = extractPlainAndDecorations(node.content, part =>
+      isCovered(part, { maskMode: ctx?.maskMode, renderMode: ctx?.renderMode }),
+    )
+    // What is asked of the highlighter, with hidden text already masked. A result is
+    // shown only for the request it answers: one made for another mode never reaches
+    // the page, and the same text drawn again keeps its highlight.
+    const request = JSON.stringify([lang, plain, decorations])
 
-    const [html, setHtml] = useState<string | null>(null)
+    const [result, setResult] = useState<{ request: string; html: string } | null>(null)
 
     useEffect(() => {
-      // what was highlighted for another mode must not stay on the page while the new
-      // result is on its way, or after it fails
-      setHtml(null)
       if (!lang) return
       let cancelled = false
 
@@ -107,16 +109,13 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
         try {
           const isDark =
             typeof document !== 'undefined' && document.body && document.body.className.toLowerCase().includes('dark')
-          const { plain, decorations } = extractPlainAndDecorations(node.content, part =>
-            isCovered(part, { maskMode, renderMode }),
-          )
-          const result = await codeToThemedHtml({
+          const html = await codeToThemedHtml({
             code: plain,
             language: lang,
             theme: isDark ? 'dark' : 'light',
             decorations,
           })
-          if (!cancelled) setHtml(result)
+          if (!cancelled) setResult({ request, html })
         } catch (e) {
           console.error('[podlite] shiki highlight error:', e)
         }
@@ -126,7 +125,9 @@ const HighlightedCode: React.FC<HighlightedCodeProps> = React.memo(
       return () => {
         cancelled = true
       }
-    }, [lang, node.content, maskMode, renderMode])
+    }, [request])
+
+    const html = result && result.request === request ? result.html : null
 
     // The id goes on whichever element the branch puts outermost, so a link to
     // the block keeps working once highlighting replaces the plain output.
