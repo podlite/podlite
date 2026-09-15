@@ -174,7 +174,15 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         const target = path.resolve(baseDir, name)
         if (stack.includes(target)) continue
         const text = textOf(target)
-        if (text === null) continue
+        if (text === null) {
+          report({
+            kind: 'source',
+            target: selector,
+            message: `include target cannot be read: ${name}`,
+            chain: here,
+          })
+          continue
+        }
         const own = opts.parse(text, target)
         if (origin) recordOrigin(own, { file: target, text }, origin)
         docs.push({

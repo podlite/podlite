@@ -286,6 +286,19 @@ describe('include address and problems', () => {
     expect(() => convert(wrapper, 'md')).toThrow(/target not found/)
   })
 
+  it('reports a file of a mask that cannot be read', () => {
+    fs.mkdirSync(path.join(tmpDir, 'inc'))
+    write('inc/a.podlite', '=pod\n\n=head1 A\n')
+    const locked = write('inc/b.podlite', '=pod\n\n=head1 B\n')
+    fs.chmodSync(locked, 0o000)
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    try {
+      expect(() => convert(wrapper, 'md')).toThrow(/cannot be read: \.\/inc\/b\.podlite/)
+    } finally {
+      fs.chmodSync(locked, 0o644)
+    }
+  })
+
   it('resolves includes in a document given as a list of nodes', () => {
     write('guide.podlite', guide)
     const main = write('notes.podlite', '=include file:guide.podlite | head1\n')
