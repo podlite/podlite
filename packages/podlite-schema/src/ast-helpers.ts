@@ -441,9 +441,12 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
     // already turns whitespace into a hyphen, so a link written the way the id was
     // written would otherwise miss it.
     const raw = makeAttrsPod(node, {}).exists('id') ? makeAttrsPod(node, {}).getFirstValue('id') : null
-    const explicit = getExplicitNodeId(node, {})
-    for (const key of [raw == null ? null : String(raw), explicit]) {
-      if (key) written.push([key.normalize('NFC').trim(), node, 'explicit-id'])
+    // :id with no value reads as the flag true, which is not a name the author wrote
+    if (typeof raw !== 'boolean') {
+      const explicit = getExplicitNodeId(node, {})
+      for (const key of [raw == null ? null : String(raw), explicit]) {
+        if (key) written.push([key.normalize('NFC').trim(), node, 'explicit-id'])
+      }
     }
     if (node.name !== 'head') return
     const name = getTextContentFromNode(node).normalize('NFC').trim()
