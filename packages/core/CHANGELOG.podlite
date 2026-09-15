@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite query selects through C<=include>: blocks an include brings in are found, their text and the file in the json output are those of the file they are written in, and a selection of C<include> no longer finds a directive that resolved. An include that is not there is reported with the file and line of the directive, the other matches are still written, and the exit code is 1; the report is not silenced by --quiet
+
 =item podlite convert stops on an include whose address is not in the file, as it already did on a missing file, and on a source that is a directory. The address is found the way a link finds its target: by C<:id>, or by a heading under its name or the form an output gives it
 
 =item when two blocks of an included file share the address, the first is taken and podlite convert warns; the last one used to be taken

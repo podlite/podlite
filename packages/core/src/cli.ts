@@ -267,6 +267,7 @@ function runQueryCommand(args: ReturnType<typeof parseArgs>): void {
       process.stdout.write(result.output)
       if (!result.output.endsWith('\n')) process.stdout.write('\n')
     }
+    for (const problem of result.problems) console.error(`podlite query: ${problem}`)
     if (!args.quiet) {
       console.error(`${result.matchCount} match${result.matchCount === 1 ? '' : 'es'}`)
     }

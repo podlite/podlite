@@ -1,5 +1,7 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import { parse, parseSelector, runSelector, toHtml, toMarkdown, SelectorDoc, PodNode } from '@podlite/schema'
+import { resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
 
@@ -36,20 +38,24 @@ const renderViaRoot = (block: PodNode, serializer: 'md' | 'html'): string => {
   return out.toString()
 }
 
-const formatBlocks = (format: QueryFormat, matches: Array<{ source: Source; block: PodNode }>): string => {
+// A block brought in by =include is written in another file: its text and its
+// offsets belong to that file.
+type Match = { file: string; text: string; block: PodNode }
+
+const formatBlocks = (format: QueryFormat, matches: Match[]): string => {
   if (format === 'json') {
     // without the source, a query over several files answers "here are the
     // blocks" and drops "from where", which leaves the caller no way back to
     // the document
     return JSON.stringify(
-      matches.map(m => ({ file: m.source.file, ...(m.block as object) })),
+      matches.map(m => ({ file: m.file, ...(m.block as object) })),
       null,
       2,
     )
   }
   if (format === 'podlite') {
     return matches
-      .map(m => sliceBlock(m.source.text, m.block).trimEnd())
+      .map(m => sliceBlock(m.text, m.block).trimEnd())
       .filter(Boolean)
       .join('\n\n')
   }
@@ -66,6 +72,14 @@ export type QueryResult = {
   output: string
   matchCount: number
   exitCode: number
+  // includes that could not be resolved, and addresses that name two blocks
+  problems: string[]
+}
+
+const describe = (problem: IncludeProblem): string => {
+  const at = problem.chain[problem.chain.length - 1]
+  const line = at?.location ? `:${at.location.start.line}` : ''
+  return `${at ? at.file : '<document>'}${line}: ${problem.message}`
 }
 
 export const runQuery = (opts: QueryOptions): QueryResult => {
@@ -87,18 +101,39 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
 
   // Per-source invocation preserves file context for source-slicing in podlite output
-  const matches: Array<{ source: Source; block: PodNode }> = []
+  const matches: Match[] = []
+  const problems: string[] = []
+  let failed = false
   for (const src of sources) {
-    const docs: SelectorDoc[] = [{ file: src.file, node: src.node }]
+    const origin = new WeakMap<object, IncludeOrigin>()
+    const fromStdin = src.file === '<stdin>'
+    const node = resolveIncludes(src.node, {
+      baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
+      parse: source => parse(source),
+      file: src.file,
+      text: src.text,
+      origin,
+      onError: problem => {
+        failed = true
+        problems.push(describe(problem))
+      },
+      onWarning: problem => problems.push(describe(problem)),
+    })
+    const docs: SelectorDoc[] = [{ file: src.file, node }]
     const result = runSelector(opts.selector, docs)
     for (const item of result) {
       if (item && typeof item === 'object' && !('file' in (item as object))) {
-        matches.push({ source: src, block: item as PodNode })
+        const where = origin.get(item)
+        matches.push({
+          file: where ? where.file : src.file,
+          text: where ? where.text : src.text,
+          block: item as PodNode,
+        })
       }
     }
   }
 
   const output = formatBlocks(opts.format, matches)
-  const exitCode = opts.failOnEmpty && matches.length === 0 ? 1 : 0
-  return { output, matchCount: matches.length, exitCode }
+  const exitCode = failed || (opts.failOnEmpty && matches.length === 0) ? 1 : 0
+  return { output, matchCount: matches.length, exitCode, problems }
 }

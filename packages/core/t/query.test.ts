@@ -226,3 +226,69 @@ describe('runQuery and hidden content', () => {
     expect(query('html')).not.toContain('Zentrox')
   })
 })
+
+describe('runQuery through =include', () => {
+  const q = (selector: string, file: string, format: 'podlite' | 'json' = 'podlite') =>
+    runQuery({ selector, files: [file], format, failOnEmpty: false, quiet: true })
+  const test = '=begin test :id<frame-ok>\n=begin fixture\n=para x\n=end fixture\n=assert para\n=end test\n'
+
+  it('finds a test brought in by its address', () => {
+    write('t/frame.podlite', test)
+    const main = write('spec.podlite', '=pod\n\n=head1 Rule\n\n=include file:./t/frame.podlite#frame-ok\n')
+    const r = q('test', main)
+    expect(r.matchCount).toBe(1)
+    expect(r.output).toContain('=begin test :id<frame-ok>')
+  })
+
+  it('takes the text of an included block from the file it is written in', () => {
+    write('part.podlite', '=pod\n\nSome text first.\n\n=head1 Child\n')
+    const main = write('doc.podlite', '=pod\n\n=head1 Parent\n\n=include file:./part.podlite | head1\n')
+    expect(q('head1', main).output).toBe('=head1 Parent\n\n=head1 Child')
+  })
+
+  it('gives a container as written and its included child from its own file', () => {
+    write('c.podlite', '=pod\n\n=head1 Child\n')
+    write('b.podlite', '=begin nested\n\n=include file:./c.podlite\n\n=end nested\n')
+    const main = write('a.podlite', '=pod\n\n=include file:./b.podlite\n')
+    expect(q('nested', main).output).toContain('=include file:./c.podlite')
+    expect(q('head1', main).output).toBe('=head1 Child')
+  })
+
+  it('names in json the file a block is written in', () => {
+    const part = write('part.podlite', '=pod\n\n=head1 Child\n')
+    const main = write('doc.podlite', '=pod\n\n=include file:./part.podlite\n')
+    const rows = JSON.parse(q('head1', main, 'json').output)
+    expect(rows.map((row: { file: string }) => row.file)).toEqual([part])
+  })
+
+  it('reports a lost include and returns what it found', () => {
+    write('part.podlite', '=pod\n\n=head1 Child\n')
+    const main = write(
+      'doc.podlite',
+      '=pod\n\n=head1 Before\n\n=include file:./absent.podlite\n\n=include file:./part.podlite\n',
+    )
+    const r = q('head1', main)
+    expect(r.matchCount).toBe(2)
+    expect(r.exitCode).toBe(1)
+    expect(r.problems).toEqual([`${main}:5: include target not found: ./absent.podlite`])
+  })
+
+  it('reads an include on stdin from the working directory', () => {
+    write('part.podlite', '=pod\n\n=head1 Child\n')
+    const cwd = process.cwd()
+    process.chdir(tmpDir)
+    try {
+      const r = runQuery({
+        selector: 'head1',
+        files: [],
+        format: 'podlite',
+        failOnEmpty: false,
+        quiet: true,
+        stdinContent: '=pod\n\n=include file:./part.podlite\n',
+      })
+      expect(r.output).toBe('=head1 Child')
+    } finally {
+      process.chdir(cwd)
+    }
+  })
+})

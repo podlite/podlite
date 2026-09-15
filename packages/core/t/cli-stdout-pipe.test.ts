@@ -83,3 +83,26 @@ describe('podlite lint reading from stdin', () => {
     expect(out).toMatch(/<stdin>:1:1: error: =end table without matching =begin/)
   })
 })
+
+describe('podlite query on an include that is not there', () => {
+  it('says so under --quiet and exits with 1', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    const src = path.join(dir, 'doc.podlite')
+    fs.writeFileSync(src, '=pod\n\n=head1 Kept\n\n=include file:./absent.podlite\n')
+    let status = 0
+    let stderr = ''
+    let stdout = ''
+    try {
+      stdout = execFileSync('node', [bin, 'query', 'head1', src, '--quiet'], { stdio: 'pipe' }).toString()
+    } catch (e) {
+      const failure = e as { status: number; stderr: Buffer; stdout: Buffer }
+      status = failure.status
+      stderr = failure.stderr.toString()
+      stdout = failure.stdout.toString()
+    }
+    fs.rmSync(dir, { recursive: true, force: true })
+    expect(status).toBe(1)
+    expect(stderr).toContain('include target not found: ./absent.podlite')
+    expect(stdout).toContain('=head1 Kept')
+  })
+})
