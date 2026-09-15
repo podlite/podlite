@@ -162,7 +162,12 @@ function convertFile(
 
   let tree = parseToAst(content)
   try {
-    tree = resolveIncludes(tree, { baseDir: fromStdin ? process.cwd() : path.dirname(inputPath), parse: parseToAst })
+    tree = resolveIncludes(tree, {
+      baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
+      parse: parseToAst,
+      file: inputPath,
+      onWarning: problem => console.error(`podlite convert: ${problem.message}`),
+    })
   } catch (e) {
     console.error(`podlite convert: ${(e as Error).message}`)
     process.exit(1)

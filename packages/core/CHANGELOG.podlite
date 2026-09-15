@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item podlite convert stops on an include whose address is not in the file, as it already did on a missing file, and on a source that is a directory. The address is found the way a link finds its target: by C<:id>, or by a heading under its name or the form an output gives it
+
+=item when two blocks of an included file share the address, the first is taken and podlite convert warns; the last one used to be taken
+
 =head1 0.0.83
 
 =item the C<./lint> entry can be reached with C<import>. Its ESM build called C<require> in two places, and a module does not have that word, so the entry died on load. Reading a config written as code stays synchronous, so C<readConfig> and C<resolveConfig> keep their shape

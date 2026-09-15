@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { toMarkdown, toHtml } from '@podlite/schema'
+import { parse, toMarkdown, toHtml } from '@podlite/schema'
 import { podlite } from '../src/index'
-import { resolveIncludes } from '../src/resolve-includes'
+import { resolveIncludes, IncludeOrigin, IncludeProblem, ResolveIncludesOptions } from '../src/resolve-includes'
 
 const p = podlite({ importPlugins: true })
 const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
@@ -243,5 +243,103 @@ describe('include with a recursive mask', () => {
     mkdir(path.join('inc', 'deep'))
     const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/**/*.podlite\n')
     expect(() => convert(wrapper, 'md')).not.toThrow()
+  })
+})
+
+describe('include address and problems', () => {
+  const resolve = (file: string, opts: Partial<ResolveIncludesOptions> = {}) =>
+    resolveIncludes(parseToAst(fs.readFileSync(file, 'utf-8')), {
+      baseDir: path.dirname(file),
+      parse: parseToAst,
+      file,
+      ...opts,
+    })
+  const guide = '=pod\n\n=head1 Intro\n\nIntro text.\n\n=head1 Overview\n\nOverview text.\n'
+
+  it('throws when the include address is missing', () => {
+    write('guide.podlite', guide)
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:guide.podlite#Absent\n')
+    expect(() => convert(wrapper, 'md')).toThrow(/address not found: #Absent/)
+  })
+
+  it('finds a heading by the form an output gives its name', () => {
+    write('guide.podlite', guide)
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:guide.podlite#overview | head1\n')
+    expect(convert(wrapper, 'md')).toContain('# Overview')
+  })
+
+  it('takes the first of two blocks with one address and warns', () => {
+    write('twice.podlite', '=pod\n\n=for para :id<x>\nFirst.\n\n=for para :id<x>\nLast.\n')
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:twice.podlite#x\n')
+    const warnings: IncludeProblem[] = []
+    const md = toMarkdown({})
+      .run(resolve(wrapper, { onWarning: p => warnings.push(p) }))
+      .toString()
+    expect(md).toContain('First.')
+    expect(md).not.toContain('Last.')
+    expect(warnings.map(w => w.kind)).toEqual(['ambiguous'])
+  })
+
+  it('treats a directory named as a source as missing', () => {
+    fs.mkdirSync(path.join(tmpDir, 'dir.podlite'))
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:dir.podlite\n')
+    expect(() => convert(wrapper, 'md')).toThrow(/target not found/)
+  })
+
+  it('resolves includes in a document given as a list of nodes', () => {
+    write('guide.podlite', guide)
+    const main = write('notes.podlite', '=include file:guide.podlite | head1\n')
+    const list = parse(fs.readFileSync(main, 'utf-8'))
+    const out = resolveIncludes(list, { baseDir: tmpDir, parse: src => parse(src) })
+    expect(JSON.stringify(out)).toContain('Overview')
+    expect(JSON.stringify(out)).not.toContain('"name":"include"')
+  })
+
+  it('reports a lost include and goes on with the rest', () => {
+    write('guide.podlite', guide)
+    const main = write(
+      'notes.podlite',
+      '=pod\n\nBefore.\n\n=include file:guide.podlite#Absent\n\n=include file:guide.podlite#Intro\n',
+    )
+    const errors: IncludeProblem[] = []
+    const md = toMarkdown({})
+      .run(resolve(main, { onError: p => errors.push(p) }))
+      .toString()
+    expect(md).toContain('Before.')
+    expect(md).toContain('# Intro')
+    expect(errors.map(e => e.kind)).toEqual(['address'])
+    expect(errors[0].chain.map(step => step.file)).toEqual([main])
+    expect(errors[0].chain[0].location?.start.line).toBe(5)
+  })
+
+  it('names every directive on the way to a problem in an included file', () => {
+    write('inner.podlite', '=pod\n\n=include file:absent.podlite\n')
+    const main = write('notes.podlite', '=pod\n\n=include file:inner.podlite\n')
+    const errors: IncludeProblem[] = []
+    resolve(main, { onError: p => errors.push(p) })
+    expect(errors.map(e => e.kind)).toEqual(['source'])
+    expect(errors[0].chain.map(step => path.basename(step.file))).toEqual(['notes.podlite', 'inner.podlite'])
+  })
+
+  it('records the file every included node was written in', () => {
+    write('inner.podlite', '=begin pod\n\n=head1 Child\n\n=end pod\n')
+    const main = write('notes.podlite', '=pod\n\n=include file:inner.podlite\n')
+    const origin = new WeakMap<object, IncludeOrigin>()
+    const text = fs.readFileSync(main, 'utf-8')
+    const tree = resolveIncludes(parseToAst(text), { baseDir: tmpDir, parse: parseToAst, file: main, text, origin })
+    const heads: any[] = []
+    const visit = (n: any) => {
+      if (!n || typeof n !== 'object') return
+      if (n.name === 'head') heads.push(n)
+      if (Array.isArray(n.content)) n.content.forEach(visit)
+    }
+    visit(tree)
+    expect(heads).toHaveLength(1)
+    const where = origin.get(heads[0])
+    expect(where && path.basename(where.file)).toBe('inner.podlite')
+    expect(where && where.text.slice(heads[0].location.start.offset, heads[0].location.end.offset)).toContain(
+      '=head1 Child',
+    )
+    expect(path.basename(origin.get(tree)?.file ?? '')).toBe('notes.podlite')
   })
 })
