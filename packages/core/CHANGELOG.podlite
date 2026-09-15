@@ -6,6 +6,8 @@
 
 =item when two blocks of an included file share the address, the first is taken and podlite convert warns; the last one used to be taken
 
+=item podlite lint adds the include-resolves rule: an include whose source or address is not there is an error at the directive, a problem inside an included file is reported at the directive that brought it in, and an address that names two blocks is a warning. A selection that finds nothing is not reported. The rule runs on files read from disk only
+
 =head1 0.0.83
 
 =item the C<./lint> entry can be reached with C<import>. Its ESM build called C<require> in two places, and a module does not have that word, so the entry died on load. Reading a config written as code stays synchronous, so C<readConfig> and C<resolveConfig> keep their shape

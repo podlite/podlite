@@ -22,6 +22,9 @@ export type LintContext = {
   // the tree kept, needs it — a reference can be consumed while the tree is
   // built. Optional, so a caller that builds a context by hand keeps working
   source?: string
+  // set only when the document was read from the file named by filePath: a rule
+  // that reads files next to it has nothing to read for text handed in by name
+  fromDisk?: boolean
 }
 
 export type Violation = {

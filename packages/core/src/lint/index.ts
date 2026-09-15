@@ -30,12 +30,12 @@ export type LintOptions = {
 
 // text handed to the command instead of a path is reported under this name
 
-export function lintSource(content: string, filePath: string, config: LintConfig): FileReport {
+export function lintSource(content: string, filePath: string, config: LintConfig, fromDisk = false): FileReport {
   const fileType = detectFileType(filePath)
   const violations: Violation[] = [...applyConfig(scanSourceRules(content, fileType), config)]
   try {
     const ast = parseContent(content, fileType)
-    const ctx: LintContext = { filePath, fileType, config, source: content }
+    const ctx: LintContext = { filePath, fileType, config, source: content, fromDisk }
     violations.push(...runRules(ast, DEFAULT_RULES, ctx))
     const muted = applyMutes(violations, ast)
     return { filePath, violations: applyConfig(muted.kept, config), silenced: muted.silenced }
@@ -61,7 +61,7 @@ export function lintFile(filePath: string, config: LintConfig): FileReport {
       ],
     }
   }
-  return lintSource(content, filePath, config)
+  return lintSource(content, filePath, config, true)
 }
 
 // Thrown out of resolveConfig so a caller can turn it into exit code 2 wherever

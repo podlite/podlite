@@ -9,6 +9,7 @@ import { linkNotEmptyRule } from './link-not-empty'
 import { attrValueDroppedRule } from './attr-value-dropped'
 import { tableShapeRule } from './table-shape'
 import { deadDefinitionsRule } from './dead-definitions'
+import { includeResolvesRule } from './include-resolves'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -21,4 +22,5 @@ export const DEFAULT_RULES: Rule[] = [
   attrValueDroppedRule,
   tableShapeRule,
   deadDefinitionsRule,
+  includeResolvesRule,
 ]
