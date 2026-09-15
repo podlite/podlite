@@ -142,4 +142,24 @@ describe('hidden text in highlighted code', () => {
     act(() => root.unmount())
     host.remove()
   })
+
+  it('does not show an answer made for the theme the page has left', async () => {
+    const host = window.document.createElement('div')
+    window.document.body.appendChild(host)
+    const root = createRoot(host)
+    const render = () =>
+      root.render(
+        <HighlightedCode node={partlyHidden} ctx={{}} keyProp="k">
+          x
+        </HighlightedCode>,
+      )
+    holdAnswers = true
+    await act(async () => render())
+    window.document.body.className = 'dark'
+    await act(async () => render())
+    expect(themes).toEqual(['light', 'dark'])
+    expect(host.innerHTML).not.toContain('class="shiki"')
+    act(() => root.unmount())
+    host.remove()
+  })
 })

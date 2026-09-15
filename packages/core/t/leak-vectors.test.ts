@@ -25,12 +25,28 @@ const hiddenIn = (body: string, word: string) => {
 }
 
 describe('paths hidden content does not take through a renderer', () => {
-  it('a link into another document shows no title taken from it', () => {
-    hiddenIn('=NAME Project G<Qwyx>\n\nSee L<doc:./file.podlite>.', 'Qwyx')
+  // a renderer does not read another document, and gives a link with no text of its
+  // own the target as written: no title can come in through either
+  it('a link into another document shows its target, not a title from there', () => {
+    for (const mode of ['production', 'draft'] as Mode[]) {
+      expect(html('See L<doc:./file.podlite>.', mode)).toMatch(/>doc:\.(\/|&#x2F;)file\.podlite<\/a>/)
+      expect(markdown('See L<doc:./file.podlite>.', mode)).toContain('[doc:./file.podlite]')
+    }
   })
 
-  it('a backlink to a hidden heading shows only its own words', () => {
-    hiddenIn('=for head1 :id<sec-secret> :masked\nVelk Process\n\nW<related|#sec-secret>', 'Velk')
+  it('a backlink with no text of its own shows its target, not the hidden heading', () => {
+    const doc = 'W<#sec-secret>\n\n=for head1 :id<sec-secret> :masked\nVelk Process'
+    for (const mode of ['production', 'draft'] as Mode[]) {
+      expect(html(doc, mode)).toContain('class="backlink">#sec-secret</a>')
+      expect(html(doc, mode).match(/class="backlink">[^<]*/)?.[0]).not.toContain('Velk')
+    }
+  })
+
+  it('hidden data is not inlined by an include', () => {
+    // =include does not read =data at all yet, so nothing is inlined in either mode
+    const doc = '=begin data :key<creds> :masked\nsecret-token-xyz\n=end data\n\n=include data:creds'
+    expect(html(doc)).not.toContain('secret-token-xyz')
+    expect(markdown(doc)).not.toContain('secret-token-xyz')
   })
 
   it('an index term inside hidden content is hidden and not collected', () => {

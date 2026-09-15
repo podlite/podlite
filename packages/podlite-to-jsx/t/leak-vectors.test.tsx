@@ -22,12 +22,25 @@ const hiddenOnPage = (body: string, word: string, props = {}) => {
 }
 
 describe('paths hidden content does not take onto the page', () => {
-  it('a link into another document shows no title taken from it', () => {
-    hiddenOnPage('=NAME Project G<Qwyx>\n\nSee L<doc:./file.podlite>.', 'Qwyx')
+  // the page does not read another document, and gives a link with no text of its
+  // own the target as written: no title can come in through either
+  it('a link into another document shows its target, not a title from there', () => {
+    for (const mode of ['production', 'draft'] as Mode[]) {
+      expect(page('See L<doc:./file.podlite>.', mode)).toContain('>doc:./file.podlite</a>')
+    }
   })
 
-  it('a backlink to a hidden heading shows only its own words', () => {
-    hiddenOnPage('=for head1 :id<sec-secret> :masked\nVelk Process\n\nW<related|#sec-secret>', 'Velk')
+  it('a backlink with no text of its own shows its target, not the hidden heading', () => {
+    const doc = 'W<#sec-secret>\n\n=for head1 :id<sec-secret> :masked\nVelk Process'
+    for (const mode of ['production', 'draft'] as Mode[]) {
+      expect(page(doc, mode)).toContain('class="backlink">#sec-secret</a>')
+    }
+  })
+
+  it('hidden data is not inlined by an include', () => {
+    // =include does not read =data at all yet, so nothing is inlined in either mode
+    const doc = '=begin data :key<creds> :masked\nsecret-token-xyz\n=end data\n\n=include data:creds'
+    expect(page(doc)).not.toContain('secret-token-xyz')
   })
 
   it('an index term inside hidden content is hidden', () => {
