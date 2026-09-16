@@ -266,6 +266,7 @@ describe('include address and problems', () => {
       baseDir: path.dirname(file),
       parse: parseToAst,
       file,
+      self: file,
       ...opts,
     })
   const guide = '=pod\n\n=head1 Intro\n\nIntro text.\n\n=head1 Overview\n\nOverview text.\n'

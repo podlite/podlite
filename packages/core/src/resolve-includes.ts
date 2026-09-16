@@ -36,9 +36,12 @@ export type IncludeOrigin = {
 export type ResolveIncludesOptions = {
   baseDir: string
   parse: (source: string, file: string) => any
-  // the document's own path and text, for messages and for origin
+  // the document's name and text, for messages and for origin
   file?: string
   text?: string
+  // the document's path on disk, when it was read from one: an include back to
+  // it is a cycle
+  self?: string
   // without it a problem that loses an include is thrown
   onError?: (problem: IncludeProblem) => void
   onWarning?: (problem: IncludeProblem) => void
@@ -242,7 +245,5 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return node
   }
 
-  // The document itself is on the way already: an include back to it is a cycle.
-  const self = opts.file && fs.existsSync(path.resolve(opts.file)) ? [path.resolve(opts.file)] : []
-  return walkNode(tree, opts.baseDir, self, [], mainFile)
+  return walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile)
 }

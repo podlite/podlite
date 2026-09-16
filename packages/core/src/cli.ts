@@ -166,6 +166,7 @@ function convertFile(
       baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
       parse: parseToAst,
       file: inputPath,
+      self: fromStdin ? undefined : inputPath,
       onWarning: problem => console.error(`podlite convert: ${problem.message}`),
     })
   } catch (e) {

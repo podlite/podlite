@@ -106,3 +106,16 @@ describe('podlite query on an include that is not there', () => {
     expect(stdout).toContain('=head1 Kept')
   })
 })
+
+describe('podlite convert reading stdin', () => {
+  it('reads a file named like the stdin marker as a file of its own', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    fs.writeFileSync(path.join(dir, '-'), '=for para :id<x>\nReal file.\n')
+    const out = execFileSync('node', [bin, 'convert', '-', '--to', 'md', '-o', '-'], {
+      cwd: dir,
+      input: '=include file:./-#x\n',
+    }).toString()
+    fs.rmSync(dir, { recursive: true, force: true })
+    expect(out).toContain('Real file.')
+  })
+})

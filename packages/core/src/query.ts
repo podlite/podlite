@@ -112,6 +112,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
       parse: source => parse(source),
       file: src.file,
+      self: fromStdin ? undefined : src.file,
       text: src.text,
       origin,
       onError: problem => {

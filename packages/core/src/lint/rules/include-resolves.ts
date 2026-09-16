@@ -35,6 +35,7 @@ export const includeResolvesRule: Rule = {
         baseDir: dirname(resolve(ctx.filePath)),
         parse: (source, file) => parseContent(source, detectFileType(file)),
         file: resolve(ctx.filePath),
+        self: ctx.filePath,
         onError: problem => problems.push(problem),
         onWarning: problem => problems.push(problem),
       })
