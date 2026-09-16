@@ -22,7 +22,8 @@ const valuesOf = (config: unknown): string[] | null => {
 const covers = (mute: Mute, violation: Violation): boolean => {
   const at = violation.location?.start.offset
   if (at === undefined) return false
-  return at >= mute.location.start.offset && at <= mute.location.end.offset
+  // the end offset is where the next block starts
+  return at >= mute.location.start.offset && at < mute.location.end.offset
 }
 
 export function collectMutes(ast: PodliteDocument): { mutes: Mute[]; empty: Location[] } {

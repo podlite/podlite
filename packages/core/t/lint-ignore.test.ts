@@ -35,6 +35,11 @@ describe(':lint-ignore in the document', () => {
     expect(lint('=head1 One\n\n=for head3 :lint-ignore<heading-hierarchy>\nThree\n')).toContain('0 errors, 0 warnings')
   })
 
+  it('reaches no further than the block it is written on', () => {
+    const out = lint('=pod\n\n=for para :lint-ignore<link-target-resolves>\nQuiet.\n=para L<x|#nowhere>\n')
+    expect(out).toContain('1 error')
+  })
+
   it('takes the mute from =config', () => {
     const out = lint('=config head3 :lint-ignore<heading-hierarchy>\n\n=head1 One\n\n=head3 Three\n')
     expect(out).toContain('0 errors, 0 warnings')
