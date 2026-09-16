@@ -79,7 +79,8 @@ export type QueryResult = {
 const describe = (problem: IncludeProblem): string => {
   const at = problem.chain[problem.chain.length - 1]
   const line = at?.location ? `:${at.location.start.line}` : ''
-  return `${at ? at.file : '<document>'}${line}: ${problem.message}`
+  const file = at ? (path.isAbsolute(at.file) ? path.relative(process.cwd(), at.file) : at.file) : '<document>'
+  return `${file}${line}: ${problem.message}`
 }
 
 export const runQuery = (opts: QueryOptions): QueryResult => {

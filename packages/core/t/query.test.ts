@@ -270,7 +270,7 @@ describe('runQuery through =include', () => {
     const r = q('head1', main)
     expect(r.matchCount).toBe(2)
     expect(r.exitCode).toBe(1)
-    expect(r.problems).toEqual([`${main}:5: include target not found: ./absent.podlite`])
+    expect(r.problems).toEqual([`${path.relative(process.cwd(), main)}:5: include target not found: ./absent.podlite`])
   })
 
   it('reads an include on stdin from the working directory', () => {
