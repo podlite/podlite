@@ -5,6 +5,20 @@ import { parse, toMarkdown, toHtml } from '@podlite/schema'
 import { podlite } from '../src/index'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, ResolveIncludesOptions } from '../src/resolve-includes'
 
+// A file permission does not stop a read by root or on Windows, so a failed read
+// is made here instead.
+const mockUnreadable = new Set<string>()
+jest.mock('fs', () => {
+  const actual = jest.requireActual('fs')
+  return {
+    ...actual,
+    readFileSync: (file: string, ...rest: unknown[]) => {
+      if (mockUnreadable.has(String(file))) throw new Error('EACCES')
+      return actual.readFileSync(file, ...rest)
+    },
+  }
+})
+
 const p = podlite({ importPlugins: true })
 const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
 
@@ -290,12 +304,12 @@ describe('include address and problems', () => {
     fs.mkdirSync(path.join(tmpDir, 'inc'))
     write('inc/a.podlite', '=pod\n\n=head1 A\n')
     const locked = write('inc/b.podlite', '=pod\n\n=head1 B\n')
-    fs.chmodSync(locked, 0o000)
     const wrapper = write('notes.podlite', '=pod\n\n=include file:./inc/*.podlite\n')
+    mockUnreadable.add(locked)
     try {
       expect(() => convert(wrapper, 'md')).toThrow(/cannot be read: \.\/inc\/b\.podlite/)
     } finally {
-      fs.chmodSync(locked, 0o644)
+      mockUnreadable.delete(locked)
     }
   })
 
