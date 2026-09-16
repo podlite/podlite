@@ -190,7 +190,19 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target)),
         })
       }
-      if (docs.length === 0) return []
+      if (docs.length === 0) {
+        // a mask that names no file holds no address; a file skipped as a cycle
+        // is left alone, as before
+        if (parsed.anchor && written.length === 0) {
+          return report({
+            kind: 'address',
+            target: selector,
+            message: `include address not found: #${parsed.anchor} in ${parsed.document}`,
+            chain: here,
+          })
+        }
+        return []
+      }
 
       if (parsed.anchor) {
         // The address is found the way a link finds its target, in the file as it
@@ -230,5 +242,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return node
   }
 
-  return walkNode(tree, opts.baseDir, [], [], mainFile)
+  // The document itself is on the way already: an include back to it is a cycle.
+  const self = opts.file && fs.existsSync(path.resolve(opts.file)) ? [path.resolve(opts.file)] : []
+  return walkNode(tree, opts.baseDir, self, [], mainFile)
 }

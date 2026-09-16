@@ -313,6 +313,18 @@ describe('include address and problems', () => {
     }
   })
 
+  it('finds an address past a cycle back to the document itself', () => {
+    write('B.podlite', '=include file:A.podlite#x\n\n=for para :id<x>\nYes.\n')
+    const a = write('A.podlite', '=include file:B.podlite#x\n')
+    expect(toMarkdown({}).run(resolve(a)).toString()).toContain('Yes.')
+  })
+
+  it('reports an address when a mask names no file', () => {
+    fs.mkdirSync(path.join(tmpDir, 'empty'))
+    const wrapper = write('notes.podlite', '=pod\n\n=include file:./empty/*.podlite#x\n')
+    expect(() => convert(wrapper, 'md')).toThrow(/address not found: #x/)
+  })
+
   it('resolves includes in a document given as a list of nodes', () => {
     write('guide.podlite', guide)
     const main = write('notes.podlite', '=include file:guide.podlite | head1\n')
