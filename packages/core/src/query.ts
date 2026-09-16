@@ -14,7 +14,7 @@ export type QueryOptions = {
   stdinContent?: string
 }
 
-type Source = { file: string; text: string; node: any }
+type Source = { file: string; text: string; node: any; fromStdin?: boolean }
 
 const loadSource = (file: string): Source => {
   const text = fs.readFileSync(file, 'utf-8')
@@ -91,7 +91,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
 
   const sources: Source[] = []
   if (opts.stdinContent !== undefined) {
-    sources.push({ file: '<stdin>', text: opts.stdinContent, node: parse(opts.stdinContent) })
+    sources.push({ file: '<stdin>', text: opts.stdinContent, node: parse(opts.stdinContent), fromStdin: true })
   }
   for (const f of opts.files) {
     sources.push(loadSource(f))
@@ -107,7 +107,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   let failed = false
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
-    const fromStdin = src.file === '<stdin>'
+    const fromStdin = src.fromStdin === true
     const node = resolveIncludes(src.node, {
       baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
       parse: source => parse(source),

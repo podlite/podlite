@@ -119,3 +119,19 @@ describe('podlite convert reading stdin', () => {
     expect(out).toContain('Real file.')
   })
 })
+
+describe('podlite query on a file named like the stdin marker', () => {
+  it('reads it as a file', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    fs.writeFileSync(path.join(dir, '<stdin>'), '=include file:B.podlite#x\n')
+    fs.writeFileSync(path.join(dir, 'B.podlite'), '=include file:./<stdin>#x\n\n=for para :id<x>\nYes.\n')
+    let status = 0
+    try {
+      execFileSync('node', [bin, 'query', 'para', '<stdin>', '--quiet'], { cwd: dir, stdio: 'pipe' })
+    } catch (e) {
+      status = (e as { status: number }).status
+    }
+    fs.rmSync(dir, { recursive: true, force: true })
+    expect(status).toBe(0)
+  })
+})
