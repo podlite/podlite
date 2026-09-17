@@ -14,6 +14,7 @@ import {
   mkFomattingCodeL,
   mkBlock,
   mkNode,
+  markGuarded,
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
@@ -77,8 +78,77 @@ export const getContentForToc = (node: PodNode): string => {
 
 
 */
+
+// Codes that only change how text looks; anything else would make something of
+// its own inside an entry: a link within the link, a second note, index entry or
+// definition, an alias the renderer expands after this point.
+const KEPT_CODES = new Set(['B', 'I', 'U', 'C', 'K', 'T', 'R', 'S', 'V', 'E', 'G'])
+
+const isGuarded = (node: any): boolean =>
+  Boolean(node && typeof node === 'object' && (node.guarded === true || (node.type === 'fcode' && node.name === 'G')))
+
+const textNode = (value: string, guarded: boolean) =>
+  guarded ? { type: 'text', value, guarded: true } : { type: 'text', value }
+
+// The text of a code taken apart into its text nodes: joined, it reads as the
+// entry's string does now, and each part keeps its own mark.
+const textParts = (node: any, guarded: boolean): any[] => {
+  if (typeof node === 'string') return [textNode(node, guarded)]
+  if (!node || typeof node !== 'object') return []
+  if (Array.isArray(node)) return node.flatMap(child => textParts(child, guarded))
+  if (node.type === 'fcode' && node.name === 'N') return []
+  const covered = guarded || isGuarded(node)
+  if (node.type === 'text' || node.type === 'verbatim') return [textNode(String(node.value), covered)]
+  return textParts(node.content, covered)
+}
+
+const labelCopy = (node: any, guarded: boolean): any[] => {
+  if (typeof node === 'string') return [textNode(node, guarded)]
+  if (!node || typeof node !== 'object') return []
+  if (Array.isArray(node)) return node.flatMap(child => labelCopy(child, guarded))
+  const covered = guarded || isGuarded(node)
+  if (node.type === 'fcode') {
+    if (node.name === 'N') return []
+    if (!KEPT_CODES.has(node.name)) return textParts(node, guarded)
+    const content = node.name === 'V' ? node.content : labelCopy(node.content, covered)
+    return [{ ...node, content }]
+  }
+  if (Array.isArray(node.content)) return [{ ...node, content: labelCopy(node.content, covered) }]
+  return [{ ...node }]
+}
+
+const holdsGuarded = (node: any): boolean => {
+  if (!node || typeof node !== 'object') return false
+  if (Array.isArray(node)) return node.some(holdsGuarded)
+  return isGuarded(node) || holdsGuarded(node.content)
+}
+
+// The nodes the entry's string is made of, in the order getContentForToc reads
+// them; null when the string comes from an attribute value.
+const entrySource = (node: any): any[] | null => {
+  if (!node || node.type !== 'block') return null
+  const conf = makeAttrs(node, {})
+  if (conf.exists('caption') || conf.exists('title')) return null
+  if (node.name === 'image' || node.name === 'table') return null
+  if (node.name === 'item') return Array.isArray(node.content) && node.content.length > 0 ? [node.content[0]] : null
+  const [captionNode] = getFromTree(node, 'caption')
+  if (captionNode) return (captionNode as any).content || null
+  if (!Array.isArray(node.content)) return null
+  return node.content.flatMap((child: any) => (child && child.type === 'para' ? child.content || [] : [child]))
+}
+
+// What the link of an entry holds: the string as before, unless something in its
+// source is hidden, so the entry hides what the source hides and shows the rest.
+const entryContent = (node: any, text: string, wholeHidden: boolean): any[] => {
+  if (wholeHidden || isGuarded(node)) return [textNode(text, true)]
+  const source = entrySource(node)
+  if (!source || !holdsGuarded(source)) return [text]
+  return markGuarded(labelCopy(source, false), false)
+}
 export const plugin: Plugin = {
   toAstAfter: (writer, processor, fulltree) => {
+    // marks are set again after this pass; an entry needs them now, while it is built
+    markGuarded(fulltree)
     return (node, ctx) => {
       const content = getTextContentFromNode(node)
       const blocks: Array<any> = content
@@ -88,6 +158,7 @@ export const plugin: Plugin = {
       if (blocks.length == 0) {
         blocks.push({ name: 'head' })
       }
+      const tocHidden = isGuarded(node)
       const nodes = getFromTree(fulltree, ...blocks)
       const tocTree = prepareDataForToc(nodes)
       const createList = (items: any[], level): TocList => {
@@ -100,7 +171,7 @@ export const plugin: Plugin = {
           //TODO: 2. refactor linking for blocks
           const para = mkNode({
             type: 'para',
-            content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, [text])],
+            content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, entryContent(node, text, tocHidden))],
           }) as PodNode
           const tocNode = para
           resultList.push(mkTocItem(tocNode))
@@ -155,7 +226,8 @@ export const plugin: Plugin = {
         return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels, folded)
       }
 
-      return makeToc(tocTree, tocTitle)
+      const toc = makeToc(tocTree, tocTitle)
+      return tocHidden ? { ...toc, guarded: true } : toc
     }
   },
 }

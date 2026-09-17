@@ -75,21 +75,30 @@ describe('paths hidden content does not take onto the page', () => {
   })
 })
 
-// A table of contents is built before hidden content is marked, so its entries
-// carry the text as written. Each check below states that the leak is still there:
-// it turns red once the entries are built after the marking, and is then turned
-// around into a check that the text is hidden.
-describe('a table of contents on the page still shows hidden text', () => {
+describe('a table of contents on the page hides what its source hides', () => {
+  const both = (body: string, word: string) => {
+    expect(tocOf(page(body))).not.toContain(word)
+    expect(tocOf(page(body, 'draft'))).toContain(word)
+  }
+
   it('in the entry of a hidden heading', () => {
-    expect(tocOf(page('=toc head1\n\n=for head1 :masked\nKrin Phase\n\ntext'))).toContain('Krin')
+    both('=toc head1\n\n=for head1 :masked\nKrin Phase\n\ntext', 'Krin')
   })
 
-  it('in the entry of a heading with a hidden word', () => {
-    expect(tocOf(page('=toc head1\n\n=head1 Project G<Aurox> plan'))).toContain('Aurox')
+  it('in the entry of a heading with a hidden word, and shows the rest', () => {
+    both('=toc head1\n\n=head1 Project G<Aurox> plan', 'Aurox')
+    expect(tocOf(page('=toc head1\n\n=head1 Project G<Aurox> plan'))).toContain('Project')
   })
 
   it('in the entry of a hidden table listed by its caption', () => {
-    const doc = "=toc table\n\n=begin table :caption('Dravo Sales') :masked\na b\n=end table"
-    expect(tocOf(page(doc))).toContain('Dravo')
+    both("=toc table\n\n=begin table :caption('Dravo Sales') :masked\na b\n=end table", 'Dravo')
+  })
+
+  it('in the caption and the entries of a hidden table of contents', () => {
+    const doc = '=for toc :masked :caption<TocSecret> :folded\nhead1\n\n=head1 Public Qor'
+    const out = page(doc)
+    expect(out).not.toContain('TocSecret')
+    expect(out.slice(0, out.indexOf('<h1'))).not.toContain('Public Qor')
+    expect(page(doc, 'draft')).toContain('TocSecret')
   })
 })

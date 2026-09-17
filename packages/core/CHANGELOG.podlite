@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite convert keeps a table of contents hidden when it is rebuilt after the includes are in
+
 =item podlite convert builds a table of contents of the document after its includes are in, so the table lists the blocks they bring
 
 =item C<:lint-ignore> on a block no longer silences a finding at the first line of the block after it

@@ -83,21 +83,68 @@ describe('paths hidden content does not take through a renderer', () => {
   })
 })
 
-// A table of contents is built before hidden content is marked, so its entries
-// carry the text as written. Each check below states that the leak is still there:
-// it turns red once the entries are built after the marking, and is then turned
-// around into a check that the text is hidden.
-describe('a table of contents still shows hidden text', () => {
+describe('a table of contents hides what its source hides', () => {
+  const both = (body: string, word: string) => {
+    expect(tocOf(html(body))).not.toContain(word)
+    expect(tocOf(html(body, 'draft'))).toContain(word)
+  }
+
   it('in the entry of a hidden heading', () => {
-    expect(tocOf(html('=toc head1\n\n=for head1 :masked\nKrin Phase\n\ntext'))).toContain('Krin')
+    both('=toc head1\n\n=for head1 :masked\nKrin Phase\n\ntext', 'Krin')
   })
 
-  it('in the entry of a heading with a hidden word', () => {
-    expect(tocOf(html('=toc head1\n\n=head1 Project G<Aurox> plan'))).toContain('Aurox')
+  it('in the entry of a heading with a hidden word, and shows the rest', () => {
+    const doc = '=toc head1\n\n=head1 Project G<Aurox> plan\n\n=head1 Open title'
+    both(doc, 'Aurox')
+    expect(tocOf(html(doc))).toContain('Project')
+    expect(tocOf(html(doc))).toContain('Open title')
   })
 
   it('in the entry of a hidden table listed by its caption', () => {
-    const doc = "=toc table\n\n=begin table :caption('Dravo Sales') :masked\na b\n=end table"
-    expect(tocOf(html(doc))).toContain('Dravo')
+    both("=toc table\n\n=begin table :caption('Dravo Sales') :masked\na b\n=end table", 'Dravo')
+  })
+
+  it('in the entry of a heading inside a hidden container', () => {
+    both('=begin nested :masked\n\n=head1 Inner Zent\n\n=end nested\n\n=toc head1', 'Zent')
+  })
+
+  it('in an entry whose heading holds a link, without a link inside the link', () => {
+    const doc = '=toc head1\n\n=head1 G<Hidden> L<Visible|https://example.org>'
+    both(doc, 'Hidden')
+    expect(tocOf(html(doc)).split('<a').length - 1).toBe(1)
+  })
+
+  it('inside a link of the heading, and shows the open words of the link', () => {
+    const doc = '=toc head1\n\n=head1 L<Visible G<Secret>|https://example.org>'
+    both(doc, 'Secret')
+    expect(tocOf(html(doc))).toContain('Visible')
+  })
+
+  it('in an entry whose heading holds an alias to a link', () => {
+    const doc = '=alias BRAND L<AliasLink|https://example.org>\n\n=toc head1\n\n=head1 G<Hidden> A<BRAND>'
+    both(doc, 'Hidden')
+    expect(tocOf(html(doc)).split('<a').length - 1).toBe(1)
+  })
+
+  it('without a second note for a note in the heading', () => {
+    const out = html('=toc head1\n\n=head1 G<N<NoteSecret>> Title', 'draft')
+    expect(out.split('NoteSecret').length - 1).toBe(1)
+  })
+
+  it('in every entry of a hidden table of contents', () => {
+    const doc = '=for toc :masked :caption<TocSecret>\nhead1\n\n=head1 Public Qor'
+    expect(tocOf(html(doc))).not.toContain('Public Qor')
+    expect(tocOf(html(doc, 'draft'))).toContain('Public Qor')
+  })
+
+  it('in the entry of a hidden picture, a list item and a code block', () => {
+    both("=toc Image\n\n=for Image :masked :caption('Vorn Map')\npic.png", 'Vorn')
+    both('=toc item\n\n=item G<Pell> point', 'Pell')
+    both('=toc code\n\n=begin code :allow<G>\nkey G<sk-7731>\n=end code', 'sk-7731')
+  })
+
+  it('in each of two tables of contents', () => {
+    const out = html('=toc head1\n\n=head1 G<Wexa> one\n\n=toc head1')
+    expect(out).not.toContain('Wexa')
   })
 })

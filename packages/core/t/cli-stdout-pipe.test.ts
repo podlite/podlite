@@ -151,3 +151,33 @@ describe('podlite convert with a table of contents', () => {
     expect(html).toContain('href="#frame-ok"')
   })
 })
+
+describe('podlite convert with a hidden table of contents', () => {
+  const convert = (files: Record<string, string>) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    for (const [name, body] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), body)
+    const html = execFileSync('node', [bin, 'convert', path.join(dir, 'doc.podlite'), '--to', 'html', '-o', '-'], {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString()
+    fs.rmSync(dir, { recursive: true, force: true })
+    // the text of the entries; a link target names the heading, which stays open
+    return html
+      .slice(html.indexOf('<div className="toc">'), html.indexOf('</div>', html.indexOf('<div className="toc">')))
+      .replace(/ href="[^"]*"/g, '')
+  }
+
+  it('keeps its entries hidden, on its own and inside a hidden container', () => {
+    expect(convert({ 'doc.podlite': '=pod\n\n=for toc :masked\nhead1\n\n=head1 Public Qor\n' })).not.toContain('Qor')
+    const doc = '=pod\n\n=begin nested :masked\n\n=toc head1\n\n=end nested\n\n=head1 Out Tal\n'
+    expect(convert({ 'doc.podlite': doc })).not.toContain('Tal')
+  })
+
+  it('hides in an entry what an included heading hides', () => {
+    const toc = convert({
+      'part.podlite': '=head1 G<Ivel> part\n',
+      'doc.podlite': '=pod\n\n=toc head1\n\n=include file:./part.podlite\n',
+    })
+    expect(toc).toContain('part')
+    expect(toc).not.toContain('Ivel')
+  })
+})

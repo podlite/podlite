@@ -1,3 +1,4 @@
+import { markGuarded } from '@podlite/schema'
 import { plugin as tocPlugin } from '@podlite/toc'
 import { IncludeOrigin } from './resolve-includes'
 
@@ -17,7 +18,8 @@ const collectTocBlocks = (tree: any, found: Map<number, any>): void => {
 // included file stays as its file built it.
 export const refreshTocs = (tree: any, written: any, file: string, origin: WeakMap<object, IncludeOrigin>): any => {
   const blocks = new Map<number, any>()
-  collectTocBlocks(written, blocks)
+  // a table hidden by its own :masked or by a hidden container keeps that mark here
+  collectTocBlocks(markGuarded(written), blocks)
   if (blocks.size === 0) return tree
   const rebuild = tocPlugin.toAstAfter(null, null, tree)
   const walk = (node: any): any => {

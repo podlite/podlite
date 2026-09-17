@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an entry of a table of contents hides what its source hides: the text of a hidden heading, picture or table caption, a hidden word inside a heading, and every entry of a hidden table of contents. Open words stay open, and a link, note, alias or definition inside a heading comes into the entry as its text
+
 =head1 0.0.63
 
 =item the package can be imported from Node directly. The emitted ESM referenced its own files without an extension, which the ESM loader refuses
