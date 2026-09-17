@@ -7,6 +7,7 @@ import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
 import { resolveIncludes, IncludeOrigin } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
+import { version } from './version'
 
 // The plugin registry brings the diagram renderer, and with it mermaid and
 // React. Only conversion renders anything, so the registry is raised there and
@@ -67,6 +68,7 @@ Options:
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
   --help     Show this help
+  --version  Show the version number
 
 Examples:
   podlite convert doc.pod6 --to md
@@ -83,10 +85,26 @@ Examples:
   podlite lint docs/ --strict --format json`)
 }
 
-function parseArgs(argv: string[]) {
-  const args = {
+type Args = {
+  command: string
+  files: string[]
+  to: string
+  output: string
+  failOnEmpty: boolean
+  quiet: boolean
+  strict: boolean
+  format: string
+  configPath: string
+  base: string
+  renderMode: string
+  enable: string[]
+  disable: string[]
+}
+
+function parseArgs(argv: string[]): Args | null | 'version' {
+  const args: Args = {
     command: '',
-    files: [] as string[],
+    files: [],
     to: '',
     output: '',
     failOnEmpty: false,
@@ -96,12 +114,15 @@ function parseArgs(argv: string[]) {
     configPath: '',
     base: '',
     renderMode: '',
-    enable: [] as string[],
-    disable: [] as string[],
+    enable: [],
+    disable: [],
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
     return null
+  }
+  if (argv[0] === '--version') {
+    return 'version'
   }
 
   let i = 0
@@ -135,6 +156,8 @@ function parseArgs(argv: string[]) {
       if (rule) args.disable.push(rule)
     } else if (arg === '--help' || arg === '-h') {
       return null
+    } else if (arg === '--version') {
+      return 'version'
     } else if (!arg.startsWith('-')) {
       args.files.push(arg)
     }
@@ -218,9 +241,7 @@ function readStdinSync(): string {
   return fs.readFileSync(0, 'utf-8')
 }
 
-function runQueryCommand(args: ReturnType<typeof parseArgs>): void {
-  if (!args) process.exit(1)
-
+function runQueryCommand(args: Args): void {
   // First positional arg is the selector, rest are files
   if (args.files.length === 0) {
     console.error('podlite query: missing selector')
@@ -319,6 +340,11 @@ function main() {
   if (!args) {
     usage()
     process.exit(0)
+  }
+
+  if (args === 'version') {
+    process.stdout.write(`${version}\n`)
+    return
   }
 
   if (args.command === 'query') {

@@ -1,14 +1,15 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import { execFileSync } from 'child_process'
+import { spawnSync } from 'child_process'
 
 const pkgRoot = path.join(__dirname, '..')
 const cli = path.join(pkgRoot, 'lib', 'cli.js')
+const manifest: { version: string } = JSON.parse(fs.readFileSync(path.join(pkgRoot, 'package.json'), 'utf-8'))
 
 // The command is loaded in a child that reports what ended up in the module
 // cache. Asking the cache is the only way to see what a run paid for.
-const probe = (args: string[]): string[] => {
+const probeRun = (args: string[]): { modules: string[]; code: number | null; stdout: string } => {
   const report = path.join(os.tmpdir(), `podlite-modules-${process.pid}-${args.join('-').replace(/\W+/g, '_')}.json`)
   // the command ends through process.exit on several paths, so the report is
   // written from an exit hook rather than after the require
@@ -21,15 +22,14 @@ const probe = (args: string[]): string[] => {
     `try { require(${JSON.stringify(cli)}) } catch (e) {}`,
   ].join('\n')
 
-  try {
-    execFileSync('node', ['-e', script], { stdio: 'ignore' })
-  } catch {
-    // a non-zero exit is fine: the report is written before the command ends
-  }
+  // a non-zero exit is fine: the report is written before the command ends
+  const result = spawnSync('node', ['-e', script], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] })
   const written = JSON.parse(fs.readFileSync(report, 'utf-8')) as string[]
   fs.rmSync(report, { force: true })
-  return written
+  return { modules: written, code: result.status, stdout: result.stdout }
 }
+
+const probe = (args: string[]): string[] => probeRun(args).modules
 
 const holds = (modules: string[], name: string) => modules.some(m => m.includes(name))
 
@@ -59,6 +59,13 @@ describe('what a run of the command loads', () => {
 
   it('leaves it out of the help text', () => {
     const modules = probe(['--help'])
+    expect(holds(modules, 'podlite-diagrams')).toBe(false)
+  })
+
+  it('leaves it out of the version', () => {
+    const { modules, code, stdout } = probeRun(['--version'])
+    expect(code).toBe(0)
+    expect(stdout).toBe(`${manifest.version}\n`)
     expect(holds(modules, 'podlite-diagrams')).toBe(false)
   })
 

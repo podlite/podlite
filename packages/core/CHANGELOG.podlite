@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite --version prints the version of the package
+
 =item podlite convert keeps a table of contents hidden when it is rebuilt after the includes are in
 
 =item podlite convert builds a table of contents of the document after its includes are in, so the table lists the blocks they bring
