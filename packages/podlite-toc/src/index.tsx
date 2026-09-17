@@ -112,7 +112,8 @@ const labelCopy = (node: any, guarded: boolean): any[] => {
   if (node.type === 'fcode') {
     if (node.name === 'N') return []
     if (!KEPT_CODES.has(node.name)) return textParts(node, guarded)
-    const content = node.name === 'V' ? node.content : labelCopy(node.content, covered)
+    // the content of V is kept as written, and E holds nodes that name its character
+    const content = node.name === 'V' || node.name === 'E' ? node.content : labelCopy(node.content, covered)
     return [{ ...node, content }]
   }
   if (node.type === 'text') return [{ ...node, ...(covered ? { guarded: true } : {}) }]

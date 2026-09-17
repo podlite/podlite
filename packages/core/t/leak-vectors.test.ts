@@ -148,6 +148,12 @@ describe('a table of contents hides what its source hides', () => {
     both('=toc head1\n\n=for head1 :caption<>\nG<Sekrb> public', 'Sekrb')
   })
 
+  it('in an entry that keeps the characters of an entity', () => {
+    const doc = '=toc head1\n\n=for head1 :id<h>\nG<Hidden> E<amp> E<0x41> end'
+    both(doc, 'Hidden')
+    expect(tocOf(html(doc))).toContain('&amp; A end')
+  })
+
   it('in an entry that stays inline, with no block inside the link', () => {
     const item = tocOf(html('=toc item\n\n=item G<Pell> point'))
     expect(item.split('<p').length - 1).toBe(1)
