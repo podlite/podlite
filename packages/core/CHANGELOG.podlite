@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item podlite convert builds a table of contents of the document after its includes are in, so the table lists the blocks they bring
+
 =item C<:lint-ignore> on a block no longer silences a finding at the first line of the block after it
 
 =item podlite query selects through C<=include>: blocks an include brings in are found, their text and the file in the json output are those of the file they are written in, and a selection of C<include> no longer finds a directive that resolved. An include that is not there is reported with the file and line of the directive, the other matches are still written, and the exit code is 1; the report is not silenced by --quiet

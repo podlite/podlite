@@ -5,7 +5,8 @@ import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './l
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
-import { resolveIncludes } from './resolve-includes'
+import { resolveIncludes, IncludeOrigin } from './resolve-includes'
+import { refreshTocs } from './refresh-tocs'
 
 // The plugin registry brings the diagram renderer, and with it mermaid and
 // React. Only conversion renders anything, so the registry is raised there and
@@ -162,13 +163,17 @@ function convertFile(
 
   let tree = parseToAst(content)
   try {
+    const origin = new WeakMap<object, IncludeOrigin>()
     tree = resolveIncludes(tree, {
       baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
       parse: parseToAst,
       file: inputPath,
+      text: content,
       self: fromStdin ? undefined : inputPath,
+      origin,
       onWarning: problem => console.error(`podlite convert: ${problem.message}`),
     })
+    tree = refreshTocs(tree, p.parse(content, { podMode: 1 }), inputPath, origin)
   } catch (e) {
     console.error(`podlite convert: ${(e as Error).message}`)
     process.exit(1)

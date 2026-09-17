@@ -135,3 +135,19 @@ describe('podlite query on a file named like the stdin marker', () => {
     expect(status).toBe(0)
   })
 })
+
+describe('podlite convert with a table of contents', () => {
+  it('lists blocks an include brought in', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    fs.mkdirSync(path.join(dir, 't'))
+    fs.writeFileSync(
+      path.join(dir, 't', 'frame.podlite'),
+      '=begin test :id<frame-ok> :caption<A frame>\n=begin fixture\n=para x\n=end fixture\n=assert para\n=end test\n',
+    )
+    const src = path.join(dir, 'doc.podlite')
+    fs.writeFileSync(src, "=pod\n\n=include file:./t/frame.podlite#frame-ok\n\n=for toc :caption('Tests')\ntest\n")
+    const html = execFileSync('node', [bin, 'convert', src, '--to', 'html', '-o', '-']).toString()
+    fs.rmSync(dir, { recursive: true, force: true })
+    expect(html).toContain('href="#frame-ok"')
+  })
+})
