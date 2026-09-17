@@ -18,62 +18,64 @@ import {
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
-export const getContentForToc = (node: PodNode): string => {
+type TocEntry = {
+  text: string
+  // the nodes the text is read from; null when it comes from an attribute value
+  source: any[] | null
+}
+
+const bodyOf = (node: any): any[] =>
+  Array.isArray(node.content)
+    ? node.content.flatMap((child: any) => (child && child.type === 'para' ? child.content || [] : [child]))
+    : []
+
+// Where the text of an entry comes from, chosen once: the string and the nodes
+// behind it must not be picked by two rules that can drift apart.
+const entryOf = (node: PodNode): TocEntry => {
   if (typeof node !== 'string' && 'type' in node) {
     if (node.type === 'block') {
       const conf = makeAttrs(node, {})
       if (isNamedBlock(node.name)) {
-        const caption = ((conf, nodeName) => {
-          if (conf.exists('caption')) {
-            return conf.getFirstValue('caption')
-          } else if (conf.exists('title')) {
-            return conf.getFirstValue('title')
-          } else {
-            // try to find content child node
-            const [captionNode] = getFromTree(node, 'caption')
-            if (captionNode) {
-              return getTextContentFromNode(captionNode)
-            }
-          }
-          return `${nodeName} not have :caption`
-        })(conf, node.name)
-        return caption
+        if (conf.exists('caption')) return { text: conf.getFirstValue('caption'), source: null }
+        if (conf.exists('title')) return { text: conf.getFirstValue('title'), source: null }
+        const [captionNode] = getFromTree(node, 'caption')
+        if (captionNode)
+          return { text: getTextContentFromNode(captionNode), source: (captionNode as any).content || null }
+        return { text: `${node.name} not have :caption`, source: null }
       }
       if (node.name == 'image') {
         const caption = getTextContentFromNode(conf.getFirstValue('caption'))
-        return caption || 'image not have caption'
+        return { text: caption || 'image not have caption', source: null }
       }
       if (node.name == 'table') {
         const caption = getTextContentFromNode(conf.getFirstValue('caption'))
-        return caption || 'table not have :caption'
+        return { text: caption || 'table not have :caption', source: null }
       }
       if (node.type === 'block' && node.name === 'item') {
         if (Array.isArray(node.content) && node.content.length > 0) {
-          return getTextContentFromNode(node.content[0])
+          return { text: getTextContentFromNode(node.content[0]), source: [node.content[0]] }
         }
       }
-      const caption = ((conf, nodeName) => {
-        if (conf.exists('caption')) {
-          return getTextContentFromNode(conf.getFirstValue('caption'))
-        } else if (conf.exists('title')) {
-          return getTextContentFromNode(conf.getFirstValue('title'))
-        } else {
-          // try to find content child node
-          const [captionNode] = getFromTree(node, 'caption')
-          if (captionNode) {
-            return getTextContentFromNode(captionNode)
-          }
-          return null
+      if (conf.exists('caption')) {
+        const caption = getTextContentFromNode(conf.getFirstValue('caption'))
+        if (caption) return { text: caption, source: null }
+      } else if (conf.exists('title')) {
+        const title = getTextContentFromNode(conf.getFirstValue('title'))
+        if (title) return { text: title, source: null }
+      } else {
+        const [captionNode] = getFromTree(node, 'caption')
+        if (captionNode) {
+          const caption = getTextContentFromNode(captionNode)
+          if (caption) return { text: caption, source: (captionNode as any).content || null }
         }
-      })(conf, node.name)
-      if (caption) {
-        return caption
       }
-      return getTextContentFromNode(node)
+      return { text: getTextContentFromNode(node), source: bodyOf(node) }
     }
   }
-  return 'Not supported toc element'
+  return { text: 'Not supported toc element', source: null }
 }
+
+export const getContentForToc = (node: PodNode): string => entryOf(node).text
 /* 
 
 
@@ -126,25 +128,11 @@ const holdsGuarded = (node: any): boolean => {
   return isGuarded(node) || holdsGuarded(node.content)
 }
 
-// The nodes the entry's string is made of, in the order getContentForToc reads
-// them; null when the string comes from an attribute value.
-const entrySource = (node: any): any[] | null => {
-  if (!node || node.type !== 'block') return null
-  const conf = makeAttrs(node, {})
-  if (conf.exists('caption') || conf.exists('title')) return null
-  if (node.name === 'image' || node.name === 'table') return null
-  if (node.name === 'item') return Array.isArray(node.content) && node.content.length > 0 ? [node.content[0]] : null
-  const [captionNode] = getFromTree(node, 'caption')
-  if (captionNode) return (captionNode as any).content || null
-  if (!Array.isArray(node.content)) return null
-  return node.content.flatMap((child: any) => (child && child.type === 'para' ? child.content || [] : [child]))
-}
-
 // What the link of an entry holds: the string as before, unless something in its
 // source is hidden, so the entry hides what the source hides and shows the rest.
 const entryContent = (node: any, text: string, wholeHidden: boolean): any[] => {
   if (wholeHidden || isGuarded(node)) return [textNode(text, true)]
-  const source = entrySource(node)
+  const { source } = entryOf(node)
   if (!source || !holdsGuarded(source)) return [text]
   return markGuarded(labelCopy(source, false), false)
 }

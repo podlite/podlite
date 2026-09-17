@@ -94,6 +94,11 @@ describe('a table of contents on the page hides what its source hides', () => {
     both("=toc table\n\n=begin table :caption('Dravo Sales') :masked\na b\n=end table", 'Dravo')
   })
 
+  it('in an entry read from the body although the block has a caption', () => {
+    both('=toc item\n\n=for item :caption<Label>\nG<Sekra> public', 'Sekra')
+    both('=toc head1\n\n=for head1 :caption<>\nG<Sekrb> public', 'Sekrb')
+  })
+
   it('in the caption and the entries of a hidden table of contents', () => {
     const doc = '=for toc :masked :caption<TocSecret> :folded\nhead1\n\n=head1 Public Qor'
     const out = page(doc)

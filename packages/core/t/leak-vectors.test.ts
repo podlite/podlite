@@ -143,6 +143,11 @@ describe('a table of contents hides what its source hides', () => {
     both('=toc code\n\n=begin code :allow<G>\nkey G<sk-7731>\n=end code', 'sk-7731')
   })
 
+  it('in an entry read from the body although the block has a caption', () => {
+    both('=toc item\n\n=for item :caption<Label>\nG<Sekra> public', 'Sekra')
+    both('=toc head1\n\n=for head1 :caption<>\nG<Sekrb> public', 'Sekrb')
+  })
+
   it('in an entry that stays inline, with no block inside the link', () => {
     const item = tocOf(html('=toc item\n\n=item G<Pell> point'))
     expect(item.split('<p').length - 1).toBe(1)
