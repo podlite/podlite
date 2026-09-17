@@ -113,8 +113,11 @@ const labelCopy = (node: any, guarded: boolean): any[] => {
     const content = node.name === 'V' ? node.content : labelCopy(node.content, covered)
     return [{ ...node, content }]
   }
-  if (Array.isArray(node.content)) return [{ ...node, content: labelCopy(node.content, covered) }]
-  return [{ ...node }]
+  if (node.type === 'text') return [{ ...node, ...(covered ? { guarded: true } : {}) }]
+  if (node.type === 'verbatim') return [textNode(String(node.value), covered)]
+  // a paragraph or a block cannot stand inside a link: its inline content does
+  if (Array.isArray(node.content)) return labelCopy(node.content, covered)
+  return []
 }
 
 const holdsGuarded = (node: any): boolean => {

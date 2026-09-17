@@ -143,6 +143,14 @@ describe('a table of contents hides what its source hides', () => {
     both('=toc code\n\n=begin code :allow<G>\nkey G<sk-7731>\n=end code', 'sk-7731')
   })
 
+  it('in an entry that stays inline, with no block inside the link', () => {
+    const item = tocOf(html('=toc item\n\n=item G<Pell> point'))
+    expect(item.split('<p').length - 1).toBe(1)
+    const nested = tocOf(html('=toc nested\n\n=begin nested\n=head1 G<Orsk> part\n=end nested'))
+    expect(nested).not.toContain('<h1')
+    expect(nested).not.toContain('Orsk')
+  })
+
   it('in each of two tables of contents', () => {
     const out = html('=toc head1\n\n=head1 G<Wexa> one\n\n=toc head1')
     expect(out).not.toContain('Wexa')
