@@ -44,6 +44,25 @@
     }
   }
 
+  // Opt-in and separate from the diagnostics: a line naming a block this
+  // parser does not know is ordinary text for every other reader.
+  function noteRecognition(options, event) {
+    if (!options || !Array.isArray(options.recognition)) return
+    const seen = options.recognition.some(e =>
+      e.kind === event.kind && e.location.start.offset === event.location.start.offset)
+    if (!seen) options.recognition.push(event)
+  }
+
+  function noteUnknownDirective(options, line, location) {
+    const marked = line.match(/^[ \t]*=(begin|for|end)[ \t]+([a-zA-Z][a-zA-Z0-9_-]*)/)
+    const bare = marked ? null : line.match(/^[ \t]*=([a-zA-Z][a-zA-Z0-9_-]*)/)
+    const marker = marked ? marked[1] : 'abbreviated'
+    const name = marked ? marked[2] : bare && bare[1]
+    if (!name || isSupportedBlockName(name)) return
+    if (!marked && ['begin', 'for', 'end', 'config', 'alias'].includes(name)) return
+    noteRecognition(options, { kind: 'unknown-directive', marker, name, location })
+  }
+
   function keepReadable(attrs) {
     return attrs.filter(a => !a.dropped)
   }
@@ -167,11 +186,16 @@ markers = markerBegin / markerEnd / markerFor / markerConfig / markerAlias
 Text "text" = $(c:char+)
 // TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
 // becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'
-text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
+text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL
+  {
+    noteUnknownDirective(options, text(), location())
+    return text()
+  }
 raw_text_until_eol = $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             {
               addDiagnostic(options, "Line looks like a directive but could not be read; it stays as text", location(), 'directive-unreadable')
+              noteRecognition(options, { kind: 'unreadable-directive', location: location() })
               return { type:"para", value:text(), error:true, location:location()}
             }
 /** 

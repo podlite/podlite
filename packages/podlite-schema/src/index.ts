@@ -1,6 +1,6 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import * as pointer from 'json-pointer'
-import { AstTree, ParseDiagnostic, PodNode, PodliteDocument } from './types'
+import { AstTree, ParseDiagnostic, PodNode, PodliteDocument, RecognitionEvent } from './types'
 import { BLOCK_NAMES } from './block-names'
 export { PodliteDocument } from './types'
 import * as jsonShemes from '../schema'
@@ -175,6 +175,7 @@ export type parseOpt = {
   podMode?: number
   mode?: 'pod' | 'md'
   diagnostics?: ParseDiagnostic[]
+  recognition?: RecognitionEvent[]
 }
 const configDefaults_plug: ParserPlugin = () => tree => propagateConfigDefaults(tree)
 
@@ -213,8 +214,8 @@ function makeTree() {
   }
 
   function parse(src: string, opt: parseOpt = { skipChain: 0, podMode: 1 }) {
-    const { skipChain = 0, podMode = 1, diagnostics } = opt
-    let tree: AST = parser.parse(src, { podMode, diagnostics, blockNames: BLOCK_NAMES })
+    const { skipChain = 0, podMode = 1, diagnostics, recognition } = opt
+    let tree: AST = parser.parse(src, { podMode, diagnostics, recognition, blockNames: BLOCK_NAMES })
     if (!skipChain) {
       for (let i = 0; i < plugins.length; i++) {
         const plugin = plugins[i]

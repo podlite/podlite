@@ -202,6 +202,21 @@ export interface ParseDiagnostic {
   location: Location
 }
 
+// Filled only when the caller passes a list: a line that is written as a
+// directive but names no block the parser knows, and a directive line that could
+// not be read at all. Neither changes the tree.
+export type RecognitionEvent =
+  | {
+      kind: 'unknown-directive'
+      marker: 'begin' | 'for' | 'end' | 'abbreviated'
+      name: string
+      location: Location
+    }
+  | {
+      kind: 'unreadable-directive'
+      location: Location
+    }
+
 // pod6 definitions
 
 export interface FormattingCodeB {

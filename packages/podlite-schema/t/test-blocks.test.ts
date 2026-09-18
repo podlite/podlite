@@ -350,3 +350,44 @@ head3
     }
   })
 })
+
+describe('what the parser did not recognise inside a test', () => {
+  const recognise = (src: string): any[] => {
+    const recognition: any[] = []
+    toTree().parse(src, { podMode: 1, skipChain: 0, recognition })
+    return recognition.map(e => [e.kind, e.marker, e.name, e.location.start.line])
+  }
+  const fixture = '=begin fixture\n=head1 A\n=end fixture\n'
+  const assert = '=begin assert\nhead1\n=end assert\n'
+
+  it('names a block of an unknown name in each of its forms', () => {
+    expect(recognise(`=begin test\n${fixture}=begin future\nx\n=end future\n${assert}=end test\n`)).toEqual([
+      ['unknown-directive', 'begin', 'future', 5],
+      ['unknown-directive', 'end', 'future', 7],
+    ])
+    expect(recognise(`=begin test\n${fixture}=for future\nx\n\n${assert}=end test\n`)).toEqual([
+      ['unknown-directive', 'for', 'future', 5],
+    ])
+    expect(recognise(`=begin test\n${fixture}=future x\n\n${assert}=end test\n`)).toEqual([
+      ['unknown-directive', 'abbreviated', 'future', 5],
+    ])
+  })
+
+  it('tells a closing line of an unknown name from an opening one', () => {
+    expect(recognise(`=begin test\n${fixture}=end missing\n${assert}=end test\n`)).toEqual([
+      ['unknown-directive', 'end', 'missing', 5],
+    ])
+  })
+
+  it('names the directive line of a test that could not be read', () => {
+    expect(recognise(`=begin test\n${fixture}${assert}`)).toEqual([['unreadable-directive', undefined, undefined, 1]])
+  })
+
+  it('names only the unknown line among prose, a comment, a named block and a fixture body, and leaves the tree as it was', () => {
+    const src = `=begin test\n=begin fixture\n=begin future\n=end future\n=end fixture\nSome prose.\n\n=comment note\n\n=begin Future\nx\n=end Future\n\n=for later\nx\n\n${assert}=end test\n`
+    expect(recognise(src)).toEqual([['unknown-directive', 'for', 'later', 14]])
+    const plain = toTree().parse(src, { podMode: 1, skipChain: 0 })
+    const withList = toTree().parse(src, { podMode: 1, skipChain: 0, recognition: [] })
+    expect(JSON.stringify(withList)).toEqual(JSON.stringify(plain))
+  })
+})

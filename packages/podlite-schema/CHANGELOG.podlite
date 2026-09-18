@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<parse> takes a C<recognition> list and fills it with the lines written as a directive of a block the parser does not know, and with the directive lines it could not read. The tree does not change
+
 =item an C<:id> written without a value is not an address: a link to C<#true> no longer finds such a block
 
 =item C<=test>, C<=fixture>, C<=assert> and C<=resource> are parsed as blocks. The last three keep their body as written, and the body of a fixture is not read as markup even under C<:allow>.
