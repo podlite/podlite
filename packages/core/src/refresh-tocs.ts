@@ -29,8 +29,11 @@ export const refreshTocs = (tree: any, written: any, file: string, origin: WeakM
     if (node.type === 'toc' && own && node.location && blocks.has(node.location.start.offset)) {
       return rebuild(blocks.get(node.location.start.offset), {}, (content: any) => content)
     }
-    if (Array.isArray(node.content)) return { ...node, content: node.content.map(walk) }
-    return node
+    if (!Array.isArray(node.content)) return node
+    const copy = { ...node, content: node.content.map(walk) }
+    const known = origin.get(node)
+    if (known) origin.set(copy, known)
+    return copy
   }
   return walk(tree)
 }

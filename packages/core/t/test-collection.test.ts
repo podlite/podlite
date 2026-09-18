@@ -52,6 +52,13 @@ describe('collecting tests', () => {
     ])
   })
 
+  it('names the file an included test is written in when the document has a table of contents', () => {
+    write('t/one.podlite', `=pod\n\n${aTest({ id: 'inner', fixture: '=head1 A' })}`)
+    const main = write('main.podlite', '=pod\n\n=toc head1\n\n=head1 Rules\n\n=include file:./t/one.podlite#inner\n')
+    const { tests } = collect(main)
+    expect(tests.map(t => path.relative(dir, t.place.file))).toEqual(['t/one.podlite'])
+  })
+
   it('runs a test with a fixture once when two files bring it in', () => {
     write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
     const first = write('first.podlite', '=pod\n\n=include file:./t/one.podlite#shared\n')
