@@ -416,6 +416,25 @@ describe('include address and problems', () => {
   })
 })
 
+describe('the file an included block was written in', () => {
+  it('is recorded for a block a Markdown section of the included file holds', () => {
+    write('md.podlite', '=pod\n\n=begin markdown\n```js\nlet a\n```\n=end markdown\n')
+    const main = write('notes.podlite', '=pod\n\n=include file:./md.podlite\n')
+    const origin = new WeakMap<object, IncludeOrigin>()
+    const text = fs.readFileSync(main, 'utf-8')
+    const tree = resolveIncludes(parseToAst(text), { baseDir: tmpDir, parse: parseToAst, file: main, text, origin })
+    const code: any[] = []
+    const visit = (n: any): void => {
+      if (!n || typeof n !== 'object') return
+      if (Array.isArray(n)) return n.forEach(visit)
+      if (n.type === 'block' && n.name === 'code') code.push(n)
+      visit(n.content)
+    }
+    visit(tree)
+    expect(code.map(n => path.basename(origin.get(n)?.file ?? ''))).toEqual(['md.podlite'])
+  })
+})
+
 describe('include through a source provider', () => {
   const files: Record<string, string> = {
     'guide.podlite': '=pod\n\n=head1 From memory\n',

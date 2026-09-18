@@ -125,7 +125,8 @@ const recordOrigin = (tree: any, where: IncludeOrigin, origin: WeakMap<object, I
     if (!node || typeof node !== 'object') return
     if (Array.isArray(node)) return node.forEach(visit)
     if (!origin.has(node)) origin.set(node, where)
-    if (Array.isArray(node.content)) node.content.forEach(visit)
+    // a Markdown section holds its parsed blocks in one node, not in a list
+    visit(node.content)
   }
   visit(tree)
 }
