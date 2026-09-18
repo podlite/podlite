@@ -3,7 +3,13 @@ import * as path from 'path'
 import * as os from 'os'
 import { parse, toMarkdown, toHtml } from '@podlite/schema'
 import { podlite } from '../src/index'
-import { resolveIncludes, IncludeOrigin, IncludeProblem, ResolveIncludesOptions } from '../src/resolve-includes'
+import {
+  resolveIncludes,
+  IncludeOrigin,
+  IncludeProblem,
+  ResolveIncludesOptions,
+  SourceProvider,
+} from '../src/resolve-includes'
 
 // A file permission does not stop a read by root or on Windows, so a failed read
 // is made here instead.
@@ -407,5 +413,36 @@ describe('include address and problems', () => {
       '=head1 Child',
     )
     expect(path.basename(origin.get(tree)?.file ?? '')).toBe('notes.podlite')
+  })
+})
+
+describe('include through a source provider', () => {
+  const files: Record<string, string> = {
+    'guide.podlite': '=pod\n\n=head1 From memory\n',
+    'parts/a.podlite': '=pod\n\n=head1 Part A\n',
+    'parts/b.podlite': '=pod\n\n=head1 Part B\n',
+  }
+  const provider = (root: string): SourceProvider => ({
+    read: file => files[path.relative(root, file)] ?? null,
+    list: (dir, deep) =>
+      Object.keys(files)
+        .map(name => path.relative(dir, path.join(root, name)))
+        .filter(name => !name.startsWith('..') && (deep || !name.includes('/'))),
+  })
+
+  it('reads a file and a mask from the provider, not from the disk', () => {
+    write('guide.podlite', '=pod\n\n=head1 From disk\n')
+    const tree = resolveIncludes(
+      parseToAst('=pod\n\n=include file:./guide.podlite\n\n=include file:./parts/*.podlite\n'),
+      {
+        baseDir: tmpDir,
+        parse: parseToAst,
+        provider: provider(tmpDir),
+      },
+    )
+    const md = toMarkdown({}).run(tree).toString()
+    expect(md).toContain('From memory')
+    expect(md).not.toContain('From disk')
+    expect(md.indexOf('Part A')).toBeLessThan(md.indexOf('Part B'))
   })
 })

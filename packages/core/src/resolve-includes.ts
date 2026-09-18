@@ -33,6 +33,13 @@ export type IncludeOrigin = {
   text: string
 }
 
+// Where included text comes from. A file is named by its absolute path; a
+// listing names files relative to the directory asked for.
+export type SourceProvider = {
+  read: (file: string) => string | null
+  list: (dir: string, deep: boolean) => string[]
+}
+
 export type ResolveIncludesOptions = {
   baseDir: string
   parse: (source: string, file: string) => any
@@ -46,6 +53,8 @@ export type ResolveIncludesOptions = {
   onError?: (problem: IncludeProblem) => void
   onWarning?: (problem: IncludeProblem) => void
   origin?: WeakMap<object, IncludeOrigin>
+  // the disk when not given
+  provider?: SourceProvider
 }
 
 const isWarning = (problem: IncludeProblem): boolean =>
@@ -90,9 +99,10 @@ const listDir = (dir: string, deep: boolean, depth = 0): string[] => {
 // the selector matches them back. Matching runs before the file is read: the
 // directory may hold anything, and a mask that does not name it must not send
 // it through the parser.
-const expandMask = (target: string, baseDir: string): string[] => {
+const expandMask = (target: string, baseDir: string, provider: SourceProvider): string[] => {
   const prefix = fixedPrefix(target)
-  return listDir(path.resolve(baseDir, prefix), reachesSubdirs(target))
+  return provider
+    .list(path.resolve(baseDir, prefix), reachesSubdirs(target))
     .map(name => (prefix ? `${prefix}/${name}` : name))
     .filter(file => filePathMatches(file, target))
 }
@@ -128,8 +138,11 @@ const readSource = (target: string): string | null => {
   }
 }
 
+export const diskProvider: SourceProvider = { read: readSource, list: (dir, deep) => listDir(dir, deep) }
+
 export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any => {
   const { origin } = opts
+  const provider = opts.provider ?? diskProvider
   const mainFile = opts.file ?? '<document>'
   if (origin && opts.text !== undefined) recordOrigin(tree, { file: mainFile, text: opts.text }, origin)
 
@@ -137,7 +150,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   // lands holds nodes of its own.
   const texts = new Map<string, string | null>()
   const textOf = (target: string): string | null => {
-    if (!texts.has(target)) texts.set(target, readSource(target))
+    if (!texts.has(target)) texts.set(target, provider.read(target))
     return texts.get(target) ?? null
   }
 
@@ -184,7 +197,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       }
 
       const masked = hasMask(parsed.document)
-      const written = masked ? expandMask(parsed.document, baseDir) : [parsed.document]
+      const written = masked ? expandMask(parsed.document, baseDir, provider) : [parsed.document]
       if (!masked && textOf(path.resolve(baseDir, parsed.document)) === null) {
         return report({
           kind: 'source',
