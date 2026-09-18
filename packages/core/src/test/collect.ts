@@ -1,9 +1,7 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import type { Location, RecognitionEvent } from '@podlite/schema'
-import { podlite } from '../index'
-import { refreshTocs } from '../refresh-tocs'
-import { resolveIncludes, IncludeOrigin, IncludeProblem } from '../resolve-includes'
+import { coreProfile, prepareDocument, readDocument } from './documents'
+import type { DocumentText, PreparedDocument, Profile } from './documents'
+import { resourceKey } from './resources'
 import type {
   AssertDecl,
   CollectedTest,
@@ -16,20 +14,11 @@ import type {
   TestShape,
   TestSource,
 } from './types'
-import { err, ok } from './types'
+import { ok } from './types'
 
-// A source of tests read and prepared the way convert prepares a document. The
-// tree and the tables stay inside the process; only CollectedTest leaves it.
-export type PreparedSource = {
-  index: number
-  name: string
-  text: string
-  tree: unknown
-  origin: WeakMap<object, IncludeOrigin>
-  recognition: Map<string, RecognitionEvent[]>
-  // the name a file of this source is known by in keys and places
-  identify: (file: string) => string
-}
+// A source of tests prepared the way convert prepares a document. The tree and
+// the tables stay inside the process; only CollectedTest leaves it.
+export type PreparedSource = PreparedDocument & { index: number }
 
 export type Collection = {
   sources: PreparedSource[]
@@ -92,14 +81,6 @@ export const splitSource = (expression: string): { source?: string; selection: s
   return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) ? { source: trimmed, selection: '' } : { selection: trimmed }
 }
 
-const canonical = (file: string): string => {
-  try {
-    return fs.realpathSync.native(file)
-  } catch {
-    return path.resolve(file)
-  }
-}
-
 const TEST_LINE = /^[ \t]*=(?:(?:begin|for)[ \t]+test|test)(?![a-zA-Z0-9_-])/
 
 // A test the grammar could not close stays as the line of its directive.
@@ -110,57 +91,32 @@ const isBrokenTest = (node: unknown): boolean =>
   typeof node.value === 'string' &&
   TEST_LINE.test(node.value)
 
-const readSource = (source: TestSource): Result<{ name: string; text: string; baseDir: string }, string> => {
-  if (source.kind === 'text') return ok({ name: source.name, text: source.text, baseDir: source.baseDir })
-  try {
-    const text = fs.readFileSync(source.path, 'utf-8')
-    return ok({ name: canonical(source.path), text, baseDir: path.dirname(path.resolve(source.path)) })
-  } catch (e) {
-    return err(e instanceof Error ? e.message : String(e))
-  }
-}
+const readSource = (source: TestSource): Result<DocumentText, string> =>
+  source.kind === 'text'
+    ? ok({ name: source.name, text: source.text, baseDir: source.baseDir })
+    : readDocument(source.path)
 
-const includeSeverity = (problem: IncludeProblem): 'error' | 'warning' =>
-  problem.kind === 'ambiguous' ? 'warning' : 'error'
-
-const prepare = (source: TestSource, index: number, problems: CollectionProblem[]): PreparedSource | undefined => {
+const prepare = (
+  source: TestSource,
+  index: number,
+  profile: Profile,
+  problems: CollectionProblem[],
+): PreparedSource | undefined => {
   const label = source.kind === 'file' ? source.path : source.name
   const read = readSource(source)
   if (read.ok === false) {
     problems.push({ kind: 'unreadable-source', source: label, message: read.error })
     return undefined
   }
-  const { name, text, baseDir } = read.value
-  const p = podlite({ importPlugins: true })
-  const recognition = new Map<string, RecognitionEvent[]>()
-  const identify = (file: string): string => (file === name ? name : canonical(file))
-  const parseToAst = (body: string, file: string): unknown => {
-    const events: RecognitionEvent[] = []
-    const tree = p.toAst(p.parse(body, { podMode: 1, recognition: events }))
-    recognition.set(identify(file), events)
-    return tree
-  }
-  const origin = new WeakMap<object, IncludeOrigin>()
-  const onInclude = (problem: IncludeProblem): void => {
-    problems.push({ kind: 'include', severity: includeSeverity(problem), source: label, problem })
-  }
-  try {
-    const resolved = resolveIncludes(parseToAst(text, name), {
-      baseDir,
-      parse: parseToAst,
-      file: name,
-      text,
-      self: source.kind === 'file' ? source.path : undefined,
-      origin,
-      onError: onInclude,
-      onWarning: onInclude,
-    })
-    const tree = refreshTocs(resolved, p.parse(text, { podMode: 1 }), name, origin)
-    return { index, name, text, tree, origin, recognition, identify }
-  } catch (e) {
-    problems.push({ kind: 'implementation-error', source: label, message: e instanceof Error ? e.message : String(e) })
+  const prepared = prepareDocument(read.value, { profile })
+  if (prepared.ok === false) {
+    problems.push({ kind: 'implementation-error', source: label, message: prepared.error })
     return undefined
   }
+  const { errors, warnings } = prepared.value
+  for (const problem of errors) problems.push({ kind: 'include', severity: 'error', source: label, problem })
+  for (const problem of warnings) problems.push({ kind: 'include', severity: 'warning', source: label, problem })
+  return { ...prepared.value, index }
 }
 
 const placeOf = (node: object, prepared: PreparedSource): Place => {
@@ -204,8 +160,11 @@ const shapeOf = (
   const named = new Set<string>()
   for (const r of resources) {
     if (!r.name) return { kind: 'invalid', message: 'a resource has no :name', place: r.place }
-    if (named.has(r.name)) return { kind: 'invalid', message: `two resources are named ${r.name}`, place: r.place }
-    named.add(r.name)
+    const key = resourceKey(r.name)
+    if (key === undefined)
+      return { kind: 'invalid', message: `a resource name leaves the test: ${r.name}`, place: r.place }
+    if (named.has(key)) return { kind: 'invalid', message: `two resources are named ${r.name}`, place: r.place }
+    named.add(key)
   }
   return asserts.length === 0 ? { kind: 'no-assertions' } : { kind: 'runnable' }
 }
@@ -282,11 +241,11 @@ const findTests = (prepared: PreparedSource): CollectedTest[] => {
   return found
 }
 
-export const collectTests = (sources: TestSource[]): Collection => {
+export const collectTests = (sources: TestSource[], profile: Profile = coreProfile): Collection => {
   const problems: CollectionProblem[] = []
   const prepared: PreparedSource[] = []
   sources.forEach((source, index) => {
-    const one = prepare(source, index, problems)
+    const one = prepare(source, index, profile, problems)
     if (one) prepared.push(one)
   })
   return { sources: prepared, tests: prepared.flatMap(findTests), problems }
