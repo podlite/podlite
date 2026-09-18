@@ -361,6 +361,32 @@ describe('include address and problems', () => {
     expect(errors[0].chain.map(step => path.basename(step.file))).toEqual(['notes.podlite', 'inner.podlite'])
   })
 
+  it('warns about an include whose selector cannot be read and keeps the directive', () => {
+    write('guide.podlite', guide)
+    const main = write('notes.podlite', '=pod\n\n=include file:./guide.podlite | head1[\n')
+    const warnings: IncludeProblem[] = []
+    const tree = resolve(main, { onError: () => undefined, onWarning: p => warnings.push(p) })
+    expect(warnings.map(w => [w.kind, w.chain[0].location?.start.line])).toEqual([['unparsed-selector', 3]])
+    expect(tree.content.some((n: any) => n.name === 'include')).toBe(true)
+  })
+
+  it('warns about an include of a scheme it does not read', () => {
+    const main = write('notes.podlite', '=pod\n\n=include nosuch:./guide.podlite | head1\n')
+    const warnings: IncludeProblem[] = []
+    resolve(main, { onWarning: p => warnings.push(p) })
+    expect(warnings.map(w => w.kind)).toEqual(['unsupported-scheme'])
+    expect(warnings[0].message).toMatch(/nosuch:/)
+  })
+
+  it('names the included file an unreadable selector sits in', () => {
+    write('inner.podlite', '=pod\n\n=include file:./guide.podlite | head1[\n')
+    const main = write('notes.podlite', '=pod\n\n=include file:inner.podlite\n')
+    const warnings: IncludeProblem[] = []
+    resolve(main, { onWarning: p => warnings.push(p) })
+    expect(warnings.map(w => w.kind)).toEqual(['unparsed-selector'])
+    expect(warnings[0].chain.map(step => path.basename(step.file))).toEqual(['notes.podlite', 'inner.podlite'])
+  })
+
   it('records the file every included node was written in', () => {
     write('inner.podlite', '=begin pod\n\n=head1 Child\n\n=end pod\n')
     const main = write('notes.podlite', '=pod\n\n=include file:inner.podlite\n')

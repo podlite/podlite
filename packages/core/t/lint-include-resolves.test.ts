@@ -50,6 +50,11 @@ describe('include-resolves rule', () => {
     expect(lint('doc6.podlite', '=pod\n\n=include file:./twice.podlite#x\n').map(x => x.severity)).toEqual(['warning'])
   })
 
+  it('warns when an include selector cannot be read', () => {
+    const v = lint('doc9.podlite', '=pod\n\n=include file:./guide.podlite | head1[\n')
+    expect(v.map(x => [x.severity, x.location?.start.line])).toEqual([['warning', 3]])
+  })
+
   it('reports only the include that loses content', () => {
     const src = [
       '=pod',

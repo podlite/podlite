@@ -17,7 +17,7 @@ const toViolation = (problem: IncludeProblem, filePath: string): Violation => {
       : ''
   return {
     rule: INCLUDE_RESOLVES_RULE_ID,
-    severity: problem.kind === 'ambiguous' ? 'warning' : 'error',
+    severity: problem.kind === 'source' || problem.kind === 'address' ? 'error' : 'warning',
     message: `${problem.message}${inner}`,
     location: first?.location,
   }

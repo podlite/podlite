@@ -20,7 +20,7 @@ export type IncludeStep = {
 }
 
 export type IncludeProblem = {
-  kind: 'source' | 'address' | 'ambiguous'
+  kind: 'source' | 'address' | 'ambiguous' | 'unparsed-selector' | 'unsupported-scheme'
   target: string
   message: string
   // the first step is the directive in the document itself, the last one the
@@ -47,6 +47,9 @@ export type ResolveIncludesOptions = {
   onWarning?: (problem: IncludeProblem) => void
   origin?: WeakMap<object, IncludeOrigin>
 }
+
+const isWarning = (problem: IncludeProblem): boolean =>
+  problem.kind === 'ambiguous' || problem.kind === 'unparsed-selector' || problem.kind === 'unsupported-scheme'
 
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
@@ -139,7 +142,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   }
 
   const report = (problem: IncludeProblem): [] => {
-    if (problem.kind === 'ambiguous') {
+    if (isWarning(problem)) {
       opts.onWarning?.(problem)
       return []
     }
@@ -158,9 +161,28 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     if (isIncludeBlock(node)) {
       const selector = getTextContentFromNode(node.content)?.toString().trim()
       const parsed = selector ? parseSelector(selector) : undefined
-      if (!selector || !parsed || parsed.scheme !== 'file' || !parsed.document) return node
-
       const here = [...chain, { file, location: node.location }]
+      // The directive stays in the tree as before; what it would have brought in
+      // is missing, and a reader of the tree cannot tell that on its own.
+      if (!selector || !parsed || !parsed.scheme || !parsed.document) {
+        report({
+          kind: 'unparsed-selector',
+          target: selector ?? '',
+          message: `include selector cannot be read: ${selector || '(empty)'}`,
+          chain: here,
+        })
+        return node
+      }
+      if (parsed.scheme !== 'file') {
+        report({
+          kind: 'unsupported-scheme',
+          target: selector,
+          message: `include scheme is not supported: ${parsed.scheme}:`,
+          chain: here,
+        })
+        return node
+      }
+
       const masked = hasMask(parsed.document)
       const written = masked ? expandMask(parsed.document, baseDir) : [parsed.document]
       if (!masked && textOf(path.resolve(baseDir, parsed.document)) === null) {

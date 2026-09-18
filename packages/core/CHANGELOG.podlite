@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an include whose selector cannot be read, or whose scheme is not C<file:>, is now a warning in podlite convert, podlite query and the include-resolves rule of podlite lint; it used to be left in place without a word
+
 =item podlite --version prints the version of the package
 
 =item podlite convert keeps a table of contents hidden when it is rebuilt after the includes are in
