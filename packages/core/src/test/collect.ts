@@ -128,12 +128,17 @@ const placeOf = (node: object, prepared: PreparedSource): Place => {
 const keyOf = (place: Place): string =>
   `${place.file}:${place.location?.start.offset ?? '?'}:${place.location?.end.offset ?? '?'}`
 
-const within = (event: RecognitionEvent, block: Block): boolean => {
-  const start = block.location?.start.offset
-  const end = block.location?.end.offset
-  if (start === undefined || end === undefined) return false
-  return event.location.start.offset > start && event.location.end.offset <= end
-}
+// A line of an unknown name is a child of the test only when it stayed text
+// right under the test; inside a table or another block it belongs to that block.
+const underTest = (event: RecognitionEvent, block: Block): boolean =>
+  childrenOf(block).some(
+    child =>
+      isObject(child) &&
+      child.type === 'para' &&
+      isLocation(child.location) &&
+      event.location.start.offset >= child.location.start.offset &&
+      event.location.end.offset <= child.location.end.offset,
+  )
 
 const shapeOf = (
   block: Block,
@@ -142,7 +147,7 @@ const shapeOf = (
   asserts: AssertDecl[],
   resources: ResourceDecl[],
 ): TestShape => {
-  const inside = events.filter(e => within(e, block))
+  const inside = events.filter(e => underTest(e, block))
   // an unknown block is skipped even when the rest of the test is broken
   for (const e of inside) {
     if (e.kind === 'unknown-directive' && e.marker !== 'end') {

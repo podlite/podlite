@@ -135,6 +135,26 @@ describe('collecting tests', () => {
     expect(tests[1].asserts[0].fixture?.body).toContain('=head1 A')
   })
 
+  it('does not take a line of a table or of another block inside the test for a block of the test', () => {
+    const main = write(
+      'main.podlite',
+      [
+        '=pod',
+        '',
+        aTest({ id: 'table', fixture: '=head1 A', between: '=begin table\n=foo | bar\n=end table\n' }),
+        aTest({
+          id: 'nested',
+          fixture: '=head1 A',
+          between: '=begin nested\n=begin future\nx\n=end future\n=end nested\n',
+        }),
+      ].join('\n'),
+    )
+    expect(collect(main).tests.map(t => [t.id, t.shape.kind])).toEqual([
+      ['table', 'runnable'],
+      ['nested', 'runnable'],
+    ])
+  })
+
   it('does not take a test out of a code block, a fixture or a resource', () => {
     const inner = aTest({ fixture: '=head1 A' })
     const main = write(
