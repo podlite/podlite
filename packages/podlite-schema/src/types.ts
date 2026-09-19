@@ -202,9 +202,18 @@ export interface ParseDiagnostic {
   location: Location
 }
 
-// Filled only when the caller passes a list: a line that is written as a
-// directive but names no block the parser knows, and a directive line that could
-// not be read at all. Neither changes the tree.
+/*
+=begin pod :kind<export>
+
+=head2 RecognitionEvent
+
+What C<parse> puts in the C<recognition> list it is given: a line written as a
+directive of a block whose name the parser does not know, with the kind of line, and a
+directive line it could not read. The list is filled only when passed, and the tree is
+the same either way.
+
+=end pod
+*/
 export type RecognitionEvent =
   | {
       kind: 'unknown-directive'
