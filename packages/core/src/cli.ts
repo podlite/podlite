@@ -44,17 +44,23 @@ function usage() {
   podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
                            [--enable <rule>] [--disable <rule>]
   podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
+  podlite test <files...> [--against <document>] [--format <text|json>] [--allow-skipped]
 
 Commands:
   convert    Convert Podlite files to another format
   lint       Check Podlite/Markdown files for issues (work in progress)
   query      Extract blocks matching a selector
+  test       Run the tests written in Podlite files
 
 Options:
   --to       Output format
                convert: md (markdown), html
                query:   podlite (default), md, html, json
-  --format   lint output format: text (default), json
+  --format   lint and test output format: text (default), json
+  --against  test: a document to examine with the tests (repeatable); without it
+             each assertion reads its fixture or the file the test is in
+  --allow-skipped
+             test: skipped tests alone do not fail the run
   --strict   lint: promote warnings to errors
   --config   lint: path to .podlitelintrc.{json,js}; without it the nearest one
              at or above the first checked file is used
@@ -82,7 +88,9 @@ Examples:
   cat doc.podlite | podlite query 'head1'
   podlite query 'table' --to json - < report.podlite
   podlite lint docs/*.podlite
-  podlite lint docs/ --strict --format json`)
+  podlite lint docs/ --strict --format json
+  podlite test Specification.pod6
+  podlite test rules.podlite --against report.podlite --format json`)
 }
 
 type Args = {
@@ -99,6 +107,10 @@ type Args = {
   renderMode: string
   enable: string[]
   disable: string[]
+  against: string[]
+  allowSkipped: boolean
+  // an option that takes a value was given none
+  missing: string[]
 }
 
 function parseArgs(argv: string[]): Args | null | 'version' {
@@ -116,6 +128,9 @@ function parseArgs(argv: string[]): Args | null | 'version' {
     renderMode: '',
     enable: [],
     disable: [],
+    against: [],
+    allowSkipped: false,
+    missing: [],
   }
 
   if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
@@ -154,6 +169,12 @@ function parseArgs(argv: string[]): Args | null | 'version' {
     } else if (arg === '--disable') {
       const rule = argv[++i]
       if (rule) args.disable.push(rule)
+    } else if (arg === '--against') {
+      const document = argv[++i]
+      if (document && !document.startsWith('-')) args.against.push(document)
+      else args.missing.push('--against')
+    } else if (arg === '--allow-skipped') {
+      args.allowSkipped = true
     } else if (arg === '--help' || arg === '-h') {
       return null
     } else if (arg === '--version') {
@@ -327,6 +348,38 @@ function runLintOnThreads(files: string[], options: LintOptions): void {
     })
 }
 
+const TEST_FORMATS = ['text', 'json']
+
+function runTestCommand(args: Args): void {
+  const fail = (message: string): void => {
+    console.error(`podlite test: ${message}`)
+    process.exitCode = 2
+  }
+  if (args.missing.length > 0) return fail(`${args.missing[0]} needs a document`)
+  if (args.files.length === 0) return fail('no files of tests given')
+  const format = args.format || 'text'
+  if (!TEST_FORMATS.includes(format)) return fail(`unknown --format "${format}". Supported: ${TEST_FORMATS.join(', ')}`)
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { runTests, formatText, formatJson } = require('./test')
+  // a plugin that prints while a document is read must not break the report
+  const log = console.log
+  console.log = console.error
+  let report
+  try {
+    report = runTests({
+      tests: args.files.map(file => ({ kind: 'file', path: file })),
+      against: args.against,
+      allowSkipped: args.allowSkipped,
+    })
+  } catch (e) {
+    console.log = log
+    return fail(`the implementation failed: ${(e as Error).message}`)
+  }
+  console.log = log
+  process.stdout.write(format === 'json' ? formatJson(report) : formatText(report))
+  process.exitCode = report.exitCode
+}
+
 function main() {
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code !== 'EPIPE') {
@@ -349,6 +402,11 @@ function main() {
 
   if (args.command === 'query') {
     runQueryCommand(args)
+    return
+  }
+
+  if (args.command === 'test') {
+    runTestCommand(args)
     return
   }
 
