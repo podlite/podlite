@@ -128,39 +128,60 @@ const placeOf = (node: object, prepared: PreparedSource): Place => {
 const keyOf = (place: Place): string =>
   `${place.file}:${place.location?.start.offset ?? '?'}:${place.location?.end.offset ?? '?'}`
 
-// A line of an unknown name is a child of the test only when it stayed text
-// right under the test; inside a table or another block it belongs to that block.
-const underTest = (event: RecognitionEvent, block: Block): boolean =>
-  childrenOf(block).some(
-    child =>
-      isObject(child) &&
-      child.type === 'para' &&
-      isLocation(child.location) &&
-      event.location.start.offset >= child.location.start.offset &&
-      event.location.end.offset <= child.location.end.offset,
-  )
+type Found = { event: RecognitionEvent; file: string }
+
+// Each child is read in the file it was written in, so a child brought in by an
+// include is checked against the lines of its own file.
+const recognitionOf = (block: Block, prepared: PreparedSource): { unknown: Found[]; broken: Found[] } => {
+  const unknown: Found[] = []
+  const broken: Found[] = []
+  for (const child of childrenOf(block)) {
+    if (!isObject(child) || !isLocation(child.location)) continue
+    const { file } = placeOf(child, prepared)
+    const { start, end } = child.location
+    const open: string[] = []
+    for (const event of prepared.recognition.get(file) ?? []) {
+      if (event.location.start.offset < start.offset || event.location.end.offset > end.offset) continue
+      if (event.kind === 'unreadable-directive') {
+        broken.push({ event, file })
+      } else if (event.marker === 'end') {
+        const at = open.lastIndexOf(event.name)
+        if (at === -1) broken.push({ event, file })
+        else open.splice(at, 1)
+      } else {
+        if (event.marker === 'begin') open.push(event.name)
+        // inside a table or another block the line belongs to that block
+        if (child.type === 'para') unknown.push({ event, file })
+      }
+    }
+  }
+  return { unknown, broken }
+}
 
 const shapeOf = (
   block: Block,
-  place: Place,
-  events: RecognitionEvent[],
+  prepared: PreparedSource,
   asserts: AssertDecl[],
   resources: ResourceDecl[],
 ): TestShape => {
-  const inside = events.filter(e => underTest(e, block))
+  const { unknown, broken } = recognitionOf(block, prepared)
   // an unknown block is skipped even when the rest of the test is broken
-  for (const e of inside) {
-    if (e.kind === 'unknown-directive' && e.marker !== 'end') {
-      return { kind: 'unknown-child', name: e.name, place: { file: place.file, location: e.location } }
+  const [first] = unknown
+  if (first && first.event.kind === 'unknown-directive') {
+    return {
+      kind: 'unknown-child',
+      name: first.event.name,
+      place: { file: first.file, location: first.event.location },
     }
   }
-  const [broken] = inside
-  if (broken) {
+  const [damage] = broken
+  if (damage) {
+    const { event } = damage
     const message =
-      broken.kind === 'unknown-directive'
-        ? `closing line of a block that is not open: =end ${broken.name}`
+      event.kind === 'unknown-directive'
+        ? `closing line of a block that is not open: =end ${event.name}`
         : 'a directive line inside the test cannot be read'
-    return { kind: 'malformed', message, place: { file: place.file, location: broken.location } }
+    return { kind: 'malformed', message, place: { file: damage.file, location: event.location } }
   }
   const named = new Set<string>()
   for (const r of resources) {
@@ -200,14 +221,13 @@ const readTest = (block: Block, prepared: PreparedSource): CollectedTest => {
       })
     }
   }
-  const events = prepared.recognition.get(place.file) ?? []
   return {
     key: keyOf(place),
     id: stringOption(block, 'id'),
     caption: stringOption(block, 'caption'),
     place,
     obtainedFrom: prepared.index,
-    shape: shapeOf(block, place, events, asserts, resources),
+    shape: shapeOf(block, prepared, asserts, resources),
     asserts,
     resources,
   }

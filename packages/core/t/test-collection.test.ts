@@ -155,6 +155,27 @@ describe('collecting tests', () => {
     ])
   })
 
+  it('finds a broken structure inside a block of the test', () => {
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${aTest({ id: 'stray', fixture: '=head1 A', between: '=begin nested\n=end missing\n=end nested\n' })}`,
+    )
+    expect(collect(main).tests.map(t => [t.id, t.shape.kind])).toEqual([['stray', 'malformed']])
+  })
+
+  it('finds a block of an unknown name that an include puts right under the test', () => {
+    write('child.podlite', '=future text\n')
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${aTest({ id: 'included', fixture: '=head1 A', between: '=include file:./child.podlite\n' })}`,
+    )
+    const [test] = collect(main).tests
+    expect([test.shape.kind, test.shape.kind === 'unknown-child' && path.basename(test.shape.place.file)]).toEqual([
+      'unknown-child',
+      'child.podlite',
+    ])
+  })
+
   it('does not take a test out of a code block, a fixture or a resource', () => {
     const inner = aTest({ fixture: '=head1 A' })
     const main = write(
