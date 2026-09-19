@@ -141,6 +141,18 @@ describe('an assertion', () => {
     expect(report.tests.map(t => [t.id, t.status, t.asserts[0].matches])).toEqual([['outer', 'passed', 1]])
   })
 
+  it('does not hold under :absent over a data table whose source is not read', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('table', [
+        block('fixture', '=for data-table :src<file:missing.csv>\n'),
+        block('assert', 'cell', ' :absent'),
+      ])}`,
+    )
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.reason?.kind, a.matches]).toEqual([false, 'source-unsupported', undefined])
+  })
+
   it('checks each supplied document on its own', () => {
     const first = write('first.podlite', '=pod\n\n=head1 In first\n')
     const second = write('second.podlite', '=pod\n\n=para No heading.\n')

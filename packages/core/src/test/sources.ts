@@ -52,6 +52,20 @@ const readSourceExpression = (source: string): { scheme: string; document: strin
     : { scheme, document: rest.slice(0, hash), address: rest.slice(hash + 1) || undefined }
 }
 
+const whole = (document: PreparedDocument, input: InputKind): Result<PreparedDocument, InputFailure> => {
+  if (document.errors.length > 0) return err({ kind: 'input-error', input, problems: document.errors })
+  const [unread] = document.unread
+  if (unread) {
+    return err({
+      kind: 'source-unsupported',
+      input,
+      source: unread.source,
+      message: 'a data table reads a source the runner does not read',
+    })
+  }
+  return ok(document)
+}
+
 // A document with an include that lost content is not the document the author
 // wrote; nothing it lacks may pass for nothing having matched.
 const complete = (
@@ -59,8 +73,7 @@ const complete = (
   input: InputKind,
 ): Result<PreparedDocument, InputFailure> => {
   if (prepared.ok === false) return err({ kind: 'implementation-error', input, message: prepared.error })
-  if (prepared.value.errors.length > 0) return err({ kind: 'input-error', input, problems: prepared.value.errors })
-  return ok(prepared.value)
+  return whole(prepared.value, input)
 }
 
 export const prepareSupplied = (file: string, profile: Profile): SuppliedDocument => {
@@ -176,7 +189,8 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
     const holder = env.containing(context.kind === 'containing' ? context.source : test.obtainedFrom)
     if (!holder)
       return err({ kind: 'implementation-error', input: 'containing', message: 'the source of the test is gone' })
-    if (holder.errors.length > 0) return err({ kind: 'input-error', input: 'containing', problems: holder.errors })
+    const checked = whole(holder, 'containing')
+    if (checked.ok === false) return checked
     return ok({ kind: 'containing', document: holder, target: holder.tree })
   }
 }

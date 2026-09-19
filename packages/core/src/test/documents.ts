@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import type { PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
+import type { Location, PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, SourceProvider } from '../resolve-includes'
@@ -77,6 +77,8 @@ export type PreparedDocument = {
   // includes that lost content; the tree is what is left without them
   errors: IncludeProblem[]
   warnings: IncludeProblem[]
+  // blocks whose content comes from a source this runner does not read
+  unread: Array<{ source: string; location?: Location }>
   profile: string
 }
 
@@ -97,6 +99,30 @@ export const canonical = (file: string): string => {
 }
 
 const isLosing = (problem: IncludeProblem): boolean => problem.kind !== 'ambiguous'
+
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
+
+const isLocation = (value: unknown): value is Location =>
+  isObject(value) && isObject(value.start) && typeof value.start.offset === 'number'
+
+// A data table reads data: itself; any other source is left for a publisher,
+// and the block stays as written, holding none of the rows.
+const unreadSources = (tree: unknown): PreparedDocument['unread'] => {
+  const found: PreparedDocument['unread'] = []
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(visit)
+    if (!isObject(node)) return
+    if (node.type === 'block' && node.name === 'data-table' && Array.isArray(node.config)) {
+      const src = node.config.find(c => isObject(c) && c.name === 'src')
+      if (isObject(src) && typeof src.value === 'string') {
+        found.push({ source: src.value, location: isLocation(node.location) ? node.location : undefined })
+      }
+    }
+    visit(node.content)
+  }
+  visit(tree)
+  return found
+}
 
 // The stages convert goes through: each file read and transformed on its own,
 // then the includes, then the tables of contents of the document itself.
@@ -143,6 +169,7 @@ export const prepareDocument = (
       identify,
       errors,
       warnings,
+      unread: unreadSources(tree),
       profile: opts.profile.name,
     })
   } catch (e) {
