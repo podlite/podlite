@@ -192,6 +192,9 @@ text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ ma
     return text()
   }
 raw_text_until_eol = $(Text)+ EOL {return text()}
+// a line of a table or of a body kept as written: never a directive, so the
+// parser has nothing to recognise in it
+plain_line =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             {
               addDiagnostic(options, "Line looks like a directive but could not be read; it stays as text", location(), 'directive-unreadable')
@@ -409,7 +412,7 @@ tableBodyRowSeparator  =  $( tableHeadSeparator / &{ return options.isDelimited 
                                     }
                           }
 
-tableRow = t:text_content { return { name:'row', type:'text', value:t } } 
+tableRow = t:plain_line { return { name:'row', type:'text', value:t } } 
 
  tableContents =
     &{  
@@ -624,7 +627,7 @@ abbreviatedBlockRaw =
     &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline text:text_content )*
+  content:$(!emptyline text:plain_line )*
   { 
     return {
             margin:vmargin,
@@ -769,7 +772,7 @@ paragraphBlockRaw =
       &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline text_content)*
+  content:$(!emptyline plain_line)*
   { 
       return { 
               type: 'block',

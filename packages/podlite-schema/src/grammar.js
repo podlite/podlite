@@ -1638,6 +1638,99 @@ function peg$parse(input, options) {
     return s0;
   }
 
+  function peg$parseplain_line() {
+    var s0, s1, s2, s3, s4, s5, s6;
+
+    s0 = peg$currPos;
+    s1 = peg$currPos;
+    peg$silentFails++;
+    s2 = peg$currPos;
+    s3 = peg$parse_();
+    if (s3 !== peg$FAILED) {
+      s4 = peg$parsemarkerConfig();
+      if (s4 === peg$FAILED) {
+        s4 = peg$parsemarkerAlias();
+        if (s4 === peg$FAILED) {
+          s4 = peg$currPos;
+          s5 = peg$parsemarkers();
+          if (s5 !== peg$FAILED) {
+            s6 = peg$parsestrictIdentifier();
+            if (s6 !== peg$FAILED) {
+              s5 = [s5, s6];
+              s4 = s5;
+            } else {
+              peg$currPos = s4;
+              s4 = peg$FAILED;
+            }
+          } else {
+            peg$currPos = s4;
+            s4 = peg$FAILED;
+          }
+          if (s4 === peg$FAILED) {
+            s4 = peg$parsemarkerAbbreviatedBlock();
+          }
+        }
+      }
+      if (s4 !== peg$FAILED) {
+        s3 = [s3, s4];
+        s2 = s3;
+      } else {
+        peg$currPos = s2;
+        s2 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s2;
+      s2 = peg$FAILED;
+    }
+    if (s2 === peg$FAILED) {
+      s2 = peg$parseblankline();
+    }
+    peg$silentFails--;
+    if (s2 === peg$FAILED) {
+      s1 = void 0;
+    } else {
+      peg$currPos = s1;
+      s1 = peg$FAILED;
+    }
+    if (s1 !== peg$FAILED) {
+      s2 = peg$currPos;
+      s3 = [];
+      s4 = peg$parseText();
+      if (s4 !== peg$FAILED) {
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          s4 = peg$parseText();
+        }
+      } else {
+        s3 = peg$FAILED;
+      }
+      if (s3 !== peg$FAILED) {
+        s2 = input.substring(s2, peg$currPos);
+      } else {
+        s2 = s3;
+      }
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseEOL();
+        if (s3 !== peg$FAILED) {
+          peg$savedPos = s0;
+          s1 = peg$c36();
+          s0 = s1;
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    } else {
+      peg$currPos = s0;
+      s0 = peg$FAILED;
+    }
+
+    return s0;
+  }
+
   function peg$parseerror_para() {
     var s0, s1, s2, s3, s4, s5;
 
@@ -5180,7 +5273,7 @@ function peg$parse(input, options) {
     var s0, s1;
 
     s0 = peg$currPos;
-    s1 = peg$parsetext_content();
+    s1 = peg$parseplain_line();
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
       s1 = peg$c151(s1);
@@ -6527,7 +6620,7 @@ function peg$parse(input, options) {
                   s10 = peg$FAILED;
                 }
                 if (s10 !== peg$FAILED) {
-                  s11 = peg$parsetext_content();
+                  s11 = peg$parseplain_line();
                   if (s11 !== peg$FAILED) {
                     s10 = [s10, s11];
                     s9 = s10;
@@ -6553,7 +6646,7 @@ function peg$parse(input, options) {
                     s10 = peg$FAILED;
                   }
                   if (s10 !== peg$FAILED) {
-                    s11 = peg$parsetext_content();
+                    s11 = peg$parseplain_line();
                     if (s11 !== peg$FAILED) {
                       s10 = [s10, s11];
                       s9 = s10;
@@ -7587,7 +7680,7 @@ function peg$parse(input, options) {
                   s10 = peg$FAILED;
                 }
                 if (s10 !== peg$FAILED) {
-                  s11 = peg$parsetext_content();
+                  s11 = peg$parseplain_line();
                   if (s11 !== peg$FAILED) {
                     s10 = [s10, s11];
                     s9 = s10;
@@ -7613,7 +7706,7 @@ function peg$parse(input, options) {
                     s10 = peg$FAILED;
                   }
                   if (s10 !== peg$FAILED) {
-                    s11 = peg$parsetext_content();
+                    s11 = peg$parseplain_line();
                     if (s11 !== peg$FAILED) {
                       s10 = [s10, s11];
                       s9 = s10;

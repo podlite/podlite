@@ -379,6 +379,11 @@ describe('what the parser did not recognise inside a test', () => {
     ])
   })
 
+  it('does not take a line of a table or of a body kept as written for a directive', () => {
+    const src = `=begin test\n=begin table\n=end missing | value\n=future | x\n=end table\n\n=for fixture\n=end missing\n\n=fixture\n=end gone\n\n${assert}=end test\n`
+    expect(recognise(src)).toEqual([])
+  })
+
   it('names the directive line of a test that could not be read', () => {
     expect(recognise(`=begin test\n${fixture}${assert}`)).toEqual([['unreadable-directive', undefined, undefined, 1]])
   })
