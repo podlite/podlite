@@ -130,36 +130,65 @@ const keyOf = (place: Place): string =>
 
 type Found = { event: RecognitionEvent; file: string }
 
-// A node a plugin wraps children in, like the list around items, has no place of
-// its own; its children stand for it.
+// A node a plugin wraps children in stands for its children: the list around
+// items has no place of its own, and a folded section has the place of its
+// heading alone.
 const located = (node: unknown): unknown[] =>
-  isObject(node) && !isLocation(node.location) && Array.isArray(node.content) ? node.content.flatMap(located) : [node]
+  isObject(node) && Array.isArray(node.content) && (!isLocation(node.location) || node.name === '_folded_section')
+    ? node.content.flatMap(located)
+    : [node]
 
-// Each child is read in the file it was written in, so a child brought in by an
-// include is checked against the lines of its own file.
+const inRange = (event: RecognitionEvent, location: Location): boolean =>
+  event.location.start.offset >= location.start.offset && event.location.end.offset <= location.end.offset
+
+// Every block under the test is read in the file it was written in, so a block
+// an include brings in is checked against the lines of its own file.
 const recognitionOf = (block: Block, prepared: PreparedSource): { unknown: Found[]; broken: Found[] } => {
-  const unknown: Found[] = []
+  const seen = new Map<string, Set<RecognitionEvent>>()
+  const visit = (node: unknown): void => {
+    if (!isObject(node)) return
+    if (isLocation(node.location)) {
+      const { file } = placeOf(node, prepared)
+      const inFile = seen.get(file) ?? new Set<RecognitionEvent>()
+      for (const event of prepared.recognition.get(file) ?? []) {
+        if (inRange(event, node.location)) inFile.add(event)
+      }
+      seen.set(file, inFile)
+    }
+    childrenOf(node).forEach(visit)
+  }
+  childrenOf(block).forEach(visit)
+
+  // a closing line pairs with the opening line before it in the same file,
+  // whatever blank lines split the text between them
   const broken: Found[] = []
-  for (const child of childrenOf(block).flatMap(located)) {
-    if (!isObject(child) || !isLocation(child.location)) continue
-    const { file } = placeOf(child, prepared)
-    const { start, end } = child.location
+  for (const [file, events] of seen) {
     const open: string[] = []
-    for (const event of prepared.recognition.get(file) ?? []) {
-      if (event.location.start.offset < start.offset || event.location.end.offset > end.offset) continue
-      if (event.kind === 'unreadable-directive') {
-        broken.push({ event, file })
-      } else if (event.marker === 'end') {
+    const ordered = [...events].sort((a, b) => a.location.start.offset - b.location.start.offset)
+    for (const event of ordered) {
+      if (event.kind === 'unreadable-directive') broken.push({ event, file })
+      else if (event.marker === 'begin') open.push(event.name)
+      else if (event.marker === 'end') {
         const at = open.lastIndexOf(event.name)
         if (at === -1) broken.push({ event, file })
         else open.splice(at, 1)
-      } else {
-        if (event.marker === 'begin') open.push(event.name)
-        // inside a table or another block the line belongs to that block
-        if (child.type === 'para') unknown.push({ event, file })
       }
     }
   }
+
+  // an unknown block is a child of the test only when it stayed text right
+  // under the test; inside a table or another block it belongs to that block
+  const unknown: Found[] = []
+  for (const child of childrenOf(block).flatMap(located)) {
+    if (!isObject(child) || child.type !== 'para' || !isLocation(child.location)) continue
+    const { file } = placeOf(child, prepared)
+    for (const event of seen.get(file) ?? []) {
+      if (event.kind === 'unknown-directive' && event.marker !== 'end' && inRange(event, child.location)) {
+        unknown.push({ event, file })
+      }
+    }
+  }
+  unknown.sort((a, b) => a.event.location.start.offset - b.event.location.start.offset)
   return { unknown, broken }
 }
 
@@ -206,7 +235,7 @@ const readTest = (block: Block, prepared: PreparedSource): CollectedTest => {
   const resources: ResourceDecl[] = []
   let fixture: FixtureDecl | undefined
   let fixtures = 0
-  for (const child of childrenOf(block)) {
+  for (const child of childrenOf(block).flatMap(located)) {
     if (!isBlock(child)) continue
     const childPlace = placeOf(child, prepared)
     if (child.name === 'fixture') {

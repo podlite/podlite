@@ -184,6 +184,50 @@ describe('collecting tests', () => {
     ])
   })
 
+  it('reads what follows a folded heading as part of the test', () => {
+    const folded = (id: string, after: string): string =>
+      `=begin test :id<${id}>\n=begin fixture\n=head1 A\n=end fixture\n\n=for head1 :folded\nHeading\n\n${after}=end test\n`
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${[
+        folded('unknown', '=future x\n\n=for assert\nhead1\n\n'),
+        folded('stray', '=end missing\n=for assert\nhead1\n\n'),
+        folded('assert', '=for assert\nhead1\n\n'),
+      ].join('\n')}`,
+    )
+    expect(collect(main).tests.map(t => [t.id, t.shape.kind, t.asserts.length])).toEqual([
+      ['unknown', 'unknown-child', 1],
+      ['stray', 'malformed', 1],
+      ['assert', 'runnable', 1],
+    ])
+  })
+
+  it('finds a broken structure in a file an include puts inside a block of the test, and pairs lines across a blank one', () => {
+    write('child.podlite', '=end missing\n')
+    const split = write(
+      'split.podlite',
+      `=pod\n\n${aTest({
+        id: 'split',
+        fixture: '=head1 A',
+        between: '=begin nested\n=begin future\nx\n\ny\n=end future\n=end nested\n',
+      })}`,
+    )
+    expect(collect(split).tests.map(t => t.shape.kind)).toEqual(['runnable'])
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${aTest({
+        id: 'deep',
+        fixture: '=head1 A',
+        between: '=begin nested\n=include file:./child.podlite\n=end nested\n',
+      })}`,
+    )
+    const [test] = collect(main).tests
+    expect([test.shape.kind, test.shape.kind === 'malformed' && path.basename(test.shape.place.file)]).toEqual([
+      'malformed',
+      'child.podlite',
+    ])
+  })
+
   it('finds a block of an unknown name that an include puts right under the test', () => {
     write('child.podlite', '=future text\n')
     const main = write(
