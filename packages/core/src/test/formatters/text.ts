@@ -8,7 +8,7 @@ const shown = (file: string, cwd: string): string => {
   const hash = file.indexOf('#')
   const disk = hash === -1 ? file : file.slice(0, hash)
   const rest = hash === -1 ? '' : file.slice(hash)
-  return path.isAbsolute(disk) ? `${path.relative(cwd, disk) || disk}${rest}` : file
+  return path.isAbsolute(disk) ? `${path.relative(cwd, disk) || '.'}${rest}` : file
 }
 
 const at = (place: Place, cwd: string): string =>
