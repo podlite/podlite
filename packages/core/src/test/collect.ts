@@ -130,12 +130,17 @@ const keyOf = (place: Place): string =>
 
 type Found = { event: RecognitionEvent; file: string }
 
+// A node a plugin wraps children in, like the list around items, has no place of
+// its own; its children stand for it.
+const located = (node: unknown): unknown[] =>
+  isObject(node) && !isLocation(node.location) && Array.isArray(node.content) ? node.content.flatMap(located) : [node]
+
 // Each child is read in the file it was written in, so a child brought in by an
 // include is checked against the lines of its own file.
 const recognitionOf = (block: Block, prepared: PreparedSource): { unknown: Found[]; broken: Found[] } => {
   const unknown: Found[] = []
   const broken: Found[] = []
-  for (const child of childrenOf(block)) {
+  for (const child of childrenOf(block).flatMap(located)) {
     if (!isObject(child) || !isLocation(child.location)) continue
     const { file } = placeOf(child, prepared)
     const { start, end } = child.location

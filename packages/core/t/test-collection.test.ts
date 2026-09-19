@@ -163,6 +163,27 @@ describe('collecting tests', () => {
     expect(collect(main).tests.map(t => [t.id, t.shape.kind])).toEqual([['stray', 'malformed']])
   })
 
+  it('finds a broken structure inside an item and a definition, and none in a table row or a fixture body', () => {
+    const cases = {
+      item: '=begin item\n=end missing\n=end item\n',
+      defn: '=begin defn\nTerm\n=end missing\n=end defn\n',
+      table: '=begin table\n=end missing | value\n=end table\n',
+      body: '=for fixture\n=end missing\n\n',
+    }
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${Object.entries(cases)
+        .map(([id, between]) => aTest({ id, between }))
+        .join('\n')}`,
+    )
+    expect(collect(main).tests.map(t => [t.id, t.shape.kind])).toEqual([
+      ['item', 'malformed'],
+      ['defn', 'malformed'],
+      ['table', 'runnable'],
+      ['body', 'runnable'],
+    ])
+  })
+
   it('finds a block of an unknown name that an include puts right under the test', () => {
     write('child.podlite', '=future text\n')
     const main = write(
