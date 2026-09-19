@@ -102,6 +102,18 @@ const baseOf = (test: CollectedTest, env: InputEnvironment): string => {
 
 // One test run: fixtures are read the first time an assertion needs them, and
 // what one test declares is seen by no other.
+/*
+=begin pod :kind<export>
+
+=head2 inputsFor
+
+The document each assertion of one test run is read against: the source it names,
+else the supplied document, else the fixture nearest before it, else the document the
+test is in. A fixture is read the first time it is needed, and the resources of the
+test are seen by that fixture only.
+
+=end pod
+*/
 export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEnvironment) => {
   const fixtures = new Map<number, Result<PreparedDocument, InputFailure>>()
   const named = new Map<string, Result<PreparedDocument, InputFailure>>()

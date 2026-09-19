@@ -40,3 +40,33 @@ describe('the lint entry the package declares', () => {
     expect(entry).not.toMatch(/require\(["']\.\/lint/)
   })
 })
+
+describe('the test entry the package declares', () => {
+  it('points at files that exist', () => {
+    const entry = pkg.exports['./test']
+    for (const target of [entry.types, entry.require, entry.import]) {
+      expect(fs.existsSync(at(target))).toBe(true)
+    }
+  })
+
+  it('hands over the run, its parts and the report formats', () => {
+    const api = require('podlite/test')
+    for (const name of [
+      'runTests',
+      'collectTests',
+      'planRuns',
+      'inputsFor',
+      'evaluateAssertion',
+      'formatText',
+      'formatJson',
+    ]) {
+      expect(typeof api[name]).toBe('function')
+    }
+    expect([api.coreProfile.name, api.schemaProfile.name]).toEqual(['core', 'schema'])
+  })
+
+  it('keeps the runner out of the main entry', () => {
+    const entry = fs.readFileSync(at(pkg.exports['.'].require), 'utf-8')
+    expect(entry).not.toMatch(/require\(["']\.\/test/)
+  })
+})

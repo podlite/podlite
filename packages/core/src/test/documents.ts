@@ -14,9 +14,22 @@ type Reader = {
 
 // What reads a document for an assertion. A reader is made per document, so no
 // state of one parse reaches the next.
+/*
+=begin pod :kind<export>
+
+=head2 Profile
+
+How documents are read for assertions: the name the report gives it, a reader made
+fresh for each document, and the selections it can run.
+
+=end pod
+*/
 export type Profile = {
   name: string
   reader: () => Reader
+  // a selection the implementation reads but cannot run; every one it reads
+  // runs when not given
+  supports?: (selection: string) => boolean
 }
 
 const readerOf = (importPlugins: boolean) => (): Reader => {
@@ -27,9 +40,29 @@ const readerOf = (importPlugins: boolean) => (): Reader => {
   }
 }
 
+/*
+=begin pod :kind<export>
+
+=head2 coreProfile
+
+The profile the command uses: the plugins of this package, so a Markdown section is
+read into blocks.
+
+=end pod
+*/
 export const coreProfile: Profile = { name: 'core', reader: readerOf(true) }
 
 // without the plugins of other packages: Markdown, diagrams, images
+/*
+=begin pod :kind<export>
+
+=head2 schemaProfile
+
+The parser alone, without plugins of other packages. A Markdown section stays one
+block, so a test that reads into one does not hold under it.
+
+=end pod
+*/
 export const schemaProfile: Profile = { name: 'schema', reader: readerOf(false) }
 
 export type PreparedDocument = {

@@ -241,6 +241,18 @@ const findTests = (prepared: PreparedSource): CollectedTest[] => {
   return found
 }
 
+/*
+=begin pod :kind<export>
+
+=head2 collectTests
+
+Reads each file of tests the way convert reads a document, includes resolved, and
+finds the tests in it with the file and line each is written at. A test inside
+another, and one inside a code block or a fixture, is not collected. An include that
+could not be resolved is a problem of the collection.
+
+=end pod
+*/
 export const collectTests = (sources: TestSource[], profile: Profile = coreProfile): Collection => {
   const problems: CollectionProblem[] = []
   const prepared: PreparedSource[] = []
@@ -254,6 +266,18 @@ export const collectTests = (sources: TestSource[], profile: Profile = coreProfi
 // Obtained twice, a test runs once only when every assertion reads a fixture or
 // a source it names each time; one that reads the document around it runs
 // where it was obtained, one that reads a supplied document runs per document.
+/*
+=begin pod :kind<export>
+
+=head2 planRuns
+
+Decides how often each collected test runs. A test obtained from several files runs
+once when all its assertions read a fixture or a source they name; one that reads the
+document around it runs where it was obtained; one that reads a supplied document
+runs once per document.
+
+=end pod
+*/
 export const planRuns = (tests: CollectedTest[], supplied: number): PlannedRun[] => {
   const groups = new Map<string, CollectedTest[]>()
   for (const test of tests) {

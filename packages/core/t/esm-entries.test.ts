@@ -24,7 +24,7 @@ const inFreshNode = (source: string): { ok: boolean; out: string } => {
 
 // The two entries that used to die on a bare require in their ESM build. Each
 // runs in its own process because an entry can have side effects on load
-const ENTRIES = ['podlite/lint', '@podlite/publisher/node']
+const ENTRIES = ['podlite/lint', 'podlite/test', '@podlite/publisher/node']
 
 describe('an entry can be imported as a module', () => {
   for (const entry of ENTRIES) {

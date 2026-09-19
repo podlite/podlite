@@ -8,6 +8,16 @@ export const err = <E>(error: E): { ok: false; error: E } => ({ ok: false, error
 
 // A file is named by its path on disk; text handed in has no path, so the caller
 // names it and says which directory its relative paths start from.
+/*
+=begin pod :kind<export>
+
+=head2 TestSource
+
+A file of tests by its path, or text handed in under a name, with the directory its
+relative paths start from.
+
+=end pod
+*/
 export type TestSource = { kind: 'file'; path: string } | { kind: 'text'; name: string; text: string; baseDir: string }
 
 // Where a block is written: the file it comes from, not the document it was
