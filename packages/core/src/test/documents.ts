@@ -77,6 +77,9 @@ export type PreparedDocument = {
   // includes that lost content; the tree is what is left without them
   errors: IncludeProblem[]
   warnings: IncludeProblem[]
+  // a block read out of a Markdown section, mapped to the section: the reader
+  // keeps no exact place for it in the file
+  sections: WeakMap<object, Record<string, unknown>>
   // blocks whose content comes from a source this runner does not read
   unread: Array<{ source: string; message: string; location?: Location }>
   profile: string
@@ -139,15 +142,26 @@ export const prepareDocument = (
   const recognition = new Map<string, RecognitionEvent[]>()
   const identify = (file: string): string => (file === name ? name : canonical(file))
   const lost: PreparedDocument['unread'] = []
+  const sections = new WeakMap<object, Record<string, unknown>>()
+  // marked per file before the includes: an address may bring in a block
+  // without the section around it
+  const markSections = (node: unknown, section: Record<string, unknown> | undefined): void => {
+    if (Array.isArray(node)) return node.forEach(n => markSections(n, section))
+    if (!isObject(node)) return
+    if (section) sections.set(node, section)
+    const own = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown') ? node : section
+    markSections(node.content, own)
+  }
   const toTree = (body: string, file: string): unknown => {
     const events: RecognitionEvent[] = []
     const diagnostics: ParseDiagnostic[] = []
     const tree = reader.toTree(body, events, diagnostics)
     recognition.set(identify(file), events)
+    markSections(tree, undefined)
     for (const d of diagnostics) {
       // a table whose data could not be had is rendered empty; one whose data
       // holds no rows was read and is empty
-      if (d.code === 'table-source-unreadable' && !/source has no rows/.test(d.message)) {
+      if (d.code === 'table-source-unreadable' && !/has no rows/.test(d.message)) {
         lost.push({ source: identify(file), message: d.message, location: d.location })
       }
     }
@@ -182,6 +196,7 @@ export const prepareDocument = (
       identify,
       errors,
       warnings,
+      sections,
       unread: [...lost, ...unreadSources(tree)],
       profile: opts.profile.name,
     })

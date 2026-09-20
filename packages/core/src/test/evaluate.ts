@@ -72,20 +72,6 @@ export const selectionOf = (expression: string): string => splitSource(expressio
 const usable = (selection: string, profile: Profile): boolean =>
   selection === '' || (parseSelector(selection) !== undefined && (profile.supports?.(selection) ?? true))
 
-// Each block inside a Markdown section, mapped to that section.
-const sectionsOf = (tree: unknown): Map<object, Record<string, unknown>> => {
-  const map = new Map<object, Record<string, unknown>>()
-  const visit = (node: unknown, section: Record<string, unknown> | undefined): void => {
-    if (Array.isArray(node)) return node.forEach(n => visit(n, section))
-    if (!isObject(node)) return
-    if (section) map.set(node, section)
-    const own = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown') ? node : section
-    visit(node.content, own)
-  }
-  visit(tree, undefined)
-  return map
-}
-
 const describeInput = (input: AssertionInput): AssertionResult['input'] => ({
   kind: input.kind,
   document: input.document.name,
@@ -145,9 +131,8 @@ export const evaluateAssertion = (
       reason: { kind: 'implementation-error', input: input.value.kind, message },
     }
   }
-  const sections = blocks.length > 0 ? sectionsOf(target) : new Map<object, Record<string, unknown>>()
   const evidence = blocks.map((block): Evidence => {
-    const section = sections.get(block)
+    const section = document.sections.get(block)
     const placed = section ?? block
     const where = document.origin.get(placed)
     return {

@@ -177,6 +177,29 @@ describe('an assertion', () => {
     expect([e.name, e.precision, e.location?.start.line]).toEqual(['head', 'section', 3])
   })
 
+  it('holds under :absent over a table whose data was read and holds no rows', () => {
+    const fixture = '=begin data :key<empty> :mime-type<text/csv>\n=end data\n\n=table data:empty\n'
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('empty', [block('fixture', fixture), block('assert', 'cell', ' :absent')])}`,
+    )
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.reason?.kind ?? null, a.matches]).toEqual([true, null, 0])
+  })
+
+  it('places at the section a Markdown block an address brings in alone', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('addressed', [
+        block('resource', '=pod\n\n=begin markdown\n# Title\n=end markdown', ' :name<r.podlite>'),
+        block('fixture', '=include file:./r.podlite#Title'),
+        block('assert', 'head1', ' :absent'),
+      ])}`,
+    )
+    const [e] = run(main).tests[0].asserts[0].evidence
+    expect([e.precision, e.file, e.location?.start.line]).toEqual(['section', 'resource:r.podlite', 3])
+  })
+
   it('checks each supplied document on its own', () => {
     const first = write('first.podlite', '=pod\n\n=head1 In first\n')
     const second = write('second.podlite', '=pod\n\n=para No heading.\n')
