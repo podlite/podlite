@@ -16,6 +16,9 @@ export type Evidence = {
   name: string
   file: string
   location?: Location
+  // 'section': the block was read out of a Markdown section, whose own place is
+  // given; the reader keeps no exact place for what it finds inside
+  precision?: 'section'
 }
 
 /*
@@ -68,6 +71,20 @@ export const selectionOf = (expression: string): string => splitSource(expressio
 // under :absent that would pass for a test that never looked.
 const usable = (selection: string, profile: Profile): boolean =>
   selection === '' || (parseSelector(selection) !== undefined && (profile.supports?.(selection) ?? true))
+
+// Each block inside a Markdown section, mapped to that section.
+const sectionsOf = (tree: unknown): Map<object, Record<string, unknown>> => {
+  const map = new Map<object, Record<string, unknown>>()
+  const visit = (node: unknown, section: Record<string, unknown> | undefined): void => {
+    if (Array.isArray(node)) return node.forEach(n => visit(n, section))
+    if (!isObject(node)) return
+    if (section) map.set(node, section)
+    const own = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown') ? node : section
+    visit(node.content, own)
+  }
+  visit(tree, undefined)
+  return map
+}
 
 const describeInput = (input: AssertionInput): AssertionResult['input'] => ({
   kind: input.kind,
@@ -128,12 +145,16 @@ export const evaluateAssertion = (
       reason: { kind: 'implementation-error', input: input.value.kind, message },
     }
   }
-  const evidence = blocks.map(block => {
-    const where = document.origin.get(block)
+  const sections = blocks.length > 0 ? sectionsOf(target) : new Map<object, Record<string, unknown>>()
+  const evidence = blocks.map((block): Evidence => {
+    const section = sections.get(block)
+    const placed = section ?? block
+    const where = document.origin.get(placed)
     return {
       name: typeof block.name === 'string' ? block.name : String(block.type),
       file: shownFile(where ? document.identify(where.file) : document.name),
-      location: isLocation(block.location) ? block.location : undefined,
+      location: isLocation(placed.location) ? placed.location : undefined,
+      ...(section ? { precision: 'section' } : {}),
     }
   })
   const held = assert.absent ? blocks.length === 0 : blocks.length > 0

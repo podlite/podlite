@@ -153,6 +153,30 @@ describe('an assertion', () => {
     expect([a.held, a.reason?.kind, a.matches]).toEqual([false, 'source-unsupported', undefined])
   })
 
+  it('does not hold under :absent over a data table whose data: source cannot be had', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('missing-data', [
+        block('fixture', '=for data-table :src<data:missing>\n'),
+        block('assert', 'cell', ' :absent'),
+      ])}`,
+    )
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.reason?.kind, a.matches]).toEqual([false, 'source-unsupported', undefined])
+  })
+
+  it('places a block found inside a Markdown section at the section', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('md', [
+        block('fixture', '=para Before.\n\n=begin markdown\n= :caption<Caption>\n# Title\n=end markdown'),
+        block('assert', 'head1', ' :absent'),
+      ])}`,
+    )
+    const [e] = run(main).tests[0].asserts[0].evidence
+    expect([e.name, e.precision, e.location?.start.line]).toEqual(['head', 'section', 3])
+  })
+
   it('checks each supplied document on its own', () => {
     const first = write('first.podlite', '=pod\n\n=head1 In first\n')
     const second = write('second.podlite', '=pod\n\n=para No heading.\n')

@@ -57,7 +57,12 @@ const describeAssertion = (a: AssertionResult, cwd: string): string[] => {
     `    ${a.held ? 'holds' : a.reason ? describeAssertionReason(a.reason, cwd) : 'does not hold'}${input}${count}`,
   ]
   if (!a.held && a.absent) {
-    for (const e of a.evidence) lines.push(`    found ${e.name} at ${at({ file: e.file, location: e.location }, cwd)}`)
+    for (const e of a.evidence) {
+      const where = at({ file: e.file, location: e.location }, cwd)
+      lines.push(
+        `    found ${e.name} ${e.precision === 'section' ? `in the Markdown section at ${where}` : `at ${where}`}`,
+      )
+    }
   }
   return lines
 }
