@@ -23,30 +23,29 @@ import { mkImage } from '@podlite/schema'
 import { mkCaption } from '@podlite/schema'
 import { mkFomattingCodeO } from '@podlite/schema'
 
-// Where the body sits in the file: the line before it, the offset its first
-// line starts at, and the indent taken off each of its lines.
-type Md2astArgs = { lineOffset?: number; bodyOffset?: number; margin?: number }
-export const md2ast = (
-  src: string,
-  { lineOffset = 0, bodyOffset, margin = 0 }: Md2astArgs = { lineOffset: 0 },
-): AstTree => {
+type Md2astArgs = { lineOffset?: number }
+export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0 }): AstTree => {
   // first convert mardown to ast
   const md_tree = unified().use(markdown).use(remarkGfm).use(remarkMath).parse(src)
 
   // first pass : collect linkRefs
   let definitionMap = {}
-  const inFile = (point: Location['start']): Location['start'] =>
-    bodyOffset === undefined
-      ? { ...point, line: point.line + lineOffset }
-      : {
-          line: point.line + lineOffset,
-          column: point.column + margin,
-          offset: bodyOffset + point.offset + margin * point.line,
-        }
-  const applyLineOffset = (location: Location): Location => ({
-    start: inFile(location.start),
-    end: inFile(location.end),
-  })
+  const applyLineOffset = (
+    (offset: number) =>
+    (location: Location): Location => {
+      const { start, end } = location
+      return {
+        start: {
+          ...start,
+          line: start.line + offset,
+        },
+        end: {
+          ...end,
+          line: end.line + offset,
+        },
+      }
+    }
+  )(lineOffset)
   toAny({ processor: 1 })
     .use({
       '*:*': (writer, processor) => (node, ctx, interator) => {
