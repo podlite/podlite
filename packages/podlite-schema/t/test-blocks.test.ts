@@ -384,6 +384,13 @@ describe('what the parser did not recognise inside a test', () => {
     expect(recognise(src)).toEqual([])
   })
 
+  it('names a marker line with no name or a name no block can have as unreadable', () => {
+    expect(recognise(`=begin test\n=begin nested\n=begin\n=begin 123\n=end nested\n${assert}=end test\n`)).toEqual([
+      ['unreadable-directive', undefined, undefined, 3],
+      ['unreadable-directive', undefined, undefined, 4],
+    ])
+  })
+
   it('names the directive line of a test that could not be read', () => {
     expect(recognise(`=begin test\n${fixture}${assert}`)).toEqual([['unreadable-directive', undefined, undefined, 1]])
   })

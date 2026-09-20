@@ -55,6 +55,11 @@
 
   function noteUnknownDirective(options, line, location) {
     const marked = line.match(/^[ \t]*=(begin|for|end)[ \t]+([a-zA-Z][a-zA-Z0-9_-]*)/)
+    // a marker with no name, or with one no block can have, opens nothing
+    if (!marked && /^[ \t]*=(begin|for|end)([ \t\r\n]|$)/.test(line)) {
+      noteRecognition(options, { kind: 'unreadable-directive', location })
+      return
+    }
     const bare = marked ? null : line.match(/^[ \t]*=([a-zA-Z][a-zA-Z0-9_-]*)/)
     const marker = marked ? marked[1] : 'abbreviated'
     const name = marked ? marked[2] : bare && bare[1]
