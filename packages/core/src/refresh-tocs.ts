@@ -16,7 +16,14 @@ const collectTocBlocks = (tree: any, found: Map<number, any>): void => {
 // that file are in. Built again over the assembled document, it reaches the
 // blocks they brought. Only the document's own tables are rebuilt: a table in an
 // included file stays as its file built it.
-export const refreshTocs = (tree: any, written: any, file: string, origin: WeakMap<object, IncludeOrigin>): any => {
+export const refreshTocs = (
+  tree: any,
+  written: any,
+  file: string,
+  origin: WeakMap<object, IncludeOrigin>,
+  // told of each copy, so a caller keeping its own table on the nodes can carry it
+  onCopy?: (from: object, to: object) => void,
+): any => {
   const blocks = new Map<number, any>()
   // a table hidden by its own :masked or by a hidden container keeps that mark here
   collectTocBlocks(markGuarded(written), blocks)
@@ -33,6 +40,7 @@ export const refreshTocs = (tree: any, written: any, file: string, origin: WeakM
     const copy = { ...node, content: node.content.map(walk) }
     const known = origin.get(node)
     if (known) origin.set(copy, known)
+    onCopy?.(node, copy)
     return copy
   }
   return walk(tree)

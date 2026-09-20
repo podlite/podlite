@@ -108,20 +108,30 @@ const isObject = (value: unknown): value is Record<string, unknown> => typeof va
 const isLocation = (value: unknown): value is Location =>
   isObject(value) && isObject(value.start) && typeof value.start.offset === 'number'
 
-// A data table reads data: itself; any other source is left for a publisher,
-// and the block stays as written, holding none of the rows.
-const unreadSources = (tree: unknown): PreparedDocument['unread'] => {
+// What in the assembled tree holds no data it should: a data table whose source
+// the runner does not read, and a table whose data could not be had. A block an
+// include left out does not count.
+const unreadIn = (
+  tree: unknown,
+  place: (node: object) => string | undefined,
+  lost: Map<string, string>,
+): PreparedDocument['unread'] => {
   const found: PreparedDocument['unread'] = []
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) return node.forEach(visit)
     if (!isObject(node)) return
+    const location = isLocation(node.location) ? node.location : undefined
+    const at = location && place(node)
+    const message = at !== undefined && lost.get(`${at}:${location?.start.offset}`)
+    if (message) found.push({ source: at ?? '', message, location })
     if (node.type === 'block' && node.name === 'data-table' && Array.isArray(node.config)) {
+      // any value is read as the plugin reads it, by its text
       const src = node.config.find(c => isObject(c) && c.name === 'src')
-      if (isObject(src) && typeof src.value === 'string') {
+      if (isObject(src) && src.value !== undefined && src.value !== null && String(src.value) !== '') {
         found.push({
-          source: src.value,
+          source: String(src.value),
           message: 'a data table reads a source the runner does not read',
-          location: isLocation(node.location) ? node.location : undefined,
+          location,
         })
       }
     }
@@ -141,7 +151,8 @@ export const prepareDocument = (
   const reader = opts.profile.reader()
   const recognition = new Map<string, RecognitionEvent[]>()
   const identify = (file: string): string => (file === name ? name : canonical(file))
-  const lost: PreparedDocument['unread'] = []
+  // tables whose data could not be had, by file and place
+  const lost = new Map<string, string>()
   const sections = new WeakMap<object, Record<string, unknown>>()
   // marked per file before the includes: an address may bring in a block
   // without the section around it
@@ -159,11 +170,7 @@ export const prepareDocument = (
     recognition.set(identify(file), events)
     markSections(tree, undefined)
     for (const d of diagnostics) {
-      // a table whose data could not be had is rendered empty; one whose data
-      // holds no rows was read and is empty
-      if (d.code === 'table-source-unreadable' && !/has no rows/.test(d.message)) {
-        lost.push({ source: identify(file), message: d.message, location: d.location })
-      }
+      if (d.code === 'table-source-unreadable') lost.set(`${identify(file)}:${d.location.start.offset}`, d.message)
     }
     return tree
   }
@@ -185,7 +192,14 @@ export const prepareDocument = (
       onError: note,
       onWarning: note,
     })
-    const tree = refreshTocs(resolved, reader.written(text), name, origin)
+    const tree = refreshTocs(resolved, reader.written(text), name, origin, (from, to) => {
+      const section = sections.get(from)
+      if (section) sections.set(to, section)
+    })
+    const place = (node: object): string | undefined => {
+      const where = origin.get(node)
+      return where ? identify(where.file) : undefined
+    }
     return ok({
       name,
       text,
@@ -197,7 +211,7 @@ export const prepareDocument = (
       errors,
       warnings,
       sections,
-      unread: [...lost, ...unreadSources(tree)],
+      unread: unreadIn(tree, place, lost),
       profile: opts.profile.name,
     })
   } catch (e) {

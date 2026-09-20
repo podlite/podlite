@@ -200,6 +200,43 @@ describe('an assertion', () => {
     expect([e.precision, e.file, e.location?.start.line]).toEqual(['section', 'resource:r.podlite', 3])
   })
 
+  it('does not take a missing data table source for an empty one, whatever its name or form', () => {
+    const tests = ["=for data-table :src('data:has no rows')\n", '=for data-table :src(42)\n'].map((fixture, i) =>
+      aTest(`t${i}`, [block('fixture', fixture), block('assert', 'cell', ' :absent')]),
+    )
+    const main = write('rules.podlite', `=pod\n\n${tests.join('\n')}`)
+    expect(run(main).tests.map(t => [t.status, t.asserts[0].reason?.kind])).toEqual([
+      ['failed', 'source-unsupported'],
+      ['failed', 'source-unsupported'],
+    ])
+  })
+
+  it('counts a table whose data could not be had only when it is in the document read', () => {
+    const resource = '=for head1 :id<ok>\nFine\n\n=for data-table :src<data:missing>\n'
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('outside', [
+        block('resource', resource, ' :name<r.podlite>'),
+        block('fixture', '=include file:./r.podlite#ok'),
+        block('assert', 'head1'),
+      ])}`,
+    )
+    expect(run(main).tests.map(t => t.status)).toEqual(['passed'])
+  })
+
+  it('keeps the section of an addressed Markdown block when the document has a table of contents', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('toc', [
+        block('resource', '=pod\n\n=begin markdown\n# Title\n=end markdown', ' :name<r.podlite>'),
+        block('fixture', '=toc head1\n\n=include file:./r.podlite#Title'),
+        block('assert', 'head1', ' :absent'),
+      ])}`,
+    )
+    const [e] = run(main).tests[0].asserts[0].evidence
+    expect([e.precision, e.location?.start.line]).toEqual(['section', 3])
+  })
+
   it('checks each supplied document on its own', () => {
     const first = write('first.podlite', '=pod\n\n=head1 In first\n')
     const second = write('second.podlite', '=pod\n\n=para No heading.\n')
