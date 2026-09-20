@@ -224,6 +224,29 @@ describe('an assertion', () => {
     expect(run(main).tests.map(t => t.status)).toEqual(['passed'])
   })
 
+  it('reads the source of a data table the way the table does, and ties lost data to the table alone', () => {
+    const tests = [
+      aTest('first-empty', [
+        block('fixture', '=for data-table :src<> :src<file:missing.csv> :mime-type<text/csv>\n'),
+        block('assert', 'cell', ' :absent'),
+      ]),
+      aTest('same-offset', [
+        block(
+          'resource',
+          '=for data-table :src<data:missing>\n\n=begin markdown\n# Title\n=end markdown',
+          ' :name<r.podlite>',
+        ),
+        block('fixture', '=include file:./r.podlite#Title'),
+        block('assert', 'head1'),
+      ]),
+    ]
+    const main = write('rules.podlite', `=pod\n\n${tests.join('\n')}`)
+    expect(run(main).tests.map(t => [t.id, t.status])).toEqual([
+      ['first-empty', 'failed'],
+      ['same-offset', 'passed'],
+    ])
+  })
+
   it('keeps the section of an addressed Markdown block when the document has a table of contents', () => {
     const main = write(
       'rules.podlite',

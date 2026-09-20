@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { makeAttrs } from '@podlite/schema'
 import type { Location, ParseDiagnostic, PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
@@ -115,21 +116,25 @@ const unreadIn = (
   tree: unknown,
   place: (node: object) => string | undefined,
   lost: Map<string, string>,
+  sections: WeakMap<object, Record<string, unknown>>,
 ): PreparedDocument['unread'] => {
   const found: PreparedDocument['unread'] = []
   const visit = (node: unknown): void => {
     if (Array.isArray(node)) return node.forEach(visit)
     if (!isObject(node)) return
     const location = isLocation(node.location) ? node.location : undefined
-    const at = location && place(node)
+    // only a table reports lost data, and a block read out of a Markdown section
+    // counts its place from the section, so it matches nothing here
+    const table = node.type === 'block' && (node.name === 'table' || node.name === 'data-table') && !sections.has(node)
+    const at = table && location ? place(node) : undefined
     const message = at !== undefined && lost.get(`${at}:${location?.start.offset}`)
     if (message) found.push({ source: at ?? '', message, location })
-    if (node.type === 'block' && node.name === 'data-table' && Array.isArray(node.config)) {
-      // any value is read as the plugin reads it, by its text
-      const src = node.config.find(c => isObject(c) && c.name === 'src')
-      if (isObject(src) && src.value !== undefined && src.value !== null && String(src.value) !== '') {
+    if (node.type === 'block' && node.name === 'data-table') {
+      // the source is read the way the plugin reads it
+      const src = makeAttrs(node, {}).getFirstValue('src')
+      if (src !== undefined && src !== null && String(src) !== '') {
         found.push({
-          source: String(src.value),
+          source: String(src),
           message: 'a data table reads a source the runner does not read',
           location,
         })
@@ -211,7 +216,7 @@ export const prepareDocument = (
       errors,
       warnings,
       sections,
-      unread: unreadIn(tree, place, lost),
+      unread: unreadIn(tree, place, lost, sections),
       profile: opts.profile.name,
     })
   } catch (e) {
