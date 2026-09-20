@@ -228,6 +228,18 @@ describe('collecting tests', () => {
     ])
   })
 
+  it('does not let a closing line after a block close what was opened inside it', () => {
+    const main = write(
+      'main.podlite',
+      `=pod\n\n${aTest({
+        id: 'escape',
+        fixture: '=head1 A',
+        between: '=begin nested\n=begin future\n=end nested\n=end future\n',
+      })}`,
+    )
+    expect(collect(main).tests.map(t => t.shape.kind)).toEqual(['malformed'])
+  })
+
   it('finds a block of an unknown name that an include puts right under the test', () => {
     write('child.podlite', '=future text\n')
     const main = write(

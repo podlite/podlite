@@ -145,6 +145,8 @@ const inRange = (event: RecognitionEvent, location: Location): boolean =>
 // an include brings in is checked against the lines of its own file.
 const recognitionOf = (block: Block, prepared: PreparedSource): { unknown: Found[]; broken: Found[] } => {
   const seen = new Map<string, Set<RecognitionEvent>>()
+  // blocks that close what they hold: a line opened inside one is not closed after it
+  const containers: Array<{ file: string; location: Location }> = []
   const visit = (node: unknown): void => {
     if (!isObject(node)) return
     if (isLocation(node.location)) {
@@ -154,27 +156,48 @@ const recognitionOf = (block: Block, prepared: PreparedSource): { unknown: Found
         if (inRange(event, node.location)) inFile.add(event)
       }
       seen.set(file, inFile)
+      if (node.type === 'block' && node.name !== '_folded_section') containers.push({ file, location: node.location })
     }
     childrenOf(node).forEach(visit)
   }
   childrenOf(block).forEach(visit)
 
-  // a closing line pairs with the opening line before it in the same file,
+  const scopeOf = (event: RecognitionEvent, file: string): string => {
+    let best: Location | undefined
+    for (const c of containers) {
+      if (c.file !== file || !inRange(event, c.location)) continue
+      if (!best || c.location.end.offset - c.location.start.offset < best.end.offset - best.start.offset) {
+        best = c.location
+      }
+    }
+    return `${file}:${best ? best.start.offset : 'test'}`
+  }
+
+  // a closing line pairs with the opening line before it in the same block,
   // whatever blank lines split the text between them
   const broken: Found[] = []
+  const scopes = new Map<string, Found[]>()
   for (const [file, events] of seen) {
+    for (const event of events) {
+      const key = scopeOf(event, file)
+      scopes.set(key, [...(scopes.get(key) ?? []), { event, file }])
+    }
+  }
+  for (const found of scopes.values()) {
     const open: string[] = []
-    const ordered = [...events].sort((a, b) => a.location.start.offset - b.location.start.offset)
-    for (const event of ordered) {
-      if (event.kind === 'unreadable-directive') broken.push({ event, file })
+    found.sort((a, b) => a.event.location.start.offset - b.event.location.start.offset)
+    for (const one of found) {
+      const { event } = one
+      if (event.kind === 'unreadable-directive') broken.push(one)
       else if (event.marker === 'begin') open.push(event.name)
       else if (event.marker === 'end') {
         const at = open.lastIndexOf(event.name)
-        if (at === -1) broken.push({ event, file })
+        if (at === -1) broken.push(one)
         else open.splice(at, 1)
       }
     }
   }
+  broken.sort((a, b) => a.event.location.start.offset - b.event.location.start.offset)
 
   // an unknown block is a child of the test only when it stayed text right
   // under the test; inside a table or another block it belongs to that block
