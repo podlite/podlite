@@ -198,6 +198,7 @@ export interface ParseDiagnostic {
     | 'table-cell-outside-row'
     | 'table-mixed-separators'
     | 'table-source-unreadable'
+    | 'table-source-empty'
   message: string
   location: Location
 }

@@ -576,7 +576,7 @@ export default (opt = {}) =>
             const rows = isCsv ? parseCsv(text) : parseTsv(text)
             if (rows.length === 0) {
               report(
-                'table-source-unreadable',
+                'table-source-empty',
                 `${isCsv ? 'CSV' : 'TSV'} source data:${ref.target} has no rows, table rendered as empty`,
                 node,
               )

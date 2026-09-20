@@ -140,7 +140,7 @@ function processDataTable(node, tree, report) {
   }
   let rows = isCsv ? parseCsv(csvText) : parseTsv(csvText)
   if (rows.length === 0) {
-    report('table-source-unreadable', `${isCsv ? 'CSV' : 'TSV'} source has no rows, table rendered as empty`, node)
+    report('table-source-empty', `${isCsv ? 'CSV' : 'TSV'} source has no rows, table rendered as empty`, node)
     return { ...node, name: 'table', content: [] }
   }
 
