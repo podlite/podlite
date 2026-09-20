@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import type { Location, PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
+import type { Location, ParseDiagnostic, PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, SourceProvider } from '../resolve-includes'
@@ -8,7 +8,7 @@ import type { Result } from './types'
 import { err, ok } from './types'
 
 type Reader = {
-  toTree: (text: string, recognition: RecognitionEvent[]) => unknown
+  toTree: (text: string, recognition: RecognitionEvent[], diagnostics: ParseDiagnostic[]) => unknown
   written: (text: string) => unknown
 }
 
@@ -35,7 +35,7 @@ export type Profile = {
 const readerOf = (importPlugins: boolean) => (): Reader => {
   const p = podlite({ importPlugins })
   return {
-    toTree: (text, recognition) => p.toAst(p.parse(text, { podMode: 1, recognition })),
+    toTree: (text, recognition, diagnostics) => p.toAst(p.parse(text, { podMode: 1, recognition, diagnostics })),
     written: text => p.parse(text, { podMode: 1 }),
   }
 }
@@ -78,7 +78,7 @@ export type PreparedDocument = {
   errors: IncludeProblem[]
   warnings: IncludeProblem[]
   // blocks whose content comes from a source this runner does not read
-  unread: Array<{ source: string; location?: Location }>
+  unread: Array<{ source: string; message: string; location?: Location }>
   profile: string
 }
 
@@ -115,7 +115,11 @@ const unreadSources = (tree: unknown): PreparedDocument['unread'] => {
     if (node.type === 'block' && node.name === 'data-table' && Array.isArray(node.config)) {
       const src = node.config.find(c => isObject(c) && c.name === 'src')
       if (isObject(src) && typeof src.value === 'string') {
-        found.push({ source: src.value, location: isLocation(node.location) ? node.location : undefined })
+        found.push({
+          source: src.value,
+          message: 'a data table reads a source the runner does not read',
+          location: isLocation(node.location) ? node.location : undefined,
+        })
       }
     }
     visit(node.content)
@@ -134,10 +138,19 @@ export const prepareDocument = (
   const reader = opts.profile.reader()
   const recognition = new Map<string, RecognitionEvent[]>()
   const identify = (file: string): string => (file === name ? name : canonical(file))
+  const lost: PreparedDocument['unread'] = []
   const toTree = (body: string, file: string): unknown => {
     const events: RecognitionEvent[] = []
-    const tree = reader.toTree(body, events)
+    const diagnostics: ParseDiagnostic[] = []
+    const tree = reader.toTree(body, events, diagnostics)
     recognition.set(identify(file), events)
+    for (const d of diagnostics) {
+      // a table whose data could not be had is rendered empty; one whose data
+      // holds no rows was read and is empty
+      if (d.code === 'table-source-unreadable' && !/source has no rows/.test(d.message)) {
+        lost.push({ source: identify(file), message: d.message, location: d.location })
+      }
+    }
     return tree
   }
   const origin = new WeakMap<object, IncludeOrigin>()
@@ -169,7 +182,7 @@ export const prepareDocument = (
       identify,
       errors,
       warnings,
-      unread: unreadSources(tree),
+      unread: [...lost, ...unreadSources(tree)],
       profile: opts.profile.name,
     })
   } catch (e) {

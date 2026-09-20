@@ -60,7 +60,7 @@ const whole = (document: PreparedDocument, input: InputKind): Result<PreparedDoc
       kind: 'source-unsupported',
       input,
       source: unread.source,
-      message: 'a data table reads a source the runner does not read',
+      message: unread.message,
     })
   }
   return ok(document)
