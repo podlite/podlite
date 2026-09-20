@@ -552,6 +552,15 @@ export default (opt = {}) =>
         //   =table data:<key>      →  resolve =data block with :key<key>
         //   =table file:<path>     →  defer to host reader (not implemented here)
         const ref = detectSourceReference(node)
+        // a file source is read by whoever renders the table; the tree holds
+        // only its address, and a reader of the tree is told so
+        if (ref && ref.scheme === 'file') {
+          report(
+            'table-source-deferred',
+            `source file:${ref.target} is left to the renderer, the table holds no rows`,
+            node,
+          )
+        }
         if (ref && ref.scheme === 'data') {
           const dataBlock = findDataBlockByKey(tree, ref.target)
           if (!dataBlock) {

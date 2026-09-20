@@ -199,6 +199,7 @@ export interface ParseDiagnostic {
     | 'table-mixed-separators'
     | 'table-source-unreadable'
     | 'table-source-empty'
+    | 'table-source-deferred'
   message: string
   location: Location
 }

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=table file:…> is reported with the code C<table-source-deferred>: the tree holds the address of the source and none of its rows
+
 =item a table whose data source was read but holds no rows is reported with the code C<table-source-empty>, apart from a source that could not be had
 
 =item C<parse> takes a C<recognition> list and fills it with the lines written as a directive of a block the parser does not know, and with the directive lines it could not read. The tree does not change
