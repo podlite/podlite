@@ -348,3 +348,39 @@ describe('runSelector — =config inheritance', () => {
     expect(idsOf(blocks)).toEqual(['L1'])
   })
 })
+
+describe('runSelector — blocks written without a marker', () => {
+  const count = (selector: string, src: string) => runSelector(selector, [makeDoc('x.podlite', src)]).length
+
+  it('finds a paragraph written without a marker wherever one may stand', () => {
+    expect([
+      count('para', '=begin pod\nText.\n=end pod\n'),
+      count('para', '=begin nested\nText.\n=end nested\n'),
+      count('para', '=item Point\n'),
+      count('para', 'Text outside any block.\n'),
+      count('para', '=SYNOPSIS\nText.\n'),
+      count('para', '=begin table\n=begin row\n=begin cell\nCell text.\n=end cell\n=end row\n=end table\n'),
+    ]).toEqual([1, 1, 1, 1, 1, 1])
+  })
+
+  it('does not take the text of an explicit paragraph, a heading or a term for another paragraph', () => {
+    expect([
+      count('para', '=para Text\n'),
+      count('para', '=head1 Title\n'),
+      count('para', '=begin pod\n=head2 Title\nText on the next line.\n=end pod\n'),
+      count('para', '=defn Term\nDefinition.\n'),
+    ]).toEqual([1, 0, 0, 1])
+  })
+
+  it('finds a code block written by indentation, and a delimited one once', () => {
+    expect([
+      count('code', '=begin nested\n    indented text\n=end nested\n'),
+      count('code', '=begin code\nx\n=end code\n'),
+    ]).toEqual([1, 1])
+  })
+
+  it('leaves them out of *, which stands for the blocks written with a directive', () => {
+    const blocks = runSelector('*', [makeDoc('x.podlite', 'Text.\n\n=para X\n')]) as any[]
+    expect(blocks.map(b => `${b.type}:${b.name}`)).toEqual(['block:para'])
+  })
+})

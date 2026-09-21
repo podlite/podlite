@@ -69,6 +69,12 @@ Second
     const r = runQuery({ selector: 'defn', files: [a, b], format: 'podlite', failOnEmpty: false, quiet: true })
     expect(r.matchCount).toBe(2)
   })
+  it('finds a paragraph written without a marker and not the text of a heading', () => {
+    const f = write('doc.podlite', '=pod\n\n=head1 Title\n\nFirst paragraph.\n\n=para Second\n')
+    const r = runQuery({ selector: 'para', files: [f], format: 'podlite', failOnEmpty: false, quiet: true })
+    expect(r.matchCount).toBe(2)
+    expect(r.output).toBe('First paragraph.\n\n=para Second')
+  })
 })
 
 describe('runQuery output formats', () => {

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a selector C<para> finds a paragraph written without a marker, and C<code> a code block written by indentation. The text of an explicit C<=para>, of a heading and of a C<=defn> term is not taken for another paragraph, and C<*> still finds only the blocks written with a directive
+
 =item a selector reads the configuration the parser gave a block: a C<=config> no longer reaches blocks of another file, included or including, nor blocks after the block it is written in. A tree parsed without the plugin chain carries no such configuration, and a selector over it no longer applies its C<=config> directives
 
 =item html output shows the caption of a table of contents, with the markup written in it and a hidden word hidden, and the wrapper of the table is written with C<class> rather than C<className>. C<tocTitleText> gives the caption of a tree that carries only the C<title> string, hidden as a whole when it holds a C<G> code

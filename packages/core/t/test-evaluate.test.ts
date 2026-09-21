@@ -177,6 +177,15 @@ describe('an assertion', () => {
     expect([e.name, e.precision, e.location?.start.line]).toEqual(['head', 'section', 3])
   })
 
+  it('finds a paragraph of a Markdown section', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('md-para', [block('fixture', '=begin markdown\nText.\n=end markdown'), block('assert', 'para')])}`,
+    )
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.matches]).toEqual([true, 1])
+  })
+
   it('holds under :absent over a table whose data was read and holds no rows', () => {
     const fixture = '=begin data :key<empty> :mime-type<text/csv>\n=end data\n\n=table data:empty\n'
     const main = write(

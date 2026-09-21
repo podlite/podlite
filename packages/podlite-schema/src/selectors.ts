@@ -1,4 +1,4 @@
-import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, PodliteDocument, PodNode } from './index'
+import { getFromTree, getNodeId, getTextContentFromNode, isSemanticBlock, makeAttrs, PodliteDocument, PodNode } from './index'
 import { ConfigItem } from './types'
 import { parseAttributes } from './helpers/parseAttributes'
 
@@ -350,16 +350,40 @@ const matchCondition = (node: PodNode, cond: Condition): boolean => {
   return false
 }
 
+// Within these blocks text written without a marker is a paragraph and lines
+// set in from the margin are a code block. Anywhere else a para node is the
+// text of the block around it: of an explicit =para, of a heading.
+const IMPLICIT_HOLDERS = new Set(['root', 'pod', 'item', 'defn', 'nested', 'cell'])
+
+type Walked = { type?: string; name?: string; content?: unknown }
+
+// A node outside any block is in the document, and a document is a pod.
+const holdsImplicit = (holder: Walked | undefined): boolean =>
+  holder === undefined ||
+  (holder.type === 'block' &&
+    (IMPLICIT_HOLDERS.has(holder.name ?? '') || (Boolean(holder.name) && isSemanticBlock(holder))))
+
+// The block a node stands for: the name of a block written with a directive,
+// para or code for one written without, none for anything else. The term of
+// a =defn is its heading, not a paragraph.
+const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
+  if (node.type === 'block') return node.name
+  if (node.type === 'code') return 'code'
+  if (node.type === 'para' && node.name !== 'term' && holdsImplicit(holder)) return 'para'
+  return undefined
+}
+
 // Replicate name/level handling from getFromTree for backward compat with
-// 'head1' / 'item' style block-types.
-const blockTypeMatches = (node: PodNode, blockType: string): boolean => {
-  if (blockType === '*') return true
-  const anyNode = node as unknown as { name?: string; level?: number }
-  if (anyNode.name === blockType) return true
+// 'head1' / 'item' style block-types. `*` stands for the blocks written with a
+// directive only.
+const blockTypeMatches = (node: PodNode, name: string, blockType: string): boolean => {
+  const anyNode = node as unknown as { type?: string; level?: number }
+  if (blockType === '*') return anyNode.type === 'block'
+  if (name === blockType) return true
   const m = blockType.match(/^(head|item)(\d+)?$/)
   if (m) {
     const [, baseName, levelStr] = m
-    if (anyNode.name !== baseName) return false
+    if (name !== baseName) return false
     const expectedLevel = levelStr ? parseInt(levelStr, 10) : baseName === 'item' ? 1 : undefined
     if (expectedLevel === undefined) return true
     // Heading plugin stores level as the regex capture string; coerce.
@@ -368,27 +392,34 @@ const blockTypeMatches = (node: PodNode, blockType: string): boolean => {
   return false
 }
 
-const matchesPattern = (node: PodNode, pattern: Pattern): boolean => {
-  if (!blockTypeMatches(node, pattern.blockType)) return false
+const matchesPattern = (node: PodNode, name: string, pattern: Pattern): boolean => {
+  if (!blockTypeMatches(node, name, pattern.blockType)) return false
   if (!pattern.predicate) return true
   return pattern.predicate.every(c => matchCondition(node, c))
 }
 
 // Walk one document in source order. A block is matched against the
 // configuration it carries; a =config met on the way is not applied again.
-const collectMatches = (node: PodNode, patterns: Pattern[], seen: Set<PodNode>, out: PodNode[]): void => {
+const collectMatches = (
+  node: PodNode,
+  holder: Walked | undefined,
+  patterns: Pattern[],
+  seen: Set<PodNode>,
+  out: PodNode[],
+): void => {
   if (Array.isArray(node)) {
-    for (const child of node) collectMatches(child as PodNode, patterns, seen, out)
+    for (const child of node) collectMatches(child as PodNode, holder, patterns, seen, out)
     return
   }
   if (!node || typeof node !== 'object') return
-  const anyNode = node as { type?: string; content?: unknown }
-  if (anyNode.type === 'block' && !seen.has(node) && patterns.some(p => matchesPattern(node, p))) {
+  const anyNode = node as Walked
+  const name = blockNameOf(anyNode, holder)
+  if (name !== undefined && !seen.has(node) && patterns.some(p => matchesPattern(node, name, p))) {
     out.push(node)
     seen.add(node)
   }
   if (anyNode.content !== undefined) {
-    collectMatches(anyNode.content as PodNode, patterns, seen, out)
+    collectMatches(anyNode.content as PodNode, anyNode, patterns, seen, out)
   }
 }
 
@@ -511,7 +542,7 @@ export const runSelector = <T extends SelectorDoc>(selector: string, docs: T[]):
     const collectedBlocks: PodNode[] = []
     const seen = new Set<PodNode>()
     for (const d of matchedDocs) {
-      collectMatches(d.node, patterns, seen, collectedBlocks)
+      collectMatches(d.node, undefined, patterns, seen, collectedBlocks)
     }
     return collectedBlocks
   }
