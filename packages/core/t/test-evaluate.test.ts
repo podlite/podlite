@@ -230,6 +230,7 @@ describe('an assertion', () => {
         block('fixture', '=for data-table :src<> :src<file:missing.csv> :mime-type<text/csv>\n'),
         block('assert', 'cell', ' :absent'),
       ]),
+      aTest('file-table', [block('fixture', '=table file:missing.csv\n'), block('assert', 'head1', ' :absent')]),
       aTest('same-offset', [
         block(
           'resource',
@@ -243,6 +244,7 @@ describe('an assertion', () => {
     const main = write('rules.podlite', `=pod\n\n${tests.join('\n')}`)
     expect(run(main).tests.map(t => [t.id, t.status])).toEqual([
       ['first-empty', 'failed'],
+      ['file-table', 'failed'],
       ['same-offset', 'passed'],
     ])
   })

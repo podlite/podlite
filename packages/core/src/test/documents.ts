@@ -175,7 +175,9 @@ export const prepareDocument = (
     recognition.set(identify(file), events)
     markSections(tree, undefined)
     for (const d of diagnostics) {
-      if (d.code === 'table-source-unreadable') lost.set(`${identify(file)}:${d.location.start.offset}`, d.message)
+      if (d.code === 'table-source-unreadable' || d.code === 'table-source-deferred') {
+        lost.set(`${identify(file)}:${d.location.start.offset}`, d.message)
+      }
     }
     return tree
   }
