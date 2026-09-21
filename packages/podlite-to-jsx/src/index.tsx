@@ -37,7 +37,7 @@ import {
 } from '@podlite/schema'
 import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 export type { LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
-import { applyFoldedSections, testCaption, testFoldedByAuthor } from '@podlite/schema'
+import { applyFoldedSections, testCaption, testFoldedByAuthor, tocTitleText } from '@podlite/schema'
 import { groupTests } from './test-groups'
 import { TestBlock } from './test-block'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
@@ -950,11 +950,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       return makeComponent('li', node, interator(node.content, { ...ctx }), { id })
     },
     // table of content
-    ':toc': setFn((node: Toc, ctx) => {
-      const tocTitle = node.title ? covered(node, ctx, String(node.title)) : node.title
+    ':toc': (writer, processor) => (node: Toc, ctx, interator) => {
       if (node.foldedLevels) {
         ctx._tocFoldedLevels = node.foldedLevels
       }
+      const tocTitle = node.caption ? interator(node.caption.content, { ...ctx }) : tocTitleText(node, ctx)
       const folded = node.folded
       if (folded !== undefined) {
         const isExpanded = folded === false
@@ -963,15 +963,15 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
             <summary className="toctitle">{tocTitle || 'Contents'}</summary>
             {children}
           </details>
-        ))
+        ))(writer, processor)(node, ctx, interator)
       }
       return mkComponent(({ children, key }) => (
         <div className="toc" key={key}>
           {tocTitle ? <div className="toctitle">{tocTitle}</div> : ''}
           {children}
         </div>
-      ))
-    }),
+      ))(writer, processor)(node, ctx, interator)
+    },
     ':toc-list': (writer, processor) => (node: any, ctx: any, interator: any) => {
       const level = node.level
       const foldedLevels = ctx._tocFoldedLevels as Record<number, boolean> | undefined

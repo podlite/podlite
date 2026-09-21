@@ -1,6 +1,7 @@
 import { Podlite } from '../src/index'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { podlite as podliteCore } from 'podlite'
 
 // Paths by which hidden content could reach the page. Each path the page itself
 // closes is checked where it is closed; this file holds the paths that do not leak
@@ -105,5 +106,53 @@ describe('a table of contents on the page hides what its source hides', () => {
     expect(out).not.toContain('TocSecret')
     expect(out.slice(0, out.indexOf('<h1'))).not.toContain('Public Qor')
     expect(page(doc, 'draft')).toContain('TocSecret')
+  })
+})
+
+describe('the caption of a table of contents on the page', () => {
+  const captionOf = (out: string): string => {
+    const found = /class="toctitle">([\s\S]*?)<\/(div|summary)>/.exec(out)
+    if (!found) throw new Error('the table of contents has no caption')
+    return found[1]
+  }
+  const toc = (caption: string) => `=for toc ${caption}\nhead1\n\n=head1 One`
+
+  it('hides a hidden word of its own and shows the rest', () => {
+    expect(captionOf(page(toc(":caption('Tests')")))).toBe('Tests')
+    expect(captionOf(page(toc(":title('Tests')")))).toBe('Tests')
+    for (const written of ['Public G<Secret>', 'Public G«Secret»']) {
+      expect(captionOf(page(toc(`:caption('${written}')`)))).toBe('Public <span class="masked">██████</span>')
+      expect(captionOf(page(toc(`:caption('${written}')`), 'draft'))).toContain('Secret')
+    }
+  })
+
+  it('renders the markup written in it', () => {
+    expect(captionOf(page(toc(":caption('The C<G<>> code')")))).toBe('The <code>G&lt;&gt;</code> code')
+    expect(captionOf(page(toc(":caption('Plain B<bold>')")))).toBe('Plain <strong>bold</strong>')
+  })
+
+  it('is hidden with a hidden table of contents, and parsed when the table is folded', () => {
+    expect(captionOf(page(toc(':masked :caption<TocSecret>')))).toBe('█████████')
+    expect(captionOf(page(toc(':masked :caption<TocSecret>'), 'draft'))).toBe('TocSecret')
+    expect(captionOf(page(toc(":folded :caption('Map G<Vorn>')")))).toBe('Map <span class="masked">████</span>')
+  })
+
+  // a tree built before the caption was parsed carries the title string alone
+  it('hides a title string with a hidden word when no caption was parsed', () => {
+    const withoutCaption = (doc: string) => {
+      const p = podliteCore({ importPlugins: true })
+      const tree = p.toAstResult(p.parse(doc, { podMode: 1 }))
+      const strip = (node: unknown): void => {
+        if (Array.isArray(node)) return node.forEach(strip)
+        if (typeof node !== 'object' || node === null) return
+        if (Reflect.get(node, 'type') === 'toc') Reflect.deleteProperty(node, 'caption')
+        strip(Reflect.get(node, 'content'))
+      }
+      strip(tree.interator)
+      return (mode: Mode) => renderToStaticMarkup(<Podlite tree={tree} renderMode={mode} />)
+    }
+    const hidden = withoutCaption(toc(":caption('Public G<Secret>')"))
+    expect(captionOf(hidden('production'))).toBe('██████ █████████')
+    expect(captionOf(hidden('draft'))).toBe('Public G&lt;Secret&gt;')
   })
 })

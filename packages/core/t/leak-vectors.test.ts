@@ -1,5 +1,6 @@
 import { toAnyRules, toHtml, toMarkdown } from '@podlite/schema'
 import { podlite } from '../src/index'
+import { tocOf } from './toc-slice'
 
 // Paths by which hidden content could reach html and markdown output. Each path
 // the renderers themselves close is checked where it is closed; this file holds the
@@ -14,8 +15,6 @@ const htmlResult = (body: string, mode: Mode = 'production') =>
 const html = (body: string, mode: Mode = 'production') => String(htmlResult(body, mode))
 const markdown = (body: string, mode: Mode = 'production') =>
   String(toMarkdown({ renderMode: mode }).use(toAnyRules('toMarkdown', p.getPlugins())).run(tree(body)))
-const tocOf = (out: string) =>
-  out.slice(out.indexOf('<div className="toc">'), out.indexOf('</div>', out.indexOf('<div className="toc">')))
 
 const hiddenIn = (body: string, word: string) => {
   for (const render of [html, markdown]) {
@@ -165,5 +164,96 @@ describe('a table of contents hides what its source hides', () => {
   it('in each of two tables of contents', () => {
     const out = html('=toc head1\n\n=head1 G<Wexa> one\n\n=toc head1')
     expect(out).not.toContain('Wexa')
+  })
+})
+
+describe('the caption of a table of contents in html', () => {
+  // the words of the caption of the first table of contents; fails when there is none
+  const captionOf = (out: string): string => {
+    const found = /^<div class="toc"><div class="toctitle">([\s\S]*?)<\/div><ul/.exec(tocOf(out))
+    if (!found) throw new Error('the table of contents has no caption')
+    return found[1]
+  }
+  const toc = (caption: string) => `=for toc ${caption}\nhead1\n\n=head1 One`
+
+  it('stands before the entries, from :caption or :title', () => {
+    expect(captionOf(html(toc(":caption('Tests')")))).toBe('Tests')
+    expect(captionOf(html(toc(":title('Tests')")))).toBe('Tests')
+    expect(tocOf(html('=toc head1\n\n=head1 One'))).not.toContain('toctitle')
+  })
+
+  it('names the wrapper with class, not className', () => {
+    const out = html(toc(":caption('Tests')"))
+    expect(out).toContain('<div class="toc">')
+    expect(out).not.toContain('className')
+  })
+
+  it('is hidden with a hidden table of contents', () => {
+    const hidden = [
+      toc(':masked :caption<TocSecret>'),
+      '=begin nested :masked\n=for toc :caption<TocSecret>\nhead1\n=end nested\n\n=head1 One',
+      '=config toc :masked\n\n' + toc(':caption<TocSecret>'),
+    ]
+    for (const doc of hidden) {
+      expect(captionOf(html(doc))).toBe('█████████')
+      expect(captionOf(html(doc, 'draft'))).toBe('TocSecret')
+    }
+    const doc = toc(':masked :caption<TocSecret>')
+    const read = (context: object) =>
+      String(toHtml({ context }).use(toAnyRules('toHtml', p.getPlugins())).run(tree(doc)))
+    expect(captionOf(read({ renderMode: undefined }))).toBe('█████████')
+    expect(captionOf(read({ renderMode: 'draft', maskMode: true }))).toBe('█████████')
+  })
+
+  it('hides a hidden word of its own and shows the rest', () => {
+    for (const written of ['Public G<Secret>', 'Public G«Secret»']) {
+      expect(captionOf(html(toc(`:caption('${written}')`)))).toBe('Public <span class="masked">██████</span>')
+      expect(captionOf(html(toc(`:caption('${written}')`), 'draft'))).toContain('Secret')
+    }
+  })
+
+  it('renders the markup written in it', () => {
+    expect(captionOf(html(toc(":caption('The C<G<>> code')")))).toBe('The <code>G&lt;&gt;</code> code')
+    expect(captionOf(html(toc(":caption('Plain B<bold>')")))).toBe('Plain <strong>bold</strong>')
+    expect(captionOf(html(toc(":caption('See L<text|#One>')")))).toContain('>text</a>')
+    expect(captionOf(html(toc(":caption('a < b & c')")))).toBe('a &lt; b &amp; c')
+  })
+
+  it('hides a word an alias brings into it', () => {
+    const doc = '=alias SECRET G<Hidden>\n\n' + toc(":caption('A<SECRET> x')")
+    expect(captionOf(html(doc))).not.toContain('Hidden')
+    expect(captionOf(html(doc, 'draft'))).toContain('Hidden')
+  })
+
+  it('registers a note and an index entry of its own once', () => {
+    const result = htmlResult(toc(":caption('With N<note> X<term>')"))
+    expect(result.annotations).toHaveLength(1)
+    expect(result.indexingTerms).toHaveLength(1)
+  })
+
+  it('keeps the mark on an index entry of a hidden caption', () => {
+    const result = htmlResult(toc(":masked :caption('Public X<SecretTerm> N<SecretNote>')"))
+    expect(String(result)).not.toContain('SecretTerm')
+    expect(String(result)).not.toContain('SecretNote')
+    expect(result.indexingTerms).toEqual([{ entry: [{ type: 'text', value: 'SecretTerm', guarded: true }] }])
+  })
+
+  // a tree built before the caption was parsed carries the title string alone
+  it('hides a title string with a hidden word when no caption was parsed', () => {
+    const withoutCaption = (doc: string) => {
+      const built = tree(doc)
+      const strip = (node: unknown): void => {
+        if (Array.isArray(node)) return node.forEach(strip)
+        if (typeof node !== 'object' || node === null) return
+        if (Reflect.get(node, 'type') === 'toc') Reflect.deleteProperty(node, 'caption')
+        strip(Reflect.get(node, 'content'))
+      }
+      strip(built)
+      return (mode: Mode) => String(toHtml({ renderMode: mode }).use(toAnyRules('toHtml', p.getPlugins())).run(built))
+    }
+    const hidden = withoutCaption(toc(":caption('Public G<Secret>')"))
+    expect(captionOf(hidden('production'))).toBe('██████ █████████')
+    expect(captionOf(hidden('draft'))).toBe('Public G&lt;Secret&gt;')
+    expect(captionOf(withoutCaption(toc(":caption('Plain words')"))('production'))).toBe('Plain words')
   })
 })

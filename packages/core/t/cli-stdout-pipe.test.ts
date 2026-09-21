@@ -2,6 +2,7 @@ import { execFileSync } from 'child_process'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { tocOf } from './toc-slice'
 
 const bin = path.join(__dirname, '..', 'bin', 'podlite.js')
 const run = (args: string[]) => execFileSync('node', [bin, ...args], { maxBuffer: 64 * 1024 * 1024 })
@@ -161,9 +162,7 @@ describe('podlite convert with a hidden table of contents', () => {
     }).toString()
     fs.rmSync(dir, { recursive: true, force: true })
     // the text of the entries; a link target names the heading, which stays open
-    return html
-      .slice(html.indexOf('<div className="toc">'), html.indexOf('</div>', html.indexOf('<div className="toc">')))
-      .replace(/ href="[^"]*"/g, '')
+    return tocOf(html).replace(/ href="[^"]*"/g, '')
   }
 
   it('keeps its entries hidden, on its own and inside a hidden container', () => {
@@ -179,5 +178,38 @@ describe('podlite convert with a hidden table of contents', () => {
     })
     expect(toc).toContain('part')
     expect(toc).not.toContain('Ivel')
+  })
+})
+
+describe('podlite convert with a caption on a table of contents', () => {
+  const convert = (files: Record<string, string>) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-cli-'))
+    for (const [name, body] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), body)
+    const html = execFileSync('node', [bin, 'convert', path.join(dir, 'doc.podlite'), '--to', 'html', '-o', '-'], {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString()
+    fs.rmSync(dir, { recursive: true, force: true })
+    return tocOf(html)
+  }
+
+  it('writes the caption inside the table', () => {
+    expect(convert({ 'doc.podlite': '=pod\n\n=for toc :caption<Alias>\nhead1\n\n=head1 One\n' })).toContain(
+      '<div class="toctitle">Alias</div>',
+    )
+  })
+
+  it('writes the caption of a table rebuilt after the includes, with their entries', () => {
+    const toc = convert({
+      'doc.podlite': "=pod\n\n=for toc :caption('Included G<Qor>')\nhead1\n\n=include file:part.podlite\n",
+      'part.podlite': '=head1 From part\n',
+    })
+    expect(toc).toContain('<div class="toctitle">Included <span class="masked">███</span></div>')
+    expect(toc).toContain('From part')
+  })
+
+  it('hides the caption of a hidden table', () => {
+    expect(convert({ 'doc.podlite': '=pod\n\n=for toc :masked :caption<TocSecret>\nhead1\n\n=head1 One\n' })).toContain(
+      '<div class="toctitle">█████████</div>',
+    )
   })
 })

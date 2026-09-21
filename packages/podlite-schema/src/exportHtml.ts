@@ -26,6 +26,7 @@ import {
 } from './ast-helpers'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, testFoldedByAuthor } from './test-display'
+import { tocTitleText } from './toc-caption'
 import { decodeHTMLStrict } from 'entities'
 
 import { quoteAttribute as quoteValue } from './helpers/html-attr'
@@ -469,14 +470,18 @@ const rules = {
   },
   // Toc
   ':toc': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw('<div className="toc">')
-    // get toc title
-    const conf = makeAttrs(node, ctx)
-    if (conf.exists('title')) {
-      const title = conf.getFirstValue('title')
-      writer.writeRaw('<div className="toctitle">')
-      writer.write(title)
+    writer.writeRaw('<div class="toc">')
+    if (node.caption) {
+      writer.writeRaw('<div class="toctitle">')
+      interator(node.caption.content, ctx)
       writer.writeRaw('</div>')
+    } else {
+      const title = tocTitleText(node, ctx)
+      if (title !== undefined) {
+        writer.writeRaw('<div class="toctitle">')
+        writer.write(title)
+        writer.writeRaw('</div>')
+      }
     }
     interator(node.content, ctx)
     writer.writeRaw('</div>')

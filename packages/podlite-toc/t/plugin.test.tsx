@@ -58,7 +58,7 @@ it('=para: parse to html', () => {
 it('=toc: parse to html', () => {
   const pod = `=toc head1 head3 item item2`
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
-    <div classname="toc">
+    <div class="toc">
       <ul class="toc-list listlevel1">
       </ul>
     </div>
@@ -71,7 +71,7 @@ it('=toc: head1 head2', () => {
 Test head1
 `
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
-    <div classname="toc">
+    <div class="toc">
       <ul class="toc-list listlevel1">
         <li class="toc-item">
           <p>
@@ -98,7 +98,7 @@ it('[check default list]=toc', () => {
 =head6 head
     `
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
-    <div classname="toc">
+    <div class="toc">
       <ul class="toc-list listlevel1">
         <li class="toc-item">
           <p>
@@ -199,7 +199,10 @@ Image Diagram
   User content
   `
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
-    <div classname="toc">
+    <div class="toc">
+      <div class="toctitle">
+        Table
+      </div>
       <ul class="toc-list listlevel1">
         <li class="toc-item">
           <p>
@@ -248,7 +251,7 @@ it('=toc item', () => {
     =head1 test C<L<>>
     `
   expect(parseToHtml1(pod)).toMatchInlineSnapshot(`
-    <div classname="toc">
+    <div class="toc">
       <ul class="toc-list listlevel1">
         <li class="toc-item">
           <p>
