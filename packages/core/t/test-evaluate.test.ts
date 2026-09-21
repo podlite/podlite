@@ -186,6 +186,13 @@ describe('an assertion', () => {
     expect([a.held, a.matches]).toEqual([true, 1])
   })
 
+  it('finds a paragraph of a folded section', () => {
+    const fixture = '=for head1 :folded\nFolded\n\nText under it.\n\n=head1 Next'
+    const main = write('rules.podlite', `=pod\n\n${aTest('folded-para', [block('fixture', fixture), block('assert', 'para')])}`)
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.matches]).toEqual([true, 1])
+  })
+
   it('holds under :absent over a table whose data was read and holds no rows', () => {
     const fixture = '=begin data :key<empty> :mime-type<text/csv>\n=end data\n\n=table data:empty\n'
     const main = write(

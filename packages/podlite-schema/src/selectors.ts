@@ -419,7 +419,10 @@ const collectMatches = (
     seen.add(node)
   }
   if (anyNode.content !== undefined) {
-    collectMatches(anyNode.content as PodNode, anyNode, patterns, seen, out)
+    // a folded section is a wrapper the tree adds around a heading and its text;
+    // the text stands where it was written
+    const inner = anyNode.type === 'block' && anyNode.name === '_folded_section' ? holder : anyNode
+    collectMatches(anyNode.content as PodNode, inner, patterns, seen, out)
   }
 }
 
