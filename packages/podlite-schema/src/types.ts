@@ -148,6 +148,7 @@ export interface Toc {
   folded?: boolean
   foldedLevels?: Record<number, boolean>
   location?: Location
+  caption?: BlockCaption
   content: TocList
 }
 export interface TocList {

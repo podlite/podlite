@@ -6,6 +6,8 @@
 
 =item a table whose data source was read but holds no rows is reported with the code C<table-source-empty>, apart from a source that could not be had
 
+=item a table of contents node takes an optional C<caption>, a caption block next to C<title>, and C<mkToc> takes it as its last argument; covered content is marked inside such a caption as well
+
 =item C<parse> takes a C<recognition> list and fills it with the lines written as a directive of a block the parser does not know, and with the directive lines it could not read. The tree does not change
 
 =item an C<:id> written without a value is not an address: a link to C<#true> no longer finds such a block

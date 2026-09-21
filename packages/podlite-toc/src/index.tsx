@@ -15,6 +15,8 @@ import {
   mkBlock,
   mkNode,
   markGuarded,
+  mkCaption,
+  parseFormattingCodes,
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
@@ -102,6 +104,29 @@ const textParts = (node: any, guarded: boolean): any[] => {
   const covered = guarded || isGuarded(node)
   if (node.type === 'text' || node.type === 'verbatim') return [textNode(String(node.value), covered)]
   return textParts(node.content, covered)
+}
+
+// A guard mark reaches nodes, not strings, so the text of a parsed value is made
+// into text nodes before it is marked. V and E keep their content as written.
+const textIntoNodes = (nodes: unknown[]): void => {
+  nodes.forEach((child, i) => {
+    if (typeof child === 'string') nodes[i] = textNode(child, false)
+    else if (
+      typeof child === 'object' &&
+      child !== null &&
+      'content' in child &&
+      Array.isArray(child.content) &&
+      !('name' in child && (child.name === 'V' || child.name === 'E'))
+    )
+      textIntoNodes(child.content)
+  })
+}
+
+// parsed the way a picture's caption is, so every code in it keeps its meaning
+const captionOf = (value: unknown, hidden: boolean) => {
+  const content = parseFormattingCodes(String(value), {})
+  textIntoNodes(content)
+  return markGuarded(mkCaption(content), hidden)
 }
 
 const labelCopy = (node: any, guarded: boolean): any[] => {
@@ -214,8 +239,12 @@ export const plugin: Plugin = {
         }
       }
 
+      const hasTitle = tocTitle !== undefined && tocTitle !== null && String(tocTitle) !== ''
+      // marked here: when a table is rebuilt after the includes, no marking pass follows
+      const caption = hasTitle ? captionOf(tocTitle, tocHidden) : undefined
+
       const makeToc = (tocTree: any, title): Toc => {
-        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels, folded)
+        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels, folded, caption)
       }
 
       const toc = makeToc(tocTree, tocTitle)

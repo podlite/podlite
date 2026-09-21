@@ -1742,6 +1742,8 @@
                         "table-cell-outside-row",
                         "table-mixed-separators",
                         "table-row-cells",
+                        "table-source-deferred",
+                        "table-source-empty",
                         "table-source-unreadable",
                         "value-unreadable"
                     ],
@@ -2868,6 +2870,9 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "content": {
                     "$ref": "#/definitions/TocList"

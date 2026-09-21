@@ -24,6 +24,14 @@ export const isCovered = (node: unknown, ctx?: { maskMode?: boolean; renderMode?
   return Boolean((node as { guarded?: boolean })?.guarded)
 }
 
+const isCaptionNode = (value: unknown): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  'type' in value &&
+  value.type === 'block' &&
+  'name' in value &&
+  value.name === 'caption'
+
 export const markGuarded = <T>(node: T, inherited = false): T => {
   if (!node || typeof node !== 'object') return node
   if (Array.isArray(node)) {
@@ -34,5 +42,7 @@ export const markGuarded = <T>(node: T, inherited = false): T => {
   const covered = inherited || target.guarded === true || isGuardCode(target) || isMaskedBlock(target)
   if (covered) target.guarded = true
   if (Array.isArray(target.content)) target.content.forEach(child => markGuarded(child, covered))
+  // a caption parsed from an attribute value sits beside the content, not in it
+  if ('caption' in target && isCaptionNode(target.caption)) markGuarded(target.caption, covered)
   return node
 }
