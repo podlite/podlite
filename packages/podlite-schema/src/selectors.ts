@@ -277,8 +277,6 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
 
 // --- predicate matcher --------------------------------------------------
 
-type SelectorContext = { config?: Record<string, ConfigItem[]> }
-
 type Typed = { value: unknown; type?: string }
 
 // The operand is read by the same grammar as a declaration: the delimiters
@@ -291,14 +289,13 @@ const readOperand = (raw: string): Typed | undefined => {
 }
 
 // The declared value with its kind kept. makeAttrs flattens a list into the
-// surrounding values, which loses the very thing equality compares.
-const declaredValue = (node: PodNode, name: string, ctx: SelectorContext): Typed | undefined => {
-  const anyNode = node as unknown as { name?: string; config?: ConfigItem[] }
+// surrounding values, which loses the very thing equality compares. What a
+// =config supplies is already on the block: the parser puts it there, within
+// the block and the file the =config is written in.
+const declaredValue = (node: PodNode, name: string): Typed | undefined => {
+  const anyNode = node as unknown as { config?: ConfigItem[] }
   const own = (Array.isArray(anyNode.config) ? anyNode.config : []).find(c => c && c.name === name)
-  if (own) return { value: own.value, type: own.type }
-  const configured = (anyNode.name && ctx.config?.[anyNode.name]) || []
-  const inherited = configured.find(c => c && c.name === name)
-  return inherited ? { value: inherited.value, type: inherited.type } : undefined
+  return own ? { value: own.value, type: own.type } : undefined
 }
 
 const sameScalar = (a: unknown, b: unknown): boolean => typeof a === typeof b && a === b
@@ -317,8 +314,8 @@ const sameValue = (a: Typed, b: Typed): boolean => {
 // when it holds spaces, so a word taken from its middle is not a member.
 const valuesOf = (typed: Typed): unknown[] => (Array.isArray(typed.value) ? typed.value : [typed.value])
 
-const matchCondition = (node: PodNode, cond: Condition, ctx: SelectorContext): boolean => {
-  const attrs = makeAttrs(node, ctx)
+const matchCondition = (node: PodNode, cond: Condition): boolean => {
+  const attrs = makeAttrs(node, {})
   const exists = attrs.exists(cond.attrName)
 
   if (!cond.valueSpec) {
@@ -334,7 +331,7 @@ const matchCondition = (node: PodNode, cond: Condition, ctx: SelectorContext): b
     }
   }
 
-  const declared = declaredValue(node, cond.attrName, ctx)
+  const declared = declaredValue(node, cond.attrName)
   const operand = readOperand(cond.valueSpec.value)
 
   if (cond.valueSpec.kind === 'angle') {
@@ -371,36 +368,27 @@ const blockTypeMatches = (node: PodNode, blockType: string): boolean => {
   return false
 }
 
-const matchesPattern = (node: PodNode, pattern: Pattern, ctx: SelectorContext): boolean => {
+const matchesPattern = (node: PodNode, pattern: Pattern): boolean => {
   if (!blockTypeMatches(node, pattern.blockType)) return false
   if (!pattern.predicate) return true
-  return pattern.predicate.every(c => matchCondition(node, c, ctx))
+  return pattern.predicate.every(c => matchCondition(node, c))
 }
 
-// Walk one document in source order, accumulating =config defaults forward
-// (last-wins, shared across the subtree) so a block matches against the same
-// effective attributes the renderer would apply.
-const collectMatches = (
-  node: PodNode,
-  patterns: Pattern[],
-  config: Record<string, ConfigItem[]>,
-  seen: Set<PodNode>,
-  out: PodNode[],
-): void => {
+// Walk one document in source order. A block is matched against the
+// configuration it carries; a =config met on the way is not applied again.
+const collectMatches = (node: PodNode, patterns: Pattern[], seen: Set<PodNode>, out: PodNode[]): void => {
   if (Array.isArray(node)) {
-    for (const child of node) collectMatches(child as PodNode, patterns, config, seen, out)
+    for (const child of node) collectMatches(child as PodNode, patterns, seen, out)
     return
   }
   if (!node || typeof node !== 'object') return
-  const anyNode = node as { type?: string; name?: string; config?: ConfigItem[]; content?: unknown }
-  if (anyNode.type === 'config' && typeof anyNode.name === 'string' && anyNode.config) {
-    config[anyNode.name] = anyNode.config
-  } else if (anyNode.type === 'block' && !seen.has(node) && patterns.some(p => matchesPattern(node, p, { config }))) {
+  const anyNode = node as { type?: string; content?: unknown }
+  if (anyNode.type === 'block' && !seen.has(node) && patterns.some(p => matchesPattern(node, p))) {
     out.push(node)
     seen.add(node)
   }
   if (anyNode.content !== undefined) {
-    collectMatches(anyNode.content as PodNode, patterns, config, seen, out)
+    collectMatches(anyNode.content as PodNode, patterns, seen, out)
   }
 }
 
@@ -523,7 +511,7 @@ export const runSelector = <T extends SelectorDoc>(selector: string, docs: T[]):
     const collectedBlocks: PodNode[] = []
     const seen = new Set<PodNode>()
     for (const d of matchedDocs) {
-      collectMatches(d.node, patterns, {}, seen, collectedBlocks)
+      collectMatches(d.node, patterns, seen, collectedBlocks)
     }
     return collectedBlocks
   }

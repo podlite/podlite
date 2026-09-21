@@ -261,6 +261,20 @@ describe('runQuery through =include', () => {
     expect(rows.map((row: { file: string }) => row.file)).toEqual([part])
   })
 
+  it('applies a =config only to the blocks of the file it is written in', () => {
+    write('child.podlite', '=pod\n\n=para Child\n')
+    const host = write(
+      'host.podlite',
+      '=pod\n\n=config para :tag<host>\n\n=para Host\n\n=include file:./child.podlite\n\n=para After\n',
+    )
+    write('inner.podlite', '=pod\n\n=config para :tag<inner>\n\n=para Inner\n')
+    const outer = write('outer.podlite', '=pod\n\n=include file:./inner.podlite\n\n=para Outer\n')
+    expect([q('para[ :tag<host> ]', host).output, q('para[ :tag<inner> ]', outer).output]).toEqual([
+      '=para Host\n\n=para After',
+      '=para Inner',
+    ])
+  })
+
   it('reports a lost include and returns what it found', () => {
     write('part.podlite', '=pod\n\n=head1 Child\n')
     const main = write(

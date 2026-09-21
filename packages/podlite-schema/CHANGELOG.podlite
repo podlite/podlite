@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a selector reads the configuration the parser gave a block: a C<=config> no longer reaches blocks of another file, included or including, nor blocks after the block it is written in. A tree parsed without the plugin chain carries no such configuration, and a selector over it no longer applies its C<=config> directives
+
 =item html output shows the caption of a table of contents, with the markup written in it and a hidden word hidden, and the wrapper of the table is written with C<class> rather than C<className>. C<tocTitleText> gives the caption of a tree that carries only the C<title> string, hidden as a whole when it holds a C<G> code
 
 =item C<=table file:…> is reported with the code C<table-source-deferred>: the tree holds the address of the source and none of its rows

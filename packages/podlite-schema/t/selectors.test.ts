@@ -312,6 +312,25 @@ describe('runSelector — =config inheritance', () => {
     expect(idsOf(blocks)).toEqual(['after'])
   })
 
+  it('applies a =config inside a block only within that block', () => {
+    const src = `
+=begin nested
+=config pod :level<where>
+
+=begin pod :id<inside>
+=para a
+=end pod
+=end nested
+
+=begin pod :id<after>
+=para b
+=end pod
+`
+    const docs = [makeDoc('x.podlite', src)]
+    const blocks = runSelector('file:x.podlite | pod[:level<where>]', docs) as any[]
+    expect(idsOf(blocks)).toEqual(['inside'])
+  })
+
   it('combines a per-block attribute with a =config default in an AND predicate', () => {
     const src = `
 =config pod :level<where>

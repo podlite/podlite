@@ -262,6 +262,17 @@ describe('an assertion', () => {
     expect([e.precision, e.location?.start.line]).toEqual(['section', 3])
   })
 
+  it('does not give included tests the =config of the supplied document', () => {
+    write('t/one.podlite', `=pod\n\n${aTest('included', [block('assert', 'head1')])}`)
+    const doc = write('doc.podlite', '=pod\n\n=config test :tag<host>\n\n=include file:./t/one.podlite#included\n')
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('no-host-tests', [block('assert', 'test[ :tag<host> ]', ' :absent')])}`,
+    )
+    const [test] = run(main, { against: [doc] }).tests
+    expect([test.status, test.asserts[0].matches]).toEqual(['passed', 0])
+  })
+
   it('checks each supplied document on its own', () => {
     const first = write('first.podlite', '=pod\n\n=head1 In first\n')
     const second = write('second.podlite', '=pod\n\n=para No heading.\n')
