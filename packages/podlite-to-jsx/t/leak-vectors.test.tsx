@@ -129,6 +129,14 @@ describe('the caption of a table of contents on the page', () => {
   it('renders the markup written in it', () => {
     expect(captionOf(page(toc(":caption('The C<G<>> code')")))).toBe('The <code>G&lt;&gt;</code> code')
     expect(captionOf(page(toc(":caption('Plain B<bold>')")))).toBe('Plain <strong>bold</strong>')
+    expect(captionOf(page(toc(":caption('See L<text|#One>')")))).toContain('>text</a>')
+    expect(captionOf(page(toc(":caption('a < b & c')")))).toBe('a &lt; b &amp; c')
+  })
+
+  it('registers a note of its own once and keeps no index code as text', () => {
+    const out = page(toc(":caption('With N<note> X<term>')"))
+    expect(out.split('id="fnref:').length - 1).toBe(1)
+    expect(captionOf(out)).not.toContain('X&lt;')
   })
 
   it('is hidden with a hidden table of contents, and parsed when the table is folded', () => {
