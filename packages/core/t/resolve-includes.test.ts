@@ -465,3 +465,43 @@ describe('include through a source provider', () => {
     expect(md.indexOf('Part A')).toBeLessThan(md.indexOf('Part B'))
   })
 })
+
+describe('a selector as the operand of in within an include', () => {
+  const guide = '=pod\n\n=for para :status<draft>\nDraft\n\n=for para :status<paid>\nPaid\n'
+
+  it('reads a file operand from the directory of the directive, and a selector without a source from its file', () => {
+    write('guide.podlite', guide)
+    write('vocabulary.podlite', '=defn paid\nMoney in.\n')
+    const fromFile = write(
+      'a.podlite',
+      '=pod\n\n=include file:./guide.podlite | para[ :status(in file:./vocabulary.podlite | defn) ]\n',
+    )
+    const fromHome = write(
+      'b.podlite',
+      '=pod\n\n=defn draft\nNot done.\n\n=include file:./guide.podlite | para[ :status(in defn) ]\n',
+    )
+    const [a, b] = [convert(fromFile, 'md'), convert(fromHome, 'md')]
+    expect([a.includes('Paid'), a.includes('Draft'), b.includes('Draft'), b.includes('Paid')]).toEqual([
+      true,
+      false,
+      true,
+      false,
+    ])
+  })
+
+  it('reports an operand that does not resolve and brings nothing in', () => {
+    write('guide.podlite', guide)
+    const main = write(
+      'main.podlite',
+      '=pod\n\n=include file:./guide.podlite | para[ :status(in file:./none.podlite | defn) ]\n',
+    )
+    const problems: IncludeProblem[] = []
+    const tree = resolveIncludes(parseToAst(fs.readFileSync(main, 'utf-8')), {
+      baseDir: tmpDir,
+      parse: parseToAst,
+      onError: problem => problems.push(problem),
+    })
+    expect(problems.map(p => p.kind)).toEqual(['operand'])
+    expect(toMarkdown({}).run(tree).toString()).not.toContain('Paid')
+  })
+})

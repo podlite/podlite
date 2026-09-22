@@ -1,5 +1,5 @@
 import { toTree } from '..'
-import { parseSelector, runSelector, SelectorDoc } from '../src/selectors'
+import { parseSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
 
 const makeDoc = (file: string, source: string): SelectorDoc => {
   const tree = toTree().parse(source, { podMode: 1, skipChain: 0 })
@@ -480,5 +480,113 @@ text
       ids("| para[ :nums(in '4') ]", src),
       ids("| para[ :missing(in 'x') ]", src),
     ]).toEqual([['nums'], ['status'], ['status'], ['status'], [], []])
+  })
+})
+
+describe('runSelector — a selector as the operand of in', () => {
+  const src = `=defn draft
+Not done.
+
+=for para :id<a> :status<draft>
+text
+
+=for para :id<b> :status<paid>
+text
+
+=begin data :key<statuses> :mime-type('text/csv; header=present')
+value,label
+draft,Draft
+paid,Paid
+=end data
+
+=begin data :key<one> :mime-type<text/csv>
+paid
+=end data
+
+=begin data :key<plain> :mime-type<text/csv>
+paid,x
+=end data
+
+=begin data :key<picture> :mime-type<image/png>
+xx
+=end data
+
+=begin data :key<unmarked>
+xx
+=end data
+`
+  const vocabulary = makeDoc('vocabulary.podlite', '=defn paid\nMoney in.\n')
+  const ids = (selector: string, docs: SelectorDoc[] = [makeDoc('x.podlite', src)], options = {}) =>
+    (runSelector(selector, docs, options) as any[]).map(b => b.config?.find((c: any) => c.name === 'id')?.value)
+  const failure = (selector: string, docs: SelectorDoc[] = [makeDoc('x.podlite', src)]) => {
+    try {
+      runSelector(selector, docs)
+      return undefined
+    } catch (e) {
+      return e instanceof SelectorError ? e.kind : 'other'
+    }
+  }
+
+  it('reads it as a selector, and a literal that is not a number or a string as an error', () => {
+    expect(parseSelector('| para[ :status(in draft) ]')?.patterns[0].predicate?.[0].valueSpec).toEqual({
+      kind: 'in',
+      value: 'draft',
+    })
+    expect(parseSelector('| para[ :status(in True) ]')).toBeUndefined()
+    expect(parseSelector('| para[ :status(in data:x | defn) ]')).toBeUndefined()
+  })
+
+  it('takes the terms of the definitions a selector without a source finds', () => {
+    expect(ids('| para[ :status(in defn) ]')).toEqual(['a'])
+  })
+
+  it('takes a column of a data block by its heading, and the only column without an address', () => {
+    expect([ids('| para[ :status(in data:statuses#value) ]'), ids('| para[ :status(in data:one) ]')]).toEqual([
+      ['a', 'b'],
+      ['b'],
+    ])
+    expect(ids('| para[ :status(in data:statuses#label) ]')).toEqual([])
+  })
+
+  it('reads a file source through the host, or among the documents given', () => {
+    const readFile = (document: string) => (document === 'vocabulary.podlite' ? [vocabulary] : undefined)
+    expect([
+      ids('| para[ :status(in file:vocabulary.podlite | defn) ]', [makeDoc('x.podlite', src)], { readFile }),
+      ids('file:x.podlite | para[ :status(in file:vocabulary.podlite | defn) ]', [
+        makeDoc('x.podlite', src),
+        vocabulary,
+      ]),
+    ]).toEqual([['b'], ['b']])
+  })
+
+  it('tells a source that does not resolve from a format and an address', () => {
+    expect([
+      failure('| para[ :status(in data:missing) ]'),
+      failure('| para[ :status(in file:missing.podlite | defn) ]'),
+      failure('| para[ :status(in doc:Missing | defn) ]'),
+      failure('| para[ :status(in data:unmarked) ]'),
+      failure('| para[ :status(in data:picture#value) ]'),
+      failure('| para[ :status(in data:statuses#missing) ]'),
+      failure('| para[ :status(in data:one#value) ]'),
+      failure('| para[ :status(in data:plain) ]'),
+      failure('| para[ :status(in data:statuses) ]'),
+    ]).toEqual([
+      'resolution',
+      'resolution',
+      'resolution',
+      'format',
+      'address',
+      'address',
+      'address',
+      'address',
+      'address',
+    ])
+  })
+
+  it('reads the source before any block reaches the condition', () => {
+    expect([
+      failure('| nosuch[ :status(in file:missing.podlite | defn) ]'),
+      failure('| para[ :status<none> :other(in file:missing.podlite | defn) ]'),
+    ]).toEqual(['resolution', 'resolution'])
   })
 })

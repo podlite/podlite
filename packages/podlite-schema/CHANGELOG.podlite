@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the operation C<in> takes a selector as its operand: the terms of the definitions it finds, or a column of a C<=data> block, as in C<[ :status(in data:statuses#value) ]>. C<runSelector> takes C<SelectorOptions>, the current document and a reader of files, and throws C<SelectorError> when the source of such an operand does not resolve, has a format it cannot read, or lacks the address
+
 =item a selector predicate reads a value in parentheses as a declaration does, as in C<para[ :author('John Doe') ]> and C<para[ :nested(3) ]>, and the operation C<in> with literal operands, as in C<[ :status(in 'draft','issued') ]>. An operation it does not define, C<in> without an operand, and an empty C<~<>> make the selector unreadable. Brackets, bars and whitespace inside a quoted value no longer split the selector
 
 =item a selector C<para> finds a paragraph written without a marker, and C<code> a code block written by indentation. The text of an explicit C<=para>, of a heading and of a C<=defn> term is not taken for another paragraph, and C<*> still finds only the blocks written with a directive

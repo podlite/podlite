@@ -292,3 +292,15 @@ it('runSelector: defn[:!?applies-nfr] picks blocks without the attribute', () =>
   expect(blocks).toHaveLength(1)
   expect(getNodeId(blocks[0], {})).toBe('r4')
 })
+
+it('an include whose operand of in does not resolve is left in place', () => {
+  const doc = `
+=include doc:File1 | data[ :x(in file:none.podlite | defn) ]
+`
+  const state = [processFile('src/file1.podlite', file1), processFile('src/doc.podlite', doc)]
+  const config: PluginConfig = { plugin: resolvePlugin(), includePatterns: '.*' }
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const [res] = processPlugin(config, state, tctx)
+  warn.mockRestore()
+  expect(getFromTree(res[1].node, 'data')).toEqual([])
+})

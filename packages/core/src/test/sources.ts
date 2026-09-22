@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { bindTarget, buildBindingIndex } from '@podlite/schema'
-import type { PodliteDocument, PodNode } from '@podlite/schema'
+import type { PodliteDocument, PodNode, SelectorDoc } from '@podlite/schema'
 import type { IncludeProblem } from '../resolve-includes'
 import { diskProvider } from '../resolve-includes'
 import { canonical, prepareDocument, readDocument } from './documents'
@@ -21,6 +21,9 @@ export type AssertionInput = {
   base?: string
   fixture?: FixtureDecl
   supplied?: number
+  // reads a file an operand of the selection names, from the file the test is
+  // written in
+  readFile?: (document: string) => SelectorDoc[] | undefined
 }
 
 export type InputFailure =
@@ -144,15 +147,7 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
     return prepared
   }
 
-  const namedDocument = (source: string): Result<AssertionInput, InputFailure> => {
-    const base = baseOf(test, env)
-    const { scheme, document, address } = readSourceExpression(source)
-    if (scheme !== 'file') {
-      return err({ kind: 'source-unsupported', input: 'named', source, message: `scheme ${scheme}: is not read` })
-    }
-    if (hasMask(document)) {
-      return err({ kind: 'source-unsupported', input: 'named', source, message: 'a mask is not read as a source' })
-    }
+  const readNamed = (document: string, source: string, base: string): Result<PreparedDocument, InputFailure> => {
     const file = path.resolve(base, document)
     const key = canonical(file)
     let prepared = named.get(key)
@@ -167,13 +162,32 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
             )
       named.set(key, prepared)
     }
+    return prepared
+  }
+
+  const readFile = (document: string): SelectorDoc[] | undefined => {
+    if (hasMask(document)) return undefined
+    const prepared = readNamed(document, `file:${document}`, baseOf(test, env))
+    return prepared.ok ? [{ file: prepared.value.name, node: prepared.value.tree }] : undefined
+  }
+
+  const namedDocument = (source: string): Result<AssertionInput, InputFailure> => {
+    const base = baseOf(test, env)
+    const { scheme, document, address } = readSourceExpression(source)
+    if (scheme !== 'file') {
+      return err({ kind: 'source-unsupported', input: 'named', source, message: `scheme ${scheme}: is not read` })
+    }
+    if (hasMask(document)) {
+      return err({ kind: 'source-unsupported', input: 'named', source, message: 'a mask is not read as a source' })
+    }
+    const prepared = readNamed(document, source, base)
     if (prepared.ok === false) return prepared
     const target = addressed(prepared.value, 'named', source, address)
     if (target.ok === false) return target
     return ok({ kind: 'named', document: prepared.value, target: target.value, source, base })
   }
 
-  return (assert: AssertDecl): Result<AssertionInput, InputFailure> => {
+  const input = (assert: AssertDecl): Result<AssertionInput, InputFailure> => {
     if (assert.source !== undefined) return namedDocument(assert.source)
     if (context.kind === 'supplied') {
       const supplied = env.supplied[context.document]
@@ -192,5 +206,10 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
     const checked = whole(holder, 'containing')
     if (checked.ok === false) return checked
     return ok({ kind: 'containing', document: holder, target: holder.tree })
+  }
+
+  return (assert: AssertDecl): Result<AssertionInput, InputFailure> => {
+    const found = input(assert)
+    return found.ok ? ok({ ...found.value, readFile }) : found
   }
 }

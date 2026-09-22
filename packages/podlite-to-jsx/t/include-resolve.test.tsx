@@ -53,6 +53,23 @@ Second term
     expect(root.innerHTML).toMatch(/Second term/)
   })
 
+  it('an operand of in that does not resolve brings nothing in and renders the rest', () => {
+    const includeReader = (path: string) => (path === 'terms.podlite' ? '=defn alpha\nFirst term\n' : null)
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    render(
+      <Podlite includeReader={includeReader}>
+        {`=begin pod
+=para Around
+=include file:terms.podlite | defn[ :x(in file:none.podlite | defn) ]
+=end pod
+`}
+      </Podlite>,
+    )
+    warn.mockRestore()
+    expect(root.innerHTML).toMatch(/Around/)
+    expect(root.innerHTML).not.toMatch(/failed to render|First term/)
+  })
+
   it('with reader returning null: renders as nothing', () => {
     const includeReader = (_path: string) => null
     render(

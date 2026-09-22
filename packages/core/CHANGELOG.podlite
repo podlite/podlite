@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite query>, C<=include> and C<podlite test> read a C<file:> operand of C<in> relative to where the selector is written: the working directory, the file of the directive, the file of the test. An operand that does not resolve is reported: the query exits with 1, the include brings nothing in, and the assertion does not hold
+
 =item podlite test runs the tests written in Podlite files: each C<=test> is reported as passed, failed or skipped, with the assertion that did not hold, the document it read and where a found block is written. C<--against> examines a document with the tests, C<--format json> writes the report as one JSON document, and C<--allow-skipped> lets skipped tests alone pass the run. The exit code is 0 when every test passed, 1 when a test failed or was skipped, no test was found or an include lost tests, and 2 on wrong arguments or a failure of the implementation
 
 =item podlite/test gives the runner to programs: C<runTests> returns the report as data, and C<collectTests>, C<planRuns>, C<inputsFor> and C<evaluateAssertion> are its parts

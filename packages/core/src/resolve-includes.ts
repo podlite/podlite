@@ -10,6 +10,7 @@ import {
   runSelector,
   SelectorDoc,
   PodNode,
+  SelectorError,
 } from '@podlite/schema'
 
 // One directive on the way from the document to the problem: the file it is
@@ -20,7 +21,7 @@ export type IncludeStep = {
 }
 
 export type IncludeProblem = {
-  kind: 'source' | 'address' | 'ambiguous' | 'unparsed-selector' | 'unsupported-scheme'
+  kind: 'source' | 'address' | 'ambiguous' | 'unparsed-selector' | 'unsupported-scheme' | 'operand'
   target: string
   message: string
   // the first step is the directive in the document itself, the last one the
@@ -165,12 +166,27 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return []
   }
 
-  const walkList = (list: any[], baseDir: string, stack: string[], chain: IncludeStep[], file: string): any[] =>
-    list.flatMap(n => walkNode(n, baseDir, stack, chain, file))
+  // `home` is the file a directive is written in: an operand of a selector
+  // without a source, or with data:, reads from it
+  const walkList = (
+    list: any[],
+    baseDir: string,
+    stack: string[],
+    chain: IncludeStep[],
+    file: string,
+    home: any,
+  ): any[] => list.flatMap(n => walkNode(n, baseDir, stack, chain, file, home))
 
-  const walkNode = (node: any, baseDir: string, stack: string[], chain: IncludeStep[], file: string): any => {
+  const walkNode = (
+    node: any,
+    baseDir: string,
+    stack: string[],
+    chain: IncludeStep[],
+    file: string,
+    home: any,
+  ): any => {
     if (!node || typeof node !== 'object') return node
-    if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file)
+    if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file, home)
 
     if (isIncludeBlock(node)) {
       const selector = getTextContentFromNode(node.content)?.toString().trim()
@@ -226,7 +242,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         if (origin) recordOrigin(own, { file: target, text }, origin)
         docs.push({
           file: name,
-          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target)),
+          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
         })
       }
       if (docs.length === 0) {
@@ -269,11 +285,38 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         })
       }
 
-      return unwrapRoot(keepBlocks(runSelector(selector, docs)))
+      // a file an operand names is read the way an included file is, from the
+      // directory of the directive; one already on the way does not resolve
+      const readFile = (document: string): SelectorDoc[] | undefined => {
+        const target = path.resolve(baseDir, document)
+        const text = stack.includes(target) ? null : textOf(target)
+        if (text === null) return undefined
+        const own = opts.parse(text, target)
+        if (origin) recordOrigin(own, { file: target, text }, origin)
+        return [
+          {
+            file: document,
+            node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
+          },
+        ]
+      }
+      try {
+        return unwrapRoot(
+          keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
+        )
+      } catch (e) {
+        if (!(e instanceof SelectorError)) throw e
+        return report({
+          kind: 'operand',
+          target: selector,
+          message: `include selector cannot be read: ${e.message}`,
+          chain: here,
+        })
+      }
     }
 
     if (Array.isArray(node.content)) {
-      const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file) }
+      const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home) }
       const known = origin?.get(node)
       if (origin && known) origin.set(copy, known)
       return copy
@@ -281,5 +324,5 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return node
   }
 
-  return walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile)
+  return walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile, tree)
 }

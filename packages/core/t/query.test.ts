@@ -312,3 +312,27 @@ describe('runQuery through =include', () => {
     }
   })
 })
+
+describe('runQuery and a selector as the operand of in', () => {
+  it('reads a file operand from the working directory, and fails when it does not resolve', () => {
+    const f = write('guide.podlite', '=pod\n\n=for para :status<draft>\nDraft\n\n=for para :status<paid>\nPaid\n')
+    write('vocabulary.podlite', '=defn paid\nMoney in.\n')
+    const cwd = process.cwd()
+    process.chdir(tmpDir)
+    try {
+      const q = (selector: string) =>
+        runQuery({ selector, files: [f], format: 'podlite', failOnEmpty: false, quiet: true })
+      const found = q('para[ :status(in file:vocabulary.podlite | defn) ]')
+      const lost = q('para[ :status(in file:none.podlite | defn) ]')
+      expect([found.output, found.exitCode, lost.matchCount, lost.exitCode]).toEqual([
+        '=for para :status<paid>\nPaid',
+        0,
+        0,
+        1,
+      ])
+      expect(lost.problems).toEqual([`${f}: the source does not resolve: file:none.podlite`])
+    } finally {
+      process.chdir(cwd)
+    }
+  })
+})

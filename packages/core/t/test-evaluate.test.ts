@@ -193,6 +193,20 @@ describe('an assertion', () => {
     expect([a.held, a.matches]).toEqual([true, 1])
   })
 
+  it('reads a file operand from the file of the test, and fails an assertion whose operand does not resolve', () => {
+    write('vocabulary.podlite', '=defn paid\nMoney in.\n')
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('operand', [
+        block('fixture', '=for para :status<paid>\ntext'),
+        block('assert', 'para[ :status(in file:./vocabulary.podlite | defn) ]'),
+        block('assert', 'para[ :status(in file:./none.podlite | defn) ]', ' :absent'),
+      ])}`,
+    )
+    const [found, lost] = run(main).tests[0].asserts
+    expect([found.held, lost.held, lost.reason?.kind]).toEqual([true, false, 'operand-unresolved'])
+  })
+
   it('holds under :absent over a table whose data was read and holds no rows', () => {
     const fixture = '=begin data :key<empty> :mime-type<text/csv>\n=end data\n\n=table data:empty\n'
     const main = write(

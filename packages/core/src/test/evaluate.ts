@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { parseSelector, runSelector } from '@podlite/schema'
+import { parseSelector, runSelector, SelectorError } from '@podlite/schema'
 import type { Location } from '@podlite/schema'
 import { splitSource } from './collect'
 import type { Profile } from './documents'
@@ -10,6 +10,7 @@ import type { AssertDecl, Place, Result } from './types'
 export type AssertionReason =
   | { kind: 'assertion-false' }
   | { kind: 'unsupported-selector'; selector: string }
+  | { kind: 'operand-unresolved'; error: SelectorError['kind']; message: string }
   | InputFailure
 
 export type Evidence = {
@@ -114,14 +115,25 @@ export const evaluateAssertion = (
     }
   }
   if (input.ok === false) return { ...base, held: false, evidence: [], reason: input.error }
-  const { document, target } = input.value
+  const { document, target, readFile } = input.value
   let blocks: Array<Record<string, unknown>>
   try {
+    // the current document of the selection is the one the assertion is read against
+    const home = [{ file: document.name, node: document.tree }]
     const found: unknown[] =
-      selection === '' ? [target] : runSelector(selection, [{ file: document.name, node: target }])
+      selection === '' ? [target] : runSelector(selection, [{ file: document.name, node: target }], { home, readFile })
     // a selection may hand back a document it was given; only blocks count
     blocks = found.filter((item): item is Record<string, unknown> => isObject(item) && !('file' in item))
   } catch (e) {
+    if (e instanceof SelectorError) {
+      return {
+        ...base,
+        held: false,
+        input: describeInput(input.value),
+        evidence: [],
+        reason: { kind: 'operand-unresolved', error: e.kind, message: e.message },
+      }
+    }
     const message = e instanceof Error ? e.message : String(e)
     return {
       ...base,

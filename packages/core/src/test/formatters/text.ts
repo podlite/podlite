@@ -35,6 +35,8 @@ const describeAssertionReason = (reason: AssertionReason, cwd: string): string =
       return 'does not hold'
     case 'unsupported-selector':
       return `the selection is not supported: ${reason.selector}`
+    case 'operand-unresolved':
+      return `the operand of the selection does not resolve: ${reason.message}`
     case 'source-unavailable':
       return `the source cannot be read: ${reason.source} (from ${shown(reason.base, cwd)})`
     case 'address-unresolved':

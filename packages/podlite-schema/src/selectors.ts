@@ -9,6 +9,7 @@ import {
 } from './index'
 import { ConfigItem } from './types'
 import { parseAttributes } from './helpers/parseAttributes'
+import { extractDataText, findDataBlockByKey, parseCsv, parseMimeType, parseTsv } from './plugin-tables'
 
 /*
 =begin pod
@@ -188,6 +189,26 @@ const readLiterals = (operands: string): Typed | undefined => {
   return values.length > 0 && values.every(literal) ? typed : undefined
 }
 
+const OPERAND_SCHEMES = new Set(['file', 'doc', 'data'])
+
+// The operand of `in`: literal values when the declaration grammar reads them,
+// and otherwise a selector that supplies the values.
+type Operand = { literal: Typed } | { selector: ParsedSelector }
+
+const readInOperand = (operands: string): Operand | undefined => {
+  if (!operands) return undefined
+  const angle = operands.startsWith('<') ? readAngleValue(operands, 0) : undefined
+  const read = angle ? readOperand(angle.value) : readValue(`:x(${operands})`)
+  if (read || angle) {
+    const literal = readLiterals(operands)
+    return literal ? { literal } : undefined
+  }
+  const selector = parseSelector(operands)
+  if (!selector || (selector.scheme && !OPERAND_SCHEMES.has(selector.scheme))) return undefined
+  if (selector.scheme === 'data' && selector.patterns.length > 0) return undefined
+  return { selector }
+}
+
 // What follows the opening parenthesis is a value when the declaration grammar
 // reads it as one, and otherwise the name of an operation.
 const parenCondition = (modifier: Condition['modifier'], attrName: string, inner: string): Condition | undefined => {
@@ -195,7 +216,7 @@ const parenCondition = (modifier: Condition['modifier'], attrName: string, inner
   const operation = inner.match(/^\s*([a-zA-Z_][a-zA-Z0-9_-]*)(?:\s+([\s\S]*))?$/)
   if (!operation || operation[1] !== 'in' || modifier) return undefined
   const operands = (operation[2] ?? '').trim()
-  if (!readLiterals(operands)) return undefined
+  if (!readInOperand(operands)) return undefined
   return { attrName, valueSpec: { kind: 'in', value: operands } }
 }
 
@@ -397,7 +418,10 @@ const sameValue = (a: Typed, b: Typed): boolean => {
   return sameScalar(a.value, b.value)
 }
 
-const matchCondition = (node: PodNode, cond: Condition): boolean => {
+// The values each `in` of a selection compares against, read before any block is.
+type OperandValues = Map<Condition, unknown[]>
+
+const matchCondition = (node: PodNode, cond: Condition, operands: OperandValues): boolean => {
   const attrs = makeAttrs(node, {})
   const exists = attrs.exists(cond.attrName)
 
@@ -416,8 +440,12 @@ const matchCondition = (node: PodNode, cond: Condition): boolean => {
 
   const declared = declaredValue(node, cond.attrName)
   const { kind, value } = cond.valueSpec
-  const operand =
-    kind === 'paren' ? readValue(`:x(${value})`) : kind === 'in' ? readLiterals(value) : readOperand(value)
+  if (kind === 'in') {
+    const wanted = operands.get(cond) ?? []
+    return exists && declared !== undefined && valuesOf(declared).some(held => wanted.some(w => sameScalar(held, w)))
+  }
+
+  const operand = kind === 'paren' ? readValue(`:x(${value})`) : readOperand(value)
 
   if (kind === 'angle' || kind === 'paren') {
     if (!exists || !declared || !operand) return false
@@ -432,12 +460,6 @@ const matchCondition = (node: PodNode, cond: Condition): boolean => {
     const values = valuesOf(declared)
     const present = valuesOf(operand).every(wanted => values.some(held => sameScalar(held, wanted)))
     return cond.modifier === '!' ? !present : present
-  }
-
-  if (kind === 'in') {
-    if (!exists || !declared || !operand) return false
-    const operands = valuesOf(operand)
-    return valuesOf(declared).some(held => operands.some(wanted => sameScalar(held, wanted)))
   }
 
   return false
@@ -485,10 +507,10 @@ const blockTypeMatches = (node: PodNode, name: string, blockType: string): boole
   return false
 }
 
-const matchesPattern = (node: PodNode, name: string, pattern: Pattern): boolean => {
+const matchesPattern = (node: PodNode, name: string, pattern: Pattern, operands: OperandValues): boolean => {
   if (!blockTypeMatches(node, name, pattern.blockType)) return false
   if (!pattern.predicate) return true
-  return pattern.predicate.every(c => matchCondition(node, c))
+  return pattern.predicate.every(c => matchCondition(node, c, operands))
 }
 
 // Walk one document in source order. A block is matched against the
@@ -499,15 +521,16 @@ const collectMatches = (
   patterns: Pattern[],
   seen: Set<PodNode>,
   out: PodNode[],
+  operands: OperandValues,
 ): void => {
   if (Array.isArray(node)) {
-    for (const child of node) collectMatches(child as PodNode, holder, patterns, seen, out)
+    for (const child of node) collectMatches(child as PodNode, holder, patterns, seen, out, operands)
     return
   }
   if (!node || typeof node !== 'object') return
   const anyNode = node as Walked
   const name = blockNameOf(anyNode, holder)
-  if (name !== undefined && !seen.has(node) && patterns.some(p => matchesPattern(node, name, p))) {
+  if (name !== undefined && !seen.has(node) && patterns.some(p => matchesPattern(node, name, p, operands))) {
     out.push(node)
     seen.add(node)
   }
@@ -515,7 +538,7 @@ const collectMatches = (
     // a folded section is a wrapper the tree adds around a heading and its text;
     // the text stands where it was written
     const inner = anyNode.type === 'block' && anyNode.name === '_folded_section' ? holder : anyNode
-    collectMatches(anyNode.content as PodNode, inner, patterns, seen, out)
+    collectMatches(anyNode.content as PodNode, inner, patterns, seen, out, operands)
   }
 }
 
@@ -607,7 +630,139 @@ function getMapIDsBlocks<T extends PodNode>(srcNode: T): Map<string, T> {
   return idsMap
 }
 
-export const runSelector = <T extends SelectorDoc>(selector: string, docs: T[]): T[] | PodNode[] => {
+/*
+=begin pod :kind<export>
+
+=head2 SelectorError
+
+Thrown by C<runSelector> when a selector given as the operand of C<in> cannot be
+read: its source does not resolve (C<resolution>), the format of the source is not
+known (C<format>), or the address is not in it (C<address>). Such a selection
+neither matches nor fails to match, so it returns nothing at all.
+
+=end pod
+*/
+export class SelectorError extends Error {
+  readonly kind: 'resolution' | 'format' | 'address'
+  constructor(kind: 'resolution' | 'format' | 'address', message: string) {
+    super(message)
+    this.name = 'SelectorError'
+    this.kind = kind
+  }
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 SelectorOptions
+
+What a host tells C<runSelector> about where a selector is written. C<home> is the
+current document: an operand without a source selects from it and a C<data:>
+source is looked up in it; without it the documents being selected from are used.
+C<readFile> reads the documents a C<file:> operand names, relative to the file the
+selector is written in, and returns C<undefined> when there is none; without it a
+C<file:> operand is looked for among the documents being selected from.
+
+=end pod
+*/
+export type SelectorOptions = {
+  home?: SelectorDoc[]
+  readFile?: (document: string) => SelectorDoc[] | undefined
+}
+
+const termOf = (block: PodNode): string[] => {
+  const anyBlock = block as unknown as { type?: string; name?: string; content?: unknown }
+  if (anyBlock.type !== 'block' || anyBlock.name !== 'defn' || !Array.isArray(anyBlock.content)) return []
+  const term = anyBlock.content.find(n => n && n.type === 'para' && n.name === 'term')
+  return term ? [getTextContentFromNode(term).trim()] : []
+}
+
+// A column of a =data block: named by its heading when the block declares one,
+// the only column otherwise. A heading is not a value.
+const dataValues = (key: string, address: string | undefined, home: SelectorDoc[]): string[] => {
+  const source = `data:${key}${address ? `#${address}` : ''}`
+  const block = home.map(d => findDataBlockByKey(d.node, key)).find(Boolean)
+  if (!block) throw new SelectorError('resolution', `no data block has the key ${key}: ${source}`)
+  const mime = makeAttrs(block, {}).getFirstValue('mime-type')
+  if (!mime) throw new SelectorError('format', `the data block ${key} declares no :mime-type: ${source}`)
+  const { type, params } = parseMimeType(String(mime))
+  const text = extractDataText(block)
+  const rows: string[][] | undefined =
+    type === 'text/csv' ? parseCsv(text) : type === 'text/tab-separated-values' ? parseTsv(text) : undefined
+  if (!rows) throw new SelectorError('address', `${type} content has no columns: ${source}`)
+  const header = params.header === 'present'
+  const body = header ? rows.slice(1) : rows
+  let column = 0
+  if (address) {
+    column = header && rows.length > 0 ? rows[0].indexOf(address) : -1
+    if (column === -1) throw new SelectorError('address', `no column is headed ${address}: ${source}`)
+  } else if (rows.some(row => row.length !== 1)) {
+    throw new SelectorError('address', `the data has several columns and none is named: ${source}`)
+  }
+  return body.map(row => row[column]).filter((cell): cell is string => cell !== undefined)
+}
+
+// How one selection reads its operands: the current document, the reader of
+// files, and every document the selection was given.
+type Reading = { home: SelectorDoc[]; readFile?: SelectorOptions['readFile']; corpus: SelectorDoc[] }
+
+const operandBlocks = (selector: ParsedSelector, reading: Reading): PodNode[] => {
+  const { scheme, document, anchor, patterns } = selector
+  const { home, readFile, corpus } = reading
+  const shown = scheme ? `${scheme}:${document}` : patterns.map(p => p.blockType).join(', ')
+  let sources: SelectorDoc[] | undefined = home
+  if (scheme === 'file' && document) {
+    sources = readFile ? readFile(document) : corpus.filter(d => filePathMatches(d.file, document))
+  } else if (scheme === 'doc' && document) {
+    sources = corpus.filter(d => getDocIDs(d).includes(document))
+  }
+  if (!sources || sources.length === 0) throw new SelectorError('resolution', `the source does not resolve: ${shown}`)
+  if (anchor) {
+    const found = sources.map(d => getMapIDsBlocks(d.node).get(anchor)).filter((b): b is PodNode => Boolean(b))
+    if (found.length === 0) throw new SelectorError('address', `no block has the address ${anchor}: ${shown}`)
+    return found
+  }
+  return patterns.length > 0 ? selectBlocks(patterns, sources, reading) : []
+}
+
+const readOperands = (patterns: Pattern[], reading: Reading): OperandValues => {
+  const values: OperandValues = new Map()
+  for (const cond of patterns.flatMap(p => p.predicate ?? [])) {
+    if (cond.valueSpec?.kind !== 'in') continue
+    const operand = readInOperand(cond.valueSpec.value)
+    if (!operand) continue
+    if ('literal' in operand) {
+      values.set(cond, valuesOf(operand.literal))
+      continue
+    }
+    const { selector } = operand
+    values.set(
+      cond,
+      selector.scheme === 'data'
+        ? dataValues(selector.document ?? '', selector.anchor, reading.home)
+        : operandBlocks(selector, reading).flatMap(termOf),
+    )
+  }
+  return values
+}
+
+// Operands are read before any block is visited: a source that does not
+// resolve is an error even where no block would reach the condition.
+const selectBlocks = (patterns: Pattern[], docs: SelectorDoc[], reading: Reading): PodNode[] => {
+  const operands = readOperands(patterns, reading)
+  const collectedBlocks: PodNode[] = []
+  const seen = new Set<PodNode>()
+  for (const d of docs) {
+    collectMatches(d.node, undefined, patterns, seen, collectedBlocks, operands)
+  }
+  return collectedBlocks
+}
+
+export const runSelector = <T extends SelectorDoc>(
+  selector: string,
+  docs: T[],
+  options: SelectorOptions = {},
+): T[] | PodNode[] => {
   const parsed = parseSelector(selector)
   if (!parsed) return []
 
@@ -633,14 +788,10 @@ export const runSelector = <T extends SelectorDoc>(selector: string, docs: T[]):
     return collectedBlocks
   }
 
-  // Patterns — source-order traversal, apply each pattern, dedupe across patterns
+  // Patterns are applied in source order and a block found twice is kept once;
+  // an operand reads from all the documents given, not only the matched ones
   if (patterns.length > 0) {
-    const collectedBlocks: PodNode[] = []
-    const seen = new Set<PodNode>()
-    for (const d of matchedDocs) {
-      collectMatches(d.node, undefined, patterns, seen, collectedBlocks)
-    }
-    return collectedBlocks
+    return selectBlocks(patterns, matchedDocs, { home: options.home ?? docs, readFile: options.readFile, corpus: docs })
   }
 
   // No anchor, no patterns — return whole docs

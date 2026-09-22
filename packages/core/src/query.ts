@@ -1,6 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { parse, parseSelector, runSelector, toHtml, toMarkdown, SelectorDoc, PodNode } from '@podlite/schema'
+import {
+  parse,
+  parseSelector,
+  runSelector,
+  toHtml,
+  toMarkdown,
+  SelectorDoc,
+  SelectorError,
+  PodNode,
+} from '@podlite/schema'
 import { resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
@@ -105,6 +114,30 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   const matches: Match[] = []
   const problems: string[] = []
   let failed = false
+  const onError = (problem: IncludeProblem): void => {
+    failed = true
+    problems.push(describe(problem))
+  }
+  const onWarning = (problem: IncludeProblem): void => {
+    problems.push(describe(problem))
+  }
+  // a file an operand names is relative to where the selector is written: the
+  // command line
+  const readFile = (document: string): SelectorDoc[] | undefined => {
+    const file = path.resolve(document)
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return undefined
+    const text = fs.readFileSync(file, 'utf-8')
+    const node = resolveIncludes(parse(text), {
+      baseDir: path.dirname(file),
+      parse: source => parse(source),
+      file: document,
+      self: file,
+      text,
+      onError,
+      onWarning,
+    })
+    return [{ file: document, node }]
+  }
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
@@ -115,14 +148,19 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       self: fromStdin ? undefined : src.file,
       text: src.text,
       origin,
-      onError: problem => {
-        failed = true
-        problems.push(describe(problem))
-      },
-      onWarning: problem => problems.push(describe(problem)),
+      onError,
+      onWarning,
     })
     const docs: SelectorDoc[] = [{ file: src.file, node }]
-    const result = runSelector(opts.selector, docs)
+    let result: ReturnType<typeof runSelector>
+    try {
+      result = runSelector(opts.selector, docs, { readFile })
+    } catch (e) {
+      if (!(e instanceof SelectorError)) throw e
+      failed = true
+      problems.push(`${src.file}: ${e.message}`)
+      continue
+    }
     for (const item of result) {
       if (item && typeof item === 'object' && !('file' in (item as object))) {
         const where = origin.get(item)

@@ -29,6 +29,7 @@ import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@pod
 import {
   parseSelector,
   runSelector,
+  SelectorError,
   getTextContentFromNode,
   maskText,
   collectText,
@@ -567,7 +568,14 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       if (docs.length === 0) return null
 
-      const blocks = runSelector(selector, docs) as PodNode[]
+      let blocks: PodNode[]
+      try {
+        blocks = runSelector(selector, docs) as PodNode[]
+      } catch (e) {
+        if (!(e instanceof SelectorError)) throw e
+        console.warn(`[to-jsx] include selector cannot be read: ${e.message}`)
+        return null
+      }
       if (!blocks || blocks.length === 0) return null
 
       return interator(groupTests(blocks), { ...ctx, includeStack: [...stack, ...paths] })

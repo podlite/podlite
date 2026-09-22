@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an include whose selector has an operand of C<in> that does not resolve brings nothing in and is reported as a warning, rather than rendering the include as failed
+
 =item the caption of a table of contents renders the markup written in it, and a hidden word in it is hidden while the rest stays open
 
 =item hidden content keeps its captions and titles hidden on the page: table captions, the summary of a folded block, the title of a note, the title of a table of contents, the alternative text of a picture, link titles and file names, text written with C<< S<> >> or C<< E<> >>, the kind of a hidden note, and the name a hidden block written in capitals shows as its heading. A link preview shows hidden text masked, a markdown block's included, except in draft
