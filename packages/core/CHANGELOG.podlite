@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite query> selects from the tree C<convert> and C<podlite test> read: a Markdown section is read into blocks, a table from C<data:> into rows and cells, and tables of contents are made again after the includes. A block with no place of its own in the file is given in C<--to podlite> as its Markdown, a row of such a table as one line of cells; in C<--to json> a block of a Markdown section carries the place of the section and C<precision: section>. The root inside a section and a folded section are not counted as found. C<--to md> and C<--to html> hide what the document hides. A query loads the Markdown, image and table of contents plugins when it runs, not the diagram renderer. The rules are shared through the entry C<podlite/lib/query-blocks>
+
 =item tables of contents are made again after the includes inside the block that holds them, and C<podlite test> finds a C<=toc> block
 
 =item C<podlite query>, C<=include> and C<podlite test> read a C<file:> operand of C<in> relative to where the selector is written: the working directory, the file of the directive, the file of the test. An operand that does not resolve is reported: the query exits with 1, the include brings nothing in and C<podlite lint> reports it as an error, and the assertion does not hold

@@ -6,6 +6,7 @@ import { DEFAULT_RULES } from 'podlite/lib/lint/rules/index'
 import { runRules } from 'podlite/lib/lint/engine'
 import { parseContent } from 'podlite/lib/lint/loader'
 import { makeSyntaxViolation } from 'podlite/lib/lint/rules/syntax-valid'
+import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from 'podlite/lib/query-blocks'
 import type { LintContext, Violation } from 'podlite/lib/lint/types'
 
 export type ValidateReport = {
@@ -34,14 +35,6 @@ export type QueryReport = {
   output: string
 }
 
-const sliceBlock = (text: string, block: PodNode): string => {
-  const loc = (block as { location?: { start?: { offset?: number }; end?: { offset?: number } } }).location
-  if (typeof loc?.start?.offset !== 'number' || typeof loc?.end?.offset !== 'number') {
-    return ''
-  }
-  return text.slice(loc.start.offset, loc.end.offset)
-}
-
 const renderBlock = (block: PodNode, format: 'html' | 'md'): string => {
   const root = { type: 'block', name: 'pod', margin: '', content: [block] } as unknown as PodNode
   const out = format === 'md' ? toMarkdown({}).run(root) : toHtml({}).run(root)
@@ -52,19 +45,28 @@ export const querySource = (selector: string, text: string, format: QueryFormat)
   if (!parseSelector(selector)) {
     throw new Error(`Invalid selector: ${selector}`)
   }
-  const docs: SelectorDoc[] = [{ file: virtualFile, node: parse(text) }]
+  // the tree convert reads, so a Markdown section is read into blocks
+  const p = podlite({ importPlugins: true })
+  const tree = p.toAst(p.parse(text, { podMode: 1 }))
+  const sections = new WeakMap<object, unknown>()
+  markSections(tree, sections)
+  const docs: SelectorDoc[] = [{ file: virtualFile, node: contentOf(tree) }]
   const blocks: PodNode[] = []
   for (const item of runSelector(selector, docs)) {
-    if (item && typeof item === 'object' && !('file' in (item as object))) {
+    if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
       blocks.push(item as PodNode)
     }
   }
   let output: string
   if (format === 'json') {
-    output = JSON.stringify(blocks, null, 2)
+    output = JSON.stringify(
+      blocks.map(b => jsonBlock(b, sections)),
+      null,
+      2,
+    )
   } else if (format === 'podlite') {
     output = blocks
-      .map(b => sliceBlock(text, b).trimEnd())
+      .map(b => podliteText(b, text, sections).trimEnd())
       .filter(Boolean)
       .join('\n\n')
   } else {

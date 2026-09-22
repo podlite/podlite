@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the query tool selects from the tree C<convert> reads, so a Markdown section is read into blocks, and gives a found block as C<podlite query> does
+
 =head1 0.0.18
 
 =item the package declares an exports map and its own type entry, and no longer points at an esm build it never produced. A bundler that preferred that entry resolved to a missing file

@@ -33,6 +33,10 @@
     "./lib/lint/*": {
       "types": "./lib/lint/*.d.ts",
       "default": "./lib/lint/*.js"
+    },
+    "./lib/query-blocks": {
+      "types": "./lib/query-blocks.d.ts",
+      "default": "./lib/query-blocks.js"
     }
   },
   "funding": {

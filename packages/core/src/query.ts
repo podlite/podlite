@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {
-  parse,
+  podlitePluggable,
   parseSelector,
   runSelector,
   toHtml,
@@ -11,6 +11,8 @@ import {
   PodNode,
 } from '@podlite/schema'
 import { resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
+import { refreshTocs } from './refresh-tocs'
+import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
 
@@ -23,19 +25,26 @@ export type QueryOptions = {
   stdinContent?: string
 }
 
-type Source = { file: string; text: string; node: any; fromStdin?: boolean }
+type Source = { file: string; text: string; fromStdin?: boolean }
 
-const loadSource = (file: string): Source => {
-  const text = fs.readFileSync(file, 'utf-8')
-  return { file, text, node: parse(text) }
-}
+// How a query reads a document: as convert and the test runner do, each file
+// parsed and then transformed by the plugins that change the tree. The diagram
+// and formula plugins only render, so they are left out, and with them mermaid
+// and React; the three that are needed are raised when a query runs, not when
+// the module loads.
+type QueryReader = { toTree: (text: string) => any; written: (text: string) => any }
 
-const sliceBlock = (text: string, block: any): string => {
-  const loc = block?.location
-  if (!loc || typeof loc.start?.offset !== 'number' || typeof loc.end?.offset !== 'number') {
-    return ''
+const queryReader = (): QueryReader => {
+  /* eslint-disable @typescript-eslint/no-var-requires */
+  const { PluginRegister: markdown } = require('@podlite/markdown')
+  const { PluginRegister: image } = require('@podlite/image')
+  const { PluginRegister: toc } = require('@podlite/toc')
+  /* eslint-enable @typescript-eslint/no-var-requires */
+  const p = podlitePluggable({ plugins: { ...markdown, ...image, ...toc } })
+  return {
+    toTree: (text: string) => p.toAst(p.parse(text, { podMode: 1 })),
+    written: (text: string) => p.parse(text, { podMode: 1 }),
   }
-  return text.slice(loc.start.offset, loc.end.offset)
 }
 
 // Each block is rendered through its own pod-block invocation. Wrapping
@@ -51,20 +60,20 @@ const renderViaRoot = (block: PodNode, serializer: 'md' | 'html'): string => {
 // offsets belong to that file.
 type Match = { file: string; text: string; block: PodNode }
 
-const formatBlocks = (format: QueryFormat, matches: Match[]): string => {
+const formatBlocks = (format: QueryFormat, matches: Match[], sections: WeakMap<object, any>): string => {
   if (format === 'json') {
     // without the source, a query over several files answers "here are the
     // blocks" and drops "from where", which leaves the caller no way back to
     // the document
     return JSON.stringify(
-      matches.map(m => ({ file: m.file, ...(m.block as object) })),
+      matches.map(m => ({ file: m.file, ...jsonBlock(m.block, sections) })),
       null,
       2,
     )
   }
   if (format === 'podlite') {
     return matches
-      .map(m => sliceBlock(m.text, m.block).trimEnd())
+      .map(m => podliteText(m.block, m.text, sections).trimEnd())
       .filter(Boolean)
       .join('\n\n')
   }
@@ -100,10 +109,10 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
 
   const sources: Source[] = []
   if (opts.stdinContent !== undefined) {
-    sources.push({ file: '<stdin>', text: opts.stdinContent, node: parse(opts.stdinContent), fromStdin: true })
+    sources.push({ file: '<stdin>', text: opts.stdinContent, fromStdin: true })
   }
   for (const f of opts.files) {
-    sources.push(loadSource(f))
+    sources.push({ file: f, text: fs.readFileSync(f, 'utf-8') })
   }
 
   if (sources.length === 0) {
@@ -121,29 +130,37 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   const onWarning = (problem: IncludeProblem): void => {
     problems.push(describe(problem))
   }
+  const reader = queryReader()
+  const sections = new WeakMap<object, any>()
+  // each file is read on its own before its includes, as convert reads it
+  const toTree = (text: string): any => {
+    const tree = reader.toTree(text)
+    markSections(tree, sections)
+    return tree
+  }
   // a file an operand names is relative to where the selector is written: the
   // command line
   const readFile = (document: string): SelectorDoc[] | undefined => {
     const file = path.resolve(document)
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return undefined
     const text = fs.readFileSync(file, 'utf-8')
-    const node = resolveIncludes(parse(text), {
+    const node = resolveIncludes(toTree(text), {
       baseDir: path.dirname(file),
-      parse: source => parse(source),
+      parse: source => toTree(source),
       file: document,
       self: file,
       text,
       onError,
       onWarning,
     })
-    return [{ file: document, node }]
+    return [{ file: document, node: contentOf(node) }]
   }
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
-    const node = resolveIncludes(src.node, {
+    const resolved = resolveIncludes(toTree(src.text), {
       baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
-      parse: source => parse(source),
+      parse: source => toTree(source),
       file: src.file,
       self: fromStdin ? undefined : src.file,
       text: src.text,
@@ -151,7 +168,13 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       onError,
       onWarning,
     })
-    const docs: SelectorDoc[] = [{ file: src.file, node }]
+    // the tables of contents are made again over what the includes brought; a
+    // copy keeps the section its block was read out of
+    const node = refreshTocs(resolved, reader.written(src.text), src.file, origin, (from, to) => {
+      const section = sections.get(from)
+      if (section) sections.set(to, section)
+    })
+    const docs: SelectorDoc[] = [{ file: src.file, node: contentOf(node) }]
     let result: ReturnType<typeof runSelector>
     try {
       result = runSelector(opts.selector, docs, { readFile })
@@ -162,7 +185,8 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       continue
     }
     for (const item of result) {
-      if (item && typeof item === 'object' && !('file' in (item as object))) {
+      // what the tree adds around the written blocks is not counted as found
+      if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
         const where = origin.get(item)
         matches.push({
           file: where ? where.file : src.file,
@@ -173,7 +197,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     }
   }
 
-  const output = formatBlocks(opts.format, matches)
+  const output = formatBlocks(opts.format, matches, sections)
   const exitCode = failed || (opts.failOnEmpty && matches.length === 0) ? 1 : 0
   return { output, matchCount: matches.length, exitCode, problems }
 }

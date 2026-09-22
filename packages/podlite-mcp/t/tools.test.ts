@@ -110,4 +110,21 @@ const x = 1
   it('rejects an invalid selector', () => {
     expect(() => querySource('[[', doc, 'podlite')).toThrow('Invalid selector')
   })
+
+  const section = '=pod\n\n=begin markdown\n# Title\n\nMd text.\n=end markdown\n'
+
+  it('finds the blocks of a Markdown section and gives them as Markdown', () => {
+    const para = querySource('para', section, 'podlite')
+    expect([para.matchCount, para.output]).toEqual([1, 'Md text.'])
+  })
+
+  it('gives in json a block of a section the place of the section, without a file', () => {
+    const [head] = JSON.parse(querySource('head1', section, 'json').output)
+    expect([head.precision, head.location.start.line, 'file' in head]).toEqual(['section', 3, false])
+  })
+
+  it('does not count the root inside a section as found', () => {
+    const names = JSON.parse(querySource('*', section, 'json').output).map((b: { name: string }) => b.name)
+    expect(names).toEqual(['pod', 'markdown', 'head'])
+  })
 })

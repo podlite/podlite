@@ -344,3 +344,70 @@ describe('runQuery and a source written without a scheme', () => {
     expect(r.matchCount).toBe(0)
   })
 })
+
+describe('runQuery over the tree convert reads', () => {
+  const q = (selector: string, file: string, format: 'podlite' | 'json' | 'md' = 'podlite', failOnEmpty = false) =>
+    runQuery({ selector, files: [file], format, failOnEmpty, quiet: true })
+  const section = '=pod\n\n=begin markdown\n# Title\n\nMd para text.\n=end markdown\n'
+
+  it('finds the blocks of a Markdown section and gives them as Markdown', () => {
+    const f = write('doc.podlite', section)
+    expect([q('para', f).output, q('head1', f).output]).toEqual(['Md para text.', '# Title'])
+  })
+
+  it('gives in json a block of a section the place of the section', () => {
+    const f = write('doc.podlite', section)
+    const [head] = JSON.parse(q('head1', f, 'json').output)
+    expect([head.precision, head.location.start.line]).toEqual(['section', 3])
+  })
+
+  it('finds a Markdown section of an included file', () => {
+    write('part.podlite', section)
+    const main = write('main.podlite', '=pod\n\n=include file:./part.podlite\n')
+    expect(q('para', main).output).toBe('Md para text.')
+  })
+
+  it('keeps a block of an included section known as one when the table of contents is made again', () => {
+    write('part.podlite', section)
+    const main = write('main.podlite', '=pod\n\n=toc head1\n\n=include file:./part.podlite | para\n')
+    expect(q('para', main).output).toBe('Md para text.')
+  })
+
+  it('counts no block the tree adds around what was written', () => {
+    const f = write('doc.podlite', section + '\n=for head1 :folded\nFolded\n\nUnder it.\n')
+    const names = JSON.parse(q('*', f, 'json').output).map((b: { name: string }) => b.name)
+    expect(names).toEqual(['pod', 'markdown', 'head', 'head'])
+    const root = q('root', f, 'json', true)
+    expect([root.output, root.matchCount, root.exitCode]).toEqual(['[]', 0, 1])
+  })
+
+  it('finds nothing with * in a document of one paragraph, while the test runner finds its root', () => {
+    expect(q('*', write('doc.podlite', 'Loose paragraph.\n')).matchCount).toBe(0)
+  })
+
+  it('finds a table of contents made again over the includes', () => {
+    write('part.podlite', '=pod\n\n=head1 Included\n')
+    const main = write('main.podlite', '=pod\n\n=toc head1\n\n=head1 Own\n\n=include file:./part.podlite\n')
+    const r = q('toc', main, 'json')
+    const entries = JSON.stringify(JSON.parse(r.output)).match(/"toc-item"/g) || []
+    expect([r.matchCount, entries.length, q('toc', main).output]).toEqual([1, 2, '=toc head1'])
+  })
+
+  it('gives a block with no place in the file as Markdown, and a row of data as one line', () => {
+    const f = write(
+      'doc.podlite',
+      '=pod\n\n=for picture :caption<Nice>\nimg.png\n\n=begin data :key<people> :mime-type<text/csv>\n"A|B",1\nAda,36\n=end data\n\n=table data:people\n',
+    )
+    expect([q('caption', f).output, q('row', f).output, q('cell', f).output]).toEqual([
+      'Nice',
+      '| A\\|B | 1 |\n\n| Ada | 36 |',
+      'A\\|B\n\n1\n\nAda\n\n36',
+    ])
+  })
+
+  it('hides in md what the document hides, and gives it as written in podlite', () => {
+    const f = write('doc.podlite', '=pod\n\n=for para :masked\nSecret words\n')
+    expect(q('para', f, 'md').output).not.toContain('Secret')
+    expect(q('para', f).output).toContain('Secret words')
+  })
+})
