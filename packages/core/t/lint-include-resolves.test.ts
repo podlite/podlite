@@ -46,6 +46,14 @@ describe('include-resolves rule', () => {
     expect(lint('doc5.podlite', '=pod\n\n=include file:./parts/*.podlite#b\n')).toHaveLength(1)
   })
 
+  it('reports an operand of in that does not resolve', () => {
+    const v = lint(
+      'doc9.podlite',
+      '=pod\n\n=include file:./guide.podlite | para[ :id(in file:./absent.podlite | defn) ]\n',
+    )
+    expect(v.map(x => [x.severity, x.location?.start.line])).toEqual([['error', 3]])
+  })
+
   it('warns when an address names two blocks', () => {
     expect(lint('doc6.podlite', '=pod\n\n=include file:./twice.podlite#x\n').map(x => x.severity)).toEqual(['warning'])
   })

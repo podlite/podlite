@@ -17,7 +17,9 @@ const toViolation = (problem: IncludeProblem, filePath: string): Violation => {
       : ''
   return {
     rule: INCLUDE_RESOLVES_RULE_ID,
-    severity: problem.kind === 'source' || problem.kind === 'address' ? 'error' : 'warning',
+    // an include that loses its content is an error; one that still brings it in, a warning
+    severity:
+      problem.kind === 'source' || problem.kind === 'address' || problem.kind === 'operand' ? 'error' : 'warning',
     message: `${problem.message}${inner}`,
     location: first?.location,
   }
