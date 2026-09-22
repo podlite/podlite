@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item html output writes the C<:id> of a table of contents on its element, so a link to that address finds it
+
 =item a selector source written without a scheme before the bar is read as a file, as in C<=include article.podlite | head1>; it was dropped, and the selection ran over every document given
 
 =item a predicate C<[ :attr ]> holds for a value neither empty nor false by its kind: an empty hash no longer holds, while the number 0 and a list whose first element is empty do. C<[ :!attr ]> holds only for the value C<False>

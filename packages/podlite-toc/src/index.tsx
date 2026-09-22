@@ -167,6 +167,9 @@ export const plugin: Plugin = {
     // marks are set again after this pass; an entry needs them now, while it is built
     markGuarded(fulltree)
     return (node, ctx) => {
+      // the directive keeps its place as a block and holds the table it made; a
+      // table made once is not read again as a selector
+      if (Array.isArray(node.content) && node.content.some(c => c && c.type === 'toc')) return node
       const content = getTextContentFromNode(node)
       const blocks: Array<any> = content
         .trim()
@@ -248,7 +251,7 @@ export const plugin: Plugin = {
       }
 
       const toc = makeToc(tocTree, tocTitle)
-      return tocHidden ? { ...toc, guarded: true } : toc
+      return { ...node, content: [tocHidden ? { ...toc, guarded: true } : toc] }
     }
   },
 }

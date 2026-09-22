@@ -30,6 +30,8 @@ import {
   parseSelector,
   runSelector,
   SelectorError,
+  getExplicitNodeId,
+  toFragment,
   getTextContentFromNode,
   maskText,
   collectText,
@@ -68,6 +70,12 @@ export class BlockBoundary extends React.Component<
     }
     return this.props.children
   }
+}
+
+// the address a table of contents is given with :id, shaped as headings are
+const tocAnchorOf = (node: any, ctx: any): string | undefined => {
+  const written = getExplicitNodeId(node, ctx)
+  return written === null ? undefined : (ctx?.__anchors?.shape || toFragment)(written)
 }
 const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHelper => {
   let i_key_i = 0
@@ -957,8 +965,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
 
       return makeComponent('li', node, interator(node.content, { ...ctx }), { id })
     },
-    // table of content
+    // table of content: the directive holds the table it made, and gives it its :id
+    'toc:block': (writer, processor) => (node: any, ctx, interator) =>
+      interator(node.content, { ...ctx, tocAnchor: tocAnchorOf(node, ctx) }),
+    'Toc:block': (writer, processor) => (node: any, ctx, interator) =>
+      interator(node.content, { ...ctx, tocAnchor: tocAnchorOf(node, ctx) }),
     ':toc': (writer, processor) => (node: Toc, ctx, interator) => {
+      const tocAnchor = ctx.tocAnchor || undefined
       if (node.foldedLevels) {
         ctx._tocFoldedLevels = node.foldedLevels
       }
@@ -967,14 +980,14 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (folded !== undefined) {
         const isExpanded = folded === false
         return mkComponent(({ children, key }) => (
-          <details className="toc toc-fold-all" key={key} open={isExpanded || undefined}>
+          <details className="toc toc-fold-all" id={tocAnchor} key={key} open={isExpanded || undefined}>
             <summary className="toctitle">{tocTitle || 'Contents'}</summary>
             {children}
           </details>
         ))(writer, processor)(node, ctx, interator)
       }
       return mkComponent(({ children, key }) => (
-        <div className="toc" key={key}>
+        <div className="toc" id={tocAnchor} key={key}>
           {tocTitle ? <div className="toctitle">{tocTitle}</div> : ''}
           {children}
         </div>

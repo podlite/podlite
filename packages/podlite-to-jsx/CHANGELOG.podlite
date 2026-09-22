@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a table of contents kept as a C<toc> or C<Toc> block renders its table, with the C<:id> of the block on the element
+
 =item an include whose selector has an operand of C<in> that does not resolve brings nothing in and is reported as a warning, rather than rendering the include as failed
 
 =item the caption of a table of contents renders the markup written in it, and a hidden word in it is hidden while the rest stays open

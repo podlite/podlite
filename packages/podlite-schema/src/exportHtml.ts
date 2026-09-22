@@ -468,9 +468,13 @@ const rules = {
     interator(node.content, ctx)
     writer.writeRaw(`</${tag}>`)
   },
-  // Toc
+  // Toc: the directive holds the table it made, and gives it its :id
+  'toc:block': (writer, processor) => (node, ctx, interator) =>
+    interator(node.content, { ...ctx, tocAnchor: anchorOf(node, ctx) }),
+  'Toc:block': (writer, processor) => (node, ctx, interator) =>
+    interator(node.content, { ...ctx, tocAnchor: anchorOf(node, ctx) }),
   ':toc': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw('<div class="toc">')
+    writer.writeRaw(ctx?.tocAnchor ? `<div class="toc" id="${ctx.tocAnchor}">` : '<div class="toc">')
     if (node.caption) {
       writer.writeRaw('<div class="toctitle">')
       interator(node.caption.content, ctx)
