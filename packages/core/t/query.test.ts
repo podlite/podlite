@@ -336,3 +336,11 @@ describe('runQuery and a selector as the operand of in', () => {
     }
   })
 })
+
+describe('runQuery and a source written without a scheme', () => {
+  it('selects from the file the source names, not from the file given', () => {
+    const y = write('y.podlite', '=pod\n\nIn y.\n')
+    const r = runQuery({ selector: 'x.podlite | para', files: [y], format: 'podlite', failOnEmpty: false, quiet: true })
+    expect(r.matchCount).toBe(0)
+  })
+})

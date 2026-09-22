@@ -70,6 +70,19 @@ Second term
     expect(root.innerHTML).not.toMatch(/failed to render|First term/)
   })
 
+  it('an include source written without a scheme is read as a file', () => {
+    const includeReader = (path: string) => (path === 'terms.podlite' ? '=defn alpha\nFirst term\n' : null)
+    render(
+      <Podlite includeReader={includeReader}>
+        {`=begin pod
+=include terms.podlite | defn
+=end pod
+`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatch(/First term/)
+  })
+
   it('with reader returning null: renders as nothing', () => {
     const includeReader = (_path: string) => null
     render(

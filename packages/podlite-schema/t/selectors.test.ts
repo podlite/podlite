@@ -618,3 +618,50 @@ describe('runSelector — an empty or false value', () => {
     ]).toEqual([1, 0, 0])
   })
 })
+
+describe('parseSelector — a source written without a scheme', () => {
+  it('reads the text before the bar as a file', () => {
+    expect([
+      parseSelector('x.podlite | para'),
+      parseSelector('./x.podlite#intro | para'),
+      parseSelector('head1 | para'),
+    ]).toEqual([
+      { scheme: 'file', document: 'x.podlite', anchor: undefined, patterns: [{ blockType: 'para' }] },
+      { scheme: 'file', document: './x.podlite', anchor: 'intro', patterns: [{ blockType: 'para' }] },
+      { scheme: 'file', document: 'head1', anchor: undefined, patterns: [{ blockType: 'para' }] },
+    ])
+  })
+
+  it('reads a selection without a bar, or with nothing before it, as before', () => {
+    expect([
+      parseSelector('| para'),
+      parseSelector('head1, head2'),
+      parseSelector('para[ :x("a|b") ]')?.scheme,
+    ]).toEqual([
+      { patterns: [{ blockType: 'para' }] },
+      { patterns: [{ blockType: 'head1' }, { blockType: 'head2' }] },
+      undefined,
+    ])
+  })
+
+  it('selects from the file it names, as file: does', () => {
+    const docs = [makeDoc('x.podlite', '=para In x\n'), makeDoc('y.podlite', '=para In y\n')]
+    expect([runSelector('x.podlite | para', docs).length, runSelector('file:x.podlite | para', docs).length]).toEqual([
+      1, 1,
+    ])
+  })
+
+  it('reads an operand of in without a scheme from the file it names', () => {
+    const src =
+      '=defn draft\nNot done.\n\n=for para :id<a> :status<draft>\ntext\n\n=for para :id<b> :status<paid>\ntext\n'
+    const vocabulary = makeDoc('vocabulary.podlite', '=defn paid\nMoney in.\n')
+    const readFile = (document: string) => (document === 'vocabulary.podlite' ? [vocabulary] : undefined)
+    const found = runSelector('| para[ :status(in vocabulary.podlite | defn) ]', [makeDoc('x.podlite', src)], {
+      readFile,
+    }) as any[]
+    expect(found.map(b => b.config.find((c: any) => c.name === 'id').value)).toEqual(['b'])
+    expect(() =>
+      runSelector('| para[ :status(in none.podlite | defn) ]', [makeDoc('x.podlite', src)], { readFile }),
+    ).toThrow(SelectorError)
+  })
+})

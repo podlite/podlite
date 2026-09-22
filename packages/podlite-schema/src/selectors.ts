@@ -380,6 +380,20 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
     }
   }
 
+  // Without a scheme the bar is what makes the text before it a source, and
+  // such a source is a file
+  if (pipeIdx !== -1 && sourcePart) {
+    const hash = sourcePart.indexOf('#')
+    const document = (hash === -1 ? sourcePart : sourcePart.slice(0, hash)).trim()
+    if (!document) return undefined
+    return {
+      scheme: 'file',
+      document,
+      anchor: hash === -1 ? undefined : sourcePart.slice(hash + 1) || undefined,
+      patterns,
+    }
+  }
+
   if (patterns.length > 0) {
     return { patterns }
   }

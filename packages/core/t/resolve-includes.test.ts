@@ -505,3 +505,11 @@ describe('a selector as the operand of in within an include', () => {
     expect(toMarkdown({}).run(tree).toString()).not.toContain('Paid')
   })
 })
+
+describe('an include source written without a scheme', () => {
+  it('is read as a file relative to the directive', () => {
+    write('guide.podlite', '=pod\n\n=head1 From the guide\n')
+    const main = write('main.podlite', '=pod\n\n=include guide.podlite | head1\n')
+    expect(convert(main, 'md')).toContain('From the guide')
+  })
+})
