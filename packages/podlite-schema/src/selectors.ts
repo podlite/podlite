@@ -408,6 +408,12 @@ const declaredValue = (node: PodNode, name: string): Typed | undefined => {
 
 const sameScalar = (a: unknown, b: unknown): boolean => typeof a === typeof b && a === b
 
+const isEmptyOrFalse = (value: unknown): boolean =>
+  value === false ||
+  value === '' ||
+  (Array.isArray(value) && value.length === 0) ||
+  (typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length === 0)
+
 // A list equals another list when their elements match one by one, in order; a
 // value of one kind never equals a value of another.
 const sameValue = (a: Typed, b: Typed): boolean => {
@@ -426,11 +432,14 @@ const matchCondition = (node: PodNode, cond: Condition, operands: OperandValues)
   const exists = attrs.exists(cond.attrName)
 
   if (!cond.valueSpec) {
+    // judged by the value as declared: a list is empty or not as a whole, and a
+    // number is never false
+    const held = declaredValue(node, cond.attrName)?.value
     switch (cond.modifier) {
       case undefined:
-        return exists && Boolean(attrs.getFirstValue(cond.attrName))
+        return exists && !isEmptyOrFalse(held)
       case '!':
-        return exists && attrs.getFirstValue(cond.attrName) === false
+        return exists && held === false
       case '?':
         return exists
       case '!?':

@@ -590,3 +590,31 @@ xx
     ]).toEqual(['resolution', 'resolution'])
   })
 })
+
+describe('runSelector — an empty or false value', () => {
+  const count = (selector: string, declared: string) =>
+    runSelector(selector, [makeDoc('x.podlite', `=for para ${declared}\ntext\n`)]).length
+
+  it('tells a value neither empty nor false by its kind', () => {
+    expect([
+      count('| para[ :h ]', ':h{}'),
+      count('| para[ :h ]', ':h{:a<x>}'),
+      count('| para[ :n ]', ':n(0)'),
+      count('| para[ :d ]', ':d(0.0)'),
+      count('| para[ :l ]', ":l('', 'x')"),
+      count('| para[ :l ]', ':l<>'),
+      count('| para[ :s ]', ":s('')"),
+      count('| para[ :t ]', ':t'),
+      count('| para[ :f ]', ':f(False)'),
+      count('| para[ :z ]', ":z('0')"),
+    ]).toEqual([0, 1, 1, 1, 1, 0, 0, 1, 0, 1])
+  })
+
+  it('takes only the value false for false', () => {
+    expect([
+      count('| para[ :!f ]', ':f(False)'),
+      count('| para[ :!l ]', ':l(False, True)'),
+      count('| para[ :!h ]', ':h{}'),
+    ]).toEqual([1, 0, 0])
+  })
+})
