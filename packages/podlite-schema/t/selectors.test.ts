@@ -384,3 +384,101 @@ describe('runSelector — blocks written without a marker', () => {
     expect(blocks.map(b => `${b.type}:${b.name}`)).toEqual(['block:para'])
   })
 })
+
+describe('parseSelector — values and operations in parentheses', () => {
+  const conditions = (selector: string) => parseSelector(selector)?.patterns[0].predicate
+
+  it('reads a value in parentheses as one condition', () => {
+    expect(conditions("| para[ :k('a b') :n(3) ]")).toEqual([
+      { attrName: 'k', valueSpec: { kind: 'paren', value: "'a b'" } },
+      { attrName: 'n', valueSpec: { kind: 'paren', value: '3' } },
+    ])
+  })
+
+  it('reads in with its literal operands', () => {
+    expect(conditions("| para[ :nums(in 4, 'a') ]")).toEqual([
+      { attrName: 'nums', valueSpec: { kind: 'in', value: "4, 'a'" } },
+    ])
+  })
+
+  it('keeps brackets, bars and whitespace inside a quoted value', () => {
+    expect(
+      ['para[ :x("a>b") ]', 'para[ :x("a]b") ]', 'para[ :x("a,b") ]', 'para[ :x("a|b") ]', 'para[ :x(1,\t"a b") ]'].map(
+        s => conditions(s)?.length,
+      ),
+    ).toEqual([1, 1, 1, 1, 1])
+    expect(parseSelector('file:x.podlite | para[ :x("a|b") ]')?.document).toBe('x.podlite')
+  })
+
+  it('reads the forms it read before the same way', () => {
+    expect(conditions("para[ :k<it's> ]")).toEqual([{ attrName: 'k', valueSpec: { kind: 'angle', value: "it's" } }])
+    expect(
+      ["file:notes/john's.podlite | para", 'file:report(2026.podlite | para', 'file:notes/[draft.podlite | para'].map(
+        s => parseSelector(s)?.document,
+      ),
+    ).toEqual(["notes/john's.podlite", 'report(2026.podlite', 'notes/[draft.podlite'])
+  })
+
+  it('rejects an operation it does not know, and in without a usable operand', () => {
+    const rejected = [
+      'para[ :x(in) ]',
+      'para[ :x(in ) ]',
+      "para[ :x(in '') ]",
+      'para[ :x(in <>) ]',
+      "para[ :x(in 'a','') ]",
+      'para[ :x(in True) ]',
+      "para[ :x(eq 'x') ]",
+      'para[ :x(draft) ]',
+      'para[ :!x(in 1) ]',
+      'para[ :x(in http:x) ]',
+    ]
+    expect(rejected.filter(s => parseSelector(s) !== undefined)).toEqual([])
+  })
+
+  it('rejects an empty membership operand', () => {
+    expect(parseSelector('para[ :tags~<> ]')).toBeUndefined()
+  })
+})
+
+describe('runSelector — values and operations in parentheses', () => {
+  const ids = (selector: string, src: string) =>
+    (runSelector(selector, [makeDoc('x.podlite', src)]) as any[]).map(
+      b => b.config?.find((c: any) => c.name === 'id')?.value,
+    )
+
+  it('compares a value in parentheses by its kind', () => {
+    const src = `=for para :id<a> :k<'a b'> :n(3) :flag
+text
+
+=for para :id<b> :k<a b> :n<3>
+text
+`
+    expect([
+      ids("| para[ :k('a b') ]", src),
+      ids('| para[ :n(3) ]', src),
+      ids("| para[ :!k('a b') ]", src),
+      ids('| para[ :flag(True) ]', src),
+    ]).toEqual([['a'], ['a'], ['b'], ['a']])
+  })
+
+  it('holds in when a value of the attribute equals an operand', () => {
+    const src = `=for para :id<nums> :nums(1, 2,
+= 3, 4)
+text
+
+=for para :id<status> :status<issued> :tags<approved secret>
+text
+
+=for para :id<hash> :tags{:a<approved>}
+text
+`
+    expect([
+      ids('| para[ :nums(in 4) ]', src),
+      ids("| para[ :status(in 'draft','issued') ]", src),
+      ids("| para[ :tags(in 'approved') ]", src),
+      ids('| para[ :tags(in <draft secret>) ]', src),
+      ids("| para[ :nums(in '4') ]", src),
+      ids("| para[ :missing(in 'x') ]", src),
+    ]).toEqual([['nums'], ['status'], ['status'], ['status'], [], []])
+  })
+})

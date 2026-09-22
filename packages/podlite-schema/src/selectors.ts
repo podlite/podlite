@@ -1,4 +1,12 @@
-import { getFromTree, getNodeId, getTextContentFromNode, isSemanticBlock, makeAttrs, PodliteDocument, PodNode } from './index'
+import {
+  getFromTree,
+  getNodeId,
+  getTextContentFromNode,
+  isSemanticBlock,
+  makeAttrs,
+  PodliteDocument,
+  PodNode,
+} from './index'
 import { ConfigItem } from './types'
 import { parseAttributes } from './helpers/parseAttributes'
 
@@ -40,8 +48,6 @@ export type SelectorDoc = {
   node: PodNode | PodliteDocument
 }
 
-export type ValueSpec = { kind: 'angle'; value: string } | { kind: 'contains'; value: string }
-
 export type Condition = {
   modifier?: '!' | '?' | '!?'
   attrName: string
@@ -62,8 +68,28 @@ export type ParsedSelector = {
 
 // --- predicate parser ---------------------------------------------------
 
+export type ValueSpec =
+  | { kind: 'angle'; value: string }
+  | { kind: 'contains'; value: string }
+  | { kind: 'paren'; value: string }
+  | { kind: 'in'; value: string }
+
 const isIdentStart = (c: string): boolean => /[a-zA-Z_]/.test(c)
 const isIdentCont = (c: string): boolean => /[a-zA-Z0-9_-]/.test(c)
+
+type Typed = { value: unknown; type?: string }
+
+// A value is read by the same grammar as a declaration: the delimiters around
+// it decide whether it is a string, a list or a number, so an operator means
+// the same thing in a predicate as on a block.
+const readValue = (src: string): Typed | undefined => {
+  const items = parseAttributes(src)
+  return items.length === 1 && items[0].name === 'x' ? { value: items[0].value, type: items[0].type } : undefined
+}
+
+const readOperand = (raw: string): Typed | undefined => readValue(`:x<${raw}>`)
+
+const valuesOf = (typed: Typed): unknown[] => (Array.isArray(typed.value) ? typed.value : [typed.value])
 
 // Read an angle-bracketed value starting at `<`. Returns the inner content
 // (without delimiters) and the index right after the closing `>`.
@@ -81,6 +107,96 @@ const readAngleValue = (s: string, start: number): { value: string; end: number 
     i++
   }
   return undefined
+}
+
+const QUOTES: Record<string, string> = { "'": "'", '"': '"', '｢': '｣' }
+
+// Read a parenthesised value starting at `(`. A quotation mark opens a string
+// only where an element begins, so an apostrophe inside a word stays a letter.
+const readParenValue = (s: string, start: number): { value: string; end: number } | undefined => {
+  if (s[start] !== '(') return undefined
+  let depth = 1
+  let prev = '('
+  let i = start + 1
+  while (i < s.length) {
+    const c = s[i]
+    const close = QUOTES[c]
+    if (close && (prev === '(' || prev === ',' || /\s/.test(prev))) {
+      const at = s.indexOf(close, i + 1)
+      if (at === -1) return undefined
+      i = at + 1
+      prev = close
+      continue
+    }
+    if (c === '(') depth++
+    else if (c === ')') {
+      depth--
+      if (depth === 0) return { value: s.slice(start + 1, i), end: i + 1 }
+    }
+    prev = c
+    i++
+  }
+  return undefined
+}
+
+// The index right after the `]` that closes the predicate opened at `start`.
+// Brackets, parentheses and strings inside a value do not close it.
+const skipPredicate = (s: string, start: number): number | undefined => {
+  let i = start + 1
+  while (i < s.length) {
+    const c = s[i]
+    if (c === ']') return i + 1
+    const read = c === '<' ? readAngleValue(s, i) : c === '(' ? readParenValue(s, i) : undefined
+    if ((c === '<' || c === '(') && !read) return undefined
+    i = read ? read.end : i + 1
+  }
+  return undefined
+}
+
+// Split a pattern list at a separator that stands outside every predicate.
+const splitOutsidePredicates = (s: string, separator: string): string[] | undefined => {
+  const chunks: string[] = []
+  let from = 0
+  let i = 0
+  while (i < s.length) {
+    if (s[i] === '[') {
+      const end = skipPredicate(s, i)
+      if (end === undefined) return undefined
+      i = end
+      continue
+    }
+    if (s[i] === separator) {
+      chunks.push(s.slice(from, i))
+      from = i + 1
+    }
+    i++
+  }
+  chunks.push(s.slice(from))
+  return chunks
+}
+
+// Literal operands of `in`: numbers and non-empty strings, separated by commas
+// or, in angle brackets, by whitespace.
+const readLiterals = (operands: string): Typed | undefined => {
+  if (!operands) return undefined
+  const angle = operands.startsWith('<') ? readAngleValue(operands, 0) : undefined
+  if (angle && angle.end !== operands.length) return undefined
+  const typed = angle ? readOperand(angle.value) : readValue(`:x(${operands})`)
+  if (!typed) return undefined
+  const values = valuesOf(typed)
+  const literal = (v: unknown): boolean => typeof v === 'number' || (typeof v === 'string' && v !== '')
+  return values.length > 0 && values.every(literal) ? typed : undefined
+}
+
+// What follows the opening parenthesis is a value when the declaration grammar
+// reads it as one, and otherwise the name of an operation.
+const parenCondition = (modifier: Condition['modifier'], attrName: string, inner: string): Condition | undefined => {
+  if (readValue(`:x(${inner})`)) return { modifier, attrName, valueSpec: { kind: 'paren', value: inner } }
+  const operation = inner.match(/^\s*([a-zA-Z_][a-zA-Z0-9_-]*)(?:\s+([\s\S]*))?$/)
+  if (!operation || operation[1] !== 'in' || modifier) return undefined
+  const operands = (operation[2] ?? '').trim()
+  if (!readLiterals(operands)) return undefined
+  return { attrName, valueSpec: { kind: 'in', value: operands } }
 }
 
 const parseCondition = (raw: string): Condition | undefined => {
@@ -110,6 +226,9 @@ const parseCondition = (raw: string): Condition | undefined => {
   if (s[i] === '~' && s[i + 1] === '<') {
     const read = readAngleValue(s, i + 1)
     if (!read || read.end !== s.length) return undefined
+    // an empty list occurs among any values, so the condition would test nothing
+    const operand = readOperand(read.value)
+    if (!operand || valuesOf(operand).length === 0) return undefined
     return { modifier, attrName, valueSpec: { kind: 'contains', value: read.value } }
   }
 
@@ -119,32 +238,36 @@ const parseCondition = (raw: string): Condition | undefined => {
     return { modifier, attrName, valueSpec: { kind: 'angle', value: read.value } }
   }
 
+  if (s[i] === '(') {
+    const read = readParenValue(s, i)
+    if (!read || read.end !== s.length) return undefined
+    return parenCondition(modifier, attrName, read.value)
+  }
+
   return undefined
 }
 
-// Split predicate body by whitespace at top level, respecting <...> nesting.
+// Split a predicate body into conditions at whitespace outside any value.
 const splitConditions = (body: string): string[] | undefined => {
   const chunks: string[] = []
-  let depth = 0
-  let buf = ''
-  for (let i = 0; i < body.length; i++) {
+  let from = 0
+  let i = 0
+  while (i < body.length) {
     const c = body[i]
-    if (c === '<') depth++
-    else if (c === '>') {
-      if (depth === 0) return undefined
-      depth--
-    }
-    if (depth === 0 && /\s/.test(c)) {
-      if (buf) {
-        chunks.push(buf)
-        buf = ''
-      }
+    if (c === '<' || c === '(') {
+      const read = c === '<' ? readAngleValue(body, i) : readParenValue(body, i)
+      if (!read) return undefined
+      i = read.end
       continue
     }
-    buf += c
+    if (c === '>') return undefined
+    if (/\s/.test(c)) {
+      if (i > from) chunks.push(body.slice(from, i))
+      from = i + 1
+    }
+    i++
   }
-  if (depth !== 0) return undefined
-  if (buf) chunks.push(buf)
+  if (from < body.length) chunks.push(body.slice(from))
   return chunks
 }
 
@@ -183,7 +306,7 @@ const parsePattern = (raw: string): Pattern | undefined => {
 
   if (i >= s.length) return { blockType }
 
-  if (s[i] !== '[' || s[s.length - 1] !== ']') return undefined
+  if (s[i] !== '[' || skipPredicate(s, i) !== s.length) return undefined
   const body = s.slice(i + 1, s.length - 1).trim()
   if (!body) return undefined
 
@@ -193,38 +316,9 @@ const parsePattern = (raw: string): Pattern | undefined => {
   return { blockType, predicate }
 }
 
-// Split pattern-list by comma at top level, respecting [...] and <...> nesting.
-const splitPatterns = (s: string): string[] | undefined => {
-  const chunks: string[] = []
-  let bracketDepth = 0
-  let angleDepth = 0
-  let buf = ''
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i]
-    if (c === '[') bracketDepth++
-    else if (c === ']') {
-      if (bracketDepth === 0) return undefined
-      bracketDepth--
-    } else if (c === '<') angleDepth++
-    else if (c === '>') {
-      if (angleDepth === 0) return undefined
-      angleDepth--
-    }
-    if (c === ',' && bracketDepth === 0 && angleDepth === 0) {
-      chunks.push(buf)
-      buf = ''
-      continue
-    }
-    buf += c
-  }
-  if (bracketDepth !== 0 || angleDepth !== 0) return undefined
-  chunks.push(buf)
-  return chunks
-}
-
 const parsePatternList = (filterPart: string): Pattern[] | undefined => {
   if (!filterPart) return []
-  const chunks = splitPatterns(filterPart)
+  const chunks = splitOutsidePredicates(filterPart, ',')
   if (!chunks) return undefined
   const patterns: Pattern[] = []
   for (const chunk of chunks) {
@@ -241,8 +335,12 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
   const trimmed = selector.trim()
   if (!trimmed) return undefined
 
-  // Split on the first '|' — left is source, right is pattern-list
-  const pipeIdx = trimmed.indexOf('|')
+  // The first '|' separates the source from the pattern list. A source named
+  // by a scheme is literal text up to the bar; elsewhere a bar inside a
+  // predicate belongs to its value.
+  const hasScheme = /^[a-zA-Z][a-zA-Z0-9-]*:/.test(trimmed)
+  const parts = hasScheme ? undefined : splitOutsidePredicates(trimmed, '|')
+  const pipeIdx = hasScheme ? trimmed.indexOf('|') : parts && parts.length > 1 ? parts[0].length : -1
   const sourcePart = (pipeIdx === -1 ? trimmed : trimmed.slice(0, pipeIdx)).trim()
   const filterPart = pipeIdx === -1 ? '' : trimmed.slice(pipeIdx + 1).trim()
 
@@ -277,17 +375,6 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
 
 // --- predicate matcher --------------------------------------------------
 
-type Typed = { value: unknown; type?: string }
-
-// The operand is read by the same grammar as a declaration: the delimiters
-// around it decide whether it is a string, a list or a number. Reading it as
-// raw text would put values out of reach that a document can hold — a quoted
-// string among them.
-const readOperand = (raw: string): Typed | undefined => {
-  const [item] = parseAttributes(`:x<${raw}>`)
-  return item ? { value: item.value, type: item.type } : undefined
-}
-
 // The declared value with its kind kept. makeAttrs flattens a list into the
 // surrounding values, which loses the very thing equality compares. What a
 // =config supplies is already on the block: the parser puts it there, within
@@ -310,10 +397,6 @@ const sameValue = (a: Typed, b: Typed): boolean => {
   return sameScalar(a.value, b.value)
 }
 
-// Membership runs over the values as declared. A string is one value, even
-// when it holds spaces, so a word taken from its middle is not a member.
-const valuesOf = (typed: Typed): unknown[] => (Array.isArray(typed.value) ? typed.value : [typed.value])
-
 const matchCondition = (node: PodNode, cond: Condition): boolean => {
   const attrs = makeAttrs(node, {})
   const exists = attrs.exists(cond.attrName)
@@ -332,19 +415,29 @@ const matchCondition = (node: PodNode, cond: Condition): boolean => {
   }
 
   const declared = declaredValue(node, cond.attrName)
-  const operand = readOperand(cond.valueSpec.value)
+  const { kind, value } = cond.valueSpec
+  const operand =
+    kind === 'paren' ? readValue(`:x(${value})`) : kind === 'in' ? readLiterals(value) : readOperand(value)
 
-  if (cond.valueSpec.kind === 'angle') {
+  if (kind === 'angle' || kind === 'paren') {
     if (!exists || !declared || !operand) return false
     const equal = sameValue(declared, operand)
     return cond.modifier === '!' ? !equal : equal
   }
 
-  if (cond.valueSpec.kind === 'contains') {
+  // Membership runs over the values as declared. A string is one value, even
+  // when it holds spaces, so a word taken from its middle is not a member.
+  if (kind === 'contains') {
     if (!exists || !declared || !operand) return false
     const values = valuesOf(declared)
     const present = valuesOf(operand).every(wanted => values.some(held => sameScalar(held, wanted)))
     return cond.modifier === '!' ? !present : present
+  }
+
+  if (kind === 'in') {
+    if (!exists || !declared || !operand) return false
+    const operands = valuesOf(operand)
+    return valuesOf(declared).some(held => operands.some(wanted => sameScalar(held, wanted)))
   }
 
   return false
