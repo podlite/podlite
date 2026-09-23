@@ -175,19 +175,44 @@ const UNSHOWN = new Set(['comment', 'data', 'include'])
 
 const warn = (message: string): void => console.warn(`[toc] ${message}`)
 
-// The selector is the first line of the block that holds more than whitespace.
-const selectorOf = (node: PodNode): string => {
-  const line = getTextContentFromNode(node)
-    .split('\n')
-    .find(l => l.trim() !== '')
-  return line ? line.trim() : 'head'
+// The selector is the first line of the block that holds more than whitespace;
+// a markup code in it is not part of a selector, whether or not it was parsed.
+const selectorOf = (node: PodNode): { selector: string; coded: boolean } => {
+  let line = ''
+  let coded = false
+  // true once the line is complete
+  const walk = (n: any): boolean => {
+    if (typeof n === 'string' || (n && (n.type === 'text' || n.type === 'verbatim'))) {
+      for (const ch of typeof n === 'string' ? n : String(n.value)) {
+        if (ch !== '\n') {
+          line += ch
+          continue
+        }
+        if (line.trim() !== '') return true
+        line = ''
+        coded = false
+      }
+      return false
+    }
+    if (Array.isArray(n)) return n.some(walk)
+    if (!n || typeof n !== 'object') return false
+    if (n.type === 'fcode') {
+      coded = true
+      line += getTextContentFromNode(n)
+      return false
+    }
+    return walk(n.content)
+  }
+  walk((node as any).content)
+  const selector = line.trim()
+  return { selector: selector || 'head', coded: coded || /(^|[^:\w])[A-Z](<|«)/.test(selector) }
 }
 
 // The blocks of the document the table stands in that its selector finds; a
 // selector that cannot be read, names a source or needs a file finds nothing.
 const entriesFor = (node: PodNode, fulltree: any, self: unknown): any[] => {
-  const selector = selectorOf(node)
-  const parsed = parseSelector(selector)
+  const { selector, coded } = selectorOf(node)
+  const parsed = coded ? undefined : parseSelector(selector)
   if (!parsed) {
     warn(`the selector cannot be read: ${selector}`)
     return []

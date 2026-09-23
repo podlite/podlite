@@ -6,8 +6,9 @@ export const prepareDataForToc = (data: any[]) => {
     const isTypeBlock = (node.type || '') === 'block'
     return isTypeBlock && name === name.toUpperCase()
   }
-  // a semantic block stands as a first-level heading
+  // a semantic block stands as a first-level heading; its node is left as it is
   const kindOf = node => (isSemanticBlock(node) ? 'head' : node.name)
+  const levelOf = node => (isSemanticBlock(node) ? 1 : parseInt(node.level, 10) || 1)
   const reduceLevel = arr => {
     return arr.reduce((i, c) => {
       return (i.includes(c) ? [...i] : [...i, c]).sort((a, b) => a - b)
@@ -16,15 +17,9 @@ export const prepareDataForToc = (data: any[]) => {
   const normalizeLevels = data => {
     const namesLevels = {}
     for (const node of data) {
-      if (isSemanticBlock(node)) {
-        const level = 1
-        node.level = level
-        namesLevels['head'] = reduceLevel([...(namesLevels['head'] || []), 1])
-      } else {
-        // TODO: eliminate string level (=item)
-        // default level is 1 for all items
-        namesLevels[node.name] = reduceLevel([...(namesLevels[node.name] || []), parseInt(node.level, 10) || 1])
-      }
+      // TODO: eliminate string level (=item)
+      // default level is 1 for all items
+      namesLevels[kindOf(node)] = reduceLevel([...(namesLevels[kindOf(node)] || []), levelOf(node)])
     }
     return namesLevels
   }
@@ -56,7 +51,7 @@ export const prepareDataForToc = (data: any[]) => {
   for (let i = 0; i < data.length; i++) {
     const item = data[i]
     // deafult level is 1 for all items
-    const normalizedLevel: number = levelsMap[kindOf(item)].findIndex(l => l === parseInt(item.level || 1)) + 1
+    const normalizedLevel: number = levelsMap[kindOf(item)].findIndex(l => l === levelOf(item)) + 1
     switch (kindOf(item)) {
       case 'head':
         {

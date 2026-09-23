@@ -165,6 +165,20 @@ describe('the selector of a table of contents', () => {
     expect(warnings.filter(w => w.includes('cannot be read'))).toHaveLength(3)
   })
 
+  it('reads no selector holding a markup code, in =toc and =Toc alike', () => {
+    const doc = '\n\n=head1 A\n\n=head2 B\n'
+    expect(
+      ['=toc B<head1>, head2', '=Toc B<head1>, head2', '=toc V<head1>'].map(line => labels(toAst(line + doc))),
+    ).toEqual([[[]], [[]], [[]]])
+    expect(warnings.filter(w => w.includes('cannot be read'))).toHaveLength(3)
+    expect(labels(toAst('=Toc head1[ :X<1> ]\n\n=for head1 :X<1>\nA\n'))).toEqual([['A']])
+  })
+
+  it('leaves the level of a semantic block as it was written', () => {
+    const [title] = select('TITLE', toAst('=toc TITLE\n\n=TITLE T\n'))
+    expect(title.level).toBeUndefined()
+  })
+
   it('lists no blocks of another file, and says so', () => {
     const tree = (selector: string) => labels(toAst(`=toc ${selector}\n\n=head1 A\n`))
     expect([tree('file:other.podlite | head1'), tree('other.podlite | head1')]).toEqual([[[]], [[]]])
