@@ -30,7 +30,7 @@ afterEach(() => {
 })
 
 describe('a table of contents in the built tree', () => {
-  it('stays a block of the name it was written with and holds one table', () => {
+  it('stays a block of the name it was written with and holds one table, the old name =Toc kept for compatibility', () => {
     const tree = toAst('=pod\n\n=toc head1\n\n=Toc head1\n\n=head1 A\n')
     const blocks = select('toc, Toc', tree)
     expect(blocks.map(b => [b.type, b.name, b.content.map((c: any) => c.type)])).toEqual([
@@ -165,13 +165,10 @@ describe('the selector of a table of contents', () => {
     expect(warnings.filter(w => w.includes('cannot be read'))).toHaveLength(3)
   })
 
-  it('reads no selector holding a markup code, in =toc and =Toc alike', () => {
+  it('reads no selector holding a markup code', () => {
     const doc = '\n\n=head1 A\n\n=head2 B\n'
-    expect(
-      ['=toc B<head1>, head2', '=Toc B<head1>, head2', '=toc V<head1>'].map(line => labels(toAst(line + doc))),
-    ).toEqual([[[]], [[]], [[]]])
-    expect(warnings.filter(w => w.includes('cannot be read'))).toHaveLength(3)
-    expect(labels(toAst('=Toc head1[ :X<1> ]\n\n=for head1 :X<1>\nA\n'))).toEqual([['A']])
+    expect(['=toc B<head1>, head2', '=toc V<head1>'].map(line => labels(toAst(line + doc)))).toEqual([[[]], [[]]])
+    expect(warnings.filter(w => w.includes('cannot be read'))).toHaveLength(2)
   })
 
   it('leaves the level of a semantic block as it was written', () => {

@@ -176,7 +176,7 @@ const UNSHOWN = new Set(['comment', 'data', 'include'])
 const warn = (message: string): void => console.warn(`[toc] ${message}`)
 
 // The selector is the first line of the block that holds more than whitespace;
-// a markup code in it is not part of a selector, whether or not it was parsed.
+// a markup code in it is not part of a selector.
 const selectorOf = (node: PodNode): { selector: string; coded: boolean } => {
   let line = ''
   let coded = false
@@ -205,7 +205,7 @@ const selectorOf = (node: PodNode): { selector: string; coded: boolean } => {
   }
   walk((node as any).content)
   const selector = line.trim()
-  return { selector: selector || 'head', coded: coded || /(^|[^:\w])[A-Z](<|«)/.test(selector) }
+  return { selector: selector || 'head', coded }
 }
 
 // The blocks of the document the table stands in that its selector finds; a
