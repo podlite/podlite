@@ -35,7 +35,7 @@ export const refreshTocs = (
     const own = origin.get(node)?.file === file
     // the table is made again inside the block that holds it, so there stays one of each
     if (isTocBlock(node) && own && node.location && blocks.has(node.location.start.offset)) {
-      const made: any = rebuild(blocks.get(node.location.start.offset), {}, (content: any) => content)
+      const made: any = rebuild(blocks.get(node.location.start.offset), { tocSelf: node }, (content: any) => content)
       const copy = { ...node, content: made.content }
       origin.set(copy, origin.get(node) as IncludeOrigin)
       onCopy?.(node, copy)

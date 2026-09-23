@@ -685,12 +685,29 @@ but some of us are looking at the stars!
   `)
 })
 
+it('renders the page when the selector of a table of contents cannot be read or needs a file', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  for (const selector of ['head1[', 'head1[ :x(in file:vocab.podlite | defn) ]']) {
+    render(
+      <Podlite>
+        {`=begin pod
+=toc ${selector}
+=head1 Still here
+=end pod
+`}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatch(/Still here/)
+  }
+  warn.mockRestore()
+})
+
 it('accepts =toc', () => {
   render(
     <Podlite>
       {`
     =begin pod
-    =toc head1 item
+    =toc head1, item
     =for head1 :id<Test>
     head1
     =for item1 :id<item>

@@ -34,7 +34,7 @@ const parseToHtml = (str: string): string => {
 
 const pod = `
 =begin pod
-=toc head1 head3 item item2
+=toc head1, head3, item, item2
 =head2 test2
 =end pod`
 // =head1 test1 I<test> L<ddd | test >
@@ -56,7 +56,7 @@ it('=para: parse to html', () => {
 })
 
 it('=toc: parse to html', () => {
-  const pod = `=toc head1 head3 item item2`
+  const pod = `=toc head1, head3, item, item2`
   expect(parseToHtml(pod)).toMatchInlineSnapshot(`
     <div class="toc">
       <ul class="toc-list listlevel1">
@@ -66,7 +66,7 @@ it('=toc: parse to html', () => {
 })
 
 it('=toc: head1 head2', () => {
-  const pod = `=toc head1 head2
+  const pod = `=toc head1, head2
 =for head1 :id<123>
 Test head1
 `
@@ -176,7 +176,7 @@ it('[check default list]=toc', () => {
 })
 it.skip('=toc Image Diagram1', () => {
   const pod = `=for toc :title<Table of Media>
-  Image Diagram 
+  Image, Diagram 
     =for Image :caption('Image caption') :id(1)
     https://example.com.image.png
     =Image https://example.com.image.png
@@ -192,7 +192,7 @@ it.skip('=toc Image Diagram1', () => {
 
 it('=toc Image Diagram', () => {
   const pod = `=for toc :title<Table of Media>
-Image Diagram 
+Image, Diagram 
   =for Image :caption('Image caption') :id(1)
   https://example.com.image.png
   =for Diagram :caption('Diagram caption') :id(2)

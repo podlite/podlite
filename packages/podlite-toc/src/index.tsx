@@ -17,6 +17,9 @@ import {
   markGuarded,
   mkCaption,
   parseFormattingCodes,
+  parseSelector,
+  runSelector,
+  SelectorError,
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
@@ -35,6 +38,11 @@ const bodyOf = (node: any): any[] =>
 // behind it must not be picked by two rules that can drift apart.
 const entryOf = (node: PodNode): TocEntry => {
   if (typeof node !== 'string' && 'type' in node) {
+    // a paragraph or code written without a marker is titled by its text
+    if (node.type === 'para' || node.type === 'code') {
+      const content = (node as any).content
+      return { text: getTextContentFromNode(node), source: Array.isArray(content) ? content : null }
+    }
     if (node.type === 'block') {
       const conf = makeAttrs(node, {})
       if (isNamedBlock(node.name)) {
@@ -162,6 +170,50 @@ const entryContent = (node: any, text: string, wholeHidden: boolean): any[] => {
   if (!source || !holdsGuarded(source)) return [text]
   return markGuarded(labelCopy(source, false), false)
 }
+// Blocks whose text is not shown, and a directive, are not entries unless named
+const UNSHOWN = new Set(['comment', 'data', 'include'])
+
+const warn = (message: string): void => console.warn(`[toc] ${message}`)
+
+// The selector is the first line of the block that holds more than whitespace.
+const selectorOf = (node: PodNode): string => {
+  const line = getTextContentFromNode(node)
+    .split('\n')
+    .find(l => l.trim() !== '')
+  return line ? line.trim() : 'head'
+}
+
+// The blocks of the document the table stands in that its selector finds; a
+// selector that cannot be read, names a source or needs a file finds nothing.
+const entriesFor = (node: PodNode, fulltree: any, self: unknown): any[] => {
+  const selector = selectorOf(node)
+  const parsed = parseSelector(selector)
+  if (!parsed) {
+    warn(`the selector cannot be read: ${selector}`)
+    return []
+  }
+  if (parsed.scheme) {
+    warn(`a table of contents lists the blocks of its own document: ${selector}`)
+    return []
+  }
+  let found: any[]
+  try {
+    found = runSelector(selector, [{ file: '', node: fulltree }]) as any[]
+  } catch (e) {
+    if (!(e instanceof SelectorError)) throw e
+    warn(
+      e.kind === 'resolution'
+        ? `a table of contents reads no file: ${e.message}`
+        : `the selector cannot be read: ${e.message}`,
+    )
+    return []
+  }
+  const named = new Set(parsed.patterns.map(p => p.blockType))
+  return found.filter(
+    n => n !== node && n !== self && !(n.type === 'block' && UNSHOWN.has(n.name) && !named.has(n.name)),
+  )
+}
+
 export const plugin: Plugin = {
   toAstAfter: (writer, processor, fulltree) => {
     // marks are set again after this pass; an entry needs them now, while it is built
@@ -170,16 +222,9 @@ export const plugin: Plugin = {
       // the directive keeps its place as a block and holds the table it made; a
       // table made once is not read again as a selector
       if (Array.isArray(node.content) && node.content.some(c => c && c.type === 'toc')) return node
-      const content = getTextContentFromNode(node)
-      const blocks: Array<any> = content
-        .trim()
-        .split(/(?:\s*,\s*|\s+)/)
-        .filter(Boolean)
-      if (blocks.length == 0) {
-        blocks.push({ name: 'head' })
-      }
       const tocHidden = isGuarded(node)
-      const nodes = getFromTree(fulltree, ...blocks)
+      // a table made again over an assembled document is told which node it is there
+      const nodes = entriesFor(node, fulltree, ctx && ctx.tocSelf)
       const tocTree = prepareDataForToc(nodes)
       const createList = (items: any[], level): TocList => {
         const resultList = []

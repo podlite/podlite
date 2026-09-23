@@ -6,6 +6,8 @@ export const prepareDataForToc = (data: any[]) => {
     const isTypeBlock = (node.type || '') === 'block'
     return isTypeBlock && name === name.toUpperCase()
   }
+  // a semantic block stands as a first-level heading
+  const kindOf = node => (isSemanticBlock(node) ? 'head' : node.name)
   const reduceLevel = arr => {
     return arr.reduce((i, c) => {
       return (i.includes(c) ? [...i] : [...i, c]).sort((a, b) => a - b)
@@ -54,8 +56,8 @@ export const prepareDataForToc = (data: any[]) => {
   for (let i = 0; i < data.length; i++) {
     const item = data[i]
     // deafult level is 1 for all items
-    const normalizedLevel: number = levelsMap[item.name].findIndex(l => l === parseInt(item.level || 1)) + 1
-    switch (item.name) {
+    const normalizedLevel: number = levelsMap[kindOf(item)].findIndex(l => l === parseInt(item.level || 1)) + 1
+    switch (kindOf(item)) {
       case 'head':
         {
           const parent = getRootIndexByLevel(tocTree, normalizedLevel)
