@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a pattern C<item> finds first-level items, as C<item1> does; it found items of every level
+
 =item C<*> finds any block a name would find, a paragraph written without a marker and a code block written by indentation among them. No pattern finds the blocks the tree adds around written ones: the root of a document, the root of a Markdown section and a folded section; the selection goes through them. C<outermost> keeps the found blocks that no other found block holds, in the order given
 
 =item html output writes the C<:id> of a table of contents on its element, so a link to that address finds it

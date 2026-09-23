@@ -550,6 +550,11 @@ describe('an include by a selector places a found block once', () => {
     expect([times(md, 'Heading A'), times(md, 'Heading B')]).toEqual([1, 1])
   })
 
+  it('brings with item the items of the first level only', () => {
+    const md = includeOf('=item Top\n\n=item2 Nested\n', ' | item')
+    expect([times(md, 'Top'), times(md, 'Nested')]).toEqual([1, 0])
+  })
+
   it('brings a folded heading and its text once', () => {
     const md = includeOf('=for head1 :folded\nFolded\n\nText under it.\n')
     expect([times(md, 'Folded'), times(md, 'Text under it.')]).toEqual([1, 1])

@@ -711,3 +711,19 @@ describe('outermost', () => {
     expect(outermost(found).map((b: any) => b.name)).toEqual(['pod', 'head'])
   })
 })
+
+describe('a pattern of a list item', () => {
+  const doc = makeDoc('x.podlite', '=item a\n\n=item1 b\n\n=item2 c\n\n=head1 H\n\n=head2 I\n')
+  const found = (selector: string) => (runSelector(selector, [doc]) as any[]).map(b => `${b.name}${b.level}`)
+
+  it('item finds first-level items, as item1 does', () => {
+    expect([found('item'), found('item1')]).toEqual([
+      ['item1', 'item1'],
+      ['item1', 'item1'],
+    ])
+  })
+
+  it('keeps item2, head and head1 as they were', () => {
+    expect([found('item2'), found('head'), found('head1')]).toEqual([['item2'], ['head1', 'head2'], ['head1']])
+  })
+})

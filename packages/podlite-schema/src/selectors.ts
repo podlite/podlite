@@ -522,17 +522,15 @@ const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefin
 const blockTypeMatches = (node: PodNode, name: string, blockType: string): boolean => {
   const anyNode = node as unknown as { type?: string; level?: number }
   if (blockType === '*') return true
-  if (name === blockType) return true
   const m = blockType.match(/^(head|item)(\d+)?$/)
-  if (m) {
-    const [, baseName, levelStr] = m
-    if (name !== baseName) return false
-    const expectedLevel = levelStr ? parseInt(levelStr, 10) : baseName === 'item' ? 1 : undefined
-    if (expectedLevel === undefined) return true
-    // Heading plugin stores level as the regex capture string; coerce.
-    return Number(anyNode.level) === expectedLevel
-  }
-  return false
+  if (!m) return name === blockType
+  const [, baseName, levelStr] = m
+  if (name !== baseName) return false
+  // =item is =item1; a bare head is a heading of any level
+  const expectedLevel = levelStr ? parseInt(levelStr, 10) : baseName === 'item' ? 1 : undefined
+  if (expectedLevel === undefined) return true
+  // Heading plugin stores level as the regex capture string; coerce.
+  return Number(anyNode.level) === expectedLevel
 }
 
 const matchesPattern = (node: PodNode, name: string, pattern: Pattern, operands: OperandValues): boolean => {

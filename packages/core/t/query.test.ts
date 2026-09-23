@@ -418,6 +418,11 @@ describe('runQuery over the tree convert reads', () => {
     expect([tocs.length, entries.length]).toEqual([2, 2])
   })
 
+  it('finds with item the items of the first level only', () => {
+    const f = write('doc.podlite', '=pod\n\n=item Top\n\n=item2 Nested\n')
+    expect([q('item', f).matchCount, q('item', f).output]).toEqual([1, '=item Top'])
+  })
+
   it('lists with * the blocks found inside found blocks', () => {
     const f = write('doc.podlite', '=begin pod\n=head1 Inside\n=end pod\n')
     expect(JSON.parse(q('*', f, 'json').output).map((b: { name?: string; type: string }) => b.name ?? b.type)).toEqual([
