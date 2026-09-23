@@ -118,16 +118,16 @@ export const jsonBlock = (block: any, sections: WeakMap<object, any>): Record<st
   return section ? { ...own, location: section.location, precision: 'section' } : own
 }
 
-// The parser gives each block an id of its own, random for most of them; an
-// address the author wrote lives in the configuration. Left in, the json of one
-// document would differ from run to run.
+// The parser and the Markdown reader give nodes an id of their own, random for
+// most of them; an address the author wrote lives in the configuration. Left in,
+// the json of one document would differ from run to run.
 const withoutParserIds = (node: any): any => {
   if (Array.isArray(node)) return node.map(withoutParserIds)
   if (!node || typeof node !== 'object') return node
   const copy: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(node)) {
-    if (key === 'id' && node.type === 'block') continue
-    copy[key] = key === 'content' || key === 'caption' ? withoutParserIds(value) : value
+    if (key === 'id' && typeof node.type === 'string') continue
+    copy[key] = key === 'config' ? value : withoutParserIds(value)
   }
   return copy
 }

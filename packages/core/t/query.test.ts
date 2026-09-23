@@ -1,7 +1,12 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
+import { runSelector } from '@podlite/schema'
 import { runQuery } from '../src/query'
+import { podlite } from '../src/index'
+import { resolveIncludes, IncludeOrigin } from '../src/resolve-includes'
+import { refreshTocs } from '../src/refresh-tocs'
+import { isWrapper } from '../src/query-blocks'
 
 let tmpDir: string
 
@@ -355,6 +360,17 @@ describe('runQuery over the tree convert reads', () => {
     expect([q('para', f).output, q('head1', f).output]).toEqual(['Md para text.', '# Title'])
   })
 
+  it('gives the same json from run to run', () => {
+    const f = write('doc.podlite', section.replace('Md para text.', 'Md para text.\n\n- item') + '\n=para Own\n')
+    const once = q('*, para', f, 'json').output
+    expect([once === q('*, para', f, 'json').output, /"id"/.test(once)]).toEqual([true, false])
+  })
+
+  it('keeps the address the author wrote in json', () => {
+    const [para] = JSON.parse(q('para', write('doc.podlite', '=pod\n\n=for para :id<here>\nText\n'), 'json').output)
+    expect(para.config).toEqual([{ name: 'id', type: 'string', value: 'here' }])
+  })
+
   it('gives in json a block of a section the place of the section', () => {
     const f = write('doc.podlite', section)
     const [head] = JSON.parse(q('head1', f, 'json').output)
@@ -409,5 +425,25 @@ describe('runQuery over the tree convert reads', () => {
     const f = write('doc.podlite', '=pod\n\n=for para :masked\nSecret words\n')
     expect(q('para', f, 'md').output).not.toContain('Secret')
     expect(q('para', f).output).toContain('Secret words')
+  })
+})
+
+describe('runQuery and convert read one tree', () => {
+  it('selects the same blocks as the tree convert builds, with includes, a table of contents and a section', () => {
+    write('part.podlite', '=pod\n\n=head1 Included\n\n=begin markdown\n# From md\n\nText.\n=end markdown\n')
+    const text = '=pod\n\n=toc head1\n\n=head1 Own\n\n=include file:./part.podlite\n'
+    const main = write('main.podlite', text)
+    const p = podlite({ importPlugins: true })
+    const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
+    const origin = new WeakMap<object, IncludeOrigin>()
+    const resolved = resolveIncludes(parseToAst(text), { baseDir: tmpDir, parse: parseToAst, file: main, text, origin })
+    const tree = refreshTocs(resolved, p.parse(text, { podMode: 1 }), main, origin)
+    const converted = runSelector('*', [{ file: main, node: tree.content }])
+      .filter((b: any) => !isWrapper(b))
+      .map((b: any) => b.name)
+    const queried = JSON.parse(
+      runQuery({ selector: '*', files: [main], format: 'json', failOnEmpty: false, quiet: true }).output,
+    )
+    expect(queried.map((b: { name: string }) => b.name)).toEqual(converted)
   })
 })
