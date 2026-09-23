@@ -180,7 +180,10 @@ describe('an assertion', () => {
   it('finds a paragraph of a Markdown section', () => {
     const main = write(
       'rules.podlite',
-      `=pod\n\n${aTest('md-para', [block('fixture', '=begin markdown\nText.\n=end markdown'), block('assert', 'para')])}`,
+      `=pod\n\n${aTest('md-para', [
+        block('fixture', '=begin markdown\nText.\n=end markdown'),
+        block('assert', 'para'),
+      ])}`,
     )
     const [a] = run(main).tests[0].asserts
     expect([a.held, a.matches]).toEqual([true, 1])
@@ -188,9 +191,26 @@ describe('an assertion', () => {
 
   it('finds a paragraph of a folded section', () => {
     const fixture = '=for head1 :folded\nFolded\n\nText under it.\n\n=head1 Next'
-    const main = write('rules.podlite', `=pod\n\n${aTest('folded-para', [block('fixture', fixture), block('assert', 'para')])}`)
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('folded-para', [block('fixture', fixture), block('assert', 'para')])}`,
+    )
     const [a] = run(main).tests[0].asserts
     expect([a.held, a.matches]).toEqual([true, 1])
+  })
+
+  it('counts with * the blocks written, as query does, and no wrapper around them', () => {
+    const fixture = '=begin markdown\nMd text.\n=end markdown\n\n=for head1 :folded\nFolded\n\nText under it.'
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('star', [
+        block('fixture', fixture),
+        block('assert', '*'),
+        block('assert', 'root, _folded_section', ' :absent'),
+      ])}`,
+    )
+    const [star, wrappers] = run(main).tests[0].asserts
+    expect([star.matches, wrappers.held]).toEqual([4, true])
   })
 
   it('reads a file operand from the file of the test, and fails an assertion whose operand does not resolve', () => {

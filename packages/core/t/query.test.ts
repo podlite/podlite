@@ -391,14 +391,15 @@ describe('runQuery over the tree convert reads', () => {
 
   it('counts no block the tree adds around what was written', () => {
     const f = write('doc.podlite', section + '\n=for head1 :folded\nFolded\n\nUnder it.\n')
-    const names = JSON.parse(q('*', f, 'json').output).map((b: { name: string }) => b.name)
-    expect(names).toEqual(['pod', 'markdown', 'head', 'head'])
+    const names = JSON.parse(q('*', f, 'json').output).map((b: { type: string; name?: string }) => b.name ?? b.type)
+    expect(names).toEqual(['pod', 'markdown', 'head', 'para', 'head', 'para'])
     const root = q('root', f, 'json', true)
     expect([root.output, root.matchCount, root.exitCode]).toEqual(['[]', 0, 1])
   })
 
-  it('finds nothing with * in a document of one paragraph, while the test runner finds its root', () => {
-    expect(q('*', write('doc.podlite', 'Loose paragraph.\n')).matchCount).toBe(0)
+  it('finds the paragraph of a document of one paragraph with *, and not its root', () => {
+    const f = write('doc.podlite', 'Loose paragraph.\n')
+    expect([q('*', f).output, q('root', f).matchCount]).toEqual(['Loose paragraph.', 0])
   })
 
   it('finds a table of contents made again over the includes', () => {
@@ -407,6 +408,22 @@ describe('runQuery over the tree convert reads', () => {
     const r = q('toc', main, 'json')
     const entries = JSON.stringify(JSON.parse(r.output)).match(/"toc-item"/g) || []
     expect([r.matchCount, entries.length, q('toc', main).output]).toEqual([1, 2, '=toc head1'])
+  })
+
+  it('makes a table of contents again over a file brought in with its own, and counts each once', () => {
+    write('part.podlite', '=pod\n\n=toc head1\n\n=head1 Included\n')
+    const main = write('main.podlite', '=pod\n\n=toc head1\n\n=head1 Own\n\n=include file:./part.podlite | *\n')
+    const tocs = JSON.parse(q('toc', main, 'json').output)
+    const entries = JSON.stringify(tocs[0]).match(/"toc-item"/g) || []
+    expect([tocs.length, entries.length]).toEqual([2, 2])
+  })
+
+  it('lists with * the blocks found inside found blocks', () => {
+    const f = write('doc.podlite', '=begin pod\n=head1 Inside\n=end pod\n')
+    expect(JSON.parse(q('*', f, 'json').output).map((b: { name?: string; type: string }) => b.name ?? b.type)).toEqual([
+      'pod',
+      'head',
+    ])
   })
 
   it('gives a block with no place in the file as Markdown, and a row of data as one line', () => {

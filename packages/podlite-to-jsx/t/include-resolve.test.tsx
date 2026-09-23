@@ -163,6 +163,19 @@ Second term
     expect(root.innerHTML).toMatch(/In B/)
   })
 
+  it('places a heading inside a found pod once', () => {
+    const includeReader = (path: string) => (path === 'part.podlite' ? '=begin pod\n=head1 Inside\n=end pod\n' : null)
+    render(
+      <Podlite includeReader={includeReader}>
+        {`=begin pod
+=include file:part.podlite | pod, head1
+=end pod
+`}
+      </Podlite>,
+    )
+    expect(root.innerHTML.match(/<h1/g)).toHaveLength(1)
+  })
+
   it('selector with no matches: renders as nothing', () => {
     const includeReader = (path: string) => {
       if (path === 'noresults.podlite') {

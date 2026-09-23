@@ -29,6 +29,7 @@ import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@pod
 import {
   parseSelector,
   runSelector,
+  outermost,
   SelectorError,
   getExplicitNodeId,
   toFragment,
@@ -586,7 +587,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       if (!blocks || blocks.length === 0) return null
 
-      return interator(groupTests(blocks), { ...ctx, includeStack: [...stack, ...paths] })
+      return interator(groupTests(outermost(blocks)), { ...ctx, includeStack: [...stack, ...paths] })
     },
 
     // Directives

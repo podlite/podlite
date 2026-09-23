@@ -501,22 +501,27 @@ const holdsImplicit = (holder: Walked | undefined): boolean =>
   (holder.type === 'block' &&
     (IMPLICIT_HOLDERS.has(holder.name ?? '') || (Boolean(holder.name) && isSemanticBlock(holder))))
 
+// Wrappers the tree adds around written blocks: the document, the blocks of a
+// Markdown section, a heading folded together with its text. No author writes
+// them, so no pattern finds them; the walk goes through.
+const WRAPPERS = new Set(['root', '_folded_section'])
+
 // The block a node stands for: the name of a block written with a directive,
 // para or code for one written without, none for anything else. The term of
 // a =defn is its heading, not a paragraph.
 const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
-  if (node.type === 'block') return node.name
+  if (node.type === 'block') return WRAPPERS.has(node.name ?? '') ? undefined : node.name
   if (node.type === 'code') return 'code'
   if (node.type === 'para' && node.name !== 'term' && holdsImplicit(holder)) return 'para'
   return undefined
 }
 
 // Replicate name/level handling from getFromTree for backward compat with
-// 'head1' / 'item' style block-types. `*` stands for the blocks written with a
-// directive only.
+// 'head1' / 'item' style block-types. `*` finds any block a name would find,
+// written with a directive or without.
 const blockTypeMatches = (node: PodNode, name: string, blockType: string): boolean => {
   const anyNode = node as unknown as { type?: string; level?: number }
-  if (blockType === '*') return anyNode.type === 'block'
+  if (blockType === '*') return true
   if (name === blockType) return true
   const m = blockType.match(/^(head|item)(\d+)?$/)
   if (m) {
@@ -563,6 +568,24 @@ const collectMatches = (
     const inner = anyNode.type === 'block' && anyNode.name === '_folded_section' ? holder : anyNode
     collectMatches(anyNode.content as PodNode, inner, patterns, seen, out, operands)
   }
+}
+
+// The found blocks that no other found block holds, in the order given. A
+// found block brings its content with it, so one that lies inside another
+// would be placed twice. A Markdown section holds its blocks in one node, not
+// in a list.
+export const outermost = (blocks: PodNode[]): PodNode[] => {
+  const found = new Set<unknown>(blocks)
+  const held = new Set<unknown>()
+  const mark = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(mark)
+    if (!node || typeof node !== 'object') return
+    if (found.has(node)) held.add(node)
+    mark((node as Walked).content)
+  }
+  // a block already held was walked with the block that holds it
+  for (const block of blocks) if (!held.has(block)) mark((block as Walked).content)
+  return blocks.filter(block => !held.has(block))
 }
 
 // Normalize a path for loose suffix comparison:

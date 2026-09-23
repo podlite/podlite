@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an include by a selector places a found block once: a block inside another found block comes with it and is not placed again, so C<=include part.podlite | *> brings a heading inside a C<=pod> once, and one table of contents. With C<*> the include brings no C<=alias> written at the top of the file, and an C<A<>> code that relies on it is left as written; an include without a selector still brings the whole file
+
 =item C<podlite query> selects from the tree C<convert> and C<podlite test> read: a Markdown section is read into blocks, a table from C<data:> into rows and cells, and tables of contents are made again after the includes. A block with no place of its own in the file is given in C<--to podlite> as its Markdown, a row of such a table as one line of cells; in C<--to json> a block of a Markdown section carries the place of the section and C<precision: section>. The root inside a section and a folded section are not counted as found. C<--to md> and C<--to html> hide what the document hides. A query loads the Markdown, image and table of contents plugins when it runs, not the diagram renderer. The rules are shared through the entry C<podlite/lib/query-blocks>
 
 =item tables of contents are made again after the includes inside the block that holds them, and C<podlite test> finds a C<=toc> block

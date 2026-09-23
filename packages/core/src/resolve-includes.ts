@@ -6,6 +6,7 @@ import {
   filePathMatches,
   getTextContentFromNode,
   Location,
+  outermost,
   parseSelector,
   runSelector,
   SelectorDoc,
@@ -302,7 +303,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       }
       try {
         return unwrapRoot(
-          keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
+          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
         )
       } catch (e) {
         if (!(e instanceof SelectorError)) throw e

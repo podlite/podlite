@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<*> finds any block a name would find, a paragraph written without a marker and a code block written by indentation among them. No pattern finds the blocks the tree adds around written ones: the root of a document, the root of a Markdown section and a folded section; the selection goes through them. C<outermost> keeps the found blocks that no other found block holds, in the order given
+
 =item html output writes the C<:id> of a table of contents on its element, so a link to that address finds it
 
 =item a selector source written without a scheme before the bar is read as a file, as in C<=include article.podlite | head1>; it was dropped, and the selection ran over every document given
@@ -12,7 +14,7 @@
 
 =item a selector predicate reads a value in parentheses as a declaration does, as in C<para[ :author('John Doe') ]> and C<para[ :nested(3) ]>, and the operation C<in> with literal operands, as in C<[ :status(in 'draft','issued') ]>. An operation it does not define, C<in> without an operand, and an empty C<~<>> make the selector unreadable. Brackets, bars and whitespace inside a quoted value no longer split the selector
 
-=item a selector C<para> finds a paragraph written without a marker, and C<code> a code block written by indentation. The text of an explicit C<=para>, of a heading and of a C<=defn> term is not taken for another paragraph, and C<*> still finds only the blocks written with a directive
+=item a selector C<para> finds a paragraph written without a marker, and C<code> a code block written by indentation. The text of an explicit C<=para>, of a heading and of a C<=defn> term is not taken for another paragraph
 
 =item a selector reads the configuration the parser gave a block: a C<=config> no longer reaches blocks of another file, included or including, nor blocks after the block it is written in. A tree parsed without the plugin chain carries no such configuration, and a selector over it no longer applies its C<=config> directives
 

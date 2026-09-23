@@ -1,5 +1,5 @@
-import { toTree } from '..'
-import { parseSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
+import { applyFoldedSections, toTree } from '..'
+import { outermost, parseSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
 
 const makeDoc = (file: string, source: string): SelectorDoc => {
   const tree = toTree().parse(source, { podMode: 1, skipChain: 0 })
@@ -379,9 +379,16 @@ describe('runSelector — blocks written without a marker', () => {
     ]).toEqual([1, 1])
   })
 
-  it('leaves them out of *, which stands for the blocks written with a directive', () => {
-    const blocks = runSelector('*', [makeDoc('x.podlite', 'Text.\n\n=para X\n')]) as any[]
-    expect(blocks.map(b => `${b.type}:${b.name}`)).toEqual(['block:para'])
+  it('finds them with *, which finds any block a name would find', () => {
+    const blocks = runSelector('*', [
+      makeDoc('x.podlite', 'Text.\n\n=para X\n\n=begin nested\n    indented\n=end nested\n'),
+    ]) as any[]
+    expect(blocks.map(b => `${b.type}:${b.name}`)).toEqual([
+      'para:undefined',
+      'block:para',
+      'block:nested',
+      'code:undefined',
+    ])
   })
 })
 
@@ -663,5 +670,44 @@ describe('parseSelector — a source written without a scheme', () => {
     expect(() =>
       runSelector('| para[ :status(in none.podlite | defn) ]', [makeDoc('x.podlite', src)], { readFile }),
     ).toThrow(SelectorError)
+  })
+})
+
+describe('blocks the tree adds around what was written', () => {
+  it('are found by no pattern, and the walk goes through them', () => {
+    const tree = applyFoldedSections(
+      toTree().parse('=for head1 :folded\nFolded\n\nUnder it.\n', { podMode: 1, skipChain: 0 }) as any,
+    )
+    const doc = { file: 'x.podlite', node: tree as any }
+    const names = (selector: string) => (runSelector(selector, [doc]) as any[]).map(b => b.name ?? b.type)
+    expect([names('*'), names('root'), names('_folded_section')]).toEqual([['head', 'para'], [], []])
+  })
+})
+
+describe('outermost', () => {
+  const doc = (source: string) => makeDoc('x.podlite', source)
+
+  it('keeps a found block and drops the found blocks it holds', () => {
+    const found = runSelector('pod, head1', [doc('=begin pod\n=head1 Inside\n=end pod\n\n=head1 Outside\n')]) as any[]
+    expect(found.map(b => b.name)).toEqual(['pod', 'head', 'head'])
+    expect(outermost(found).map((b: any) => b.name)).toEqual(['pod', 'head'])
+  })
+
+  it('keeps neighbours in the order given', () => {
+    const found = runSelector('head1', [doc('=head1 One\n\n=head1 Two\n')]) as any[]
+    expect(outermost(found)).toEqual(found)
+  })
+
+  it('tells nesting by the tree, not by where the blocks stand in their files', () => {
+    const source = '=begin pod\n=head1 Inside\n=end pod\n'
+    const found = runSelector('pod', [makeDoc('a.podlite', source), makeDoc('b.podlite', source)]) as any[]
+    expect(outermost(found)).toHaveLength(2)
+  })
+
+  it('keeps the outer block where a predicate holds for it and for a block inside', () => {
+    const found = runSelector('*[ :x<1> ]', [
+      doc('=begin pod :x<1>\n=for head1 :x<1>\nInside\n=end pod\n\n=for head1 :x<1>\nOutside\n'),
+    ]) as any[]
+    expect(outermost(found).map((b: any) => b.name)).toEqual(['pod', 'head'])
   })
 })

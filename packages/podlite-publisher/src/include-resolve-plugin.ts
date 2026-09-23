@@ -1,7 +1,7 @@
 import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, makeInterator, PodNode } from '@podlite/schema'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { SelectorError } from '@podlite/schema'
+import { outermost, SelectorError } from '@podlite/schema'
 import { runSelector } from './shared'
 
 // A selector whose operand does not resolve brings nothing in, and says so.
@@ -51,7 +51,7 @@ const plugin = (): PodliteWebPlugin => {
             }
           }
           if (blocks.length > 0) {
-            return { ...node, content: blocks }
+            return { ...node, content: outermost(blocks) }
           }
           console.warn(`[plugin: resolve ] selector ${selector} not found`)
         }

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=include> places a found block once: a block inside another found block comes with it and is not placed again
+
 =item an include whose selector has an operand of C<in> that does not resolve is left in place with a warning, rather than stopping the run
 
 =head1 0.0.51

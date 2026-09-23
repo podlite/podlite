@@ -513,3 +513,61 @@ describe('an include source written without a scheme', () => {
     expect(convert(main, 'md')).toContain('From the guide')
   })
 })
+
+describe('an include by a selector places a found block once', () => {
+  const times = (text: string, part: string): number => text.split(part).length - 1
+  const includeOf = (body: string, selector = ' | *'): string => {
+    write('part.podlite', body)
+    return convert(write('main.podlite', `=pod\n\n=include file:part.podlite${selector}\n`), 'md')
+  }
+
+  it('brings a block inside a found pod with the pod only', () => {
+    const md = includeOf('=begin pod\n=head1 Inside\n\nText inside.\n=end pod\n')
+    expect([times(md, 'Inside'), times(md, 'Text inside.')]).toEqual([1, 1])
+  })
+
+  it('brings the paragraph of a file of one paragraph', () => {
+    expect(times(includeOf('Loose paragraph.\n'), 'Loose paragraph.')).toBe(1)
+  })
+
+  it('brings a block the predicate holds for once when the block around it is found too', () => {
+    const md = includeOf(
+      '=begin pod :x<1>\n=for head1 :x<1>\nInside\n=end pod\n\n=for head1 :x<1>\nOutside\n',
+      ' | *[ :x<1> ]',
+    )
+    expect([times(md, 'Inside'), times(md, 'Outside')]).toEqual([1, 1])
+  })
+
+  it('brings with * what an include without a selector brings', () => {
+    const body = '=begin pod\n=head1 Inside\n\nText inside.\n=end pod\n\n=head1 After\n\nLoose paragraph.\n'
+    expect(includeOf(body).trim()).toBe(includeOf(body, '').trim())
+  })
+
+  it('brings an included include once', () => {
+    write('b.podlite', '=head1 Heading B\n')
+    write('a.podlite', '=head1 Heading A\n\n=include file:b.podlite | *\n')
+    const md = convert(write('main.podlite', '=pod\n\n=include file:a.podlite | *\n'), 'md')
+    expect([times(md, 'Heading A'), times(md, 'Heading B')]).toEqual([1, 1])
+  })
+
+  it('brings a folded heading and its text once', () => {
+    const md = includeOf('=for head1 :folded\nFolded\n\nText under it.\n')
+    expect([times(md, 'Folded'), times(md, 'Text under it.')]).toEqual([1, 1])
+  })
+
+  it('brings the blocks of a Markdown section once', () => {
+    const md = includeOf('=begin markdown\n# Title\n\nMd para text.\n=end markdown\n')
+    expect([times(md, 'Title'), times(md, 'Md para text.')]).toEqual([1, 1])
+  })
+
+  it('leaves out a draft written at the top, and brings one inside a found pod with it', () => {
+    const top = includeOf('=for para :draft\nDraft text.\n\nLoose text.\n', ' | *[ :!?draft ]')
+    const inside = includeOf('=begin pod\n=for para :draft\nDraft text.\n=end pod\n', ' | *[ :!?draft ]')
+    expect([times(top, 'Draft text.'), times(top, 'Loose text.'), times(inside, 'Draft text.')]).toEqual([0, 1, 1])
+  })
+
+  it('does not bring the aliases of the file with *, while an include without a selector does', () => {
+    const body = '=alias PROJECT Podlite\n\n=para About A<PROJECT>.\n'
+    expect([includeOf(body), includeOf(body, '')].map(md => md.includes('About Podlite.'))).toEqual([false, true])
+  })
+})

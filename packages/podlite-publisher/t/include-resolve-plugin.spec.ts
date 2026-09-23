@@ -304,3 +304,12 @@ it('an include whose operand of in does not resolve is left in place', () => {
   warn.mockRestore()
   expect(getFromTree(res[1].node, 'data')).toEqual([])
 })
+
+it('include-resolve-plugin: places a heading inside a found pod once', () => {
+  const part = '=begin pod\n=head1 Inside\n=end pod\n'
+  const main = '=head1 Main\n\n=include file:src/part.podlite | pod, head1\n'
+  const state = [processFile('src/part.podlite', part), processFile('src/main.podlite', main)]
+  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
+  const placed = res.find(r => r.file === 'src/main.podlite')
+  expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Main', 'Inside'])
+})
