@@ -111,10 +111,9 @@ it('runSelector: file:<path> with bare filename still matches suffix', () => {
   expect(blocks).toHaveLength(3)
 })
 
-it('runSelector: unresolved file returns []', () => {
+it('runSelector: a file no document answers is an error of resolution', () => {
   const state = [processFile('src/terms.podlite', termsFile)]
-  const blocks = runSelector('file:nonexistent.podlite | defn', state)
-  expect(blocks).toEqual([])
+  expect(() => runSelector('file:nonexistent.podlite | defn', state)).toThrow(/the source does not resolve/)
 })
 
 it('runSelector: comma-separated block names', () => {

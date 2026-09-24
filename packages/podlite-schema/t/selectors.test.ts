@@ -1,5 +1,6 @@
 import { applyFoldedSections, toTree } from '..'
 import { outermost, parseSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
+import { getTextContentFromNode } from '..'
 
 const makeDoc = (file: string, source: string): SelectorDoc => {
   const tree = toTree().parse(source, { podMode: 1, skipChain: 0 })
@@ -154,11 +155,10 @@ Second
     expect(blocks.length).toBe(1)
   })
 
-  it('returns empty array when no docs match', () => {
+  it('returns empty array when no docs match a mask', () => {
     const src = `=begin pod\n=para Text\n=end pod\n`
     const docs = [makeDoc('src/foo.podlite', src)]
-    const blocks = runSelector('file:nonexistent.podlite | defn', docs)
-    expect(blocks).toEqual([])
+    expect(runSelector('file:**/none-*.podlite | defn', docs)).toEqual([])
   })
 })
 
@@ -725,5 +725,55 @@ describe('a pattern of a list item', () => {
 
   it('keeps item2, head and head1 as they were', () => {
     expect([found('item2'), found('head'), found('head1')]).toEqual([['item2'], ['head1', 'head2'], ['head1']])
+  })
+})
+
+describe('a source or an address that does not resolve', () => {
+  const y = makeDoc('y.podlite', '=pod\n\n=for para :id<here>\nIn y.\n\n=head1 Overview\n\nText.\n')
+  const kindOf = (selector: string, docs = [y]): string => {
+    try {
+      return `${(runSelector(selector, docs) as any[]).length} found`
+    } catch (e) {
+      return e instanceof SelectorError ? e.kind : 'other'
+    }
+  }
+
+  it('is an error of resolution when no document answers the source', () => {
+    expect(
+      ['file:x.podlite | para', 'x.podlite | para', 'doc:Nope | para', 'doc:Nope', 'file:x.podlite'].map(s =>
+        kindOf(s),
+      ),
+    ).toEqual(['resolution', 'resolution', 'resolution', 'resolution', 'resolution'])
+  })
+
+  it('is an error of address when no answering document holds the address', () => {
+    expect([kindOf('file:y.podlite#nope'), kindOf('file:*.md#x')]).toEqual(['address', 'address'])
+  })
+
+  it('finds an address the way a link finds its target', () => {
+    expect([kindOf('file:y.podlite#here'), kindOf('file:y.podlite#Overview')]).toEqual(['1 found', '1 found'])
+  })
+
+  it('takes the first of two blocks sharing an address', () => {
+    const dup = makeDoc('d.podlite', '=for para :id<dup>\nFirst.\n\n=for para :id<dup>\nSecond.\n')
+    const [block] = runSelector('file:d.podlite#dup', [dup]) as any[]
+    expect(getTextContentFromNode(block).trim()).toBe('First.')
+  })
+
+  it('is empty, not an error, for a mask that no document answers', () => {
+    expect(kindOf('file:*.md | para')).toBe('0 found')
+  })
+
+  it('still reads an operand when the mask is empty', () => {
+    expect(kindOf('file:*.md | para[ :s(in file:none.podlite | defn) ]')).toBe('resolution')
+  })
+
+  it('reports the operand when the source answers', () => {
+    expect(kindOf('file:y.podlite | para[ :s(in file:none.podlite | defn) ]')).toBe('resolution')
+    expect(kindOf('file:y.podlite | para[ :s(in file:y.podlite#nope) ]')).toBe('address')
+  })
+
+  it('leaves an unknown scheme and an unreadable selector empty', () => {
+    expect([kindOf('data:k | para'), kindOf('#nope')]).toEqual(['0 found', '0 found'])
   })
 })

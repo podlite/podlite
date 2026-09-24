@@ -1,4 +1,6 @@
 import {
+  bindTarget,
+  buildBindingIndex,
   getFromTree,
   getNodeId,
   getTextContentFromNode,
@@ -650,7 +652,17 @@ export const filePathMatches = (docFile: string, target: string): boolean => {
   return a === b || a.endsWith('/' + b) || b.endsWith('/' + a)
 }
 
-const getDocIDs = (doc: SelectorDoc): string[] => {
+/*
+=begin pod :kind<export>
+
+=head2 getDocIDs
+
+The names a document answers to in a C<doc:> source: the C<:id> of its C<=NAME>
+and C<=TITLE> blocks and the text of those blocks.
+
+=end pod
+*/
+export const getDocIDs = (doc: SelectorDoc): string[] => {
   const ids: string[] = []
   getFromTree(doc.node, 'NAME', 'TITLE').forEach(block => {
     const conf = makeAttrs(block, {})
@@ -665,24 +677,17 @@ const getDocIDs = (doc: SelectorDoc): string[] => {
   return ids
 }
 
-function getMapIDsBlocks<T extends PodNode>(srcNode: T): Map<string, T> {
-  const idsMap = new Map<string, T>()
-  getFromTree(srcNode, { type: 'block' }).forEach(i => {
-    const id = getNodeId(i, {})
-    if (id) idsMap.set(id, i as T)
-  })
-  return idsMap
-}
-
 /*
 =begin pod :kind<export>
 
 =head2 SelectorError
 
-Thrown by C<runSelector> when a selector given as the operand of C<in> cannot be
-read: its source does not resolve (C<resolution>), the format of the source is not
-known (C<format>), or the address is not in it (C<address>). Such a selection
-neither matches nor fails to match, so it returns nothing at all.
+Thrown by C<runSelector> when a selector, or a selector given as the operand of
+C<in>, cannot be read: its source does not resolve (C<resolution>), the format of
+the source is not known (C<format>), or the address is not in it (C<address>).
+Such a selection neither matches nor fails to match, so it returns nothing at all.
+A mask that no document answers is an empty source, not an error, unless it
+carries an address.
 
 =end pod
 */
@@ -750,6 +755,14 @@ const dataValues = (key: string, address: string | undefined, home: SelectorDoc[
 // files, and every document the selection was given.
 type Reading = { home: SelectorDoc[]; readFile?: SelectorOptions['readFile']; corpus: SelectorDoc[] }
 
+// The blocks an address names, found the way a link finds its target; the first
+// of two blocks sharing it answers.
+const addressed = (docs: SelectorDoc[], anchor: string): PodNode[] =>
+  docs.flatMap(d => {
+    const binding = bindTarget(anchor, buildBindingIndex(d.node))
+    return binding.found ? [binding.node as PodNode] : []
+  })
+
 const operandBlocks = (selector: ParsedSelector, reading: Reading): PodNode[] => {
   const { scheme, document, anchor, patterns } = selector
   const { home, readFile, corpus } = reading
@@ -762,7 +775,7 @@ const operandBlocks = (selector: ParsedSelector, reading: Reading): PodNode[] =>
   }
   if (!sources || sources.length === 0) throw new SelectorError('resolution', `the source does not resolve: ${shown}`)
   if (anchor) {
-    const found = sources.map(d => getMapIDsBlocks(d.node).get(anchor)).filter((b): b is PodNode => Boolean(b))
+    const found = addressed(sources, anchor)
     if (found.length === 0) throw new SelectorError('address', `no block has the address ${anchor}: ${shown}`)
     return found
   }
@@ -821,15 +834,17 @@ export const runSelector = <T extends SelectorDoc>(
     return []
   }
 
-  // Anchor takes precedence — single-block-by-id lookup
+  const shown = `${scheme}:${document}${anchor ? `#${anchor}` : ''}`
+  // a mask that no document answers is empty; a named source must answer
+  if (scheme && document && matchedDocs.length === 0 && !(scheme === 'file' && isGlobPattern(document))) {
+    throw new SelectorError('resolution', `the source does not resolve: ${shown}`)
+  }
+
+  // An address takes precedence, and a selection after it is not applied
   if (anchor) {
-    const collectedBlocks: PodNode[] = []
-    for (const d of matchedDocs) {
-      const idsMap = getMapIDsBlocks(d.node)
-      const block = idsMap.get(anchor)
-      if (block) collectedBlocks.push(block)
-    }
-    return collectedBlocks
+    const found = addressed(matchedDocs, anchor)
+    if (found.length === 0) throw new SelectorError('address', `no block has the address ${anchor}: ${shown}`)
+    return found
   }
 
   // Patterns are applied in source order and a block found twice is kept once;

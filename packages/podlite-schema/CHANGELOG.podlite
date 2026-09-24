@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<runSelector> throws C<SelectorError> when the source of a selector does not resolve (C<resolution>) or its address is in no answering document (C<address>); it returned nothing. A mask that no document answers is still an empty source unless it carries an address. An address is found the way a link finds its target, by the text of a heading as well as by C<:id>, and the first of two blocks sharing it answers; the last one used to. C<getDocIDs> is exported
+
 =item a pattern C<item> finds first-level items, as C<item1> does; it found items of every level
 
 =item C<*> finds any block a name would find, a paragraph written without a marker and a code block written by indentation among them. No pattern finds the blocks the tree adds around written ones: the root of a document, the root of a Markdown section and a folded section; the selection goes through them. C<outermost> keeps the found blocks that no other found block holds, in the order given

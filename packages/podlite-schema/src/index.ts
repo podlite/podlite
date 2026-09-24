@@ -237,7 +237,7 @@ export const parseFormattingCodes = (text: string, options: { [key: string]: any
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
-export { parseSelector, runSelector, outermost, filePathMatches, SelectorError } from './selectors'
+export { parseSelector, runSelector, outermost, filePathMatches, getDocIDs, SelectorError } from './selectors'
 export { markGuarded, isCovered } from './guard'
 export { applyFoldedSections } from './folded-sections'
 export { testCaption, testFoldedByAuthor } from './test-display'
