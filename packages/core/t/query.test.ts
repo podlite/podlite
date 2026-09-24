@@ -551,6 +551,17 @@ describe('runQuery and a source it reads itself', () => {
     ]).toEqual(['In notes.', [0, 0], 1])
   })
 
+  it('still reads an operand when the mask is empty', () => {
+    const lost = q('file:*.txt | para[ :s(in file:none.podlite | defn) ]')
+    const quiet = q('file:*.txt | para[ :s(in defn) ]')
+    expect([lost.exitCode, lost.problems, quiet.exitCode, quiet.problems]).toEqual([
+      1,
+      ['the source does not resolve: file:none.podlite'],
+      0,
+      [],
+    ])
+  })
+
   it('reads an operand in the file each block is found in, over a mask', () => {
     write('a.podlite', '=defn paid\nMoney in.\n\n=for para :status<paid>\nIn a.\n')
     write('b.podlite', '=defn draft\nNot done.\n\n=for para :status<paid>\nIn b.\n')

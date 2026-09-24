@@ -115,6 +115,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   // a selector that names a file reads it, relative to where it is written: the
   // command line; the files and the input given are not read
   const namesFile = scheme === 'file' && Boolean(document)
+  let emptyMask = false
   if (namesFile && document) {
     const masked = hasMask(document)
     const written = masked ? expandMask(document, process.cwd(), diskProvider) : [document]
@@ -124,13 +125,11 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     }
     const given = [...(opts.stdinContent !== undefined ? ['<stdin>'] : []), ...opts.files]
     if (given.length > 0) problems.push(`the selector names its own source; not read: ${given.join(', ')}`)
-    if (sources.length === 0) {
-      if (masked && !anchor) {
-        return { output: '', matchCount: 0, exitCode: opts.failOnEmpty ? 1 : 0, problems }
-      }
+    if (sources.length === 0 && !(masked && !anchor)) {
       problems.push(masked ? `no block has the address ${anchor}: ${shown}` : `the source does not resolve: ${shown}`)
       return { output: '', matchCount: 0, exitCode: 1, problems }
     }
+    emptyMask = sources.length === 0
   } else {
     if (opts.stdinContent !== undefined) {
       sources.push({ file: '<stdin>', text: opts.stdinContent, fromStdin: true })
@@ -140,7 +139,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     }
   }
 
-  if (sources.length === 0) {
+  if (sources.length === 0 && !emptyMask) {
     throw new Error('No input files (and no stdin)')
   }
 
@@ -183,6 +182,19 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     })
     return [{ file: document, node: contentOf(node) }]
   }
+  // a mask no file answers selects nothing, and its operands are still read
+  if (emptyMask) {
+    const blank: SelectorDoc = { file: '', node: toTree('') }
+    try {
+      runSelector(opts.selector, [], { readFile, home: [blank] })
+    } catch (e) {
+      if (!(e instanceof SelectorError)) throw e
+      problems.push(e.message)
+      return { output: '', matchCount: 0, exitCode: 1, problems }
+    }
+    return { output: '', matchCount: 0, exitCode: opts.failOnEmpty ? 1 : 0, problems }
+  }
+
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
