@@ -192,7 +192,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       problems.push(e.message)
       return { output: '', matchCount: 0, exitCode: 1, problems }
     }
-    return { output: '', matchCount: 0, exitCode: opts.failOnEmpty ? 1 : 0, problems }
+    return { output: '', matchCount: 0, exitCode: failed || opts.failOnEmpty ? 1 : 0, problems }
   }
 
   for (const src of sources) {

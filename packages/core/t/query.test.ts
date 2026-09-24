@@ -562,6 +562,12 @@ describe('runQuery and a source it reads itself', () => {
     ])
   })
 
+  it('fails over an empty mask when an include of an operand file does not resolve', () => {
+    write('vocab.podlite', '=pod\n\n=include file:./missing.podlite\n\n=defn paid\nMoney in.\n')
+    const r = q('file:*.txt | para[ :s(in file:vocab.podlite | defn) ]')
+    expect([r.exitCode, r.problems.some(p => p.includes('include target not found'))]).toEqual([1, true])
+  })
+
   it('reads an operand in the file each block is found in, over a mask', () => {
     write('a.podlite', '=defn paid\nMoney in.\n\n=for para :status<paid>\nIn a.\n')
     write('b.podlite', '=defn draft\nNot done.\n\n=for para :status<paid>\nIn b.\n')
