@@ -127,7 +127,7 @@ describe('applySetToFirst', () => {
     ])
   })
 
-  it('gives the assignments to an include met first, its own later ones winning', () => {
+  it('gives the assignments to an include met first, winning over its own', () => {
     const include = { ...block('include'), set: [item('id', 'own', 'set')] }
     const { nodes: out, outcome } = applySetToFirst(
       [include, block('head')],
@@ -136,7 +136,7 @@ describe('applySetToFirst', () => {
     )
     expect(outcome).toBe('include')
     expect(out[0].set.map((c: any) => [c.name, c.value])).toEqual([
-      ['id', 'own'],
+      ['id', 'outer'],
       ['lang', 'en'],
     ])
     expect(attr(out[1], 'id')).toBeUndefined()

@@ -74,6 +74,15 @@ describe('=set before =include in the publisher', () => {
     expect(said.some(s => /cannot be read: .*; =set assignments not applied: id$/.test(s))).toBe(true)
   })
 
+  it('does not pass it on when the scheme is not one the publisher reads, and says so once', () => {
+    const warn = quiet()
+    const { res } = run(['src/main.podlite', '=pod\n\n=set :id<x>\n=include https:foo\n\n=head1 After\n'])
+    const said = warn.mock.calls.map(c => String(c[0])).filter(s => s.startsWith('[plugin: resolve ]'))
+    warn.mockRestore()
+    expect(headIds(res[0].node)).toEqual([['After', undefined]])
+    expect(said).toEqual(['[plugin: resolve ] selector https:foo: scheme https: is not supported; =set assignments not applied: id'])
+  })
+
   it('warns that the assignment has no target when the first placed block is an include it does not resolve', () => {
     const warn = quiet()
     const nested = `

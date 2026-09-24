@@ -202,17 +202,81 @@ describe('=set before =include in core', () => {
       expect(r.warnings[0].message).toMatch(/already being included; =set assignments not applied: id$/)
     })
 
+    it('does not pass it on when an include inside the included file fails and nothing comes in', () => {
+      write('a.podlite', '=include file:./absent.podlite\n')
+      const r = after('=pod\n\n=set :id<x>\n=include file:./a.podlite\n\n=head1 After\n')
+      expect(r.heads).toEqual([['After', undefined]])
+      expect(r.problems.map(e => [e.kind, e.message])).toEqual([
+        ['source', 'include target not found: ./absent.podlite; =set assignments not applied: id'],
+      ])
+    })
+
+    it('reports a cycle inside the included file that loses the assignment', () => {
+      write('a.podlite', '=include file:./a.podlite\n')
+      const r = after('=pod\n\n=set :id<x>\n=include file:./a.podlite\n\n=head1 After\n')
+      expect(r.heads).toEqual([['After', undefined]])
+      expect(r.errors).toEqual([])
+      expect(r.warnings.map(w => w.kind)).toEqual(['cycle'])
+      expect(r.warnings[0].message).toMatch(/not applied: id$/)
+    })
+
+    it('passes it on when an inner include after the first block fails', () => {
+      write('a.podlite', '=head1 Kept\n\n=include file:./absent.podlite\n')
+      const r = after('=pod\n\n=set :id<x>\n=include file:./a.podlite\n\n=head1 After\n')
+      expect(r.heads).toEqual([
+        ['Kept', 'x'],
+        ['After', undefined],
+      ])
+      expect(r.problems.map(e => e.message)).toEqual(['include target not found: ./absent.podlite'])
+    })
+
     it('leaves a cycle that loses nothing as it was', () => {
       const r = after('=pod\n\n=include file:./main.podlite\n\n=head1 After\n')
       expect(r.problems).toEqual([])
     })
 
     it('stays silent on a back edge when the address is found past it', () => {
+      write('B.podlite', '=include file:A.podlite#x\n\n=for para :id<x>\nYes.\n')
+      const a = write('A.podlite', '=include file:B.podlite#x\n')
+      const run = resolve(a)
+      expect(html(run.tree)).toContain('Yes.')
+      expect([...run.errors, ...run.warnings]).toEqual([])
+    })
+
+    it('names an assignment a back edge loses, and still finds the address', () => {
       write('B.podlite', '=set :id<y>\n=include file:A.podlite#x\n\n=for para :id<x>\nYes.\n')
       const a = write('A.podlite', '=include file:B.podlite#x\n')
       const run = resolve(a)
       expect(html(run.tree)).toContain('Yes.')
       expect(run.errors).toEqual([])
+      expect(run.warnings.map(w => w.kind)).toEqual(['cycle'])
+      expect(run.warnings[0].message).toMatch(/not applied: id$/)
+    })
+
+    it('stops at an include inside the included file that is left in place, and names what it lost', () => {
+      write('p.podlite', '=include doc:other | head1\n\n=head1 X\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite\n\n=head1 After\n')
+      expect(r.heads).toEqual([
+        ['X', undefined],
+        ['After', undefined],
+      ])
+      expect(r.problems.map(e => [e.kind, e.message])).toEqual([
+        ['unsupported-scheme', 'include scheme is not supported: doc:; =set assignments not applied: id'],
+      ])
+      expect(blocks(r.tree, 'include').map(b => b.set)).toEqual([undefined])
+    })
+
+    it('stops at an include inside the included file that left nothing, and names what it lost', () => {
+      write('p.podlite', '=include file:./absent.podlite\n\n=head1 X\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite\n\n=head1 After\n')
+      expect(r.heads).toEqual([
+        ['X', undefined],
+        ['After', undefined],
+      ])
+      expect(r.problems.map(e => e.message)).toEqual([
+        'include target not found: ./absent.podlite; =set assignments not applied: id',
+      ])
+      expect(JSON.stringify(r.tree)).not.toContain('include-failed')
     })
   })
 

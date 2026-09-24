@@ -7,6 +7,7 @@ const files: Record<string, string> = {
   'nested-first.podlite': '\n=comment first a note\n\n=include file:inner.podlite | head1\n\n=head1 Outer part\n',
   'nested-later.podlite': '=head1 Outer part\n\n=include file:inner.podlite | head1\n',
   'inner.podlite': '=head1 Inner part\n',
+  'own-set.podlite': '=set :id<inner>\n=include file:inner.podlite | head1\n',
 }
 const includeReader = (path: string) => files[path] ?? null
 
@@ -39,6 +40,11 @@ describe('=set before =include in to-jsx', () => {
     const html = render('=pod\n\n=set :id<deep>\n=include file:nested-later.podlite\n')
     expect(idAt(html, 'Outer part')).toBe('deep')
     expect(idAt(html, 'Inner part')).not.toBe('deep')
+  })
+
+  it('lets the including file win over a =set of the included one before its include', () => {
+    const html = render('=pod\n\n=set :id<outer>\n=include file:own-set.podlite\n')
+    expect(idAt(html, 'Inner part')).toBe('outer')
   })
 
   it('does not pass it on when the include fails, and says so', () => {

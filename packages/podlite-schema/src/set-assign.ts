@@ -91,8 +91,8 @@ targeting, looking inside the wrappers the tree adds (C<root>,
 C<_folded_section>). The nodes given are not changed: the path to the target and
 the target's subtree are copied, and C<origin>, when given, is carried to the
 copies. An C<=include> met first, not yet resolved, takes the assignments into its
-own C<set>, where they wait for its content; those already there are later and
-win.
+own C<set>, where they wait for its content; they come from the including file
+and win over those of the same name already there.
 
 C<mode> C<'include'> is for the content an include brings: an item replaces one
 that came from a C<=set> or C<=config> of that content. C<'carry'> is for the block
@@ -115,7 +115,7 @@ export const applySetToFirst = (
     const node = out[i]
     if (!node || typeof node !== 'object') continue
     if (isInclude(node)) {
-      out[i] = { ...node, set: mergeSet(set, node.set) }
+      out[i] = { ...node, set: mergeSet(node.set, set) }
       const known = origin?.get(node)
       if (origin && known) origin.set(out[i], known)
       return { nodes: out, outcome: 'include' }

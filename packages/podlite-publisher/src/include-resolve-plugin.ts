@@ -2,11 +2,22 @@ import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, makeInterato
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { applySetToFirst, ConfigItem, outermost, SelectorError } from '@podlite/schema'
-import { runSelector } from './shared'
+import { parseSelector, runSelector } from './shared'
 
 // A selector whose source, address or operand does not resolve brings nothing
 // in, and says so once, naming the =set assignments lost with it.
 const select = (selector: string, recs: publishRecord[], lost = '') => {
+  // a selector that is not read, or a scheme not resolved here, finds nothing
+  // without saying why
+  const parsed = parseSelector(selector)
+  if (!parsed) {
+    console.warn(`[plugin: resolve ] selector ${selector} cannot be read${lost}`)
+    return null
+  }
+  if (parsed.scheme && parsed.scheme !== 'doc' && parsed.scheme !== 'file') {
+    console.warn(`[plugin: resolve ] selector ${selector}: scheme ${parsed.scheme}: is not supported${lost}`)
+    return null
+  }
   try {
     return runSelector(selector, recs)
   } catch (e) {
