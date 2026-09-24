@@ -5,7 +5,7 @@ type ConfigMap = Record<string, ConfigItem[]>
 const mergeDefaults = (own: ConfigItem[] | undefined, defaults: ConfigItem[]): ConfigItem[] => {
   const ownArr = Array.isArray(own) ? own : []
   const seen = new Set(ownArr.map(c => c && c.name).filter(Boolean))
-  const additions = defaults.filter(c => c && c.name && !seen.has(c.name))
+  const additions = defaults.filter(c => c && c.name && !seen.has(c.name)).map(c => ({ ...c, from: 'config' as const }))
   if (additions.length === 0) return ownArr
   return [...ownArr, ...additions]
 }

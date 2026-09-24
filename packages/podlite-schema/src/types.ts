@@ -412,6 +412,9 @@ export interface ConfigItem {
   value: boolean | string | number | Array<string | number | boolean> | ConfigItemKV
   type: ConfigItemType
   isFalse?: boolean
+  // where a value the declaration does not carry came from: a =set before the
+  // block or a =config default; a written attribute has no mark
+  from?: 'set' | 'config'
 }
 
 //TODO: rename it to Config like Alias ?
@@ -443,6 +446,9 @@ export interface Block {
   // set where the cover is declared and copied onto everything below it, so
   // content lifted out of the block still renders covered
   guarded?: boolean
+  // on =include: the =set assignments written before it, for the block its
+  // resolved content brings
+  set?: ConfigItem[]
 }
 
 export interface BlockPod extends Block {

@@ -253,6 +253,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -295,6 +301,13 @@
                 },
                 "isFalse": {
                     "type": "boolean"
+                },
+                "from": {
+                    "enum": [
+                        "config",
+                        "set"
+                    ],
+                    "type": "string"
                 }
             },
             "required": [
@@ -347,6 +360,13 @@
                 },
                 "isFalse": {
                     "type": "boolean"
+                },
+                "from": {
+                    "enum": [
+                        "config",
+                        "set"
+                    ],
+                    "type": "string"
                 }
             },
             "required": [
@@ -406,6 +426,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -432,6 +458,12 @@
                     ],
                     "minItems": 1,
                     "maxItems": 1
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "margin": {
                     "type": "string"
@@ -531,6 +563,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -594,6 +632,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -645,6 +689,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -696,6 +746,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -747,6 +803,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -798,6 +860,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -849,6 +917,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -906,6 +980,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -958,6 +1038,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -1009,6 +1095,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -1635,6 +1727,12 @@
                         }
                     ]
                 },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
                 "margin": {
                     "type": "string"
                 },
@@ -1687,6 +1785,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ParseDiagnostic"
+                    }
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
                     }
                 },
                 "margin": {
@@ -1809,6 +1913,12 @@
                 },
                 "text": {
                     "type": "string"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "margin": {
                     "type": "string"
@@ -2034,6 +2144,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -2140,6 +2256,12 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -2175,6 +2297,12 @@
                     ],
                     "minItems": 1,
                     "maxItems": 2
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "margin": {
                     "type": "string"
@@ -2249,6 +2377,12 @@
                         "$ref": "#/definitions/PodNode"
                     }
                 },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
                 "type": {
                     "type": "string",
                     "const": "block"
@@ -2288,6 +2422,12 @@
                     ],
                     "minItems": 1,
                     "maxItems": 2
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "margin": {
                     "type": "string"

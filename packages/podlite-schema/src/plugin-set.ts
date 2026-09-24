@@ -1,16 +1,9 @@
 import { ConfigItem } from './types'
-
-// Directives and =comment blocks pass =set attributes through to the next
-// real block instead of consuming them.
-const isTransparent = (node: any): boolean => {
-  if (!node || typeof node !== 'object') return false
-  if (node.type === 'set' || node.type === 'config' || node.type === 'alias' || node.type === 'blankline') return true
-  if (node.type === 'block' && (node.name === 'comment' || node.name === 'boundary' || node.name === 'include'))
-    return true
-  return false
-}
+import { isSetTransparent } from './set-assign'
 
 const isBlock = (node: any): boolean => node && typeof node === 'object' && node.type === 'block'
+
+const isInclude = (node: any): boolean => isBlock(node) && node.name === 'include'
 
 // Each content array is its own lexical scope: pending attributes never leak
 // into or out of a nested block.
@@ -30,9 +23,14 @@ const applyInScope = (content: any[]): any[] => {
     if (isBlock(node) && Array.isArray(node.content)) {
       next = { ...node, content: applyInScope(node.content) }
     }
-    if (pending.length && isBlock(next) && !isTransparent(next)) {
+    // the target is chosen in the content the include resolves to
+    if (pending.length && isInclude(next)) {
+      next = { ...next, set: pending.map(c => ({ ...c, from: 'set' as const })) }
+      pending = []
+    }
+    if (pending.length && isBlock(next) && !isSetTransparent(next)) {
       const own = new Set((next.config || []).map((c: any) => c && c.name))
-      const additions = pending.filter(c => !own.has(c.name))
+      const additions = pending.filter(c => !own.has(c.name)).map(c => ({ ...c, from: 'set' as const }))
       if (additions.length) next = { ...next, config: [...(next.config || []), ...additions] }
       pending = []
     }
