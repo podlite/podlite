@@ -38,6 +38,8 @@ import {
   collectText,
   isCovered,
   writtenValue,
+  applySetToFirst,
+  ConfigItem,
 } from '@podlite/schema'
 import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 export type { LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
@@ -549,14 +551,24 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // (e.g. `file:**/*.podlite`) require an `expandPaths` callback that
     // resolves the pattern to a concrete list of file paths; without it
     // the path is read literally and globs go unresolved.
+    // The =set assignments written before the include go to the first block it
+    // brings. When it fails they are not applied, and when it brings no block
+    // they stay without a target: carrying them on to the next block is not
+    // done here.
     include: (writer, processor) => (node, ctx, interator) => {
-      if (!opts.includeReader || !opts.parser) return null
+      const set: ConfigItem[] = (node as any).set || []
+      const notApplied = set.length ? `; =set assignments not applied: ${set.map(c => c.name).join(', ')}` : ''
+      const fail = (why: string) => {
+        if (set.length) console.warn(`[to-jsx] ${why}${notApplied}`)
+        return null
+      }
+      if (!opts.includeReader || !opts.parser) return fail('include is not read without a file reader')
       const selector = getTextContentFromNode(node.content as any)
         ?.toString()
         .trim()
-      if (!selector) return null
+      if (!selector) return fail('include selector cannot be read: (empty)')
       const parsed = parseSelector(selector)
-      if (!parsed || parsed.scheme !== 'file' || !parsed.document) return null
+      if (!parsed || parsed.scheme !== 'file' || !parsed.document) return fail(`include is not resolved: ${selector}`)
 
       // Resolve target paths: glob is expanded via the host callback (when
       // present); a literal path is used directly. Hosts without
@@ -575,19 +587,24 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         const subAst = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
         docs.push({ file: p, node: subAst })
       }
-      if (docs.length === 0) return null
+      if (docs.length === 0) return fail(`include is not resolved: ${selector}`)
 
       let blocks: PodNode[]
       try {
         blocks = runSelector(selector, docs) as PodNode[]
       } catch (e) {
         if (!(e instanceof SelectorError)) throw e
-        console.warn(`[to-jsx] include selector cannot be read: ${e.message}`)
+        console.warn(`[to-jsx] include selector cannot be read: ${e.message}${notApplied}`)
         return null
       }
-      if (!blocks || blocks.length === 0) return null
+      const found = outermost(blocks || [])
+      const applied = set.length ? applySetToFirst(found, set, { mode: 'include' }) : { nodes: found, outcome: 'none' }
+      if (set.length && applied.outcome === 'none') {
+        console.warn(`[to-jsx] =set before =include has no target block: ${set.map(c => c.name).join(', ')}`)
+      }
+      if (applied.nodes.length === 0) return null
 
-      return interator(groupTests(outermost(blocks)), { ...ctx, includeStack: [...stack, ...paths] })
+      return interator(groupTests(applied.nodes), { ...ctx, includeStack: [...stack, ...paths] })
     },
 
     // Directives

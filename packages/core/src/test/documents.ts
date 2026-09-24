@@ -102,7 +102,11 @@ export const canonical = (file: string): string => {
   }
 }
 
-const isLosing = (problem: IncludeProblem): boolean => problem.kind !== 'ambiguous'
+// A problem that loses included content fails the input. An ambiguous address
+// still brings a block; a =set with no target and a cycle reported for the
+// assignments it lost leave the content as it was.
+const isLosing = (problem: IncludeProblem): boolean =>
+  problem.kind !== 'ambiguous' && problem.kind !== 'set-target' && problem.kind !== 'cycle'
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 

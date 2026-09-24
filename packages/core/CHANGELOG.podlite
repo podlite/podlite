@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<=set> written before C<=include> reaches the first block the include brings, in C<convert>, C<query> and C<podlite test>; the block after the include received it. When the include brings no block, the assignment goes on to the next block of the same list, and to the end of the list without one it is reported with the kind C<set-target>. When the include fails, it goes nowhere, and the message of the failure names it; an include that brings nothing because its file is already being included says so with the kind C<cycle>, and does so only when it loses an assignment. Both kinds are warnings, and C<isWarning> is exported
+
 =item C<podlite query> reads a file its selector names, relative to the working directory, as it reads a file an operand of C<in> names: C<podlite query 'file:x.podlite | para'> needs no input files, a mask is expanded on disk as C<=include> expands it, and the files and input given are not read, with a warning. A source that does not resolve, and an address no file holds, is reported once and exits with 1; it used to give 0 matches. A file given is no longer taken for a source that only shares its tail, and a C<doc:> source is looked for among the files given
 
 =item an include by a selector places a found block once: a block inside another found block comes with it and is not placed again, so C<=include part.podlite | *> brings a heading inside a C<=pod> once, and one table of contents. With C<*> the include brings no C<=alias> written at the top of the file, and an C<A<>> code that relies on it is left as written; an include without a selector still brings the whole file

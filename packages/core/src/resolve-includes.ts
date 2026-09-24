@@ -1,11 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {
+  applySetToFirst,
   bindTarget,
+  ConfigItem,
   buildBindingIndex,
   filePathMatches,
   getTextContentFromNode,
   Location,
+  mergeSet,
   outermost,
   parseSelector,
   runSelector,
@@ -22,7 +25,18 @@ export type IncludeStep = {
 }
 
 export type IncludeProblem = {
-  kind: 'source' | 'address' | 'ambiguous' | 'unparsed-selector' | 'unsupported-scheme' | 'operand'
+  kind:
+    | 'source'
+    | 'address'
+    | 'ambiguous'
+    | 'unparsed-selector'
+    | 'unsupported-scheme'
+    | 'operand'
+    // an include that brings nothing because every file it names is already on
+    // the way; reported only when =set assignments are lost with it
+    | 'cycle'
+    // =set assignments before an include that found no block to receive them
+    | 'set-target'
   target: string
   message: string
   // the first step is the directive in the document itself, the last one the
@@ -59,8 +73,12 @@ export type ResolveIncludesOptions = {
   provider?: SourceProvider
 }
 
-const isWarning = (problem: IncludeProblem): boolean =>
-  problem.kind === 'ambiguous' || problem.kind === 'unparsed-selector' || problem.kind === 'unsupported-scheme'
+export const isWarning = (problem: IncludeProblem): boolean =>
+  problem.kind === 'ambiguous' ||
+  problem.kind === 'unparsed-selector' ||
+  problem.kind === 'unsupported-scheme' ||
+  problem.kind === 'cycle' ||
+  problem.kind === 'set-target'
 
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
@@ -157,18 +175,32 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return texts.get(target) ?? null
   }
 
-  const report = (problem: IncludeProblem): [] => {
+  const report = (problem: IncludeProblem): void => {
     if (isWarning(problem)) {
       opts.onWarning?.(problem)
-      return []
+      return
     }
     if (!opts.onError) throw new Error(problem.message)
     opts.onError(problem)
-    return []
+  }
+
+  const names = (set: ConfigItem[]): string => set.map(c => c.name).join(', ')
+
+  // A directive left in the tree no longer waits for its assignments: they were
+  // for the content it failed to bring.
+  const withoutSet = (node: any): any => {
+    if (!node.set) return node
+    const { set, ...rest } = node
+    const known = origin?.get(node)
+    if (origin && known) origin.set(rest, known)
+    return rest
   }
 
   // `home` is the file a directive is written in: an operand of a selector
-  // without a source, or with data:, reads from it
+  // without a source, or with data:, reads from it. The =set assignments before
+  // an include go to the first block it brings; when it brings none they go on
+  // to the next block of the same list, and when it fails they go nowhere and
+  // the failure says so.
   const walkList = (
     list: any[],
     baseDir: string,
@@ -176,7 +208,221 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     chain: IncludeStep[],
     file: string,
     home: any,
-  ): any[] => list.flatMap(n => walkNode(n, baseDir, stack, chain, file, home))
+  ): any[] => {
+    const out: any[] = []
+    let pending: ConfigItem[] = []
+    let last: { chain: IncludeStep[]; selector: string } | undefined
+    for (const n of list) {
+      if (isIncludeBlock(n)) {
+        // assignments carried from an earlier include are older than its own
+        const set = mergeSet(pending, n.set)
+        pending = []
+        const here = [...chain, { file, location: n.location }]
+        const { nodes, failure, selector } = resolveInclude(n, baseDir, stack, here, file, home)
+        if (failure) {
+          const final = failure[failure.length - 1]
+          if (set.length) final.message = `${final.message}; =set assignments not applied: ${names(set)}`
+          // a cycle is reported when it loses assignments; otherwise it is left
+          // alone, as before
+          failure.filter(problem => problem.kind !== 'cycle' || set.length).forEach(report)
+          out.push(...nodes)
+          continue
+        }
+        if (!set.length) {
+          out.push(...nodes)
+          continue
+        }
+        const applied = applySetToFirst(nodes, set, { mode: 'include', origin })
+        out.push(...applied.nodes)
+        if (applied.outcome === 'none') {
+          pending = set
+          last = { chain: here, selector }
+        }
+        continue
+      }
+      const walked = walkNode(n, baseDir, stack, chain, file, home)
+      const items = Array.isArray(walked) ? walked : [walked]
+      if (!pending.length) {
+        out.push(...items)
+        continue
+      }
+      const applied = applySetToFirst(items, pending, { mode: 'carry', origin })
+      if (applied.outcome !== 'none') pending = []
+      out.push(...applied.nodes)
+    }
+    if (pending.length && last) {
+      report({
+        kind: 'set-target',
+        target: last.selector,
+        message: `=set before =include has no target block in scope: ${names(pending)}`,
+        chain: last.chain,
+      })
+    }
+    return out
+  }
+
+  // What an include comes to: the nodes that take its place, or the problems
+  // that left it with nothing, not yet reported
+  const resolveInclude = (
+    node: any,
+    baseDir: string,
+    stack: string[],
+    here: IncludeStep[],
+    file: string,
+    home: any,
+  ): { nodes: any[]; failure?: IncludeProblem[]; selector: string } => {
+    const selector = getTextContentFromNode(node.content)?.toString().trim() ?? ''
+    const parsed = selector ? parseSelector(selector) : undefined
+    // The directive stays in the tree as before when its selector is not read;
+    // what it would have brought in is missing, and a reader of the tree cannot
+    // tell that on its own.
+    const fail = (problem: IncludeProblem, keep = false) => ({
+      nodes: keep ? [withoutSet(node)] : [],
+      failure: [problem],
+      selector,
+    })
+    if (!selector || !parsed || !parsed.scheme || !parsed.document) {
+      return fail(
+        {
+          kind: 'unparsed-selector',
+          target: selector,
+          message: `include selector cannot be read: ${selector || '(empty)'}`,
+          chain: here,
+        },
+        true,
+      )
+    }
+    if (parsed.scheme !== 'file') {
+      return fail(
+        {
+          kind: 'unsupported-scheme',
+          target: selector,
+          message: `include scheme is not supported: ${parsed.scheme}:`,
+          chain: here,
+        },
+        true,
+      )
+    }
+
+    const masked = hasMask(parsed.document)
+    const written = masked ? expandMask(parsed.document, baseDir, provider) : [parsed.document]
+    if (!masked && textOf(path.resolve(baseDir, parsed.document)) === null) {
+      return fail({
+        kind: 'source',
+        target: selector,
+        message: `include target not found: ${parsed.document}`,
+        chain: here,
+      })
+    }
+
+    const docs: Array<{ file: string; node: any }> = []
+    const unread: IncludeProblem[] = []
+    let cyclic = false
+    for (const name of written) {
+      const target = path.resolve(baseDir, name)
+      if (stack.includes(target)) {
+        cyclic = true
+        continue
+      }
+      const text = textOf(target)
+      if (text === null) {
+        unread.push({
+          kind: 'source',
+          target: selector,
+          message: `include target cannot be read: ${name}`,
+          chain: here,
+        })
+        continue
+      }
+      const own = opts.parse(text, target)
+      if (origin) recordOrigin(own, { file: target, text }, origin)
+      docs.push({
+        file: name,
+        node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
+      })
+    }
+    if (docs.length === 0) {
+      // a mask that names no file holds no address
+      if (parsed.anchor && written.length === 0) {
+        return fail({
+          kind: 'address',
+          target: selector,
+          message: `include address not found: #${parsed.anchor} in ${parsed.document}`,
+          chain: here,
+        })
+      }
+      if (unread.length) return { nodes: [], failure: unread, selector }
+      if (cyclic) {
+        return fail({
+          kind: 'cycle',
+          target: selector,
+          message: `include brings nothing: ${parsed.document} is already being included`,
+          chain: here,
+        })
+      }
+      return { nodes: [], selector }
+    }
+    // the files that were read stand; the others are reported as before
+    unread.forEach(report)
+
+    if (parsed.anchor) {
+      // The address is found the way a link finds its target, in the file as it
+      // stands once its own includes are in; a selection after it is not applied.
+      const found: object[] = []
+      for (const doc of docs) {
+        const binding = bindTarget(parsed.anchor, buildBindingIndex(doc.node))
+        if (!binding.found) continue
+        if (binding.ambiguous) {
+          report({
+            kind: 'ambiguous',
+            target: selector,
+            message: `include address #${parsed.anchor} names more than one block in ${doc.file}`,
+            chain: here,
+          })
+        }
+        found.push(binding.node)
+      }
+      if (found.length > 0) return { nodes: found, selector }
+      return fail({
+        kind: 'address',
+        target: selector,
+        message: `include address not found: #${parsed.anchor} in ${parsed.document}`,
+        chain: here,
+      })
+    }
+
+    // a file an operand names is read the way an included file is, from the
+    // directory of the directive; one already on the way does not resolve
+    const readFile = (document: string): SelectorDoc[] | undefined => {
+      const target = path.resolve(baseDir, document)
+      const text = stack.includes(target) ? null : textOf(target)
+      if (text === null) return undefined
+      const own = opts.parse(text, target)
+      if (origin) recordOrigin(own, { file: target, text }, origin)
+      return [
+        {
+          file: document,
+          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
+        },
+      ]
+    }
+    try {
+      return {
+        nodes: unwrapRoot(
+          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
+        ),
+        selector,
+      }
+    } catch (e) {
+      if (!(e instanceof SelectorError)) throw e
+      return fail({
+        kind: 'operand',
+        target: selector,
+        message: `include selector cannot be read: ${e.message}`,
+        chain: here,
+      })
+    }
+  }
 
   const walkNode = (
     node: any,
@@ -188,133 +434,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   ): any => {
     if (!node || typeof node !== 'object') return node
     if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file, home)
-
-    if (isIncludeBlock(node)) {
-      const selector = getTextContentFromNode(node.content)?.toString().trim()
-      const parsed = selector ? parseSelector(selector) : undefined
-      const here = [...chain, { file, location: node.location }]
-      // The directive stays in the tree as before; what it would have brought in
-      // is missing, and a reader of the tree cannot tell that on its own.
-      if (!selector || !parsed || !parsed.scheme || !parsed.document) {
-        report({
-          kind: 'unparsed-selector',
-          target: selector ?? '',
-          message: `include selector cannot be read: ${selector || '(empty)'}`,
-          chain: here,
-        })
-        return node
-      }
-      if (parsed.scheme !== 'file') {
-        report({
-          kind: 'unsupported-scheme',
-          target: selector,
-          message: `include scheme is not supported: ${parsed.scheme}:`,
-          chain: here,
-        })
-        return node
-      }
-
-      const masked = hasMask(parsed.document)
-      const written = masked ? expandMask(parsed.document, baseDir, provider) : [parsed.document]
-      if (!masked && textOf(path.resolve(baseDir, parsed.document)) === null) {
-        return report({
-          kind: 'source',
-          target: selector,
-          message: `include target not found: ${parsed.document}`,
-          chain: here,
-        })
-      }
-
-      const docs: Array<{ file: string; node: any }> = []
-      for (const name of written) {
-        const target = path.resolve(baseDir, name)
-        if (stack.includes(target)) continue
-        const text = textOf(target)
-        if (text === null) {
-          report({
-            kind: 'source',
-            target: selector,
-            message: `include target cannot be read: ${name}`,
-            chain: here,
-          })
-          continue
-        }
-        const own = opts.parse(text, target)
-        if (origin) recordOrigin(own, { file: target, text }, origin)
-        docs.push({
-          file: name,
-          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
-        })
-      }
-      if (docs.length === 0) {
-        // a mask that names no file holds no address; a file skipped as a cycle
-        // is left alone, as before
-        if (parsed.anchor && written.length === 0) {
-          return report({
-            kind: 'address',
-            target: selector,
-            message: `include address not found: #${parsed.anchor} in ${parsed.document}`,
-            chain: here,
-          })
-        }
-        return []
-      }
-
-      if (parsed.anchor) {
-        // The address is found the way a link finds its target, in the file as it
-        // stands once its own includes are in; a selection after it is not applied.
-        const found: object[] = []
-        for (const doc of docs) {
-          const binding = bindTarget(parsed.anchor, buildBindingIndex(doc.node))
-          if (!binding.found) continue
-          if (binding.ambiguous) {
-            report({
-              kind: 'ambiguous',
-              target: selector,
-              message: `include address #${parsed.anchor} names more than one block in ${doc.file}`,
-              chain: here,
-            })
-          }
-          found.push(binding.node)
-        }
-        if (found.length > 0) return found
-        return report({
-          kind: 'address',
-          target: selector,
-          message: `include address not found: #${parsed.anchor} in ${parsed.document}`,
-          chain: here,
-        })
-      }
-
-      // a file an operand names is read the way an included file is, from the
-      // directory of the directive; one already on the way does not resolve
-      const readFile = (document: string): SelectorDoc[] | undefined => {
-        const target = path.resolve(baseDir, document)
-        const text = stack.includes(target) ? null : textOf(target)
-        if (text === null) return undefined
-        const own = opts.parse(text, target)
-        if (origin) recordOrigin(own, { file: target, text }, origin)
-        return [
-          {
-            file: document,
-            node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
-          },
-        ]
-      }
-      try {
-        return unwrapRoot(
-          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
-        )
-      } catch (e) {
-        if (!(e instanceof SelectorError)) throw e
-        return report({
-          kind: 'operand',
-          target: selector,
-          message: `include selector cannot be read: ${e.message}`,
-          chain: here,
-        })
-      }
-    }
+    if (isIncludeBlock(node)) return walkList([node], baseDir, stack, chain, file, home)
 
     if (Array.isArray(node.content)) {
       const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home) }

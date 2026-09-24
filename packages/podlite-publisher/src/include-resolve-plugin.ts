@@ -1,19 +1,40 @@
 import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, makeInterator, PodNode } from '@podlite/schema'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { outermost, SelectorError } from '@podlite/schema'
+import { applySetToFirst, ConfigItem, outermost, SelectorError } from '@podlite/schema'
 import { runSelector } from './shared'
 
 // A selector whose source, address or operand does not resolve brings nothing
-// in, and says so once.
-const select = (selector: string, recs: publishRecord[]) => {
+// in, and says so once, naming the =set assignments lost with it.
+const select = (selector: string, recs: publishRecord[], lost = '') => {
   try {
     return runSelector(selector, recs)
   } catch (e) {
     if (!(e instanceof SelectorError)) throw e
-    console.warn(`[plugin: resolve ] selector ${selector} cannot be read: ${e.message}`)
+    console.warn(`[plugin: resolve ] selector ${selector} cannot be read: ${e.message}${lost}`)
     return null
   }
+}
+
+const names = (set: ConfigItem[]): string => set.map(c => c.name).join(', ')
+
+// The =set assignments written before an include go to the first block it
+// brings; once placed or lost, the directive no longer carries them. When the
+// include brings no block they stay without a target: carrying them on to the
+// next block is not done here, nor through an include inside what was brought.
+const assignments = (node: any) => {
+  const set: ConfigItem[] = node.set || []
+  const { set: _, ...rest } = node
+  const lost = set.length ? `; =set assignments not applied: ${names(set)}` : ''
+  const place = (blocks: PodNode[]): PodNode[] => {
+    if (!set.length) return blocks
+    const applied = applySetToFirst(blocks, set, { mode: 'include' })
+    if (applied.outcome !== 'block') {
+      console.warn(`[plugin: resolve ] =set before =include has no target block: ${names(set)}`)
+    }
+    return applied.outcome === 'block' ? applied.nodes : blocks
+  }
+  return { node: rest, lost, place }
 }
 const plugin = (): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
@@ -22,31 +43,34 @@ const plugin = (): PodliteWebPlugin => {
   const processNode = (node: PodNode, recs: publishRecord[]) => {
     const rules = {
       // TODO: remove 'Include' due to duplicate to 'include'
-      Include: node => {
+      Include: written => {
+        const { node, lost, place } = assignments(written)
         const { content } = node
         const selector = getTextContentFromNode(content).trim()
         console.warn(`[include] start resolve selector: ${selector}`)
         if (selector) {
           // try to resolve selector
-          const result = select(selector, recs)
+          const result = select(selector, recs, lost)
           if (!result) return node
           const [block] = result
           if (typeof block === 'object' && !('file' in block)) {
-            const updated = { content: block }
+            const updated = { content: place([block as PodNode])[0] }
             return { ...node, ...updated }
           }
           if (!block) {
             console.warn(`[plugin: resolve ] selector ${selector} not found`)
+            place([])
           }
         }
         return node
       },
-      include: node => {
+      include: written => {
+        const { node, lost, place } = assignments(written)
         const { content } = node
         const selector = getTextContentFromNode(content).trim()
         console.warn(`[include] start resolve selector: ${selector}`)
         if (selector) {
-          const result = select(selector, recs)
+          const result = select(selector, recs, lost)
           if (!result) return node
           const blocks: PodNode[] = []
           for (const item of result) {
@@ -55,9 +79,12 @@ const plugin = (): PodliteWebPlugin => {
             }
           }
           if (blocks.length > 0) {
-            return { ...node, content: outermost(blocks) }
+            return { ...node, content: place(outermost(blocks)) }
           }
           console.warn(`[plugin: resolve ] selector ${selector} not found`)
+          place([])
+        } else if (lost) {
+          console.warn(`[plugin: resolve ] include selector cannot be read: (empty)${lost}`)
         }
         return node
       },

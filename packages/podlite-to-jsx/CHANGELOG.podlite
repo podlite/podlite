@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<=set> written before C<=include> reaches the first block the include brings, also when that block comes from an include inside the included file; the block after the include received it. When the include fails, the warning names the assignment it lost. When the include brings no block, the assignment is not carried on to the next block yet, and a warning says it has no target
+
 =item an include by a selector renders a found block once: a block inside another found block comes with it and is not rendered again
 
 =item a table of contents kept as a C<toc> or C<Toc> block renders its table, with the C<:id> of the block on the element
