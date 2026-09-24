@@ -185,15 +185,28 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     opts.onError(problem)
   }
 
-  // Problems are held until the walk ends, in the order met: an include whose
-  // content came to nothing because an include inside it failed fails too, and
-  // the assignments it loses are named in that inner report, which by then has
-  // been made.
+  // Problems are held while an entry of the document's own list is walked, in
+  // the order met: an include whose content came to nothing because an include
+  // inside it failed fails too, and the assignments it loses are named in that
+  // inner report, which by then has been made. An error with no handler is
+  // thrown at once, as it was.
   type Held = { problem: IncludeProblem; shown: boolean }
   const held: Held[] = []
-  const report = (problem: IncludeProblem): void => {
-    held.push({ problem, shown: true })
+  const hold = (entries: Held[]): void => {
+    for (const entry of entries) {
+      if (entry.shown && !isWarning(entry.problem) && !opts.onError) throw new Error(entry.problem.message)
+    }
+    held.push(...entries)
   }
+  const report = (problem: IncludeProblem): void => hold([{ problem, shown: true }])
+  const flush = (): void => {
+    held
+      .splice(0)
+      .filter(entry => entry.shown)
+      .forEach(entry => emit(entry.problem))
+  }
+  // how deep in lists the walk is: the document's own list is the first
+  let level = 0
   // the problems of each failed include, in the order met
   const failures: Held[][] = []
   // Where an include failed, the search for a target stops: a directive left in
@@ -219,6 +232,46 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     }
     return undefined
   }
+  // The block the assignments would go to, before any is given: the first that
+  // is not transparent, looking inside the wrappers the tree adds.
+  const firstTarget = (nodes: any[]): any => {
+    for (const node of nodes) {
+      if (!node || typeof node !== 'object') continue
+      if (failedAt.has(node)) return node
+      if (node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')) {
+        const found = firstTarget(Array.isArray(node.content) ? node.content : node.content ? [node.content] : [])
+        if (found) return found
+        continue
+      }
+      if (node.type !== 'block' || isSetTransparent(node)) continue
+      return node
+    }
+    return undefined
+  }
+  // A selection keeps no mark of an include that failed inside the files it ran
+  // over; which comes first there, the target or a failure, is read off the
+  // files themselves, in document order. Without a target, any failure counts.
+  const failedBefore = (roots: any[], target: any): Held[] | undefined => {
+    let found: Held[] | undefined
+    let done = false
+    const visit = (node: any): void => {
+      if (done || !node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const failed = failedAt.get(node)
+      if (failed) {
+        found = failed
+        done = true
+        return
+      }
+      if (node === target) {
+        done = true
+        return
+      }
+      visit(node.content)
+    }
+    roots.forEach(visit)
+    return found
+  }
   const unmark = (node: any): any => {
     if (Array.isArray(node)) {
       for (let i = node.length - 1; i >= 0; i--) {
@@ -230,9 +283,15 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     if (node && typeof node === 'object' && Array.isArray(node.content)) unmark(node.content)
     return node
   }
+  // the message a problem had before assignments were named in it, and the
+  // names, so that a second loss joins the first
+  const lost = new WeakMap<IncludeProblem, { message: string; set: ConfigItem[] }>()
   const lose = (entries: Held[], set: ConfigItem[]): void => {
     const final = entries[entries.length - 1].problem
-    final.message = `${final.message}; =set assignments not applied: ${names(set)}`
+    const before = lost.get(final) ?? { message: final.message, set: [] }
+    const all = mergeSet(before.set, set)
+    lost.set(final, { message: before.message, set: all })
+    final.message = `${before.message}; =set assignments not applied: ${names(all)}`
     // a cycle is reported when it loses assignments; otherwise it is left
     // alone, as before
     entries.forEach(entry => (entry.shown = true))
@@ -266,63 +325,72 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     const out: any[] = []
     let pending: ConfigItem[] = []
     let last: { chain: IncludeStep[]; selector: string } | undefined
-    for (const n of list) {
+    const visit = (n: any): void => {
       if (isIncludeBlock(n)) {
         // assignments carried from an earlier include are older than its own
         const set = mergeSet(pending, n.set)
         pending = []
         const here = [...chain, { file, location: n.location }]
-        const { nodes, failure, inner, selector } = resolveInclude(n, baseDir, stack, here, file, home)
+        const { nodes, failure, inner, roots, selector } = resolveInclude(n, baseDir, stack, here, file, home)
         if (failure) {
           const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
-          held.push(...entries)
-          failures.push(entries)
           if (set.length) lose(entries, set)
+          hold(entries)
+          failures.push(entries)
           const stops = nodes.length ? nodes : [{ type: FAILED }]
           stops.forEach(stop => failedAt.set(stop, entries))
           out.push(...stops)
-          continue
+          return
         }
         if (!set.length) {
           out.push(...nodes)
-          continue
+          return
         }
-        // an include inside that failed before any block stops the search
-        const stopped = firstStop(nodes)
+        // an include inside that failed before the target stops the search
+        const stopped = roots ? failedBefore(roots, firstTarget(nodes)) : firstStop(nodes)
         if (stopped) {
           lose(stopped, set)
           out.push(...nodes)
-          continue
+          return
         }
         const applied = applySetToFirst(nodes, set, { mode: 'include', origin })
         out.push(...applied.nodes)
-        if (applied.outcome !== 'none') continue
+        if (applied.outcome !== 'none') return
         // nothing came in because an include inside failed: what it would
         // have brought is not known, and the assignments go nowhere
         if (inner.length) {
           lose(inner[inner.length - 1], set)
-          continue
+          return
         }
         pending = set
         last = { chain: here, selector }
-        continue
+        return
       }
       const walked = walkNode(n, baseDir, stack, chain, file, home)
       const items = Array.isArray(walked) ? walked : [walked]
       if (!pending.length) {
         out.push(...items)
-        continue
+        return
       }
       const stopped = firstStop(items)
       if (stopped) {
         lose(stopped, pending)
         pending = []
         out.push(...items)
-        continue
+        return
       }
       const applied = applySetToFirst(items, pending, { mode: 'carry', origin })
       if (applied.outcome !== 'none') pending = []
       out.push(...applied.nodes)
+    }
+    level++
+    try {
+      for (const n of list) {
+        visit(n)
+        if (level === 1) flush()
+      }
+    } finally {
+      level--
     }
     if (pending.length && last) {
       report({
@@ -344,12 +412,15 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     here: IncludeStep[],
     file: string,
     home: any,
-  ): { nodes: any[]; failure?: IncludeProblem[]; inner: Held[][]; selector: string } => {
+  ): { nodes: any[]; failure?: IncludeProblem[]; inner: Held[][]; roots?: any[]; selector: string } => {
     const mark = failures.length
+    // the walked files a selection ran over, in order
+    let roots: any[] | undefined
     const done = (nodes: any[], failure?: IncludeProblem[]) => ({
       nodes,
       failure,
       inner: failures.slice(mark),
+      roots,
       selector,
     })
     const selector = getTextContentFromNode(node.content)?.toString().trim() ?? ''
@@ -468,6 +539,8 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       })
     }
 
+    roots = docs.map(doc => doc.node)
+
     // a file an operand names is read the way an included file is, from the
     // directory of the directive; one already on the way does not resolve
     const readFile = (document: string): SelectorDoc[] | undefined => {
@@ -521,7 +594,9 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return node
   }
 
-  const result = unmark(walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile, tree))
-  held.filter(entry => entry.shown).forEach(entry => emit(entry.problem))
-  return result
+  try {
+    return unmark(walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile, tree))
+  } finally {
+    flush()
+  }
 }

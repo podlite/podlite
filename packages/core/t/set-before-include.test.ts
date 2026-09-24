@@ -220,6 +220,42 @@ describe('=set before =include in core', () => {
       expect(r.warnings[0].message).toMatch(/not applied: id$/)
     })
 
+    it('stops at a failed include ahead of the selected block, since it could have brought one', () => {
+      write('p.podlite', '=include file:./absent.podlite\n\n=head1 X\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite | head1\n\n=head1 After\n')
+      expect(r.heads).toEqual([
+        ['X', undefined],
+        ['After', undefined],
+      ])
+      expect(r.problems.map(e => e.message)).toEqual([
+        'include target not found: ./absent.podlite; =set assignments not applied: id',
+      ])
+    })
+
+    it('stops at an include left in place ahead of the selected block', () => {
+      write('p.podlite', '=include doc:other | head1\n\n=head1 X\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite | head1\n')
+      expect(r.heads).toEqual([['X', undefined]])
+      expect(r.problems.map(e => e.message)).toEqual([
+        'include scheme is not supported: doc:; =set assignments not applied: id',
+      ])
+    })
+
+    it('gives the selected block the assignment when the failed include comes after it', () => {
+      write('p.podlite', '=head1 X\n\n=include file:./absent.podlite\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite | head1\n')
+      expect(r.heads).toEqual([['X', 'a']])
+      expect(r.problems.map(e => e.message)).toEqual(['include target not found: ./absent.podlite'])
+    })
+
+    it('names the assignments of both files in one tail', () => {
+      write('p.podlite', '=set :lang<y>\n=include file:./absent.podlite\n\n=head1 X\n')
+      const r = after('=pod\n\n=set :id<a>\n=include file:./p.podlite\n')
+      expect(r.problems.map(e => e.message)).toEqual([
+        'include target not found: ./absent.podlite; =set assignments not applied: lang, id',
+      ])
+    })
+
     it('passes it on when an inner include after the first block fails', () => {
       write('a.podlite', '=head1 Kept\n\n=include file:./absent.podlite\n')
       const r = after('=pod\n\n=set :id<x>\n=include file:./a.podlite\n\n=head1 After\n')
@@ -433,5 +469,45 @@ describe('=set before =include in core', () => {
       const v = lintFile(main, {}).violations.filter(x => x.rule === INCLUDE_RESOLVES_RULE_ID)
       expect(v.map(x => [x.severity, x.location?.start.line])).toEqual([['warning', 4]])
     })
+  })
+})
+
+describe('problems met before a later include throws', () => {
+  const texts: Record<string, string> = { 'broken.podlite': '=head1 Broken\n' }
+  const provider = {
+    read: (file: string) => texts[path.basename(file)] ?? null,
+    list: () => [],
+  }
+  const parse = (source: string, file?: string) => {
+    if (file && file.endsWith('broken.podlite')) throw new Error('parser rejected broken')
+    return parseToAst(source)
+  }
+  const doc = '=pod\n\n=include doc:bad\n\n=include file:absent.podlite\n\n=include file:broken.podlite\n'
+
+  it('are delivered to the handlers before the exception', () => {
+    const got: string[] = []
+    expect(() =>
+      resolveIncludes(parseToAst(doc), {
+        baseDir: '/virtual',
+        parse,
+        provider,
+        onError: e => got.push(`error ${e.kind}`),
+        onWarning: w => got.push(`warning ${w.kind}`),
+      }),
+    ).toThrow('parser rejected broken')
+    expect(got).toEqual(['warning unsupported-scheme', 'error source'])
+  })
+
+  it('without an error handler, the first error is thrown and the walk stops there', () => {
+    const got: string[] = []
+    expect(() =>
+      resolveIncludes(parseToAst(doc), {
+        baseDir: '/virtual',
+        parse,
+        provider,
+        onWarning: w => got.push(`warning ${w.kind}`),
+      }),
+    ).toThrow('include target not found: absent.podlite')
+    expect(got).toEqual(['warning unsupported-scheme'])
   })
 })
