@@ -344,9 +344,26 @@ describe('runQuery and a selector as the operand of in', () => {
 
 describe('runQuery and a source written without a scheme', () => {
   it('selects from the file the source names, not from the file given', () => {
+    write('x.podlite', '=pod\n\nIn x.\n')
     const y = write('y.podlite', '=pod\n\nIn y.\n')
-    const r = runQuery({ selector: 'x.podlite | para', files: [y], format: 'podlite', failOnEmpty: false, quiet: true })
-    expect(r.matchCount).toBe(0)
+    const cwd = process.cwd()
+    process.chdir(tmpDir)
+    try {
+      const r = runQuery({
+        selector: 'x.podlite | para',
+        files: [y],
+        format: 'podlite',
+        failOnEmpty: false,
+        quiet: true,
+      })
+      expect([r.output, r.exitCode, r.problems]).toEqual([
+        'In x.',
+        0,
+        [`the selector names its own source; not read: ${y}`],
+      ])
+    } finally {
+      process.chdir(cwd)
+    }
   })
 })
 
@@ -467,5 +484,123 @@ describe('runQuery and convert read one tree', () => {
       runQuery({ selector: '*', files: [main], format: 'json', failOnEmpty: false, quiet: true }).output,
     )
     expect(queried.map((b: { name: string }) => b.name)).toEqual(converted)
+  })
+})
+
+describe('runQuery and a source it reads itself', () => {
+  const inDir = <T>(run: () => T): T => {
+    const cwd = process.cwd()
+    process.chdir(tmpDir)
+    try {
+      return run()
+    } finally {
+      process.chdir(cwd)
+    }
+  }
+  const q = (selector: string, files: string[] = [], extra: Partial<Parameters<typeof runQuery>[0]> = {}) =>
+    inDir(() => runQuery({ selector, files, format: 'podlite', failOnEmpty: false, quiet: true, ...extra }))
+
+  it('reads the file from the working directory, with no files given', () => {
+    write('x.podlite', '=pod\n\nIn x.\n')
+    const r = q('file:x.podlite | para')
+    expect([r.output, r.exitCode, r.problems]).toEqual(['In x.', 0, []])
+  })
+
+  it('reports a source that does not resolve once, and the files given are not read', () => {
+    write('a.podlite', '=pod\n\nIn a.\n')
+    const r = q('file:x.podlite | para', ['a.podlite', 'absent.podlite'])
+    expect([r.matchCount, r.exitCode, r.problems]).toEqual([
+      0,
+      1,
+      [
+        'the selector names its own source; not read: a.podlite, absent.podlite',
+        'the source does not resolve: file:x.podlite',
+      ],
+    ])
+  })
+
+  it('no longer takes a file given for a source of the same tail', () => {
+    write('sub/x.podlite', '=pod\n\nIn sub.\n')
+    expect(q('file:x.podlite | para', ['sub/x.podlite']).exitCode).toBe(1)
+  })
+
+  it('reads a path going up and an absolute path', () => {
+    write('x.podlite', '=pod\n\nIn x.\n')
+    write('sub/keep.podlite', '=pod\n')
+    const up = inDir(() => {
+      process.chdir('sub')
+      return runQuery({
+        selector: 'file:../x.podlite | para',
+        files: [],
+        format: 'podlite',
+        failOnEmpty: false,
+        quiet: true,
+      })
+    })
+    expect([up.output, q(`file:${path.join(tmpDir, 'x.podlite')} | para`).output]).toEqual(['In x.', 'In x.'])
+  })
+
+  it('expands a mask on disk, and an empty mask finds nothing without an error', () => {
+    write('notes.pod6', '=pod\n\nIn notes.\n')
+    const r = q('file:*.pod6 | para')
+    const none = q('file:*.txt | para')
+    expect([
+      r.output,
+      [none.matchCount, none.exitCode],
+      q('file:*.txt | para', [], { failOnEmpty: true }).exitCode,
+    ]).toEqual(['In notes.', [0, 0], 1])
+  })
+
+  it('reads an operand in the file each block is found in, over a mask', () => {
+    write('a.podlite', '=defn paid\nMoney in.\n\n=for para :status<paid>\nIn a.\n')
+    write('b.podlite', '=defn draft\nNot done.\n\n=for para :status<paid>\nIn b.\n')
+    expect(q('file:*.podlite | para[ :status(in defn) ]').output).toBe('=for para :status<paid>\nIn a.')
+  })
+
+  it('finds an address in any file of a mask, and reports one that no file holds once', () => {
+    write('a.podlite', '=pod\n\n=head1 Other\n')
+    write('b.podlite', '=pod\n\n=for para :id<hit>\nHit.\n')
+    const found = q('file:*.podlite#hit')
+    const lost = q('file:*.podlite#nope')
+    expect([found.output, found.exitCode, lost.exitCode, lost.problems]).toEqual([
+      '=for para :id<hit>\nHit.',
+      0,
+      1,
+      ['no block has the address nope: file:*.podlite#nope'],
+    ])
+  })
+
+  it('finds an address by the text of a heading', () => {
+    write('x.podlite', '=pod\n\n=head1 Overview\n\nText.\n')
+    expect(q('file:x.podlite#Overview').output).toBe('=head1 Overview')
+  })
+
+  it('does not take an id the parser gives a block for an address', () => {
+    const f = write('x.podlite', '=pod\n\nText.\n')
+    const [block] = JSON.parse(
+      runQuery({ selector: 'para', files: [f], format: 'json', failOnEmpty: false, quiet: true }).output,
+    )
+    expect(block.id).toBeUndefined()
+    expect(q('file:x.podlite#Text.').exitCode).toBe(1)
+  })
+
+  it('gives the file and the text of a block its source includes', () => {
+    write('part.podlite', '=pod\n\n=head1 From part\n')
+    write('x.podlite', '=pod\n\n=head1 Own\n\n=include file:./part.podlite\n')
+    const json = JSON.parse(q('file:x.podlite | head1', [], { format: 'json' }).output)
+    expect(json.map((b: { file: string }) => path.basename(b.file))).toEqual(['x.podlite', 'part.podlite'])
+    expect(q('file:x.podlite | head1').output).toBe('=head1 Own\n\n=head1 From part')
+  })
+
+  it('reports a doc: source no file answers once, and finds one on stdin', () => {
+    const a = write('a.podlite', '=pod\n\nIn a.\n')
+    const b = write('b.podlite', '=pod\n\nIn b.\n')
+    const lost = q('doc:Nope | para', [a, b])
+    const found = q('doc:Pipe | head1', [a], { stdinContent: '=NAME Pipe\n\n=head1 In pipe\n' })
+    expect([lost.exitCode, lost.problems, found.output]).toEqual([
+      1,
+      ['the source does not resolve: doc:Nope'],
+      '=head1 In pipe',
+    ])
   })
 })

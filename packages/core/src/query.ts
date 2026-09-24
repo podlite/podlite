@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {
+  getDocIDs,
   podlitePluggable,
   parseSelector,
   runSelector,
@@ -10,7 +11,7 @@ import {
   SelectorError,
   PodNode,
 } from '@podlite/schema'
-import { resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
+import { diskProvider, expandMask, hasMask, resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
 
@@ -108,11 +109,35 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
 
   const sources: Source[] = []
-  if (opts.stdinContent !== undefined) {
-    sources.push({ file: '<stdin>', text: opts.stdinContent, fromStdin: true })
-  }
-  for (const f of opts.files) {
-    sources.push({ file: f, text: fs.readFileSync(f, 'utf-8') })
+  const problems: string[] = []
+  const { scheme, document, anchor } = parsed
+  const shown = `${scheme}:${document}${anchor ? `#${anchor}` : ''}`
+  // a selector that names a file reads it, relative to where it is written: the
+  // command line; the files and the input given are not read
+  const namesFile = scheme === 'file' && Boolean(document)
+  if (namesFile && document) {
+    const masked = hasMask(document)
+    const written = masked ? expandMask(document, process.cwd(), diskProvider) : [document]
+    for (const name of written) {
+      const text = diskProvider.read(path.resolve(name))
+      if (text !== null) sources.push({ file: name, text })
+    }
+    const given = [...(opts.stdinContent !== undefined ? ['<stdin>'] : []), ...opts.files]
+    if (given.length > 0) problems.push(`the selector names its own source; not read: ${given.join(', ')}`)
+    if (sources.length === 0) {
+      if (masked && !anchor) {
+        return { output: '', matchCount: 0, exitCode: opts.failOnEmpty ? 1 : 0, problems }
+      }
+      problems.push(masked ? `no block has the address ${anchor}: ${shown}` : `the source does not resolve: ${shown}`)
+      return { output: '', matchCount: 0, exitCode: 1, problems }
+    }
+  } else {
+    if (opts.stdinContent !== undefined) {
+      sources.push({ file: '<stdin>', text: opts.stdinContent, fromStdin: true })
+    }
+    for (const f of opts.files) {
+      sources.push({ file: f, text: fs.readFileSync(f, 'utf-8') })
+    }
   }
 
   if (sources.length === 0) {
@@ -121,8 +146,11 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
 
   // Per-source invocation preserves file context for source-slicing in podlite output
   const matches: Match[] = []
-  const problems: string[] = []
   let failed = false
+  // the source and its address are those of the query: they are missing only if
+  // no document answers
+  let answered = false
+  let addressed = false
   const onError = (problem: IncludeProblem): void => {
     failed = true
     problems.push(describe(problem))
@@ -175,15 +203,20 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       if (section) sections.set(to, section)
     })
     const docs: SelectorDoc[] = [{ file: src.file, node: contentOf(node) }]
+    if (scheme === 'doc' && document && !getDocIDs(docs[0]).includes(document)) continue
+    answered = true
     let result: ReturnType<typeof runSelector>
     try {
       result = runSelector(opts.selector, docs, { readFile })
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
+      // with an address the selection is not applied, so no operand is read
+      if (anchor && e.kind === 'address') continue
       failed = true
       problems.push(`${src.file}: ${e.message}`)
       continue
     }
+    if (anchor) addressed = true
     for (const item of result) {
       // what the tree adds around the written blocks is not counted as found
       if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
@@ -195,6 +228,14 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
         })
       }
     }
+  }
+
+  if (scheme === 'doc' && !answered) {
+    failed = true
+    problems.push(`the source does not resolve: ${shown}`)
+  } else if (anchor && answered && !addressed) {
+    failed = true
+    problems.push(`no block has the address ${anchor}: ${shown}`)
   }
 
   const output = formatBlocks(opts.format, matches, sections)

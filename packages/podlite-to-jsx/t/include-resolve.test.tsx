@@ -176,6 +176,25 @@ Second term
     expect(root.innerHTML.match(/<h1/g)).toHaveLength(1)
   })
 
+  it('renders the page around an address that does not resolve, and finds one by a heading', () => {
+    const includeReader = (path: string) =>
+      path === 'part.podlite' ? '=begin pod\n=head1 Overview\n\nText.\n=end pod\n' : null
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    render(
+      <Podlite includeReader={includeReader}>
+        {`=begin pod
+=para Before
+=include file:part.podlite#nope
+=include file:part.podlite#Overview
+=end pod
+`}
+      </Podlite>,
+    )
+    warn.mockRestore()
+    expect(root.innerHTML).toMatch(/Before/)
+    expect(root.innerHTML.match(/<h1/g)).toHaveLength(1)
+  })
+
   it('selector with no matches: renders as nothing', () => {
     const includeReader = (path: string) => {
       if (path === 'noresults.podlite') {

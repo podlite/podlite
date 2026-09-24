@@ -65,7 +65,7 @@ const isWarning = (problem: IncludeProblem): boolean =>
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
 
-const hasMask = (target: string): boolean => /[*?]/.test(target)
+export const hasMask = (target: string): boolean => /[*?]/.test(target)
 
 const reachesSubdirs = (target: string): boolean => target.includes('**')
 
@@ -101,7 +101,7 @@ const listDir = (dir: string, deep: boolean, depth = 0): string[] => {
 // the selector matches them back. Matching runs before the file is read: the
 // directory may hold anything, and a mask that does not name it must not send
 // it through the parser.
-const expandMask = (target: string, baseDir: string, provider: SourceProvider): string[] => {
+export const expandMask = (target: string, baseDir: string, provider: SourceProvider): string[] => {
   const prefix = fixedPrefix(target)
   return provider
     .list(path.resolve(baseDir, prefix), reachesSubdirs(target))

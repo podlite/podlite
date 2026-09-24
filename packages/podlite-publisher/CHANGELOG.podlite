@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=include> whose source or address does not resolve is left in place with one warning; it gave two. An address is found by the text of a heading as well as by C<:id>
+
 =item C<=include> places a found block once: a block inside another found block comes with it and is not placed again
 
 =item an include whose selector has an operand of C<in> that does not resolve is left in place with a warning, rather than stopping the run

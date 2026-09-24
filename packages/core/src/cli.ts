@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { toMarkdown, toHtml } from '@podlite/schema'
+import { parseSelector, toMarkdown, toHtml } from '@podlite/schema'
 import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './lint'
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
@@ -272,6 +272,18 @@ function runQueryCommand(args: Args): void {
   const selector = args.files[0]
   const positional = args.files.slice(1)
 
+  const format = (args.to || 'podlite') as QueryFormat
+  if (!QUERY_FORMATS.includes(format)) {
+    console.error(`podlite query: unknown --to format "${format}". Supported: ${QUERY_FORMATS.join(', ')}`)
+    process.exit(1)
+  }
+
+  // a selector that names a file reads that file; what else is given is not read
+  if (parseSelector(selector)?.scheme === 'file') {
+    reportQuery(args, { selector, files: positional, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet })
+    return
+  }
+
   // '-' is explicit stdin marker. Piped input (stdin not a TTY) is also treated as input.
   const stdinIsPiped = !process.stdin.isTTY
   const hasDashMarker = positional.includes('-')
@@ -287,12 +299,6 @@ function runQueryCommand(args: Args): void {
     process.exit(1)
   }
 
-  const format = (args.to || 'podlite') as QueryFormat
-  if (!QUERY_FORMATS.includes(format)) {
-    console.error(`podlite query: unknown --to format "${format}". Supported: ${QUERY_FORMATS.join(', ')}`)
-    process.exit(1)
-  }
-
   for (const f of files) {
     if (!fs.existsSync(f)) {
       console.error(`File not found: ${f}`)
@@ -300,15 +306,12 @@ function runQueryCommand(args: Args): void {
     }
   }
 
+  reportQuery(args, { selector, files, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet, stdinContent })
+}
+
+function reportQuery(args: Args, options: Parameters<typeof runQuery>[0]): void {
   try {
-    const result = runQuery({
-      selector,
-      files,
-      format,
-      failOnEmpty: args.failOnEmpty,
-      quiet: args.quiet,
-      stdinContent,
-    })
+    const result = runQuery(options)
     if (args.output) {
       fs.writeFileSync(args.output, result.output)
     } else if (result.output) {

@@ -312,3 +312,24 @@ it('include-resolve-plugin: places a heading inside a found pod once', () => {
   const placed = res.find(r => r.file === 'src/main.podlite')
   expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Main', 'Inside'])
 })
+
+it('include-resolve-plugin: a source or address that does not resolve is left in place with one warning', () => {
+  const main = '=head1 Main\n\n=include doc:Nope | para\n\n=include doc:File1#nope\n'
+  const state = [processFile('src/file1.podlite', file1), processFile('src/main.podlite', main)]
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
+  const said = warn.mock.calls.map(c => String(c[0])).filter(m => !m.startsWith('[include] start'))
+  warn.mockRestore()
+  expect(said).toHaveLength(2)
+  expect(said.every(m => m.includes('cannot be read'))).toBe(true)
+  expect(res.find(r => r.file === 'src/main.podlite')).toBeDefined()
+})
+
+it('include-resolve-plugin: finds an address by the text of a heading', () => {
+  const part = '=head1 Overview\n\nText.\n'
+  const main = '=include file:src/part.podlite#Overview\n'
+  const state = [processFile('src/part.podlite', part), processFile('src/main.podlite', main)]
+  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
+  const placed = res.find(r => r.file === 'src/main.podlite')
+  expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Overview'])
+})

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_query> reports a source or an address in the selector that does not resolve as an error of the tool; it returned no matches
+
 =item the query tool selects from the tree C<convert> reads, so a Markdown section is read into blocks, and gives a found block as C<podlite query> does. It is given text, not a file, so an C<=include> in it is not resolved
 
 =head1 0.0.18

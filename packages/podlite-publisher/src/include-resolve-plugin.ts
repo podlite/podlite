@@ -4,14 +4,15 @@ import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { outermost, SelectorError } from '@podlite/schema'
 import { runSelector } from './shared'
 
-// A selector whose operand does not resolve brings nothing in, and says so.
+// A selector whose source, address or operand does not resolve brings nothing
+// in, and says so once.
 const select = (selector: string, recs: publishRecord[]) => {
   try {
     return runSelector(selector, recs)
   } catch (e) {
     if (!(e instanceof SelectorError)) throw e
     console.warn(`[plugin: resolve ] selector ${selector} cannot be read: ${e.message}`)
-    return []
+    return null
   }
 }
 const plugin = (): PodliteWebPlugin => {
@@ -27,7 +28,9 @@ const plugin = (): PodliteWebPlugin => {
         console.warn(`[include] start resolve selector: ${selector}`)
         if (selector) {
           // try to resolve selector
-          const [block] = select(selector, recs)
+          const result = select(selector, recs)
+          if (!result) return node
+          const [block] = result
           if (typeof block === 'object' && !('file' in block)) {
             const updated = { content: block }
             return { ...node, ...updated }
@@ -44,6 +47,7 @@ const plugin = (): PodliteWebPlugin => {
         console.warn(`[include] start resolve selector: ${selector}`)
         if (selector) {
           const result = select(selector, recs)
+          if (!result) return node
           const blocks: PodNode[] = []
           for (const item of result) {
             if (typeof item === 'object' && item !== null && !('file' in item)) {

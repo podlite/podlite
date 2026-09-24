@@ -128,3 +128,15 @@ const x = 1
     expect(names).toEqual(['pod', 'markdown', 'head'])
   })
 })
+
+describe('querySource with a source in the selector', () => {
+  it('throws when the source does not resolve, which the tool reports as an error', () => {
+    expect(() => querySource('file:x.podlite | para', '=pod\n\nText.\n', 'podlite')).toThrow(
+      /the source does not resolve: file:x.podlite/,
+    )
+  })
+
+  it('finds the text given under the name the tool gives it', () => {
+    expect(querySource('file:input.podlite | para', '=pod\n\nText.\n', 'podlite').matchCount).toBe(1)
+  })
+})
