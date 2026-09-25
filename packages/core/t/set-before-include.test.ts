@@ -529,7 +529,24 @@ describe('problems met before a later include throws', () => {
       thrown = e
     }
     expect(thrown.message).toBe('include target not found: absent.podlite; =set assignments not applied: id')
-    expect(thrown.stack).toContain(thrown.message)
+    expect(thrown.stack.split('\n')[0]).toBe(`Error: ${thrown.message}`)
+  })
+
+  it('without an error handler, keeps a file name holding a replacement pattern in the stack as written', () => {
+    const files: Record<string, string> = { 'a.podlite': '=include file:x$&y.podlite\n' }
+    let thrown: any
+    try {
+      resolveIncludes(parseToAst('=pod\n\n=set :id<outer>\n=include file:a.podlite\n'), {
+        baseDir: '/virtual',
+        parse: parseToAst,
+        provider: { read: file => files[path.basename(file)] ?? null, list: () => [] },
+      })
+    } catch (e) {
+      thrown = e
+      void thrown.stack
+    }
+    expect(thrown.message).toBe('include target not found: x$&y.podlite; =set assignments not applied: id')
+    expect(thrown.stack.split('\n')[0]).toBe(`Error: ${thrown.message}`)
   })
 
   it('passes on unchanged whatever the parser throws', () => {

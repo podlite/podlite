@@ -357,9 +357,11 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           if (held && set.length && !reached[at]) {
             const error = e as Error
             const before = error.message
+            // the stack is made from the message when first read
+            const stack = error.stack
             lose([held], set)
             error.message = held.problem.message
-            if (typeof error.stack === 'string') error.stack = error.stack.replace(before, error.message)
+            if (typeof stack === 'string') error.stack = stack.replace(before, () => error.message)
           }
           throw e
         } finally {
