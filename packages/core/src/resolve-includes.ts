@@ -192,10 +192,23 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   // thrown at once, as it was.
   type Held = { problem: IncludeProblem; shown: boolean }
   const held: Held[] = []
+  // the problem an error thrown with no handler was made from
+  const thrownFrom = new WeakMap<object, Held>()
+  // For each include being resolved, whether a block of its content was met
+  // before the walk went on: an error thrown past it names the assignments of
+  // its including file only when none was, since otherwise they may have had a
+  // target. An include by an address is taken as met: the address names the
+  // block whatever stands before it.
+  const reached: boolean[] = []
+  const markReached = (): void => {
+    for (let i = 0; i < reached.length; i++) reached[i] = true
+  }
   const hold = (entries: Held[]): void => {
     for (const entry of entries) {
       if (entry.shown && !isWarning(entry.problem) && !opts.onError) {
-        throw Object.assign(new Error(entry.problem.message), { held: entry })
+        const error = new Error(entry.problem.message)
+        thrownFrom.set(error, entry)
+        throw error
       }
     }
     held.push(...entries)
@@ -334,17 +347,23 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         pending = []
         const here = [...chain, { file, location: n.location }]
         let resolved: ReturnType<typeof resolveInclude>
+        const at = reached.length
         try {
           resolved = resolveInclude(n, baseDir, stack, here, file, home)
         } catch (e) {
           // the walk stops at an error with no handler; the assignments lost
           // on the way out are named in it as well
-          const held = (e as { held?: Held }).held
-          if (held && set.length) {
+          const held = e && typeof e === 'object' ? thrownFrom.get(e) : undefined
+          if (held && set.length && !reached[at]) {
+            const error = e as Error
+            const before = error.message
             lose([held], set)
-            ;(e as Error).message = held.problem.message
+            error.message = held.problem.message
+            if (typeof error.stack === 'string') error.stack = error.stack.replace(before, error.message)
           }
           throw e
+        } finally {
+          reached.length = at
         }
         const { nodes, failure, inner, roots, selector } = resolved
         if (failure) {
@@ -429,6 +448,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     home: any,
   ): { nodes: any[]; failure?: IncludeProblem[]; inner: Held[][]; roots?: any[]; selector: string } => {
     const mark = failures.length
+    reached.push(false)
     // the walked files a selection ran over, in order
     let roots: any[] | undefined
     const done = (nodes: any[], failure?: IncludeProblem[]) => ({
@@ -440,6 +460,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     })
     const selector = getTextContentFromNode(node.content)?.toString().trim() ?? ''
     const parsed = selector ? parseSelector(selector) : undefined
+    if (parsed?.anchor) reached[reached.length - 1] = true
     // The directive stays in the tree as before when its selector is not read;
     // what it would have brought in is missing, and a reader of the tree cannot
     // tell that on its own.
@@ -599,6 +620,9 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     if (!node || typeof node !== 'object') return node
     if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file, home)
     if (isIncludeBlock(node)) return walkList([node], baseDir, stack, chain, file, home)
+    if (node.type === 'block' && node.name !== 'root' && node.name !== '_folded_section' && !isSetTransparent(node)) {
+      markReached()
+    }
 
     if (Array.isArray(node.content)) {
       const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home) }

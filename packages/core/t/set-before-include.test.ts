@@ -498,6 +498,59 @@ describe('problems met before a later include throws', () => {
     expect(got).toEqual(['warning unsupported-scheme', 'error source'])
   })
 
+  it('without an error handler, does not name an assignment a block before the failure could have taken', () => {
+    const files: Record<string, string> = { 'a.podlite': '=para first\n\n=include file:absent.podlite\n' }
+    const run = () =>
+      resolveIncludes(parseToAst('=pod\n\n=set :id<outer>\n=include file:a.podlite\n'), {
+        baseDir: '/virtual',
+        parse: parseToAst,
+        provider: { read: file => files[path.basename(file)] ?? null, list: () => [] },
+      })
+    let thrown: any
+    try {
+      run()
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown.message).toBe('include target not found: absent.podlite')
+    expect(Object.keys(thrown)).toEqual([])
+  })
+
+  it('without an error handler, keeps the stack in step with the named assignments', () => {
+    const files: Record<string, string> = { 'a.podlite': '=include file:absent.podlite\n' }
+    let thrown: any
+    try {
+      resolveIncludes(parseToAst('=pod\n\n=set :id<outer>\n=include file:a.podlite\n'), {
+        baseDir: '/virtual',
+        parse: parseToAst,
+        provider: { read: file => files[path.basename(file)] ?? null, list: () => [] },
+      })
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown.message).toBe('include target not found: absent.podlite; =set assignments not applied: id')
+    expect(thrown.stack).toContain(thrown.message)
+  })
+
+  it('passes on unchanged whatever the parser throws', () => {
+    const files: Record<string, string> = { 'a.podlite': '=head1 A\n' }
+    const run = () =>
+      resolveIncludes(parseToAst('=pod\n\n=set :id<outer>\n=include file:a.podlite\n'), {
+        baseDir: '/virtual',
+        parse: () => {
+          throw null
+        },
+        provider: { read: file => files[path.basename(file)] ?? null, list: () => [] },
+      })
+    let thrown: unknown = 'nothing'
+    try {
+      run()
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).toBeNull()
+  })
+
   it('without an error handler, names in the thrown error what the including files lost', () => {
     const files: Record<string, string> = { 'a.podlite': '=set :lang<inner>\n=include file:absent.podlite\n' }
     expect(() =>
