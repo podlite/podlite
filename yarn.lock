@@ -2476,6 +2476,7 @@ __metadata:
     "@podlite/diagram": "workspace:^"
     "@podlite/highlight": "workspace:*"
     "@podlite/schema": "workspace:*"
+    "@podlite/toc": "workspace:*"
     entities: ^4.5.0
     podlite: "workspace:*"
     react-is: ^18.0.0

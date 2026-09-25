@@ -27,10 +27,6 @@ import {
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
 import {
-  parseSelector,
-  runSelector,
-  outermost,
-  SelectorError,
   getExplicitNodeId,
   toFragment,
   getTextContentFromNode,
@@ -38,13 +34,13 @@ import {
   collectText,
   isCovered,
   writtenValue,
-  applySetToFirst,
   ConfigItem,
 } from '@podlite/schema'
 import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 export type { LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
 import { applyFoldedSections, testCaption, testFoldedByAuthor, tocTitleText } from '@podlite/schema'
 import { groupTests } from './test-groups'
+import { assembleIncludes } from './assemble-includes'
 import { TestBlock } from './test-block'
 import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
@@ -80,7 +76,14 @@ const tocAnchorOf = (node: any, ctx: any): string | undefined => {
   const written = getExplicitNodeId(node, ctx)
   return written === null ? undefined : (ctx?.__anchors?.shape || toFragment)(written)
 }
-const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHelper => {
+const helperMakeReact = ({
+  wrapElement,
+  stackOf,
+}: {
+  wrapElement?: WrapElement
+  // the files an included node came through, for a wrapper that asks
+  stackOf?: (node: object) => string[] | undefined
+}): JSXHelper => {
   let i_key_i = 0
   let mapByType = {}
   const getIdForNode = ({ type = 'notype', name = 'noname' }) => {
@@ -117,7 +120,8 @@ const helperMakeReact = ({ wrapElement }: { wrapElement?: WrapElement }): JSXHel
       // can still be wrapped for line tracking.
       const skipName = (node as { name?: string }).name
       if (skipName === 'row' || skipName === 'cell') return result
-      return wrapElement(node, result, ctx)
+      const stack = stackOf?.(node)
+      return wrapElement(node, result, stack ? { ...ctx, includeStack: stack } : ctx)
     }
     return result
   }
@@ -230,7 +234,6 @@ const previewOf = (node, ctx, index: Map<string, LinkPreviewTarget>): LinkPrevie
   return index.get(href.slice(1))
 }
 
-const isGlobPattern = (s: string): boolean => /[*?[]/.test(s)
 
 // the words a test is shown by are hidden with the content they stand beside
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
@@ -544,67 +547,22 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         <kbd>{children}</kbd>
       </pre>
     )),
-    // Resolve =include via injected ctx.includeReader. Without a reader the
-    // directive renders as nothing — preserves the previous emptyContent
-    // behaviour for hosts that don't supply file access (e.g. browser
-    // playground without virtual FS). Glob patterns in the source path
-    // (e.g. `file:**/*.podlite`) require an `expandPaths` callback that
-    // resolves the pattern to a concrete list of file paths; without it
-    // the path is read literally and globs go unresolved.
-    // The =set assignments written before the include go to the first block it
-    // brings. When it fails they are not applied, and when it brings no block
-    // they stay without a target: carrying them on to the next block is not
-    // done here.
+    // Includes are read before rendering (assemble-includes.ts). Without a
+    // reader the directive renders as nothing, as it did before, for hosts that
+    // supply no file access.
     include: (writer, processor) => (node, ctx, interator) => {
+      // with a reader the document was assembled before rendering, and an
+      // include still here is one that did not resolve: it was reported then
+      if (opts.includeReader && opts.parser) return null
       const set: ConfigItem[] = (node as any).set || []
-      const notApplied = set.length ? `; =set assignments not applied: ${set.map(c => c.name).join(', ')}` : ''
-      const fail = (why: string) => {
-        if (set.length) console.warn(`[to-jsx] ${why}${notApplied}`)
-        return null
+      if (set.length) {
+        console.warn(
+          `[to-jsx] include is not read without a file reader; =set assignments not applied: ${set
+            .map(c => c.name)
+            .join(', ')}`,
+        )
       }
-      if (!opts.includeReader || !opts.parser) return fail('include is not read without a file reader')
-      const selector = getTextContentFromNode(node.content as any)
-        ?.toString()
-        .trim()
-      if (!selector) return fail('include selector cannot be read: (empty)')
-      const parsed = parseSelector(selector)
-      if (!parsed || parsed.scheme !== 'file' || !parsed.document) return fail(`include is not resolved: ${selector}`)
-
-      // Resolve target paths: glob is expanded via the host callback (when
-      // present); a literal path is used directly. Hosts without
-      // `expandPaths` get one-file behaviour for everything.
-      const stack: string[] = (ctx.includeStack as string[]) ?? []
-      const paths =
-        isGlobPattern(parsed.document) && opts.expandPaths
-          ? opts.expandPaths(parsed.document, opts.includeBaseDir)
-          : [parsed.document]
-
-      const docs: { file: string; node: any }[] = []
-      for (const p of paths) {
-        if (stack.includes(p)) continue
-        const source = opts.includeReader(p, opts.includeBaseDir)
-        if (source == null) continue
-        const subAst = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
-        docs.push({ file: p, node: subAst })
-      }
-      if (docs.length === 0) return fail(`include is not resolved: ${selector}`)
-
-      let blocks: PodNode[]
-      try {
-        blocks = runSelector(selector, docs) as PodNode[]
-      } catch (e) {
-        if (!(e instanceof SelectorError)) throw e
-        console.warn(`[to-jsx] include selector cannot be read: ${e.message}${notApplied}`)
-        return null
-      }
-      const found = outermost(blocks || [])
-      const applied = set.length ? applySetToFirst(found, set, { mode: 'include' }) : { nodes: found, outcome: 'none' }
-      if (set.length && applied.outcome === 'none') {
-        console.warn(`[to-jsx] =set before =include has no target block: ${set.map(c => c.name).join(', ')}`)
-      }
-      if (applied.nodes.length === 0) return null
-
-      return interator(groupTests(applied.nodes), { ...ctx, includeStack: [...stack, ...paths] })
+      return null
     },
 
     // Directives
@@ -1121,11 +1079,25 @@ function podlite(
     const treeAfterParsed = podliteParser.parse(children || file, parseOptions)
     return podliteParser.toAst(treeAfterParsed)
   })(tree)
-  const ast = groupTests(applyFoldedSections(astRaw))
+  const folded = applyFoldedSections(astRaw)
+  // included blocks take the place of the directive before anything reads the tree
+  const assembly = includeReader
+    ? assembleIncludes(folded, { includeReader, includeBaseDir, expandPaths, parser: podliteParser })
+    : undefined
+  const stacks = assembly?.stacks
+  const ast = groupTests(
+    assembly ? assembly.tree : folded,
+    stacks
+      ? (from, to) => {
+          const stack = stacks.get(from)
+          if (stack && !stacks.has(to)) stacks.set(to, stack)
+        }
+      : undefined,
+  )
 
   // const   ast = parse( children || content )
   let i_key_i = 10000
-  const makeComponent = helperMakeReact({ wrapElement })
+  const makeComponent = helperMakeReact({ wrapElement, stackOf: stacks ? node => stacks.get(node) : undefined })
 
   const jsxPlugins: { [name: string]: Plugin['toJSX'] } = toAnyRules('toJSX', podliteParser.getPlugins())
   // initialize each plugin

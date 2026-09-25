@@ -56,8 +56,7 @@ describe('=set before =include in to-jsx', () => {
     expect(said.some(s => /not resolved: file:absent\.podlite; =set assignments not applied: id/.test(s))).toBe(true)
   })
 
-  // the norm carries it on to the next block; to-jsx does not yet (T687)
-  test.failing('passes it on to the next block when the include brings none', () => {
+  it('passes it on to the next block when the include brings none', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const html = render('=pod\n\n=set :id<chosen>\n=include file:p.podlite | hed1\n\n=head1 After\n')
     warn.mockRestore()

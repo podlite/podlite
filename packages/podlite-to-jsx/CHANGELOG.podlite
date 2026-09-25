@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item with an include reader, the document is assembled before it is rendered: the blocks an include finds take its place, so a table of contents lists them, a link reaches them by their address, and a test groups with the included block above it. An included file takes its own includes first, and its own table of contents lists what they brought. A C<=set> before an include that brings no block reaches the next block; an include that fails, or stands in the way, loses the assignment and says so. A heading brought in under a masked block is hidden in the table of contents as in the text. A wrapper is told the files an included block came through in C<ctx.includeStack>, as before. A table of contents written in an included file still lists only that file
+
 =item a C<=set> written before C<=include> reaches the first block the include brings, also when that block comes from an include inside the included file; the block after the include received it. When the include fails, the warning names the assignment it lost. When the include brings no block, the assignment is not carried on to the next block yet, and a warning says it has no target
 
 =item an include by a selector renders a found block once: a block inside another found block comes with it and is not rendered again

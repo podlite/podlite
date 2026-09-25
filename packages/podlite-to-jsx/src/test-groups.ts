@@ -43,15 +43,20 @@ const NOT_DESCENDED = new Set([
   'formula',
 ])
 
-const descend = (node: any): any => {
+// told of each node made in place of another, so a table kept on nodes follows
+type Carry = (from: object, to: object) => void
+
+const descend = (node: any, carry?: Carry): any => {
   if (!node || typeof node !== 'object' || !Array.isArray(node.content)) return node
   if (node.name === '_test_group' || NOT_DESCENDED.has(node.name)) return node
   if (node.type !== 'block' && node.type !== 'list') return node
-  return { ...node, content: groupTests(node.content) }
+  const copy = { ...node, content: groupTests(node.content, carry) }
+  carry?.(node, copy)
+  return copy
 }
 
-export const groupTests = (content: any): any => {
-  if (!Array.isArray(content)) return descend(content)
+export const groupTests = (content: any, carry?: Carry): any => {
+  if (!Array.isArray(content)) return descend(content, carry)
   const out: any[] = []
   let i = 0
   while (i < content.length) {
@@ -69,12 +74,14 @@ export const groupTests = (content: any): any => {
         } else break
       }
       if (members.length) {
-        out.push({ type: 'block', name: '_test_group', content: [descend(node), ...members] }, ...pending)
+        const group = { type: 'block', name: '_test_group', content: [descend(node, carry), ...members] }
+        carry?.(node, group)
+        out.push(group, ...pending)
         i = j
         continue
       }
     }
-    out.push(descend(node))
+    out.push(descend(node, carry))
     i++
   }
   return out
