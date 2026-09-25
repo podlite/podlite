@@ -133,14 +133,21 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     if (!selector) return { failure: 'include selector cannot be read: (empty)' }
     const parsed = parseSelector(selector)
     if (!parsed || parsed.scheme !== 'file' || !parsed.document) return { failure: `include is not resolved: ${selector}` }
-    const paths =
-      isGlobPattern(parsed.document) && opts.expandPaths
-        ? opts.expandPaths(parsed.document, opts.includeBaseDir)
-        : [parsed.document]
+    let paths: string[]
+    try {
+      paths =
+        isGlobPattern(parsed.document) && opts.expandPaths
+          ? opts.expandPaths(parsed.document, opts.includeBaseDir)
+          : [parsed.document]
+    } catch (e) {
+      return { failure: `include mask cannot be expanded: ${parsed.document}: ${(e as Error)?.message ?? e}` }
+    }
     const branch = [...stack, ...paths]
     const docs: { file: string; node: any }[] = []
     // a reader or parser that throws is a file that could not be had: it was
-    // caught while rendering before, and one include must not stop the page
+    // caught while rendering before, and one include must not stop the page; of
+    // a mask, the files that were read stand and the other is reported, as in
+    // convert
     let broken: string | undefined
     for (const p of paths) {
       if (stack.includes(p)) continue

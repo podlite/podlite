@@ -74,9 +74,8 @@ export const groupTests = (content: any, carry?: Carry): any => {
         } else break
       }
       if (members.length) {
-        const group = { type: 'block', name: '_test_group', content: [descend(node, carry), ...members] }
-        carry?.(node, group)
-        out.push(group, ...pending)
+        // a group is made here, not taken from a file: it keeps no table entry
+        out.push({ type: 'block', name: '_test_group', content: [descend(node, carry), ...members] }, ...pending)
         i = j
         continue
       }

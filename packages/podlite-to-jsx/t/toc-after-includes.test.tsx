@@ -154,6 +154,24 @@ describe('a table of contents over a document with includes', () => {
     expect(said.some(s => s.includes('include target cannot be read: p.podlite: reader down'))).toBe(true)
   })
 
+  it('renders the page when a mask cannot be expanded, and reports the include', () => {
+    const warn = quiet()
+    const html = renderToStaticMarkup(
+      <Podlite
+        includeReader={readerOf(part)}
+        expandPaths={() => {
+          throw new Error('glob down')
+        }}
+      >
+        {'=pod\n\n=para Before\n\n=include file:*.podlite\n\n=para After\n'}
+      </Podlite>,
+    )
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    expect(html).toContain('After')
+    expect(said.some(s => s.includes('include mask cannot be expanded: *.podlite: glob down'))).toBe(true)
+  })
+
   it('renders nothing for an include without a reader, as before', () => {
     const html = renderToStaticMarkup(<Podlite>{'=pod\n\n=para Before\n\n=include file:p.podlite\n'}</Podlite>)
     expect(html).toContain('Before')
@@ -222,6 +240,15 @@ describe('what a wrapper is told about an included block', () => {
       ['B', ['a.podlite', 'b.podlite']],
       ['C', ['a.podlite', 'b.podlite', 'c.podlite']],
     ])
+  })
+
+  it('tells a group of tests nothing of its own', () => {
+    const { groupTests } = require('../src/test-groups')
+    const owner = { type: 'block', name: 'para', content: ['A rule.'] }
+    const test = { type: 'block', name: 'test', content: [] }
+    const carried: string[] = []
+    groupTests([owner, test], (_from: any, to: any) => carried.push(to.name))
+    expect(carried).not.toContain('_test_group')
   })
 
   it('does not change the tree it is given', () => {
