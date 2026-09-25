@@ -498,6 +498,17 @@ describe('problems met before a later include throws', () => {
     expect(got).toEqual(['warning unsupported-scheme', 'error source'])
   })
 
+  it('without an error handler, names in the thrown error what the including files lost', () => {
+    const files: Record<string, string> = { 'a.podlite': '=set :lang<inner>\n=include file:absent.podlite\n' }
+    expect(() =>
+      resolveIncludes(parseToAst('=pod\n\n=set :id<outer>\n=include file:a.podlite\n'), {
+        baseDir: '/virtual',
+        parse: parseToAst,
+        provider: { read: file => files[path.basename(file)] ?? null, list: () => [] },
+      }),
+    ).toThrow('include target not found: absent.podlite; =set assignments not applied: lang, id')
+  })
+
   it('without an error handler, the first error is thrown and the walk stops there', () => {
     const got: string[] = []
     expect(() =>

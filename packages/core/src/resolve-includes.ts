@@ -194,7 +194,9 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   const held: Held[] = []
   const hold = (entries: Held[]): void => {
     for (const entry of entries) {
-      if (entry.shown && !isWarning(entry.problem) && !opts.onError) throw new Error(entry.problem.message)
+      if (entry.shown && !isWarning(entry.problem) && !opts.onError) {
+        throw Object.assign(new Error(entry.problem.message), { held: entry })
+      }
     }
     held.push(...entries)
   }
@@ -331,7 +333,20 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         const set = mergeSet(pending, n.set)
         pending = []
         const here = [...chain, { file, location: n.location }]
-        const { nodes, failure, inner, roots, selector } = resolveInclude(n, baseDir, stack, here, file, home)
+        let resolved: ReturnType<typeof resolveInclude>
+        try {
+          resolved = resolveInclude(n, baseDir, stack, here, file, home)
+        } catch (e) {
+          // the walk stops at an error with no handler; the assignments lost
+          // on the way out are named in it as well
+          const held = (e as { held?: Held }).held
+          if (held && set.length) {
+            lose([held], set)
+            ;(e as Error).message = held.problem.message
+          }
+          throw e
+        }
+        const { nodes, failure, inner, roots, selector } = resolved
         if (failure) {
           const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
           if (set.length) lose(entries, set)
