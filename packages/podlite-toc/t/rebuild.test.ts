@@ -101,6 +101,17 @@ describe('a table of contents built again over a tree that gained blocks', () =>
     expect(JSON.stringify(rebuilt)).toMatch(/"value":"Secret[^"]*","guarded":true/)
   })
 
+  it('replaces only the table, keeping what else the block holds', () => {
+    const tree = parse('=toc head1\n\n=head1 Own\n')
+    const directive = findBlock(tree, 'toc')
+    const extra = { type: 'para', content: ['kept'] }
+    const held = { ...directive, content: [...directive.content, extra] }
+    const grown = withAdded({ ...tree, content: [held, ...tree.content.slice(1)] }, 'Added')
+    const rebuilt = rebuildToc(held, grown)
+    expect(rebuilt.content[1]).toBe(extra)
+    expect(entries(tocOf(rebuilt))).toEqual(['Own', 'Added'])
+  })
+
   it('does not list the table being built', () => {
     const tree = withAdded(parse('=toc toc, head1\n\n=head1 Own\n'), 'Added')
     const rebuilt = tocOf(rebuildToc(findBlock(tree, 'toc'), tree))

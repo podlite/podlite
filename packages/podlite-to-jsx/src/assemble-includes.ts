@@ -139,14 +139,24 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
         : [parsed.document]
     const branch = [...stack, ...paths]
     const docs: { file: string; node: any }[] = []
+    // a reader or parser that throws is a file that could not be had: it was
+    // caught while rendering before, and one include must not stop the page
+    let broken: string | undefined
     for (const p of paths) {
       if (stack.includes(p)) continue
-      const source = opts.includeReader(p, opts.includeBaseDir)
-      if (source == null) continue
-      const own = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
+      let own: any
+      try {
+        const source = opts.includeReader(p, opts.includeBaseDir)
+        if (source == null) continue
+        own = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
+      } catch (e) {
+        broken = `include target cannot be read: ${p}: ${(e as Error)?.message ?? e}`
+        continue
+      }
       docs.push({ file: p, node: assembleFile(own, branch) })
     }
-    if (docs.length === 0) return { failure: `include is not resolved: ${selector}` }
+    if (docs.length === 0) return { failure: broken ?? `include is not resolved: ${selector}` }
+    if (broken) warn(broken)
     let found: PodNode[]
     try {
       found = outermost((runSelector(selector, docs) as PodNode[]) || [])

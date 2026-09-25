@@ -136,6 +136,24 @@ describe('a table of contents over a document with includes', () => {
     expect(html).toMatch(/<div class="test-group"><p>A rule\.\n<\/p><details class="test" id="t1"/)
   })
 
+  it('renders the page when the reader throws, and reports the include', () => {
+    const warn = quiet()
+    const html = renderToStaticMarkup(
+      <Podlite
+        includeReader={() => {
+          throw new Error('reader down')
+        }}
+      >
+        {'=pod\n\n=para Before\n\n=include file:p.podlite\n\n=para After\n'}
+      </Podlite>,
+    )
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    expect(html).toContain('Before')
+    expect(html).toContain('After')
+    expect(said.some(s => s.includes('include target cannot be read: p.podlite: reader down'))).toBe(true)
+  })
+
   it('renders nothing for an include without a reader, as before', () => {
     const html = renderToStaticMarkup(<Podlite>{'=pod\n\n=para Before\n\n=include file:p.podlite\n'}</Podlite>)
     expect(html).toContain('Before')

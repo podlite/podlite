@@ -362,7 +362,9 @@ from the marks the tree already carries: mark C<tree> before calling.
 export const rebuildToc = (node: any, tree: any): any => {
   const made = Array.isArray(node?.content) ? node.content.find((c: any) => c && c.type === 'toc') : undefined
   if (!made || typeof made.selector !== 'string') return node
-  return buildToc(node, {}, tree, node, { selector: made.selector, coded: false })
+  const built = buildToc(node, {}, tree, node, { selector: made.selector, coded: false })
+  // only the table is made again; whatever else the block holds stays
+  return { ...built, content: node.content.map((c: any) => (c === made ? built.content[0] : c)) }
 }
 
 export const PluginRegister: Plugins = {
