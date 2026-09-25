@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<toc> node keeps the selector it was built by in C<selector>, unless the selector line holds a markup code; C<mkToc> takes it as its last argument
+
 =item a C<=set> written before C<=include> is kept on the include, in its C<set>, for the first block its content brings; the block after the include no longer receives it. A value a block got from C<=set> is marked C<from: 'set'> in its configuration, a default from C<=config> C<from: 'config'>, and a written one carries no mark. C<applySetToFirst> gives such assignments to the first block of a list, C<mergeSet> joins two lists of them, and C<isSetTransparent> tells a node the search passes
 
 =item C<runSelector> throws C<SelectorError> when the source of a selector does not resolve (C<resolution>) or its address is in no answering document (C<address>); it returned nothing. A mask that no document answers is still an empty source unless it carries an address. An address is found the way a link finds its target, by the text of a heading as well as by C<:id>, and the first of two blocks sharing it answers; the last one used to. C<getDocIDs> is exported

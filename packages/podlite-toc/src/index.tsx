@@ -210,8 +210,12 @@ const selectorOf = (node: PodNode): { selector: string; coded: boolean } => {
 
 // The blocks of the document the table stands in that its selector finds; a
 // selector that cannot be read, names a source or needs a file finds nothing.
-const entriesFor = (node: PodNode, fulltree: any, self: unknown): any[] => {
-  const { selector, coded } = selectorOf(node)
+const entriesFor = (
+  node: PodNode,
+  fulltree: any,
+  self: unknown,
+  { selector, coded }: { selector: string; coded: boolean },
+): any[] => {
   const parsed = coded ? undefined : parseSelector(selector)
   if (!parsed) {
     warn(`the selector cannot be read: ${selector}`)
@@ -239,6 +243,93 @@ const entriesFor = (node: PodNode, fulltree: any, self: unknown): any[] => {
   )
 }
 
+// The directive with a table made over the tree: the selector is given, since a
+// table built again reads it from the table it made before.
+const buildToc = (node: any, ctx: any, fulltree: any, self: unknown, read: { selector: string; coded: boolean }) => {
+  const tocHidden = isGuarded(node)
+  const nodes = entriesFor(node, fulltree, self, read)
+  const tocTree = prepareDataForToc(nodes)
+  const createList = (items: any[], level): TocList => {
+    const resultList = []
+    items.map(item => {
+      const { level, node, content } = item
+      // create new node for each item
+      const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
+      //TODO: 1. getNodeId should use ctx of node, but using {} instead
+      //TODO: 2. refactor linking for blocks
+      const para = mkNode({
+        type: 'para',
+        content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, entryContent(node, text, tocHidden))],
+      }) as PodNode
+      const tocNode = para
+      resultList.push(mkTocItem(tocNode))
+      if (Array.isArray(content) && content.length > 0) {
+        resultList.push(createList(content, level + 1))
+      }
+    })
+    return mkTocList(resultList, level)
+  }
+  const conf = makeAttrs(node, ctx)
+  const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
+
+  // Parse :folded (bare) — wraps entire TOC in <details>.
+  //   :folded      -> folded: true  (collapsed)
+  //   :!folded     -> folded: false (expanded disclosure)
+  //   :folded(0)   -> folded: false
+  let folded: boolean | undefined
+  if (conf.exists('folded')) {
+    const raw = conf.getFirstValue('folded')
+    folded = !(raw === false || raw === 0 || raw === '0')
+  }
+
+  // Parse :folded-levels attribute. Supports both forms:
+  //   :folded-levels(2,3)          -> {2: true, 3: true}     (every listed level folded)
+  //   :folded-levels{2=>1, 3=>0}   -> {2: true, 3: false}    (per-level folding state)
+  let foldedLevels: Record<number, boolean> | undefined
+  if (conf.exists('folded-levels')) {
+    const mapValue = conf.getMapValue('folded-levels')
+    if (mapValue) {
+      foldedLevels = {}
+      for (const [k, v] of Object.entries(mapValue)) {
+        const level = Number(k)
+        if (!isNaN(level)) {
+          foldedLevels[level] = Number(v) !== 0
+        }
+      }
+    } else {
+      const values = conf.getAllValues('folded-levels')
+      if (Array.isArray(values) && values.length > 0) {
+        foldedLevels = {}
+        for (const v of values) {
+          const level = Number(v)
+          if (!isNaN(level)) {
+            foldedLevels[level] = true
+          }
+        }
+      }
+    }
+  }
+
+  const hasTitle = tocTitle !== undefined && tocTitle !== null && String(tocTitle) !== ''
+  // marked here: when a table is rebuilt after the includes, no marking pass follows
+  const caption = hasTitle ? captionOf(tocTitle, tocHidden) : undefined
+
+  const makeToc = (tocTree: any, title): Toc => {
+    return mkToc(
+      createList(tocTree.content, 1),
+      title,
+      node.location,
+      foldedLevels,
+      folded,
+      caption,
+      read.coded ? undefined : read.selector,
+    )
+  }
+
+  const toc = makeToc(tocTree, tocTitle)
+  return { ...node, content: [tocHidden ? { ...toc, guarded: true } : toc] }
+}
+
 export const plugin: Plugin = {
   toAstAfter: (writer, processor, fulltree) => {
     // marks are set again after this pass; an entry needs them now, while it is built
@@ -247,84 +338,33 @@ export const plugin: Plugin = {
       // the directive keeps its place as a block and holds the table it made; a
       // table made once is not read again as a selector
       if (Array.isArray(node.content) && node.content.some(c => c && c.type === 'toc')) return node
-      const tocHidden = isGuarded(node)
       // a table made again over an assembled document is told which node it is there
-      const nodes = entriesFor(node, fulltree, ctx && ctx.tocSelf)
-      const tocTree = prepareDataForToc(nodes)
-      const createList = (items: any[], level): TocList => {
-        const resultList = []
-        items.map(item => {
-          const { level, node, content } = item
-          // create new node for each item
-          const text = getContentForToc(node) || ' ' // ' ' needs to avoid lack of L<>
-          //TODO: 1. getNodeId should use ctx of node, but using {} instead
-          //TODO: 2. refactor linking for blocks
-          const para = mkNode({
-            type: 'para',
-            content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, entryContent(node, text, tocHidden))],
-          }) as PodNode
-          const tocNode = para
-          resultList.push(mkTocItem(tocNode))
-          if (Array.isArray(content) && content.length > 0) {
-            resultList.push(createList(content, level + 1))
-          }
-        })
-        return mkTocList(resultList, level)
-      }
-      const conf = makeAttrs(node, ctx)
-      const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
-
-      // Parse :folded (bare) — wraps entire TOC in <details>.
-      //   :folded      -> folded: true  (collapsed)
-      //   :!folded     -> folded: false (expanded disclosure)
-      //   :folded(0)   -> folded: false
-      let folded: boolean | undefined
-      if (conf.exists('folded')) {
-        const raw = conf.getFirstValue('folded')
-        folded = !(raw === false || raw === 0 || raw === '0')
-      }
-
-      // Parse :folded-levels attribute. Supports both forms:
-      //   :folded-levels(2,3)          -> {2: true, 3: true}     (every listed level folded)
-      //   :folded-levels{2=>1, 3=>0}   -> {2: true, 3: false}    (per-level folding state)
-      let foldedLevels: Record<number, boolean> | undefined
-      if (conf.exists('folded-levels')) {
-        const mapValue = conf.getMapValue('folded-levels')
-        if (mapValue) {
-          foldedLevels = {}
-          for (const [k, v] of Object.entries(mapValue)) {
-            const level = Number(k)
-            if (!isNaN(level)) {
-              foldedLevels[level] = Number(v) !== 0
-            }
-          }
-        } else {
-          const values = conf.getAllValues('folded-levels')
-          if (Array.isArray(values) && values.length > 0) {
-            foldedLevels = {}
-            for (const v of values) {
-              const level = Number(v)
-              if (!isNaN(level)) {
-                foldedLevels[level] = true
-              }
-            }
-          }
-        }
-      }
-
-      const hasTitle = tocTitle !== undefined && tocTitle !== null && String(tocTitle) !== ''
-      // marked here: when a table is rebuilt after the includes, no marking pass follows
-      const caption = hasTitle ? captionOf(tocTitle, tocHidden) : undefined
-
-      const makeToc = (tocTree: any, title): Toc => {
-        return mkToc(createList(tocTree.content, 1), title, node.location, foldedLevels, folded, caption)
-      }
-
-      const toc = makeToc(tocTree, tocTitle)
-      return { ...node, content: [tocHidden ? { ...toc, guarded: true } : toc] }
+      return buildToc(node, ctx, fulltree, ctx && ctx.tocSelf, selectorOf(node))
     }
   },
 }
+
+/*
+=begin pod :kind<export>
+
+=head2 rebuildToc
+
+Builds the table of contents a C<=toc> block already holds again, over C<tree>:
+the tree the block stands in once blocks were added to it, such as those an
+include brought. The selector is read from the table the block made; a block
+whose table carries none (made before the selector was kept, or from a selector
+line holding a markup code) is returned as it is. The block's own configuration
+is read again, and it is never an entry of its own table. Hidden text is read
+from the marks the tree already carries: mark C<tree> before calling.
+
+=end pod
+*/
+export const rebuildToc = (node: any, tree: any): any => {
+  const made = Array.isArray(node?.content) ? node.content.find((c: any) => c && c.type === 'toc') : undefined
+  if (!made || typeof made.selector !== 'string') return node
+  return buildToc(node, {}, tree, node, { selector: made.selector, coded: false })
+}
+
 export const PluginRegister: Plugins = {
   Toc: plugin, //TODO: deprecate it
   toc: plugin,

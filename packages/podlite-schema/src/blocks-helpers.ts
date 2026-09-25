@@ -70,6 +70,7 @@ export const mkToc = (
   foldedLevels?: Record<number, boolean>,
   folded?: boolean,
   caption?: BlockCaption,
+  selector?: string,
 ): Toc => {
   return mkNode({
     type: 'toc',
@@ -79,6 +80,7 @@ export const mkToc = (
     ...(foldedLevels ? { foldedLevels } : {}),
     ...(folded !== undefined ? { folded } : {}),
     ...(caption ? { caption } : {}),
+    ...(selector !== undefined ? { selector } : {}),
   })
 }
 export const mkTocList = (content: Array<TocItem | TocList>, level: number): TocList => {

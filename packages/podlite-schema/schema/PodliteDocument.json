@@ -3014,6 +3014,9 @@
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
                 },
+                "selector": {
+                    "type": "string"
+                },
                 "content": {
                     "$ref": "#/definitions/TocList"
                 }

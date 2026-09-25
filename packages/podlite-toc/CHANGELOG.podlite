@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<rebuildToc> builds the table a C<=toc> block holds again over a tree that gained blocks, such as those an include brought, reading the selector from the table and the configuration from the block; a table that keeps no selector is left as it is
+
 =item the first non-blank line of C<=toc> is read as a selector: predicates and C<*> apply, and the lines after it are not read. Patterns are separated by commas. A selector that cannot be read, holds a markup code, names a source or needs a file makes a table without entries and a warning. The table does not list itself, and with C<*> it does not list comments, data or includes it does not name
 
 =item a paragraph or code written without a marker is titled by its text, and a block whose name has no lowercase letter stands as a first-level heading; such a block used to stop the whole document from being built

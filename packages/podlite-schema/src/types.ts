@@ -149,6 +149,9 @@ export interface Toc {
   foldedLevels?: Record<number, boolean>
   location?: Location
   caption?: BlockCaption
+  // the selector the table was built by, kept so it can be built again over a
+  // tree that gained blocks later; absent when the selector line holds a markup code
+  selector?: string
   content: TocList
 }
 export interface TocList {
