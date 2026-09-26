@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item a C<=config> adds its options to an earlier C<=config> for the same block or markup code, and decides the ones both set; it replaced the earlier one whole. HTML and Markdown output follow the same rule
+
+=item C«=config C<> :allow» acts from the line it is written on; it acted on the whole block it was written in
+
+=item C<parse> and C<toAst> take C<config>, the settings in effect where the text is placed; a C<=config> of the text is nearer than they are. C<mergeConfigSettings> joins two lists of settings by that rule
+
 =item a C<toc> node keeps the selector it was built by in C<selector>, unless the selector line holds a markup code; C<mkToc> takes it as its last argument
 
 =item a C<=set> written before C<=include> is kept on the include, in its C<set>, for the first block its content brings; the block after the include no longer receives it. A value a block got from C<=set> is marked C<from: 'set'> in its configuration, a default from C<=config> C<from: 'config'>, and a written one carries no mark. C<applySetToFirst> gives such assignments to the first block of a list, C<mergeSet> joins two lists of them, and C<isSetTransparent> tells a node the search passes

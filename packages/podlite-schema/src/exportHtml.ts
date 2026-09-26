@@ -11,6 +11,7 @@ import {
 } from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
+import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
@@ -275,7 +276,7 @@ const rules = {
     // setup context
     if (!ctx.hasOwnProperty('config')) ctx.config = {}
     //collect configs in context
-    ctx.config[node.name] = node.config
+    ctx.config[node.name] = mergeConfigSettings(node.config, ctx.config[node.name])
     return emptyContent
   }),
   ':alias': setFn((node, ctx) => {

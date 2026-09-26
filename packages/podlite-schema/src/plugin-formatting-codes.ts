@@ -4,6 +4,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import { parseAttributes } from './helpers/parseAttributes'
 import { ParserPlugin, Node, nPara, AST, nText, nVerbatim } from './'
+import { ConfigScope } from './helpers/configPropagation'
 
 /**
  *  Main transforms
@@ -19,22 +20,23 @@ type AllowedIn = Record<string, string[]>
 const codeConfigOwner = (name: unknown): string | null =>
   typeof name === 'string' && /^[A-Z]<>$/.test(name) ? name[0] : null
 
-const collectAllowedIn = (content: unknown, inherited: AllowedIn): AllowedIn => {
-  if (!Array.isArray(content)) return inherited
-  let map = inherited
-  for (const child of content) {
-    if (!child || typeof child !== 'object') continue
-    const node = child as { type?: string; name?: string }
-    if (node.type !== 'config') continue
-    const owner = codeConfigOwner(node.name)
-    if (!owner) continue
-    if (map === inherited) map = { ...inherited }
-    map[owner] = makeAttrs(node, {}).getAllValues('allow')
-  }
-  return map
+// a declaration acts from where it is written, and one without :allow leaves
+// the codes an earlier declaration allowed
+const declareAllowedIn = (node: unknown, scope: AllowedIn): void => {
+  if (!node || typeof node !== 'object') return
+  const owner = codeConfigOwner('name' in node ? node.name : undefined)
+  if (!owner) return
+  const conf = makeAttrs(node, {})
+  if (conf.exists('allow')) scope[owner] = conf.getAllValues('allow')
 }
 
-const middle: ParserPlugin = () => tree => {
+const inheritedAllowedIn = (config: ConfigScope = {}): AllowedIn => {
+  const scope: AllowedIn = {}
+  for (const name of Object.keys(config)) declareAllowedIn({ name, config: config[name] }, scope)
+  return scope
+}
+
+const middle: ParserPlugin = opt => tree => {
   const transformerBlocks = makeTransformer({
     ':para': (n, ctx, visiter) => {
       const allowedIn = ctx.allowedIn
@@ -48,9 +50,13 @@ const middle: ParserPlugin = () => tree => {
       })(n, { ...ctx })
       return n
     },
+    ':config': (n, ctx) => {
+      declareAllowedIn(n, ctx.allowedIn)
+      return n
+    },
     ':block': (n, ctx, visiter) => {
       // a block is a lexical scope: a code configured inside it stays inside
-      const allowedIn = collectAllowedIn('content' in n ? n.content : undefined, ctx.allowedIn || {})
+      const allowedIn: AllowedIn = { ...(ctx.allowedIn || {}) }
       // only =pod may have childs blocks
       if ('name' in n && n.name === 'pod')
         return {
@@ -89,12 +95,16 @@ const middle: ParserPlugin = () => tree => {
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
         ':text': (node: nText, ctx) =>
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':config': (node, ctx) => {
+          declareAllowedIn(node, allowedIn)
+          return node
+        },
         ':block': (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn, allowFromTable: passesAllow }),
       })
       return { ...n, content: transformer(n.content, inner) }
     },
   })
   // a document needs no enclosing block, so the top level is a scope of its own
-  return transformerBlocks(tree, { allowedIn: collectAllowedIn(tree, {}) })
+  return transformerBlocks(tree, { allowedIn: inheritedAllowedIn(opt.config) })
 }
 export default middle

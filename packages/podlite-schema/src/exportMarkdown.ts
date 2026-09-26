@@ -11,6 +11,7 @@ import {
   collectText,
 } from './helpers/handlers'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
+import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
@@ -265,7 +266,7 @@ const rules = {
   // Directives
   ':config': setFn((node, ctx) => {
     if (!ctx.hasOwnProperty('config')) ctx.config = {}
-    ctx.config[node.name] = node.config
+    ctx.config[node.name] = mergeConfigSettings(node.config, ctx.config[node.name])
     return emptyContent
   }),
   ':alias': setFn((node, ctx) => {

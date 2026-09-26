@@ -31,3 +31,14 @@ describe('link configuration attributes', () => {
     expect(html).toContain('title="See definition"')
   })
 })
+
+describe('link configuration declared twice', () => {
+  it('a later declaration adds its options to an earlier one', () => {
+    const html = render(
+      "=config L<> :title('first') :new\n\n=config L<> :title('second')\n\nL<API|https://api.example.com>",
+    )
+    expect(html).toContain('title="second"')
+    expect(html).not.toContain('title="first"')
+    expect(html).toContain('target="_blank"')
+  })
+})

@@ -86,6 +86,22 @@ describe('link configuration pre-configured with =config', () => {
     expect(out).not.toContain('title=')
   })
 
+  it('a later declaration adds its options to an earlier one', () => {
+    const out = htmlDoc(
+      "=config L<> :title('first') :new\n\n=config L<> :title('second')\n\n=para\nL<API|https://api.example.com>",
+    )
+    expect(out).toContain('title="second"')
+    expect(out).not.toContain('title="first"')
+    expect(out).toContain('target="_blank"')
+  })
+
+  it('markdown keeps the declared title past a later declaration', () => {
+    const out = markdownDoc(
+      "=config L<> :title('default')\n\n=config L<> :lang<fr>\n\n=para\nL<API|https://api.example.com>",
+    )
+    expect(out).toContain('[API](https://api.example.com "default")')
+  })
+
   it('markdown carries the declared title', () => {
     const out = markdownDoc("=config L<> :title('default')\n\n=para\nL<API|https://api.example.com>")
     expect(out).toContain('[API](https://api.example.com "default")')

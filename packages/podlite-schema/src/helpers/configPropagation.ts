@@ -1,6 +1,19 @@
 import { ConfigItem, PodNode, PodliteDocument } from '../types'
 
-type ConfigMap = Record<string, ConfigItem[]>
+export type ConfigScope = Record<string, ConfigItem[]>
+type ConfigMap = ConfigScope
+
+// the nearer declaration decides an option, the farther one fills in the rest
+export const mergeConfigSettings = (
+  nearer: ConfigItem[] | undefined,
+  farther: ConfigItem[] | undefined,
+): ConfigItem[] => {
+  const near = Array.isArray(nearer) ? nearer : []
+  const far = Array.isArray(farther) ? farther : []
+  const seen = new Set(near.map(c => c && c.name).filter(Boolean))
+  const rest = far.filter(c => c && c.name && !seen.has(c.name))
+  return rest.length ? [...near, ...rest] : near
+}
 
 const mergeDefaults = (own: ConfigItem[] | undefined, defaults: ConfigItem[]): ConfigItem[] => {
   const ownArr = Array.isArray(own) ? own : []
@@ -37,7 +50,7 @@ const walk = (node: PodNode, config: ConfigMap): void => {
     content?: unknown
   }
   if (anyNode.type === 'config' && typeof anyNode.name === 'string' && Array.isArray(anyNode.config)) {
-    config[anyNode.name] = anyNode.config
+    config[anyNode.name] = mergeConfigSettings(anyNode.config, config[anyNode.name])
   } else if (anyNode.type === 'block') {
     for (const key of lookupKeys(anyNode)) {
       const defaults = config[key]
@@ -52,8 +65,11 @@ const walk = (node: PodNode, config: ConfigMap): void => {
   }
 }
 
-export const propagateConfigDefaults = <T extends PodliteDocument | PodNode | unknown[]>(ast: T): T => {
-  walk(ast as PodNode, {})
+export const propagateConfigDefaults = <T extends PodliteDocument | PodNode | unknown[]>(
+  ast: T,
+  inherited: ConfigScope = {},
+): T => {
+  walk(ast as PodNode, { ...inherited })
   return ast
 }
 

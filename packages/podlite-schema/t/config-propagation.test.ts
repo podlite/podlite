@@ -58,7 +58,7 @@ Not folded
     expect(conf.exists('folded')).toBe(true)
   })
 
-  it('later =config replaces earlier for the same block name', () => {
+  it('a later =config adds its options to an earlier one for the same block name', () => {
     const ast = parseToAst(`
 =config head2 :folded
 
@@ -69,7 +69,20 @@ Not folded
     const heads = findHeads(ast)
     const conf = makeAttrs(heads[0])
     expect(conf.exists('numbered')).toBe(true)
-    expect(conf.exists('folded')).toBe(false)
+    expect(conf.exists('folded')).toBe(true)
+  })
+
+  it('a later =config decides an option the earlier one also sets', () => {
+    const ast = parseToAst(`
+=config head2 :caption<first> :folded
+
+=config head2 :caption<second>
+
+=head2 X
+`)
+    const conf = makeAttrs(findHeads(ast)[0])
+    expect(conf.getAllValues('caption')).toEqual(['second'])
+    expect(conf.exists('folded')).toBe(true)
   })
 
   it('does not affect blocks of a different type', () => {
@@ -104,6 +117,36 @@ Not folded
     const before = JSON.stringify(ast)
     propagateConfigDefaults(ast)
     expect(JSON.stringify(ast)).toBe(before)
+  })
+})
+
+describe('=config settings in effect where the text is placed', () => {
+  const inherited = {
+    head2: [
+      { name: 'caption', value: 'outer', type: 'string' as const },
+      { name: 'folded', value: true, type: 'boolean' as const },
+    ],
+  }
+  const placed = (src: string) => {
+    const p = podlitePluggable()
+    return p.toAst(p.parse(src, { podMode: 1, config: inherited }), { config: inherited })
+  }
+
+  it('reach a block of the text', () => {
+    const conf = makeAttrs(findHeads(placed('=head2 X\n'))[0])
+    expect(conf.getAllValues('caption')).toEqual(['outer'])
+    expect(conf.exists('folded')).toBe(true)
+  })
+
+  it('yield to a =config of the text, option by option', () => {
+    const conf = makeAttrs(findHeads(placed('=config head2 :caption<own>\n\n=head2 X\n'))[0])
+    expect(conf.getAllValues('caption')).toEqual(['own'])
+    expect(conf.exists('folded')).toBe(true)
+  })
+
+  it('are left as they were given', () => {
+    placed('=config head2 :caption<own>\n\n=head2 X\n')
+    expect(inherited.head2.map(c => c.value)).toEqual(['outer', true])
   })
 })
 

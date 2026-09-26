@@ -2,7 +2,7 @@ import { Plugins, PodliteDocument, mkRootBlock, parseOpt, toAny, toAnyRules, toH
 import toMarkdown from './exportMarkdown'
 import idMiddleware from './helpers/ids'
 import core from './helpers/corePlugins'
-import { propagateConfigDefaults } from './helpers/configPropagation'
+import { propagateConfigDefaults, ConfigScope } from './helpers/configPropagation'
 import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
@@ -22,14 +22,17 @@ export interface PodliteExport {
   defenitions: any
   interator: any
 }
+export type ToAstOpt = {
+  config?: ConfigScope
+}
 export interface Podlite {
-  toAstResult: (ast: PodliteDocument) => PodliteExport
+  toAstResult: (ast: PodliteDocument, opt?: ToAstOpt) => PodliteExport
   (): any
   use: (plugin: Plugins) => Podlite
   parse: (text: string, opt?: parseOpt) => PodliteDocument
   toHtml: (ast: PodliteDocument) => PodliteExport
   toMarkdown: (ast: PodliteDocument) => PodliteExport
-  toAst: (ast: PodliteDocument) => PodliteDocument
+  toAst: (ast: PodliteDocument, opt?: ToAstOpt) => PodliteDocument
   getPlugins: () => Array<Plugins>
 }
 
@@ -70,11 +73,11 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     return diagnostics.length ? { ...root, diagnostics } : root
   }
 
-  instance.toAst = ast => {
-    return <PodliteDocument>instance.toAstResult(ast).interator
+  instance.toAst = (ast, opt) => {
+    return <PodliteDocument>instance.toAstResult(ast, opt).interator
   }
 
-  instance.toAstResult = ast => {
+  instance.toAstResult = (ast, opt = {}) => {
     // get plugins  for Ast
     const toAstPlugins = toAnyRules('toAst', instance.getPlugins())
     const result: PodliteExport = toAny()
@@ -103,7 +106,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         .use(toAstAfterPlugins)
         .run(ast)
       if (resultAfter && resultAfter.interator) {
-        propagateConfigDefaults(resultAfter.interator)
+        propagateConfigDefaults(resultAfter.interator, opt.config)
         promoteOrderedLists(resultAfter.interator)
         attachHeadingNumberPrefix(resultAfter.interator)
         markGuarded(resultAfter.interator)
@@ -113,7 +116,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     }
 
     if (result && result.interator) {
-      propagateConfigDefaults(result.interator)
+      propagateConfigDefaults(result.interator, opt.config)
       promoteOrderedLists(result.interator)
       attachHeadingNumberPrefix(result.interator)
       markGuarded(result.interator)

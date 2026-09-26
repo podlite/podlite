@@ -42,7 +42,7 @@ import { applyFoldedSections, testCaption, testFoldedByAuthor, tocTitleText } fr
 import { groupTests } from './test-groups'
 import { assembleIncludes } from './assemble-includes'
 import { TestBlock } from './test-block'
-import { readLinkConfig, codeConfigWithDefaults } from '@podlite/schema'
+import { readLinkConfig, codeConfigWithDefaults, mergeConfigSettings } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import { HighlightedCode } from '@podlite/highlight'
 
@@ -570,7 +570,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       // setup context
       if (!ctx.hasOwnProperty('config')) ctx.config = {}
       //collect configs in context
-      ctx.config[node.name] = node.config
+      ctx.config[node.name] = mergeConfigSettings(node.config, ctx.config[node.name])
       return emptyContent()
     }),
     ':alias': setFn((node, ctx) => {

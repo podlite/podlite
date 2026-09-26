@@ -38,7 +38,9 @@ import defnGroup_plug from './plugin-group-defn'
 import itemsGroup_plug from './plugin-group-items'
 import defnTerms_plug from './plugin-defn-fill-term'
 import set_plug from './plugin-set'
-import { propagateConfigDefaults } from './helpers/configPropagation'
+import { propagateConfigDefaults, ConfigScope } from './helpers/configPropagation'
+export { mergeConfigSettings } from './helpers/configPropagation'
+export type { ConfigScope } from './helpers/configPropagation'
 import table_plug from './plugin-tables'
 import data_table_plug from './plugin-data-table'
 
@@ -176,8 +178,10 @@ export type parseOpt = {
   mode?: 'pod' | 'md'
   diagnostics?: ParseDiagnostic[]
   recognition?: RecognitionEvent[]
+  // settings in effect where the text is placed, as =config directives before it would leave them
+  config?: ConfigScope
 }
-const configDefaults_plug: ParserPlugin = () => tree => propagateConfigDefaults(tree)
+const configDefaults_plug: ParserPlugin = opt => tree => propagateConfigDefaults(tree, opt.config)
 
 function makeTree() {
   var plugins: Array<ParserPlugin> = []
