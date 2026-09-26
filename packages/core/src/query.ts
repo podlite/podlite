@@ -11,6 +11,7 @@ import {
   SelectorError,
   PodNode,
 } from '@podlite/schema'
+import type { ConfigScope } from '@podlite/schema'
 import { diskProvider, expandMask, hasMask, resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
@@ -33,7 +34,7 @@ type Source = { file: string; text: string; fromStdin?: boolean }
 // and formula plugins only render, so they are left out, and with them mermaid
 // and React; the three that are needed are raised when a query runs, not when
 // the module loads.
-type QueryReader = { toTree: (text: string) => any; written: (text: string) => any }
+type QueryReader = { toTree: (text: string, config?: ConfigScope) => any; written: (text: string) => any }
 
 const queryReader = (): QueryReader => {
   /* eslint-disable @typescript-eslint/no-var-requires */
@@ -43,7 +44,7 @@ const queryReader = (): QueryReader => {
   /* eslint-enable @typescript-eslint/no-var-requires */
   const p = podlitePluggable({ plugins: { ...markdown, ...image, ...toc } })
   return {
-    toTree: (text: string) => p.toAst(p.parse(text, { podMode: 1 })),
+    toTree: (text: string, config?: ConfigScope) => p.toAst(p.parse(text, { podMode: 1, config }), { config }),
     written: (text: string) => p.parse(text, { podMode: 1 }),
   }
 }
@@ -160,8 +161,8 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
   // each file is read on its own before its includes, as convert reads it
-  const toTree = (text: string): any => {
-    const tree = reader.toTree(text)
+  const toTree = (text: string, config?: ConfigScope): any => {
+    const tree = reader.toTree(text, config)
     markSections(tree, sections)
     return tree
   }
@@ -173,7 +174,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const text = fs.readFileSync(file, 'utf-8')
     const node = resolveIncludes(toTree(text), {
       baseDir: path.dirname(file),
-      parse: source => toTree(source),
+      parse: (source, _file, config) => toTree(source, config),
       file: document,
       self: file,
       text,
@@ -200,7 +201,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const fromStdin = src.fromStdin === true
     const resolved = resolveIncludes(toTree(src.text), {
       baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
-      parse: source => toTree(source),
+      parse: (source, _file, config) => toTree(source, config),
       file: src.file,
       self: fromStdin ? undefined : src.file,
       text: src.text,

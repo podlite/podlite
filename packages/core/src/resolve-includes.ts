@@ -5,6 +5,9 @@ import {
   isSetTransparent,
   bindTarget,
   ConfigItem,
+  ConfigScope,
+  mergeConfigSettings,
+  propagateConfigDefaults,
   buildBindingIndex,
   filePathMatches,
   getTextContentFromNode,
@@ -38,6 +41,8 @@ export type IncludeProblem = {
     | 'cycle'
     // =set assignments before an include that found no block to receive them
     | 'set-target'
+    // a found block that the settings at the directive read as something else
+    | 'include-reading-differs'
   target: string
   message: string
   // the first step is the directive in the document itself, the last one the
@@ -48,6 +53,8 @@ export type IncludeProblem = {
 export type IncludeOrigin = {
   file: string
   text: string
+  // the directives the node came through inside the file it was read with
+  via?: string
 }
 
 // Where included text comes from. A file is named by its absolute path; a
@@ -59,7 +66,8 @@ export type SourceProvider = {
 
 export type ResolveIncludesOptions = {
   baseDir: string
-  parse: (source: string, file: string) => any
+  // `config` holds the settings in effect at the directive that places the text
+  parse: (source: string, file: string, config?: ConfigScope) => any
   // the document's name and text, for messages and for origin
   file?: string
   text?: string
@@ -79,7 +87,8 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'unparsed-selector' ||
   problem.kind === 'unsupported-scheme' ||
   problem.kind === 'cycle' ||
-  problem.kind === 'set-target'
+  problem.kind === 'set-target' ||
+  problem.kind === 'include-reading-differs'
 
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
@@ -163,10 +172,10 @@ const readSource = (target: string): string | null => {
 export const diskProvider: SourceProvider = { read: readSource, list: (dir, deep) => listDir(dir, deep) }
 
 export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any => {
-  const { origin } = opts
+  const origin = opts.origin ?? new WeakMap<object, IncludeOrigin>()
   const provider = opts.provider ?? diskProvider
   const mainFile = opts.file ?? '<document>'
-  if (origin && opts.text !== undefined) recordOrigin(tree, { file: mainFile, text: opts.text }, origin)
+  if (opts.text !== undefined) recordOrigin(tree, { file: mainFile, text: opts.text }, origin)
 
   // Read once per call: a file brought in twice is parsed twice, so each place it
   // lands holds nodes of its own.
@@ -200,10 +209,15 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   // target. An include by an address is taken as met: the address names the
   // block whatever stands before it.
   const reached: boolean[] = []
+  // A file is also read on its own, for the selection: that reading reports
+  // nothing and marks no include outside it.
+  let quiet = 0
+  let reachedFrom = 0
   const markReached = (): void => {
-    for (let i = 0; i < reached.length; i++) reached[i] = true
+    for (let i = reachedFrom; i < reached.length; i++) reached[i] = true
   }
   const hold = (entries: Held[]): void => {
+    if (quiet) return
     for (const entry of entries) {
       if (entry.shown && !isWarning(entry.problem) && !opts.onError) {
         const error = new Error(entry.problem.message)
@@ -319,8 +333,8 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
   const withoutSet = (node: any): any => {
     if (!node.set) return node
     const { set, ...rest } = node
-    const known = origin?.get(node)
-    if (origin && known) origin.set(rest, known)
+    const known = origin.get(node)
+    if (known) origin.set(rest, known)
     return rest
   }
 
@@ -336,11 +350,15 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     chain: IncludeStep[],
     file: string,
     home: any,
+    config: ConfigScope,
   ): any[] => {
     const out: any[] = []
     let pending: ConfigItem[] = []
     let last: { chain: IncludeStep[]; selector: string } | undefined
     const visit = (n: any): void => {
+      if (n && n.type === 'config' && typeof n.name === 'string' && Array.isArray(n.config)) {
+        config[n.name] = mergeConfigSettings(n.config, config[n.name])
+      }
       if (isIncludeBlock(n)) {
         // assignments carried from an earlier include are older than its own
         const set = mergeSet(pending, n.set)
@@ -349,7 +367,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         let resolved: ReturnType<typeof resolveInclude>
         const at = reached.length
         try {
-          resolved = resolveInclude(n, baseDir, stack, here, file, home)
+          resolved = resolveInclude(n, baseDir, stack, here, file, home, config)
         } catch (e) {
           // the walk stops at an error with no handler; the assignments lost
           // on the way out are named in it as well
@@ -368,6 +386,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           reached.length = at
         }
         const { nodes, failure, inner, roots, selector } = resolved
+        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`)
         if (failure) {
           const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
           if (set.length) lose(entries, set)
@@ -402,7 +421,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         last = { chain: here, selector }
         return
       }
-      const walked = walkNode(n, baseDir, stack, chain, file, home)
+      const walked = walkNode(n, baseDir, stack, chain, file, home, config)
       const items = Array.isArray(walked) ? walked : [walked]
       if (!pending.length) {
         out.push(...items)
@@ -439,6 +458,82 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     return out
   }
 
+  // The directive a block came through is kept with its origin, so that the
+  // two readings of a file name the same block the same way.
+  const markVia = (nodes: any[], step: string): void => {
+    const visit = (node: any): void => {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const known = origin.get(node)
+      if (known) origin.set(node, { ...known, via: known.via ? `${step}>${known.via}` : step })
+      visit(node.content)
+    }
+    visit(nodes)
+  }
+
+  const isFolded = (node: any): boolean =>
+    node && typeof node === 'object' && node.type === 'block' && node.name === '_folded_section'
+  // a folded section is put around written blocks; they are counted as if it were not there
+  const childrenOf = (node: any): any[] => {
+    const list = Array.isArray(node.content) ? node.content : node.content ? [node.content] : []
+    return list.flatMap((child: any) => (isFolded(child) ? childrenOf(child) : [child]))
+  }
+  // A block written in a file is named by the directives it came through and
+  // its place in that file. A node the reading adds has no place of its own, and
+  // a block of a Markdown section counts its place from the section: both are
+  // named by the nearest written block above and the way down from it.
+  const namesOf = (root: any): Array<[object, string]> => {
+    const out: Array<[object, string]> = []
+    const visit = (node: any, above: string, step: string, counted: boolean): void => {
+      if (!node || typeof node !== 'object') return
+      const where = origin.get(node)
+      const offset = node.location?.start?.offset
+      const name =
+        !counted && where && typeof offset === 'number'
+          ? `${where.via ?? ''}|${where.file}|${offset}|${node.type}|${node.name ?? ''}`
+          : `${above}/${step}|${node.type}|${node.name ?? ''}`
+      out.push([node, name])
+      const section = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown')
+      childrenOf(node).forEach((child, i) => visit(child, name, String(i), counted || section))
+    }
+    visit(root, '', 'root', false)
+    return out
+  }
+
+  const copyDeep = (node: any): any => {
+    if (Array.isArray(node)) return node.map(copyDeep)
+    if (!node || typeof node !== 'object') return node
+    const copy: any = {}
+    for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyDeep(node[key])
+    const known = origin.get(node)
+    if (known) origin.set(copy, known)
+    return copy
+  }
+
+  // A file as it reads on its own, its includes in. It is the same wherever it
+  // is included from, apart from the files already on the way.
+  const sources = new Map<string, any>()
+  const sourceOf = (target: string, text: string, dir: string, stack: string[], here: IncludeStep[]): any => {
+    const key = stack.join('\n')
+    const known = sources.get(key)
+    if (known) return known
+    const own = opts.parse(text, target)
+    recordOrigin(own, { file: target, text }, origin)
+    const failed = failures.length
+    const from = reachedFrom
+    quiet++
+    reachedFrom = reached.length
+    try {
+      const tree = unmark(asDocument(walkNode(own, dir, stack, here, target, own, {})))
+      sources.set(key, tree)
+      return tree
+    } finally {
+      quiet--
+      reachedFrom = from
+      failures.length = failed
+    }
+  }
+
   // What an include comes to: the nodes that take its place, or the problems
   // that left it with nothing, not yet reported
   const resolveInclude = (
@@ -448,6 +543,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     here: IncludeStep[],
     file: string,
     home: any,
+    config: ConfigScope,
   ): { nodes: any[]; failure?: IncludeProblem[]; inner: Held[][]; roots?: any[]; selector: string } => {
     const mark = failures.length
     reached.push(false)
@@ -501,7 +597,11 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       })
     }
 
+    // With settings in effect at the directive a file is read twice: with them,
+    // for the blocks that take its place, and on its own, for the selection.
+    const scoped = Object.keys(config).length > 0
     const docs: Array<{ file: string; node: any }> = []
+    const placedDocs: any[] = []
     const unread: IncludeProblem[] = []
     let cyclic = false
     for (const name of written) {
@@ -520,12 +620,46 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         })
         continue
       }
-      const own = opts.parse(text, target)
-      if (origin) recordOrigin(own, { file: target, text }, origin)
-      docs.push({
-        file: name,
-        node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
+      const own = opts.parse(text, target, scoped ? config : undefined)
+      recordOrigin(own, { file: target, text }, origin)
+      const dir = path.dirname(target)
+      const placed = asDocument(walkNode(own, dir, [...stack, target], here, target, own, { ...config }))
+      placedDocs.push(placed)
+      docs.push({ file: name, node: scoped ? sourceOf(target, text, dir, [...stack, target], here) : placed })
+    }
+    // The blocks found in the files as they read on their own are placed as the
+    // same files read them at the directive.
+    const placedFor = (found: any[]): any[] => {
+      if (!scoped) return found
+      const pairs = docs.map((doc, i) => ({
+        source: new Map(namesOf(doc.node)),
+        placed: new Map(
+          namesOf(placedDocs[i])
+            .map(([node, name]): [string, object] => [name, node])
+            .reverse(),
+        ),
+      }))
+      let differs = false
+      const out = found.map(node => {
+        for (const pair of pairs) {
+          const name = pair.source.get(node)
+          if (name === undefined) continue
+          const twin = pair.placed.get(name)
+          if (twin) return twin
+          differs = true
+          return propagateConfigDefaults([copyDeep(node)], config)[0]
+        }
+        return node
       })
+      if (differs) {
+        report({
+          kind: 'include-reading-differs',
+          target: selector,
+          message: `include places a block as its file reads on its own; the settings at the directive read it differently: ${selector}`,
+          chain: here,
+        })
+      }
+      return out
     }
     if (docs.length === 0) {
       // a mask that names no file holds no address
@@ -568,7 +702,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         }
         found.push(binding.node)
       }
-      if (found.length > 0) return done(found)
+      if (found.length > 0) return done(placedFor(found))
       return fail({
         kind: 'address',
         target: selector,
@@ -577,7 +711,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       })
     }
 
-    roots = docs.map(doc => doc.node)
+    roots = placedDocs
 
     // a file an operand names is read the way an included file is, from the
     // directory of the directive; one already on the way does not resolve
@@ -586,18 +720,20 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       const text = stack.includes(target) ? null : textOf(target)
       if (text === null) return undefined
       const own = opts.parse(text, target)
-      if (origin) recordOrigin(own, { file: target, text }, origin)
+      recordOrigin(own, { file: target, text }, origin)
       return [
         {
           file: document,
-          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own)),
+          node: asDocument(walkNode(own, path.dirname(target), [...stack, target], here, target, own, {})),
         },
       ]
     }
     try {
       return done(
         unwrapRoot(
-          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
+          placedFor(
+            outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
+          ),
         ),
       )
     } catch (e) {
@@ -618,25 +754,29 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     chain: IncludeStep[],
     file: string,
     home: any,
+    config: ConfigScope,
   ): any => {
     if (!node || typeof node !== 'object') return node
-    if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file, home)
-    if (isIncludeBlock(node)) return walkList([node], baseDir, stack, chain, file, home)
-    if (node.type === 'block' && node.name !== 'root' && node.name !== '_folded_section' && !isSetTransparent(node)) {
+    if (Array.isArray(node)) return walkList(node, baseDir, stack, chain, file, home, config)
+    if (isIncludeBlock(node)) return walkList([node], baseDir, stack, chain, file, home, config)
+    const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
+    if (node.type === 'block' && !wrapper && !isSetTransparent(node)) {
       markReached()
     }
 
     if (Array.isArray(node.content)) {
-      const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home) }
-      const known = origin?.get(node)
-      if (origin && known) origin.set(copy, known)
+      // a block is a lexical scope for the settings declared inside it
+      const scope = node.type === 'block' && !wrapper ? { ...config } : config
+      const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home, scope) }
+      const known = origin.get(node)
+      if (known) origin.set(copy, known)
       return copy
     }
     return node
   }
 
   try {
-    return unmark(walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile, tree))
+    return unmark(walkNode(tree, opts.baseDir, opts.self ? [path.resolve(opts.self)] : [], [], mainFile, tree, {}))
   } finally {
     flush()
   }

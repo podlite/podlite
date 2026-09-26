@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { parseSelector, toMarkdown, toHtml } from '@podlite/schema'
+import type { ConfigScope } from '@podlite/schema'
 import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './lint'
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
@@ -203,14 +204,15 @@ function convertFile(
   const fromStdin = inputPath === STDIN_MARKER
   const content = fromStdin ? readStdinSync() : fs.readFileSync(inputPath, 'utf-8')
   const p = parserWithPlugins()
-  const parseToAst = (source: string) => p.toAst(p.parse(source, { podMode: 1 }))
+  const parseToAst = (source: string, config?: ConfigScope) =>
+    p.toAst(p.parse(source, { podMode: 1, config }), { config })
 
   let tree = parseToAst(content)
   try {
     const origin = new WeakMap<object, IncludeOrigin>()
     tree = resolveIncludes(tree, {
       baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
-      parse: parseToAst,
+      parse: (source, _file, config) => parseToAst(source, config),
       file: inputPath,
       text: content,
       self: fromStdin ? undefined : inputPath,

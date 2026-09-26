@@ -159,7 +159,7 @@ describe('preparing a document', () => {
     return prepared.value
   }
 
-  it('does not give an included block the configuration of the including file', () => {
+  it('gives an included block the configuration of the including file', () => {
     write('part.podlite', '=pod\n\n=para Included.\n')
     const main = write('main.podlite', '=pod\n\n=config para :x<1>\n\n=para Own.\n\n=include file:./part.podlite\n')
     const doc = prepare(main)
@@ -169,7 +169,7 @@ describe('preparing a document', () => {
     ])
     expect(paras).toEqual([
       ['main.podlite', true],
-      ['part.podlite', false],
+      ['part.podlite', true],
     ])
   })
 

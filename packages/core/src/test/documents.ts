@@ -1,7 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { makeAttrs } from '@podlite/schema'
-import type { Location, ParseDiagnostic, PodliteDocument, PodNode, RecognitionEvent } from '@podlite/schema'
+import type {
+  ConfigScope,
+  Location,
+  ParseDiagnostic,
+  PodliteDocument,
+  PodNode,
+  RecognitionEvent,
+} from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, SourceProvider } from '../resolve-includes'
@@ -9,7 +16,12 @@ import type { Result } from './types'
 import { err, ok } from './types'
 
 type Reader = {
-  toTree: (text: string, recognition: RecognitionEvent[], diagnostics: ParseDiagnostic[]) => unknown
+  toTree: (
+    text: string,
+    recognition: RecognitionEvent[],
+    diagnostics: ParseDiagnostic[],
+    config?: ConfigScope,
+  ) => unknown
   written: (text: string) => unknown
 }
 
@@ -36,7 +48,8 @@ export type Profile = {
 const readerOf = (importPlugins: boolean) => (): Reader => {
   const p = podlite({ importPlugins })
   return {
-    toTree: (text, recognition, diagnostics) => p.toAst(p.parse(text, { podMode: 1, recognition, diagnostics })),
+    toTree: (text, recognition, diagnostics, config) =>
+      p.toAst(p.parse(text, { podMode: 1, recognition, diagnostics, config }), { config }),
     written: text => p.parse(text, { podMode: 1 }),
   }
 }
@@ -103,10 +116,14 @@ export const canonical = (file: string): string => {
 }
 
 // A problem that loses included content fails the input. An ambiguous address
-// still brings a block; a =set with no target and a cycle reported for the
-// assignments it lost leave the content as it was.
+// still brings a block, and so does a block placed as its file reads on its
+// own; a =set with no target and a cycle reported for the assignments it lost
+// leave the content as it was.
 const isLosing = (problem: IncludeProblem): boolean =>
-  problem.kind !== 'ambiguous' && problem.kind !== 'set-target' && problem.kind !== 'cycle'
+  problem.kind !== 'ambiguous' &&
+  problem.kind !== 'set-target' &&
+  problem.kind !== 'cycle' &&
+  problem.kind !== 'include-reading-differs'
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
@@ -172,10 +189,10 @@ export const prepareDocument = (
     const own = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown') ? node : section
     markSections(node.content, own)
   }
-  const toTree = (body: string, file: string): unknown => {
+  const toTree = (body: string, file: string, config?: ConfigScope): unknown => {
     const events: RecognitionEvent[] = []
     const diagnostics: ParseDiagnostic[] = []
-    const tree = reader.toTree(body, events, diagnostics)
+    const tree = reader.toTree(body, events, diagnostics, config)
     recognition.set(identify(file), events)
     markSections(tree, undefined)
     for (const d of diagnostics) {
