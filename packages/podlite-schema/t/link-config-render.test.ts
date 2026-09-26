@@ -1,4 +1,5 @@
 import { toHtml, toMarkdown } from '../src'
+import { podlitePluggable } from '../src/pluggableParser'
 
 const html = (src: string) => toHtml({}).run(`=para\n${src}\n`).toString()
 const markdown = (src: string) => toMarkdown({}).run(`=para\n${src}\n`).toString()
@@ -100,6 +101,15 @@ describe('link configuration pre-configured with =config', () => {
       "=config L<> :title('default')\n\n=config L<> :lang<fr>\n\n=para\nL<API|https://api.example.com>",
     )
     expect(out).toContain('[API](https://api.example.com "default")')
+  })
+
+  it('a declaration written in a folded section reaches the section after it', () => {
+    const p = podlitePluggable()
+    const src =
+      "=config head2 :folded\n\n=head2 A\n\n=config L<> :title('later')\n\n=head2 B\n\n=para\nL<API|https://api.example.com>\n"
+    const tree = p.toAst(p.parse(src, { podMode: 1 }))
+    expect(String(p.toHtml(tree))).toContain('title="later"')
+    expect(String(p.toMarkdown(tree))).toContain('[API](https://api.example.com "later")')
   })
 
   it('markdown carries the declared title', () => {

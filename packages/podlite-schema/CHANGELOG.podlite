@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<=config> or C<=alias> written under a folded heading stays in effect after the section the heading folds; it ended with the section
+
 =item a C<=config> adds its options to an earlier C<=config> for the same block or markup code, and decides the ones both set; it replaced the earlier one whole. HTML and Markdown output follow the same rule
 
 =item C«=config C<> :allow» acts from the line it is written on; it acted on the whole block it was written in

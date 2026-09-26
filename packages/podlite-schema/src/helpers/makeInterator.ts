@@ -19,8 +19,9 @@ function thisFunc(rules) {
     }
     // a block is a lexical scope: a =config or =alias written inside it must not
     // reach what follows the block. The context object itself is kept, since
-    // rules count cells and mark rows through it
-    if (node.type === 'block' && context) {
+    // rules count cells and mark rows through it. A folded section is put
+    // around written blocks and is no scope of its own
+    if (node.type === 'block' && node.name !== '_folded_section' && context) {
       const outer = { config: context.config, alias: context.alias }
       const had = { config: context.hasOwnProperty('config'), alias: context.hasOwnProperty('alias') }
       context.config = { ...outer.config }

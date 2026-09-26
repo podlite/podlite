@@ -41,4 +41,11 @@ describe('link configuration declared twice', () => {
     expect(html).not.toContain('title="first"')
     expect(html).toContain('target="_blank"')
   })
+
+  it('a declaration written in a folded section reaches the section after it', () => {
+    const html = render(
+      "=config head2 :folded\n\n=head2 A\n\n=config L<> :title('later')\n\n=head2 B\n\nL<API|https://api.example.com>",
+    )
+    expect(html).toContain('title="later"')
+  })
 })
