@@ -70,6 +70,30 @@ describe('collecting tests', () => {
     expect(runs[0].obtained.map(t => t.obtainedFrom)).toEqual([0, 1])
   })
 
+  it('runs a test with a fixture under each configuration it is brought in under', () => {
+    write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
+    const include = '=include file:./t/one.podlite#shared\n'
+    const first = write('first.podlite', `=pod\n\n=config assert :tag<one>\n\n${include}`)
+    const second = write('second.podlite', `=pod\n\n=config assert :tag<two>\n\n${include}`)
+    expect(planRuns(collect(first, second).tests, 0)).toHaveLength(2)
+  })
+
+  it('runs a test with a fixture once when the configuration it is brought in under is the same', () => {
+    write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
+    const include = '=include file:./t/one.podlite#shared\n'
+    const first = write('first.podlite', `=pod\n\n=config assert :tag<one>\n\n${include}`)
+    const second = write('second.podlite', `=pod\n\n=head1 Other\n\n=config assert :tag<one>\n\n${include}`)
+    expect(planRuns(collect(first, second).tests, 0)).toHaveLength(1)
+  })
+
+  it('runs a test with a fixture once when a configuration reaches none of its blocks', () => {
+    write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
+    const include = '=include file:./t/one.podlite#shared\n'
+    const first = write('first.podlite', `=pod\n\n=config para :tag<one>\n\n${include}`)
+    const second = write('second.podlite', `=pod\n\n${include}`)
+    expect(planRuns(collect(first, second).tests, 0)).toHaveLength(1)
+  })
+
   it('runs a test without a fixture in every document that brings it in', () => {
     write('t/one.podlite', `=pod\n\n${aTest({ id: 'around' })}`)
     const first = write('first.podlite', '=pod\n\n=head1 A\n\n=include file:./t/one.podlite#around\n')

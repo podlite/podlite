@@ -128,6 +128,30 @@ const placeOf = (node: object, prepared: PreparedSource): Place => {
 const keyOf = (place: Place): string =>
   `${place.file}:${place.location?.start.offset ?? '?'}:${place.location?.end.offset ?? '?'}`
 
+// The settings in effect for the blocks of a test: each block by name with its
+// options in a fixed order. A place it is brought to and what the reading adds
+// to it are no part of them.
+const settingsOf = (node: unknown): string => {
+  const parts: string[] = []
+  const visit = (n: unknown): void => {
+    if (Array.isArray(n)) return n.forEach(visit)
+    if (!isObject(n)) return
+    if (n.type === 'block' && typeof n.name === 'string' && n.name !== '_folded_section') {
+      const options = (Array.isArray(n.config) ? n.config : [])
+        .filter(isObject)
+        .map(c => `${String(c.name)}=${String(c.type)}:${JSON.stringify(c.value)}`)
+        .sort()
+      parts.push(`${n.name}(${options.join(',')})`)
+    }
+    visit(n.content)
+  }
+  visit(node)
+  return parts.join(';')
+}
+
+// one test is the same written block under the same settings
+const identityOf = (place: Place, node: unknown): string => `${keyOf(place)}:${settingsOf(node)}`
+
 type Found = { event: RecognitionEvent; file: string }
 
 // A node a plugin wraps children in stands for its children: the list around
@@ -279,7 +303,7 @@ const readTest = (block: Block, prepared: PreparedSource): CollectedTest => {
     }
   }
   return {
-    key: keyOf(place),
+    key: identityOf(place, block),
     id: stringOption(block, 'id'),
     caption: stringOption(block, 'caption'),
     place,
@@ -293,7 +317,7 @@ const readTest = (block: Block, prepared: PreparedSource): CollectedTest => {
 const brokenTest = (node: object, prepared: PreparedSource): CollectedTest => {
   const place = placeOf(node, prepared)
   return {
-    key: keyOf(place),
+    key: identityOf(place, node),
     place,
     obtainedFrom: prepared.index,
     shape: { kind: 'malformed', message: 'the test is not closed or holds a block that is not', place },
