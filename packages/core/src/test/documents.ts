@@ -216,6 +216,10 @@ export const prepareDocument = (
       text,
       self: input.self,
       origin,
+      onCopy: (from, to) => {
+        const section = sections.get(from)
+        if (section) sections.set(to, section)
+      },
       provider: opts.provider,
       onError: note,
       onWarning: note,

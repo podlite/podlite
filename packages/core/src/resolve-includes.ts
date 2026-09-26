@@ -78,6 +78,8 @@ export type ResolveIncludesOptions = {
   onError?: (problem: IncludeProblem) => void
   onWarning?: (problem: IncludeProblem) => void
   origin?: WeakMap<object, IncludeOrigin>
+  // told of each copy made of a parsed node that is not a copy of its list alone
+  onCopy?: (from: object, to: object) => void
   // the disk when not given
   provider?: SourceProvider
 }
@@ -301,6 +303,13 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     roots.forEach(visit)
     return found
   }
+  // For a block placed as its file reads on its own the order is read off that
+  // reading, and the failure named is the first of the files as placed.
+  const stoppedBefore = (roots: any[], target: any): Held[] | undefined => {
+    const alone = target ? readAlone.get(target) : undefined
+    if (!alone) return failedBefore(roots, target)
+    return failedBefore(alone.roots, alone.node) ? failedBefore(roots, undefined) : undefined
+  }
   const unmark = (node: any): any => {
     if (Array.isArray(node)) {
       for (let i = node.length - 1; i >= 0; i--) {
@@ -402,7 +411,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           return
         }
         // an include inside that failed before the target stops the search
-        const stopped = roots ? failedBefore(roots, firstTarget(nodes)) : firstStop(nodes)
+        const stopped = roots ? stoppedBefore(roots, firstTarget(nodes)) : firstStop(nodes)
         if (stopped) {
           lose(stopped, set)
           out.push(...nodes)
@@ -507,8 +516,13 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyDeep(node[key])
     const known = origin.get(node)
     if (known) origin.set(copy, known)
+    opts.onCopy?.(node, copy)
     return copy
   }
+
+  // A block placed as its file reads on its own, and where it was found: the
+  // files read with the settings at the directive do not hold it.
+  const readAlone = new WeakMap<object, { node: object; roots: any[] }>()
 
   // A file as it reads on its own, its includes in. It is the same wherever it
   // is included from, apart from the files already on the way.
@@ -524,7 +538,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     quiet++
     reachedFrom = reached.length
     try {
-      const tree = unmark(asDocument(walkNode(own, dir, stack, here, target, own, {})))
+      const tree = asDocument(walkNode(own, dir, stack, here, target, own, {}))
       sources.set(key, tree)
       return tree
     } finally {
@@ -647,7 +661,9 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           const twin = pair.placed.get(name)
           if (twin) return twin
           differs = true
-          return propagateConfigDefaults([copyDeep(node)], config)[0]
+          const copy = propagateConfigDefaults([copyDeep(node)], config)[0]
+          readAlone.set(copy, { node, roots: docs.map(doc => doc.node) })
+          return copy
         }
         return node
       })

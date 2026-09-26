@@ -168,6 +168,10 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
   // a file an operand names is relative to where the selector is written: the
   // command line
+  const carrySection = (from: object, to: object): void => {
+    const section = sections.get(from)
+    if (section) sections.set(to, section)
+  }
   const readFile = (document: string): SelectorDoc[] | undefined => {
     const file = path.resolve(document)
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return undefined
@@ -178,6 +182,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       file: document,
       self: file,
       text,
+      onCopy: carrySection,
       onError,
       onWarning,
     })
@@ -206,6 +211,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       self: fromStdin ? undefined : src.file,
       text: src.text,
       origin,
+      onCopy: carrySection,
       onError,
       onWarning,
     })

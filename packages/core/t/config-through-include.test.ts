@@ -165,10 +165,22 @@ describe('a found block the settings at the directive read as something else', (
     expect(problems.map(problem => [problem.kind, isWarning(problem)])).toEqual([['include-reading-differs', true]])
   })
 
-  it('does not fail a query', () => {
+  it('does not fail a query, which prints the block as the section holds it', () => {
     const r = q('head1', files())
     expect([r.matchCount, r.exitCode]).toEqual([1, 0])
     expect(r.problems.length).toBe(1)
+    expect(r.output).not.toContain('=begin')
+  })
+
+  it('takes a =set written before the include when an include after it fails', () => {
+    write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n\n=include file:./absent.podlite\n')
+    const host = write(
+      'host.podlite',
+      '=config markdown :allow<B>\n\n=set :id<chosen>\n=include file:./child.podlite | head1\n',
+    )
+    const { tree, problems } = assemble(host)
+    expect(problems.map(problem => problem.message).filter(message => message.includes('=set'))).toEqual([])
+    expect(runSelector('head1[ :id<chosen> ]', [{ file: 'doc', node: tree }]).length).toBe(1)
   })
 
   it('does not fail a test run over the document', () => {
