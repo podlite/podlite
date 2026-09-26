@@ -211,6 +211,17 @@ describe('the =set written before an include, in the assembled document', () => 
     expect(said).toEqual([])
   })
 
+  it('passes it on past a mask that names no file, without a warning', () => {
+    const warn = quiet()
+    const html = render('=pod\n\n=set :id<chosen>\n=include file:*.podlite\n\n=head1 After\n', part, {
+      expandPaths: () => [],
+    })
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    expect(idAt(html, 'After')).toBe('chosen')
+    expect(said).toEqual([])
+  })
+
   it('stops at an include that failed on the way, and says what it lost', () => {
     const warn = quiet()
     const html = render(
