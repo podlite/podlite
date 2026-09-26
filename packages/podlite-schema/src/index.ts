@@ -193,6 +193,9 @@ function makeTree() {
   chain.use(heading_plug)
   chain.use(defnTerms_plug)
   chain.use(table_plug)
+  // a data table is read by its attributes, so those a =config gives it must be
+  // on it by then; the rows it turns into get theirs in the pass below
+  chain.use(configDefaults_plug)
   chain.use(data_table_plug)
   // pre-configured attributes must sit on the blocks before markup codes are
   // parsed, since :allow decides which of them are read at all

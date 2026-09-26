@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item a C<=config> for C<data-table> reaches the table before it is read: a C<:mime-type> it gives reads an inline body, and an C<:allow> it gives acts in the cells; the table came out empty
+
+=item a C<:mime-type> written on a C<=data-table> with C<:src<data:...>> is the format the data is read in; it was an error. One a C<=config> gives does not replace the format of the data
+
 =item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
 
 =item a C<=config> or C<=alias> written under a folded heading stays in effect after the section the heading folds; it ended with the section

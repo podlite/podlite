@@ -70,6 +70,20 @@ Bob,25
     expect(cells[2]).toEqual(['Bob', '25'])
   })
 
+  it('reads an inline body in the format a =config gives', () => {
+    const src = `=config data-table :mime-type('text/csv; header=present') :allow<B>
+
+=begin data-table
+name,note
+Alice,B<key>
+=end data-table
+`
+    const table = findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table')
+    expect(table.content.length).toBe(2)
+    expect(JSON.stringify(table.content[1])).toContain('"name":"B"')
+    expect(reports).toEqual([])
+  })
+
   it('inline body without :mime-type renders as empty with warning', () => {
     const src = `=begin pod
 =begin data-table
@@ -86,6 +100,33 @@ Alice,30
 })
 
 describe('=data-table data: reference', () => {
+  const planets = (table: string, config = '') => `=begin pod
+${config}
+=begin data :key<planets> :mime-type('text/csv; header=present')
+name;radius
+Mercury;2440
+=end data
+
+${table}
+=end pod`
+
+  it('reads the data in the format written on the table', () => {
+    const src = planets("=for data-table :src<data:planets> :mime-type('text/tab-separated-values')")
+    const cells = extractCellTexts(findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table'))
+    expect(cells).toEqual([['name;radius'], ['Mercury;2440']])
+    expect(reports).toEqual([])
+  })
+
+  it('keeps the format of the data when a =config gives the table another', () => {
+    const src = planets(
+      '=for data-table :src<data:planets>',
+      "=config data-table :mime-type('text/tab-separated-values')",
+    )
+    const table = findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table')
+    expect(table.content.length).toBe(2)
+    expect(reports).toEqual([])
+  })
+
   it('reads CSV from referenced =data block', () => {
     const src = `=begin pod
 =begin data :key<planets> :mime-type('text/csv; header=present')

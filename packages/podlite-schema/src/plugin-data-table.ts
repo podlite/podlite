@@ -107,10 +107,9 @@ function processDataTable(node, tree, report) {
         report('table-source-unreadable', `no =data block found for data:${target}, table rendered as empty`, node)
         return { ...node, name: 'table', content: [] }
       }
-      if (mimeAttr) {
-        throw new Error(`:mime-type cannot be declared with :src<data:${target}> (inherited from referenced block)`)
-      }
-      const dataMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+      // the format of the referenced block yields to one written on the table, not to a =config default
+      const own = (Array.isArray(node.config) ? node.config : []).find(c => c && c.name === 'mime-type')
+      const dataMime = own && own.from !== 'config' ? mimeAttr : makeAttrs(dataBlock, {}).getFirstValue('mime-type')
       if (!dataMime) {
         report('table-source-unreadable', `=data block ${target} has no :mime-type, table rendered as empty`, node)
         return { ...node, name: 'table', content: [] }
