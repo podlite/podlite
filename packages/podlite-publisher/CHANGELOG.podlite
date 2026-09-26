@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
 =item a C<=set> written before C<=include> reaches the first block the include places, and the record the block comes from is left unchanged; the block after the include received it. When the include fails, the warning names the assignment it lost. When it places no block, or its first block is an include inside what was placed, a warning says the assignment has no target. An include whose selector cannot be read, or whose scheme is neither C<doc:> nor C<file:>, says so; it was reported as not found
 
 =item C<=include> whose source or address does not resolve is left in place with one warning; it gave two. An address is found by the text of a heading as well as by C<:id>

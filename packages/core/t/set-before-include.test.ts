@@ -119,7 +119,9 @@ describe('=set before =include in core', () => {
 
   it('keeps the last =set when an empty include stands between two', () => {
     write('p.podlite', part)
-    const one = ['=pod', '', '=set :id<A>', '=include file:./p.podlite | hed1', '', '=set :id<B>', '=head1 C', ''].join('\n')
+    const one = ['=pod', '', '=set :id<A>', '=include file:./p.podlite | hed1', '', '=set :id<B>', '=head1 C', ''].join(
+      '\n',
+    )
     expect(headIds(resolve(write('one.podlite', one)).tree)).toEqual([['C', 'B']])
     const two = [
       '=pod',
@@ -317,14 +319,14 @@ describe('=set before =include in core', () => {
   })
 
   describe('which assignment wins on the first included block', () => {
-    it('prefers the including file to a =set of the included one', () => {
+    it('prefers a =set of the included file to one of the including file', () => {
       write('p.podlite', '=pod\n\n=set :caption<Inner>\n=head1 Included\n')
       const run = resolve(write('main.podlite', '=pod\n\n=set :caption<Outer>\n=include file:./p.podlite | head1\n'))
-      expect(attrOf(blocks(run.tree, 'head')[0], 'caption').value).toBe('Outer')
+      expect(attrOf(blocks(run.tree, 'head')[0], 'caption').value).toBe('Inner')
     })
 
     it('keeps an attribute written on the included block', () => {
-      write('p.podlite', "=pod\n\n=for head1 :caption<Own>\nIncluded\n")
+      write('p.podlite', '=pod\n\n=for head1 :caption<Own>\nIncluded\n')
       const run = resolve(write('main.podlite', '=pod\n\n=set :caption<Outer>\n=include file:./p.podlite | head1\n'))
       expect(attrOf(blocks(run.tree, 'head')[0], 'caption').value).toBe('Own')
     })
@@ -422,7 +424,8 @@ describe('=set before =include in core', () => {
         trees.push(tree)
         return tree
       }
-      const src = '=pod\n\n=set :id<one>\n=include file:./p.podlite | head1\n\n=set :id<two>\n=include file:./p.podlite | head1\n'
+      const src =
+        '=pod\n\n=set :id<one>\n=include file:./p.podlite | head1\n\n=set :id<two>\n=include file:./p.podlite | head1\n'
       const run = resolve(write('main.podlite', src), { parse: keep })
       expect(headIds(run.tree)).toEqual([
         ['Included', 'one'],
@@ -438,7 +441,13 @@ describe('=set before =include in core', () => {
     it('lets a query find the assigned block and print its text', () => {
       write('p.podlite', part)
       const main = write('main.podlite', '=pod\n\n=set :id<chosen>\n=include file:./p.podlite | head1\n')
-      const r = runQuery({ selector: 'head1[:id<chosen>]', files: [main], format: 'podlite', failOnEmpty: false, quiet: true })
+      const r = runQuery({
+        selector: 'head1[:id<chosen>]',
+        files: [main],
+        format: 'podlite',
+        failOnEmpty: false,
+        quiet: true,
+      })
       expect(r.matchCount).toBe(1)
       expect(r.output).toContain('Included')
     })

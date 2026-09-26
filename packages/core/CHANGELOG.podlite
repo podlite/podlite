@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
 =item a C<=config> written before C<=include> reaches the blocks the include places, as it reaches the blocks written after it; an included file kept to its own C<=config>. The nearer file decides an option: the file of the block, then the files including it, nearest first. The included text is read with those settings, so a C<:allow> they give opens its blocks to markup codes. C<convert>, C<query> and C<test> follow the rule
 
 =item the selector of an C<=include> still reads the file without the settings of the including file. A found block those settings read as something else is placed as its file reads on its own, with the warning C<include-reading-differs>

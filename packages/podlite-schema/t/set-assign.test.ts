@@ -49,9 +49,14 @@ describe('=set before =include', () => {
 
 describe('where a value came from', () => {
   it('marks a =set value and a =config default, and leaves a written one unmarked', () => {
-    const src = ['=config table :width<100%>', '=set :caption Renewable', '=begin table :id<t1>', 'A | B', '=end table', ''].join(
-      '\n',
-    )
+    const src = [
+      '=config table :width<100%>',
+      '=set :caption Renewable',
+      '=begin table :id<t1>',
+      'A | B',
+      '=end table',
+      '',
+    ].join('\n')
     const tree = parseToAst(src)
     const table = findBlock(tree, 'table')
     expect(attr(table, 'caption').from).toBe('set')
@@ -106,13 +111,13 @@ describe('applySetToFirst', () => {
     expect(attr(target.content[0], 'id')).toBeUndefined()
   })
 
-  it('keeps a written attribute and replaces =set and =config values in place', () => {
+  it('keeps a written attribute and a =set value, and replaces a =config value in place', () => {
     const head = block('head', [item('caption', 'written'), item('id', 'inner', 'set'), item('lang', 'ru', 'config')])
     const incoming = [item('caption', 'outer', 'set'), item('id', 'outer', 'set'), item('lang', 'en', 'set')]
     const { nodes: out } = applySetToFirst([head], incoming, { mode: 'include' })
     expect(out[0].config.map((c: any) => [c.name, c.value, c.from])).toEqual([
       ['caption', 'written', undefined],
-      ['id', 'outer', 'set'],
+      ['id', 'inner', 'set'],
       ['lang', 'en', 'set'],
     ])
   })
@@ -127,7 +132,7 @@ describe('applySetToFirst', () => {
     ])
   })
 
-  it('gives the assignments to an include met first, winning over its own', () => {
+  it('gives the assignments to an include met first, behind its own', () => {
     const include = { ...block('include'), set: [item('id', 'own', 'set')] }
     const { nodes: out, outcome } = applySetToFirst(
       [include, block('head')],
@@ -136,7 +141,7 @@ describe('applySetToFirst', () => {
     )
     expect(outcome).toBe('include')
     expect(out[0].set.map((c: any) => [c.name, c.value])).toEqual([
-      ['id', 'outer'],
+      ['id', 'own'],
       ['lang', 'en'],
     ])
     expect(attr(out[1], 'id')).toBeUndefined()

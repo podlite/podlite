@@ -42,9 +42,9 @@ describe('=set before =include in to-jsx', () => {
     expect(idAt(html, 'Inner part')).not.toBe('deep')
   })
 
-  it('lets the including file win over a =set of the included one before its include', () => {
+  it('lets a =set of the included file before its include win over the including file', () => {
     const html = render('=pod\n\n=set :id<outer>\n=include file:own-set.podlite\n')
-    expect(idAt(html, 'Inner part')).toBe('outer')
+    expect(idAt(html, 'Inner part')).toBe('inner')
   })
 
   it('does not pass it on when the include fails, and says so', () => {

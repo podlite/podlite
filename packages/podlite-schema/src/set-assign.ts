@@ -48,20 +48,18 @@ export const mergeSet = (earlier: ConfigItem[] | undefined, later: ConfigItem[] 
   return out
 }
 
-// What an assignment may replace on the block it reaches: from the content an
-// include brings, a =set of that file and a =config default; carried past an
-// include with no target, only a default, since a later =set of the block's own
-// file already stands on it.
-const replaceable = (item: any, mode: 'include' | 'carry'): boolean =>
-  item && (item.from === 'config' || (mode === 'include' && item.from === 'set'))
+// What an assignment may replace on the block it reaches: only a =config
+// default. A =set already on the block was written nearer to it, in the file
+// the block comes from or after the include.
+const replaceable = (item: any): boolean => item && item.from === 'config'
 
-const assign = (config: any[] | undefined, set: ConfigItem[], mode: 'include' | 'carry'): any[] => {
+const assign = (config: any[] | undefined, set: ConfigItem[]): any[] => {
   const out = [...(config || [])]
   for (const item of set) {
     const at = out.findIndex(c => c && c.name === item.name)
     const marked = { ...item, from: 'set' as const }
     if (at === -1) out.push(marked)
-    else if (replaceable(out[at], mode)) out[at] = marked
+    else if (replaceable(out[at])) out[at] = marked
   }
   return out
 }
@@ -91,13 +89,13 @@ targeting, looking inside the wrappers the tree adds (C<root>,
 C<_folded_section>). The nodes given are not changed: the path to the target and
 the target's subtree are copied, and C<origin>, when given, is carried to the
 copies. An C<=include> met first, not yet resolved, takes the assignments into its
-own C<set>, where they wait for its content; they come from the including file
-and win over those of the same name already there.
+own C<set>, where they wait for its content; those of the same name already there
+were written nearer to that content and stay.
 
-C<mode> C<'include'> is for the content an include brings: an item replaces one
-that came from a C<=set> or C<=config> of that content. C<'carry'> is for the block
-that follows an include with no target: an item replaces only a C<=config>
-default. A written attribute is never replaced.
+An item replaces only a C<=config> default: an attribute written on the block
+and a C<=set> already on it are kept. C<mode> names where the nodes come from,
+the content an include brings or the block that follows an include with no
+target; both are treated alike.
 
 Returns the nodes and where the assignments went: C<'block'>, C<'include'> or
 C<'none'>.
@@ -109,13 +107,13 @@ export const applySetToFirst = (
   set: ConfigItem[],
   options: { mode: 'include' | 'carry'; origin?: WeakMap<object, any> },
 ): { nodes: any[]; outcome: SetOutcome } => {
-  const { mode, origin } = options
+  const { origin } = options
   const out = [...nodes]
   for (let i = 0; i < out.length; i++) {
     const node = out[i]
     if (!node || typeof node !== 'object') continue
     if (isInclude(node)) {
-      out[i] = { ...node, set: mergeSet(node.set, set) }
+      out[i] = { ...node, set: mergeSet(set, node.set) }
       const known = origin?.get(node)
       if (origin && known) origin.set(out[i], known)
       return { nodes: out, outcome: 'include' }
@@ -131,7 +129,7 @@ export const applySetToFirst = (
     }
     if (node.type !== 'block' || isSetTransparent(node)) continue
     const copy = deepCopy(node, origin)
-    copy.config = assign(node.config, set, mode)
+    copy.config = assign(node.config, set)
     markGuarded(copy)
     out[i] = copy
     return { nodes: out, outcome: 'block' }
