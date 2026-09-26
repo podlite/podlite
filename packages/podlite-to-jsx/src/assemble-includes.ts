@@ -167,8 +167,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
       }
       docs.push({ file: p, node: assembleFile(own, branch) })
     }
-    // a mask that names no file resolved to nothing, as in convert
-    if (masked && paths.length === 0) return { nodes: [] }
+    // a mask that names no file resolved to nothing, as in convert; it holds
+    // no address either
+    if (masked && paths.length === 0) {
+      if (parsed.anchor) return { failure: `include address not found: #${parsed.anchor} in ${parsed.document}` }
+      return { nodes: [] }
+    }
     if (docs.length === 0) {
       unread.slice(0, -1).forEach(warn)
       return { failure: unread[unread.length - 1] ?? `include is not resolved: ${selector}` }
