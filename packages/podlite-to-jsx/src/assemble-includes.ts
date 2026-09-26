@@ -133,6 +133,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     if (!selector) return { failure: 'include selector cannot be read: (empty)' }
     const parsed = parseSelector(selector)
     if (!parsed || parsed.scheme !== 'file' || !parsed.document) return { failure: `include is not resolved: ${selector}` }
+    const masked = isGlobPattern(parsed.document) && Boolean(opts.expandPaths)
     let paths: string[]
     try {
       paths =
@@ -148,22 +149,29 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     // caught while rendering before, and one include must not stop the page; of
     // a mask, the files that were read stand and the other is reported, as in
     // convert
-    let broken: string | undefined
+    const unread: string[] = []
     for (const p of paths) {
       if (stack.includes(p)) continue
       let own: any
       try {
         const source = opts.includeReader(p, opts.includeBaseDir)
-        if (source == null) continue
+        if (source == null) {
+          // a file a mask names is expected to be there
+          if (masked) unread.push(`include target cannot be read: ${p}`)
+          continue
+        }
         own = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
       } catch (e) {
-        broken = `include target cannot be read: ${p}: ${(e as Error)?.message ?? e}`
+        unread.push(`include target cannot be read: ${p}: ${(e as Error)?.message ?? e}`)
         continue
       }
       docs.push({ file: p, node: assembleFile(own, branch) })
     }
-    if (docs.length === 0) return { failure: broken ?? `include is not resolved: ${selector}` }
-    if (broken) warn(broken)
+    if (docs.length === 0) {
+      unread.slice(0, -1).forEach(warn)
+      return { failure: unread[unread.length - 1] ?? `include is not resolved: ${selector}` }
+    }
+    unread.forEach(warn)
     let found: PodNode[]
     try {
       found = outermost((runSelector(selector, docs) as PodNode[]) || [])

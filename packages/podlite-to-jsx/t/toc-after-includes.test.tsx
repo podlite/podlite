@@ -172,6 +172,28 @@ describe('a table of contents over a document with includes', () => {
     expect(said.some(s => s.includes('include mask cannot be expanded: *.podlite: glob down'))).toBe(true)
   })
 
+  it('reports each file of a mask it cannot read, and keeps the files it read', () => {
+    const warn = quiet()
+    const html = renderToStaticMarkup(
+      <Podlite
+        includeReader={(p: string) => {
+          if (p === 'bad1.podlite') throw new Error('broken')
+          return p === 'good.podlite' ? '=head1 Good\n' : null
+        }}
+        expandPaths={() => ['bad1.podlite', 'good.podlite', 'bad2.podlite']}
+      >
+        {'=pod\n\n=include file:*.podlite\n'}
+      </Podlite>,
+    )
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    expect(html).toContain('Good')
+    expect(said).toEqual([
+      '[to-jsx] include target cannot be read: bad1.podlite: broken',
+      '[to-jsx] include target cannot be read: bad2.podlite',
+    ])
+  })
+
   it('renders nothing for an include without a reader, as before', () => {
     const html = renderToStaticMarkup(<Podlite>{'=pod\n\n=para Before\n\n=include file:p.podlite\n'}</Podlite>)
     expect(html).toContain('Before')
