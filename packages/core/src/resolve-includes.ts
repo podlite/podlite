@@ -91,9 +91,9 @@ export const diskProvider: SourceProvider = { read: readSource, list: (dir, deep
 // against the directory of the text it is written in, and a file is its own
 // absolute path.
 const sourcesOf = (provider: SourceProvider): Sources => ({
-  locate: (written, context) => {
+  locate: (written, context, plain) => {
     const baseDir = String(context)
-    const masked = hasMask(written)
+    const masked = !plain && hasMask(written)
     const names = masked ? expandMask(written, baseDir, provider) : [written]
     return {
       masked,

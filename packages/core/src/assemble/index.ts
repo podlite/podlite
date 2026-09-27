@@ -87,14 +87,16 @@ written path names, from the context of the text the directive is written in,
 and tells whether the path is a mask: a mask may name no source, a plain path
 names one. C<read> gives the text of a source, or C<null> when it cannot be had.
 Either answers C<undefined> when the answer is not known yet: the include is
-then left in place with its C<=set> assignments, and nothing is reported.
+then left in place with its C<=set> assignments, and nothing is reported. With
+C<plain> the path names one source as written, mask characters and all: an
+operand of a selector is read that way.
 
 =end pod
 */
 export type Located = { masked: boolean; sources: Source[] }
 
 export type Sources = {
-  locate: (path: string, context: unknown) => Located | undefined
+  locate: (path: string, context: unknown, plain?: boolean) => Located | undefined
   read: (source: Source) => string | null | undefined
 }
 
@@ -462,6 +464,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         kind: 'set-target',
         target: last.selector,
         message: `=set before =include has no target block in scope: ${names(pending)}`,
+        lost: pending.map(c => c.name),
         chain: last.chain,
       })
     }
@@ -791,7 +794,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     // directory of the directive; one already on the way does not resolve
     let operandWaits = false
     const readFile = (document: string): SelectorDoc[] | undefined => {
-      const found = provider.locate(document, context)
+      const found = provider.locate(document, context, true)
       const source = found?.sources[0]
       const target = source?.id ?? ''
       const text = !source || stack.includes(target) ? null : textOf(source)

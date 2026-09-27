@@ -153,6 +153,24 @@ describe('an include that fails inside an included file, under =config of the in
   })
 })
 
+describe('a file an operand of the selector names', () => {
+  it('is named as written, a mask character and all', () => {
+    write('doc.podlite', '=for para :status<Paid>\nText\n')
+    write('voc.podlite', '=defn Paid\nSettled.\n')
+    const main = write('main.podlite', '=include file:./doc.podlite | para[ :status(in file:./voc*.podlite | defn) ]\n')
+    const { problems } = assemble(main)
+    expect(problems.map(problem => problem.kind)).toEqual(['operand'])
+  })
+})
+
+describe('=set assignments that found no block', () => {
+  it('are named in the problem that says so', () => {
+    const main = write('main.podlite', '=head1 A\n\n=set :id<x> :class<y>\n=include file:./none*.podlite\n')
+    const { problems } = assemble(main)
+    expect(problems.map(problem => [problem.kind, problem.lost])).toEqual([['set-target', ['id', 'class']]])
+  })
+})
+
 describe('a found block the settings at the directive read as something else', () => {
   const files = (): string => {
     write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n')

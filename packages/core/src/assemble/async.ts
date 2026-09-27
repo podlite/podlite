@@ -13,11 +13,11 @@ import { assembleIncludes } from './index'
 import type { AssembleOptions, IncludeOrigin, Located, Source, Sources } from './index'
 
 export type AsyncSources = {
-  locate: (path: string, context: unknown) => Located | Promise<Located>
+  locate: (path: string, context: unknown, plain?: boolean) => Located | Promise<Located>
   read: (source: Source) => string | null | Promise<string | null>
 }
 
-type Wanted = { kind: 'locate'; path: string; context: unknown } | { kind: 'read'; source: Source }
+type Wanted = { kind: 'locate'; path: string; context: unknown; plain: boolean } | { kind: 'read'; source: Source }
 
 /*
 =begin pod :kind<export>
@@ -34,7 +34,7 @@ id forgets what was read for that source, without one it forgets everything.
 export type SourceStore = {
   sources: () => Sources
   wanted: () => Wanted[]
-  located: (path: string, context: unknown, answer: Located) => void
+  located: (path: string, context: unknown, plain: boolean, answer: Located) => void
   text: (source: Source, answer: string | null) => void
   drop: (id?: string) => void
 }
@@ -43,15 +43,20 @@ export const createSourceStore = (): SourceStore => {
   const places = new Map<unknown, Map<string, Located>>()
   const texts = new Map<string, string | null>()
   let asked: Wanted[] = []
+  // a path read as written and the same path read as a mask are two questions
+  const keyOf = (path: string, plain: boolean): string => `${plain ? 'plain' : 'mask'}\u0000${path}`
   const want = (item: Wanted, same: (other: Wanted) => boolean): void => {
     if (!asked.some(same)) asked.push(item)
   }
   return {
     sources: () => ({
-      locate: (path, context) => {
-        const known = places.get(context)?.get(path)
+      locate: (path, context, plain = false) => {
+        const known = places.get(context)?.get(keyOf(path, plain))
         if (known) return known
-        want({ kind: 'locate', path, context }, o => o.kind === 'locate' && o.path === path && o.context === context)
+        want(
+          { kind: 'locate', path, context, plain },
+          o => o.kind === 'locate' && o.path === path && o.context === context && o.plain === plain,
+        )
         return undefined
       },
       read: source => {
@@ -65,9 +70,9 @@ export const createSourceStore = (): SourceStore => {
       asked = []
       return out
     },
-    located: (path, context, answer) => {
+    located: (path, context, plain, answer) => {
       const at = places.get(context) ?? new Map<string, Located>()
-      at.set(path, answer)
+      at.set(keyOf(path, plain), answer)
       places.set(context, at)
     },
     text: (source, answer) => {
@@ -122,9 +127,9 @@ export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Prom
       wanted.map(async item => {
         if (item.kind === 'locate') {
           const answer = await Promise.resolve()
-            .then(() => sources.locate(item.path, item.context))
+            .then(() => sources.locate(item.path, item.context, item.plain))
             .catch((): Located => ({ masked: false, sources: [] }))
-          store.located(item.path, item.context, answer)
+          store.located(item.path, item.context, item.plain, answer)
         } else {
           const answer = await Promise.resolve()
             .then(() => sources.read(item.source))

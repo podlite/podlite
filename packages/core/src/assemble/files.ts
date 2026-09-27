@@ -47,9 +47,9 @@ export const sourcesFromFiles = (files: Record<string, string>): Sources => {
   const texts = new Map(Object.keys(files).map((path): [string, string] => [normalize(path), files[path]]))
   const sourceAt = (id: string, name: string) => ({ id, name, context: dirOf(id) })
   return {
-    locate: (written, context) => {
+    locate: (written, context, plain) => {
       const dir = String(context ?? '')
-      if (!isMask(written)) return { masked: false, sources: [sourceAt(join(dir, written), written)] }
+      if (plain || !isMask(written)) return { masked: false, sources: [sourceAt(join(dir, written), written)] }
       const prefix = dir === '' || dir.endsWith('/') ? dir : `${dir}/`
       const names = [...texts.keys()]
         .filter(id => id.startsWith(prefix))
