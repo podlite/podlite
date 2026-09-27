@@ -129,8 +129,9 @@ const keyOf = (place: Place): string =>
   `${place.file}:${place.location?.start.offset ?? '?'}:${place.location?.end.offset ?? '?'}`
 
 // The settings in effect for the blocks of a test: each block by name with its
-// options in a fixed order. A place it is brought to and what the reading adds
-// to it are no part of them.
+// options in a fixed order, and the markup codes read in its text, since the
+// settings decide which of them are read. A place it is brought to and what the
+// reading adds to it are no part of them.
 const settingsOf = (node: unknown): string => {
   const parts: string[] = []
   const visit = (n: unknown): void => {
@@ -143,6 +144,7 @@ const settingsOf = (node: unknown): string => {
         .sort()
       parts.push(`${n.name}(${options.join(',')})`)
     }
+    if (n.type === 'fcode' && typeof n.name === 'string') parts.push(`${n.name}<>`)
     visit(n.content)
   }
   visit(node)

@@ -66,14 +66,18 @@ const assign = (config: any[] | undefined, set: ConfigItem[]): any[] => {
 
 // a copy of a node and all below it, each copy keeping the origin of the node it
 // replaces
-const deepCopy = (node: any, origin?: WeakMap<object, any>): any => {
-  if (Array.isArray(node)) return node.map(n => deepCopy(n, origin))
+type Copied = (from: object, to: object) => void
+
+const deepCopy = (node: any, origin?: WeakMap<object, any>, onCopy?: Copied): any => {
+  if (Array.isArray(node)) return node.map(n => deepCopy(n, origin, onCopy))
   if (!node || typeof node !== 'object') return node
   const copy: any = { ...node }
-  if (node.content !== undefined) copy.content = deepCopy(node.content, origin)
-  if (node.caption !== undefined && typeof node.caption === 'object') copy.caption = deepCopy(node.caption, origin)
+  if (node.content !== undefined) copy.content = deepCopy(node.content, origin, onCopy)
+  if (node.caption !== undefined && typeof node.caption === 'object')
+    copy.caption = deepCopy(node.caption, origin, onCopy)
   const known = origin?.get(node)
   if (origin && known) origin.set(copy, known)
+  onCopy?.(node, copy)
   return copy
 }
 
@@ -87,8 +91,8 @@ export type SetOutcome = 'block' | 'include' | 'none'
 Gives C<set> to the first block of C<nodes> that is not transparent to C<=set>
 targeting, looking inside the wrappers the tree adds (C<root>,
 C<_folded_section>). The nodes given are not changed: the path to the target and
-the target's subtree are copied, and C<origin>, when given, is carried to the
-copies. An C<=include> met first, not yet resolved, takes the assignments into its
+the target's subtree are copied, C<origin>, when given, is carried to the
+copies, and C<onCopy> is told of each copy in the target's subtree. An C<=include> met first, not yet resolved, takes the assignments into its
 own C<set>, where they wait for its content; those of the same name already there
 were written nearer to that content and stay.
 
@@ -105,9 +109,9 @@ C<'none'>.
 export const applySetToFirst = (
   nodes: any[],
   set: ConfigItem[],
-  options: { mode: 'include' | 'carry'; origin?: WeakMap<object, any> },
+  options: { mode: 'include' | 'carry'; origin?: WeakMap<object, any>; onCopy?: Copied },
 ): { nodes: any[]; outcome: SetOutcome } => {
-  const { origin } = options
+  const { origin, onCopy } = options
   const out = [...nodes]
   for (let i = 0; i < out.length; i++) {
     const node = out[i]
@@ -128,7 +132,7 @@ export const applySetToFirst = (
       return { nodes: out, outcome: found.outcome }
     }
     if (node.type !== 'block' || isSetTransparent(node)) continue
-    const copy = deepCopy(node, origin)
+    const copy = deepCopy(node, origin, onCopy)
     copy.config = assign(node.config, set)
     markGuarded(copy)
     out[i] = copy

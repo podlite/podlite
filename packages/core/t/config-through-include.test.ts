@@ -183,6 +183,15 @@ describe('a found block the settings at the directive read as something else', (
     expect(runSelector('head1[ :id<chosen> ]', [{ file: 'doc', node: tree }]).length).toBe(1)
   })
 
+  it('prints the block as the section holds it when a =set reaches it', () => {
+    write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n')
+    const host = write(
+      'host.podlite',
+      '=config markdown :allow<B>\n\n=set :id<chosen>\n=include file:./child.podlite | head1\n',
+    )
+    expect(q('head1', host).output).not.toContain('=begin')
+  })
+
   it('does not fail a test run over the document', () => {
     const doc = files()
     const main = write('rules.podlite', '=begin test :id<has-heading>\n=begin assert\nhead1\n=end assert\n=end test\n')

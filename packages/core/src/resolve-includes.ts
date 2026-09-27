@@ -417,7 +417,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
           out.push(...nodes)
           return
         }
-        const applied = applySetToFirst(nodes, set, { mode: 'include', origin })
+        const applied = applySetToFirst(nodes, set, { mode: 'include', origin, onCopy: opts.onCopy })
         out.push(...applied.nodes)
         if (applied.outcome !== 'none') return
         // nothing came in because an include inside failed: what it would
@@ -443,7 +443,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
         out.push(...items)
         return
       }
-      const applied = applySetToFirst(items, pending, { mode: 'carry', origin })
+      const applied = applySetToFirst(items, pending, { mode: 'carry', origin, onCopy: opts.onCopy })
       if (applied.outcome !== 'none') pending = []
       out.push(...applied.nodes)
     }

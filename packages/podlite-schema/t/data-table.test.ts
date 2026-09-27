@@ -117,6 +117,12 @@ ${table}
     expect(reports).toEqual([])
   })
 
+  it('keeps the format of the data when a =set gives the table another', () => {
+    const src = planets("=set :mime-type('text/tab-separated-values')\n=for data-table :src<data:planets>")
+    const table = findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table')
+    expect(extractCellTexts(table)[0]).toEqual(['name;radius'])
+  })
+
   it('keeps the format of the data when a =config gives the table another', () => {
     const src = planets(
       '=for data-table :src<data:planets>',

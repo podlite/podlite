@@ -86,6 +86,15 @@ describe('collecting tests', () => {
     expect(planRuns(collect(first, second).tests, 0)).toHaveLength(1)
   })
 
+  it('runs a test with a fixture under each set of markup codes read in its text', () => {
+    const body = aTest({ id: 'shared', fixture: '=head1 A', between: '=para\nC<x I<one> B<two>>\n' })
+    write('t/one.podlite', `=pod\n\n${body}`)
+    const include = '=include file:./t/one.podlite#shared\n'
+    const first = write('first.podlite', `=pod\n\n=config C<> :allow<I>\n\n${include}`)
+    const second = write('second.podlite', `=pod\n\n=config C<> :allow<B>\n\n${include}`)
+    expect(planRuns(collect(first, second).tests, 0)).toHaveLength(2)
+  })
+
   it('runs a test with a fixture once when a configuration reaches none of its blocks', () => {
     write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
     const include = '=include file:./t/one.podlite#shared\n'
