@@ -103,8 +103,8 @@ describe('=data-table data: reference', () => {
   const planets = (table: string, config = '') => `=begin pod
 ${config}
 =begin data :key<planets> :mime-type('text/csv; header=present')
-name;radius
-Mercury;2440
+name,radius
+Mercury,2440
 =end data
 
 ${table}
@@ -113,14 +113,14 @@ ${table}
   it('reads the data in the format written on the table', () => {
     const src = planets("=for data-table :src<data:planets> :mime-type('text/tab-separated-values')")
     const cells = extractCellTexts(findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table'))
-    expect(cells).toEqual([['name;radius'], ['Mercury;2440']])
+    expect(cells).toEqual([['name,radius'], ['Mercury,2440']])
     expect(reports).toEqual([])
   })
 
   it('keeps the format of the data when a =set gives the table another', () => {
     const src = planets("=set :mime-type('text/tab-separated-values')\n=for data-table :src<data:planets>")
     const table = findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table')
-    expect(extractCellTexts(table)[0]).toEqual(['name;radius'])
+    expect(extractCellTexts(table)[0]).toEqual(['name', 'radius'])
   })
 
   it('keeps the format of the data when a =config gives the table another', () => {
@@ -129,7 +129,7 @@ ${table}
       "=config data-table :mime-type('text/tab-separated-values')",
     )
     const table = findBlock(parse(src, { podMode: 1, diagnostics: reports }), 'table')
-    expect(table.content.length).toBe(2)
+    expect(extractCellTexts(table)[0]).toEqual(['name', 'radius'])
     expect(reports).toEqual([])
   })
 
