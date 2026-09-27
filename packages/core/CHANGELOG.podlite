@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a file an C<=include> brings whole stays in a C<root> block in the assembled document, so its C<=config> and C<=alias> end with it: in HTML and Markdown they acted on the blocks after the include. A selection goes through the block and does not find it
+
 =item C<podlite test> runs a test brought in by several files once for each configuration it is brought in under; it ran it once whatever the configuration
 
 =item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won

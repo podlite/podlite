@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<toHtml> writes the blocks of a C<root> block with no warning; it printed the whole document to the error stream as a node left unhandled
+
 =item a C<=config> for C<data-table> reaches the table before it is read: a C<:mime-type> it gives reads an inline body, and an C<:allow> it gives acts in the cells; the table came out empty
 
 =item a C<:mime-type> written on a C<=data-table> with C<:src<data:...>> is the format the data is read in; it was an error. One a C<=config> gives does not replace the format of the data

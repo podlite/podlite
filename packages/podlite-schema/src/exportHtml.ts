@@ -248,6 +248,10 @@ const rules = {
   code: handleNested(setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<code>`, '</code></pre>'))),
   // a folded section is a heading plus the nodes under it; the disclosure is
   // native so the reader needs no script to open it
+  // a document, and a file an include brings whole: its blocks are written, the holder is not
+  root: () => (node, ctx, interator) => {
+    interator(node.content, ctx)
+  },
   _folded_section: (writer, processor) => (node, ctx, interator) => {
     const [heading, ...rest] = (node.content || []) as any[]
     const open = node.foldedState === false || node.foldedState === 0 || node.foldedState === '0'

@@ -137,7 +137,7 @@ const settingsOf = (node: unknown): string => {
   const visit = (n: unknown): void => {
     if (Array.isArray(n)) return n.forEach(visit)
     if (!isObject(n)) return
-    if (n.type === 'block' && typeof n.name === 'string' && n.name !== '_folded_section') {
+    if (n.type === 'block' && typeof n.name === 'string' && n.name !== '_folded_section' && n.name !== 'root') {
       const options = (Array.isArray(n.config) ? n.config : [])
         .filter(isObject)
         .map(c => `${String(c.name)}=${String(c.type)}:${JSON.stringify(c.value)}`)

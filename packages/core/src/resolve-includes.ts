@@ -142,11 +142,6 @@ export const expandMask = (target: string, baseDir: string, provider: SourceProv
 const keepBlocks = (items: Array<SelectorDoc | PodNode>): PodNode[] =>
   items.filter(item => item && typeof item === 'object' && !('file' in item)) as PodNode[]
 
-const unwrapRoot = (blocks: PodNode[]): PodNode[] =>
-  blocks.flatMap((b: any) =>
-    b && b.type === 'block' && b.name === 'root' && Array.isArray(b.content) ? b.content : [b],
-  )
-
 // A parser may hand back a list of nodes rather than a document; a selection
 // needs one node to walk, and it must hold the parsed nodes themselves.
 const asDocument = (tree: any): any =>
@@ -747,10 +742,8 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     }
     try {
       return done(
-        unwrapRoot(
-          placedFor(
-            outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
-          ),
+        placedFor(
+          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
         ),
       )
     } catch (e) {
