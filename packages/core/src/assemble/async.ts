@@ -9,7 +9,7 @@ nothing is left to ask.
 
 =end pod
 */
-import { assembleIncludes } from './index'
+import { assembleIncludes, silently } from './index'
 import type { AssembleOptions, IncludeOrigin, Located, Source, Sources } from './index'
 
 export type AsyncSources = {
@@ -113,14 +113,16 @@ export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Prom
   const { sources, store = createSourceStore(), ...rest } = opts
   const ignore = (): void => {}
   for (let round = 0; round < maxRounds; round++) {
-    assembleIncludes(tree, {
-      ...rest,
-      sources: store.sources(),
-      origin: new WeakMap<object, IncludeOrigin>(),
-      onCopy: undefined,
-      onError: ignore,
-      onWarning: ignore,
-    })
+    silently(() =>
+      assembleIncludes(tree, {
+        ...rest,
+        sources: store.sources(),
+        origin: new WeakMap<object, IncludeOrigin>(),
+        onCopy: undefined,
+        onError: ignore,
+        onWarning: ignore,
+      }),
+    )
     const wanted = store.wanted()
     if (wanted.length === 0) return assembleIncludes(tree, { ...rest, sources: store.sources() })
     await Promise.all(

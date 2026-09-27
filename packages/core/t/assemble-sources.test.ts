@@ -156,6 +156,29 @@ describe('assembly over sources that answer later', () => {
   })
 })
 
+describe('a plugin that warns while an included file is read', () => {
+  const files = {
+    '/b/main.podlite': '=config para :tag<x>\n\n=include file:./a.podlite\n',
+    '/b/a.podlite': '=toc file:foo\n\n=include file:./b.podlite\n',
+    '/b/b.podlite': '=head1 B\n',
+  }
+  const count = async (work: () => unknown): Promise<number> => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await work()
+    const said = warn.mock.calls.length
+    warn.mockRestore()
+    return said
+  }
+
+  it('is heard once, however many times the file is read', async () => {
+    expect(await count(() => assembled(files, '/b/main.podlite'))).toBe(1)
+  })
+
+  it('is heard once when the sources answer later', async () => {
+    expect(await count(() => assembledLater(files, '/b/main.podlite'))).toBe(1)
+  })
+})
+
 describe('an include whose source is not known yet', () => {
   it('stays in place with the =set written before it, and nothing is reported', () => {
     const store = createSourceStore()

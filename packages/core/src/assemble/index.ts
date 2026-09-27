@@ -128,6 +128,27 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'set-target' ||
   problem.kind === 'include-reading-differs'
 
+/*
+=begin pod :kind<export>
+
+=head2 silently
+
+Runs C<work> with warnings of the plugins it calls kept from the console: a text
+read a second time, or read ahead of the answers it waits for, would otherwise
+say the same thing again.
+
+=end pod
+*/
+export const silently = <T>(work: () => T): T => {
+  const warn = console.warn
+  console.warn = () => {}
+  try {
+    return work()
+  } finally {
+    console.warn = warn
+  }
+}
+
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
 
@@ -536,6 +557,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // their own file already.
   const finishFile = (root: any, file: string): any => {
     markGuarded(root)
+    // a table that cannot be built said so when its file was read
+    const rebuilt = (node: any): any => silently(() => rebuildToc(node, root))
     const walk = (node: any): any => {
       if (!node || typeof node !== 'object') return node
       if (Array.isArray(node)) {
@@ -543,7 +566,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         return mapped.some((n, i) => n !== node[i]) ? mapped : node
       }
       const where = origin.get(node)
-      const made = isToc(node) && where?.file === file && !where.via ? rebuildToc(node, root) : node
+      const made = isToc(node) && where?.file === file && !where.via ? rebuilt(node) : node
       const content = made === node && Array.isArray(node.content) ? walk(node.content) : node.content
       if (made === node && content === node.content) return node
       const copy = made === node ? { ...node, content } : made
@@ -561,16 +584,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const key = stack.join('\n')
     const known = sources.get(key)
     if (known) return known
-    // a plugin that warns while the text is read has warned already, when the
-    // same text was read for its place
-    const warn = console.warn
-    console.warn = () => {}
-    let own: any
-    try {
-      own = opts.parse(text, target)
-    } finally {
-      console.warn = warn
-    }
+    const own = silently(() => opts.parse(text, target))
     recordOrigin(own, { file: target, text }, origin)
     const failed = failures.length
     const from = reachedFrom
