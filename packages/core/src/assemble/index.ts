@@ -1,6 +1,7 @@
 import {
   applySetToFirst,
   isSetTransparent,
+  markGuarded,
   bindTarget,
   ConfigItem,
   ConfigScope,
@@ -17,6 +18,7 @@ import {
   PodNode,
   SelectorError,
 } from '@podlite/schema'
+import { rebuildToc } from '@podlite/toc'
 
 // One directive on the way from the document to the problem: the file it is
 // written in and where.
@@ -223,6 +225,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       .filter(entry => entry.shown)
       .forEach(entry => emit(entry.problem))
   }
+  // how many includes brought their content so far
+  let brought = 0
   // how deep in lists the walk is: the document's own list is the first
   let level = 0
   // the problems of each failed include, in the order met
@@ -391,6 +395,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           return
         }
         const { nodes, failure, inner, roots, selector } = resolved
+        if (!failure) brought++
         if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`)
         if (failure) {
           const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
@@ -520,6 +525,32 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // files read with the settings at the directive do not hold it.
   const readAlone = new WeakMap<object, { node: object; roots: any[] }>()
 
+  const isToc = (node: any): boolean =>
+    node && typeof node === 'object' && node.type === 'block' && (node.name === 'toc' || node.name === 'Toc')
+  // A table of contents is built while its file is parsed, before the includes
+  // of that file are in. The tables written in an included file are built again
+  // over it once they are; those an include of its own brought were built over
+  // their own file already.
+  const finishFile = (root: any, file: string): any => {
+    markGuarded(root)
+    const walk = (node: any): any => {
+      if (!node || typeof node !== 'object') return node
+      if (Array.isArray(node)) {
+        const mapped = node.map(walk)
+        return mapped.some((n, i) => n !== node[i]) ? mapped : node
+      }
+      const where = origin.get(node)
+      const made = isToc(node) && where?.file === file && !where.via ? rebuildToc(node, root) : node
+      const content = made === node && Array.isArray(node.content) ? walk(node.content) : node.content
+      if (made === node && content === node.content) return node
+      const copy = made === node ? { ...node, content } : made
+      if (where) origin.set(copy, where)
+      opts.onCopy?.(node, copy)
+      return copy
+    }
+    return walk(root)
+  }
+
   // A file as it reads on its own, its includes in. It is the same wherever it
   // is included from, apart from the files already on the way.
   const sources = new Map<string, any>()
@@ -527,14 +558,25 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const key = stack.join('\n')
     const known = sources.get(key)
     if (known) return known
-    const own = opts.parse(text, target)
+    // a plugin that warns while the text is read has warned already, when the
+    // same text was read for its place
+    const warn = console.warn
+    console.warn = () => {}
+    let own: any
+    try {
+      own = opts.parse(text, target)
+    } finally {
+      console.warn = warn
+    }
     recordOrigin(own, { file: target, text }, origin)
     const failed = failures.length
     const from = reachedFrom
     quiet++
     reachedFrom = reached.length
     try {
-      const tree = asDocument(walkNode(own, dir, stack, here, target, own, {}))
+      const before = brought
+      const walked = asDocument(walkNode(own, dir, stack, here, target, own, {}))
+      const tree = brought > before ? finishFile(walked, target) : walked
       sources.set(key, tree)
       return tree
     } finally {
@@ -650,7 +692,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const own = opts.parse(text, target, scoped ? config : undefined)
       recordOrigin(own, { file: target, text }, origin)
       const dir = source.context
-      const placed = asDocument(walkNode(own, dir, [...stack, target], here, target, own, { ...config }))
+      const before = brought
+      const walked = asDocument(walkNode(own, dir, [...stack, target], here, target, own, { ...config }))
+      const placed = brought > before ? finishFile(walked, target) : walked
       placedDocs.push(placed)
       docs.push({ file: name, node: scoped ? sourceOf(target, text, dir, [...stack, target], here) : placed })
     }
