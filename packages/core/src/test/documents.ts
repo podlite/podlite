@@ -136,7 +136,7 @@ const isLocation = (value: unknown): value is Location =>
 const unreadIn = (
   tree: unknown,
   place: (node: object) => string | undefined,
-  lost: Map<string, string>,
+  lost: WeakMap<object, string>,
   sections: WeakMap<object, Record<string, unknown>>,
 ): PreparedDocument['unread'] => {
   const found: PreparedDocument['unread'] = []
@@ -147,9 +147,8 @@ const unreadIn = (
     // only a table reports lost data, and a block read out of a Markdown section
     // counts its place from the section, so it matches nothing here
     const table = node.type === 'block' && (node.name === 'table' || node.name === 'data-table') && !sections.has(node)
-    const at = table && location ? place(node) : undefined
-    const message = at !== undefined && lost.get(`${at}:${location?.start.offset}`)
-    if (message) found.push({ source: at ?? '', message, location })
+    const message = table && location ? lost.get(node) : undefined
+    if (message) found.push({ source: place(node) ?? '', message, location })
     if (node.type === 'block' && node.name === 'data-table') {
       // the source is read the way the plugin reads it
       const src = makeAttrs(node, {}).getFirstValue('src')
@@ -177,8 +176,19 @@ export const prepareDocument = (
   const reader = opts.profile.reader()
   const recognition = new Map<string, RecognitionEvent[]>()
   const identify = (file: string): string => (file === name ? name : canonical(file))
-  // tables whose data could not be had, by file and place
-  const lost = new Map<string, string>()
+  // Tables whose data could not be had. A file is read once for each place it
+  // is brought to, and the settings there decide whether its table is read, so
+  // the loss is kept with the table of that reading.
+  const lost = new WeakMap<object, string>()
+  const markLost = (node: unknown, at: Map<number, string>): void => {
+    if (Array.isArray(node)) return node.forEach(n => markLost(n, at))
+    if (!isObject(node)) return
+    const message = isLocation(node.location) ? at.get(node.location.start.offset) : undefined
+    if (message && node.type === 'block' && (node.name === 'table' || node.name === 'data-table')) {
+      lost.set(node, message)
+    }
+    markLost(node.content, at)
+  }
   const sections = new WeakMap<object, Record<string, unknown>>()
   // marked per file before the includes: an address may bring in a block
   // without the section around it
@@ -195,12 +205,20 @@ export const prepareDocument = (
     const tree = reader.toTree(body, events, diagnostics, config)
     recognition.set(identify(file), events)
     markSections(tree, undefined)
+    const at = new Map<number, string>()
     for (const d of diagnostics) {
       if (d.code === 'table-source-unreadable' || d.code === 'table-source-deferred') {
-        lost.set(`${identify(file)}:${d.location.start.offset}`, d.message)
+        at.set(d.location.start.offset, d.message)
       }
     }
+    if (at.size) markLost(tree, at)
     return tree
+  }
+  const carry = (from: object, to: object): void => {
+    const section = sections.get(from)
+    if (section) sections.set(to, section)
+    const message = lost.get(from)
+    if (message) lost.set(to, message)
   }
   const origin = new WeakMap<object, IncludeOrigin>()
   const errors: IncludeProblem[] = []
@@ -216,18 +234,12 @@ export const prepareDocument = (
       text,
       self: input.self,
       origin,
-      onCopy: (from, to) => {
-        const section = sections.get(from)
-        if (section) sections.set(to, section)
-      },
+      onCopy: carry,
       provider: opts.provider,
       onError: note,
       onWarning: note,
     })
-    const tree = refreshTocs(resolved, reader.written(text), name, origin, (from, to) => {
-      const section = sections.get(from)
-      if (section) sections.set(to, section)
-    })
+    const tree = refreshTocs(resolved, reader.written(text), name, origin, carry)
     const place = (node: object): string | undefined => {
       const where = origin.get(node)
       return where ? identify(where.file) : undefined

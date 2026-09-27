@@ -78,7 +78,7 @@ export type ResolveIncludesOptions = {
   onError?: (problem: IncludeProblem) => void
   onWarning?: (problem: IncludeProblem) => void
   origin?: WeakMap<object, IncludeOrigin>
-  // told of each copy made of a parsed node that is not a copy of its list alone
+  // told of each copy made of a parsed node
   onCopy?: (from: object, to: object) => void
   // the disk when not given
   provider?: SourceProvider
@@ -344,6 +344,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
     const { set, ...rest } = node
     const known = origin.get(node)
     if (known) origin.set(rest, known)
+    opts.onCopy?.(node, rest)
     return rest
   }
 
@@ -786,6 +787,7 @@ export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any =>
       const copy = { ...node, content: walkList(node.content, baseDir, stack, chain, file, home, scope) }
       const known = origin.get(node)
       if (known) origin.set(copy, known)
+      opts.onCopy?.(node, copy)
       return copy
     }
     return node

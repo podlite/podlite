@@ -173,6 +173,14 @@ describe('preparing a document', () => {
     ])
   })
 
+  it('takes an included data table as read when the including file gives its format', () => {
+    write('part.podlite', '=begin data-table\na,b\n1,2\n=end data-table\n')
+    const config = "=config data-table :mime-type('text/csv; header=present')"
+    const given = prepare(write('main.podlite', `${config}\n\n=include file:./part.podlite\n`))
+    const bare = prepare(write('bare.podlite', '=include file:./part.podlite\n'))
+    expect([given.unread.length, bare.unread.length]).toEqual([0, 1])
+  })
+
   it('keeps the file a Markdown block was written in after it is read', () => {
     write('t/md.podlite', '=pod\n\n=begin markdown\n# Title\n\n```js\nlet a\n```\n=end markdown\n')
     const main = write('main.podlite', '=pod\n\n=include file:./t/md.podlite\n')
