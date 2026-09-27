@@ -84,12 +84,16 @@ Where included text comes from, given by the host. C<locate> finds the sources a
 written path names, from the context of the text the directive is written in,
 and tells whether the path is a mask: a mask may name no source, a plain path
 names one. C<read> gives the text of a source, or C<null> when it cannot be had.
+Either answers C<undefined> when the answer is not known yet: the include is
+then left in place with its C<=set> assignments, and nothing is reported.
 
 =end pod
 */
+export type Located = { masked: boolean; sources: Source[] }
+
 export type Sources = {
-  locate: (path: string, context: unknown) => { masked: boolean; sources: Source[] }
-  read: (source: Source) => string | null
+  locate: (path: string, context: unknown) => Located | undefined
+  read: (source: Source) => string | null | undefined
 }
 
 export type AssembleOptions = {
@@ -163,9 +167,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // Read once per call: a file brought in twice is parsed twice, so each place it
   // lands holds nodes of its own.
   const texts = new Map<string, string | null>()
-  const textOf = (source: Source): string | null => {
-    if (!texts.has(source.id)) texts.set(source.id, provider.read(source))
-    return texts.get(source.id) ?? null
+  const textOf = (source: Source): string | null | undefined => {
+    if (texts.has(source.id)) return texts.get(source.id) ?? null
+    const text = provider.read(source)
+    if (text !== undefined) texts.set(source.id, text)
+    return text
   }
 
   const emit = (problem: IncludeProblem): void => {
@@ -377,6 +383,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         } finally {
           reached.length = at
         }
+        if (resolved.waiting) {
+          const kept = set.length ? { ...n, set } : n
+          const known = origin.get(n)
+          if (kept !== n && known) origin.set(kept, known)
+          out.push(kept)
+          return
+        }
         const { nodes, failure, inner, roots, selector } = resolved
         if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`)
         if (failure) {
@@ -541,7 +554,15 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     file: string,
     home: any,
     config: ConfigScope,
-  ): { nodes: any[]; failure?: IncludeProblem[]; inner: Held[][]; roots?: any[]; selector: string } => {
+  ): {
+    nodes: any[]
+    failure?: IncludeProblem[]
+    inner: Held[][]
+    roots?: any[]
+    selector: string
+    // a source of the include is not known yet
+    waiting?: boolean
+  } => {
     const mark = failures.length
     reached.push(false)
     // the walked files a selection ran over, in order
@@ -583,8 +604,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       )
     }
 
-    const { masked, sources: written } = provider.locate(parsed.document, context)
-    if (!masked && (written.length === 0 || textOf(written[0]) === null)) {
+    const wait = () => ({ nodes: [node], inner: failures.slice(mark), roots: undefined, selector, waiting: true })
+    const located = provider.locate(parsed.document, context)
+    if (!located) return wait()
+    const { masked, sources: written } = located
+    const first = !masked && written.length ? textOf(written[0]) : null
+    if (first === undefined) return wait()
+    if (!masked && first === null) {
       return fail({
         kind: 'source',
         target: selector,
@@ -600,6 +626,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const placedDocs: any[] = []
     const unread: IncludeProblem[] = []
     let cyclic = false
+    let waiting = false
     for (const source of written) {
       const { id: target, name } = source
       if (stack.includes(target)) {
@@ -607,6 +634,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         continue
       }
       const text = textOf(source)
+      if (text === undefined) {
+        waiting = true
+        continue
+      }
       if (text === null) {
         unread.push({
           kind: 'source',
@@ -623,6 +654,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       placedDocs.push(placed)
       docs.push({ file: name, node: scoped ? sourceOf(target, text, dir, [...stack, target], here) : placed })
     }
+    if (waiting) return wait()
     // The blocks found in the files as they read on their own are placed as the
     // same files read them at the directive.
     const placedFor = (found: any[]): any[] => {
@@ -713,12 +745,14 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
 
     // a file an operand names is read the way an included file is, from the
     // directory of the directive; one already on the way does not resolve
+    let operandWaits = false
     const readFile = (document: string): SelectorDoc[] | undefined => {
-      const [source] = provider.locate(document, context).sources
-      if (!source) return undefined
-      const target = source.id
-      const text = stack.includes(target) ? null : textOf(source)
-      if (text === null) return undefined
+      const found = provider.locate(document, context)
+      const source = found?.sources[0]
+      const target = source?.id ?? ''
+      const text = !source || stack.includes(target) ? null : textOf(source)
+      if (!found || text === undefined) operandWaits = true
+      if (!source || text === null || text === undefined) return undefined
       const own = opts.parse(text, target)
       recordOrigin(own, { file: target, text }, origin)
       return [
@@ -729,13 +763,14 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       ]
     }
     try {
-      return done(
-        placedFor(
-          outermost(keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }))),
-        ),
+      const found = outermost(
+        keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
       )
+      if (operandWaits) return wait()
+      return done(placedFor(found))
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
+      if (operandWaits) return wait()
       return fail({
         kind: 'operand',
         target: selector,
@@ -780,3 +815,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     flush()
   }
 }
+
+export { sourcesFromFiles } from './files'
+export { assembleAsync, createSourceStore } from './async'
+export type { AsyncSources, SourceStore, AssembleAsyncOptions } from './async'

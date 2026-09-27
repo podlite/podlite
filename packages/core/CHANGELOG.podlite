@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite/assemble> gives C<sourcesFromFiles>, sources over texts held in memory by path, and C<assembleAsync>, which assembles a document whose sources answer through promises: it asks for what is missing and assembles again until nothing is. C<createSourceStore> keeps the answers between assemblies. Sources may answer C<undefined> for what is not known yet; the include then stays in place with its C<=set> assignments and nothing is reported
+
 =item the assembly of includes is given as C<podlite/assemble>, an entry with no module of Node in it: C<assembleIncludes> takes the included text from C<sources> the host gives, where C<locate> finds the sources a written path names and C<read> gives the text of one. C<resolveIncludes> reads the disk through it and is not changed. An include problem that loses C<=set> assignments names them in C<lost>
 
 =item a file an C<=include> brings whole stays in a C<root> block in the assembled document, so its C<=config> and C<=alias> end with it: in HTML and Markdown they acted on the blocks after the include. A selection goes through the block and does not find it
