@@ -98,6 +98,12 @@ export interface IPodliteEditor extends CodeMirrorProps {
       paths. Required when authors use globs; without it glob targets read
       as literal paths and resolve to nothing. */
   expandPaths?: ExpandPaths
+  /** Read included files from a source that answers later: a file dialog, a
+      shell call, a virtual file system. The preview shows the document at
+      once and the included content when it has come. Takes the place of
+      `includeReader`; a mask is expanded by `expand`, or by `expandPaths`
+      when there is none. */
+  includeSource?: IncludeSource
   /** Resolve image `src` at preview render time. Receives the path from
       `=picture file:X` or markdown `![](X)` and an optional base directory.
       Return a resolved URL (string) or a Promise — sandboxed hosts (Tauri,
@@ -111,13 +117,20 @@ export interface IPodliteEditor extends CodeMirrorProps {
   showInlineImages?: boolean
 }
 
-export type IncludeReader = (path: string, baseDir?: string) => string | null
-export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
+export type IncludeReader = (path: string, baseDir?: string) => string | null | undefined
+export type ExpandPaths = (pattern: string, baseDir?: string) => string[] | undefined
+export type IncludeSource = {
+  read: (path: string, baseDir?: string) => Promise<string | null>
+  expand?: (pattern: string, baseDir?: string) => Promise<string[]>
+}
 export type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
 
 export interface PodliteEditorRef {
   editor: React.RefObject<CodeMirrorRef>
   preview: React.RefObject<HTMLDivElement> | null
+  /** Forget what `includeSource` answered for a path, or for everything when
+      no path is given, and ask again. */
+  invalidateIncludes: (path?: string) => void
 }
 const PodliteEditor: PodliteEditorComponent = React.forwardRef<PodliteEditorRef, IPodliteEditor>(
   PodliteEditorInternal,
@@ -154,6 +167,7 @@ function PodliteEditorInternal(
     includeReader,
     includeBaseDir,
     expandPaths,
+    includeSource,
     imageSrc,
     imageBaseDir,
     showInlineImages = false,
@@ -198,11 +212,100 @@ function PodliteEditorInternal(
 
   // Stable basicSetup config to prevent CodeMirror reconfiguration on re-render
   const basicSetupConfig = React.useMemo(() => ({ defaultKeymap: false }), [])
+  // What includeSource has answered so far. The preview reads it while it
+  // renders; what is missing is noted then and asked for once the render is done.
+  type IncludeAnswer = { text: string | null } | { paths: string[] } | { error: string }
+  type IncludeQuestion = { kind: 'read' | 'expand'; value: string; baseDir?: string }
+  const includeAnswers = useRef(new Map<string, IncludeAnswer>())
+  const includeMissed = useRef(new Map<string, IncludeQuestion>())
+  // the request each key was last asked with, and the request it is at now
+  const includeAsked = useRef(new Map<string, number>())
+  const includeRequests = useRef(new Map<string, number>())
+  // answers of an earlier source, or after everything was forgotten, are dropped
+  const includeEpoch = useRef(0)
+  const includeMounted = useRef(false)
+  const [includeTick, setIncludeTick] = useState(0)
+  const includeSourceRef = useRef(includeSource)
+  const forgetIncludes = () => {
+    includeAnswers.current.clear()
+    includeMissed.current.clear()
+    includeAsked.current.clear()
+    includeEpoch.current++
+  }
+  if (includeSourceRef.current !== includeSource) {
+    includeSourceRef.current = includeSource
+    forgetIncludes()
+  }
+  // a path read and the same string expanded as a mask are two questions
+  const includeKey = (q: IncludeQuestion): string => `${q.kind}\u0000${q.baseDir ?? ''}\u0000${q.value}`
+  const includeAnswer = (question: IncludeQuestion): IncludeAnswer | undefined => {
+    const key = includeKey(question)
+    const answer = includeAnswers.current.get(key)
+    if (!answer) includeMissed.current.set(key, question)
+    else if ('error' in answer) throw new Error(answer.error)
+    return answer
+  }
+  const readIncluded = useCallback((path: string, baseDir?: string): string | null | undefined => {
+    const answer = includeAnswer({ kind: 'read', value: path, baseDir })
+    return answer && 'text' in answer ? answer.text : undefined
+  }, [])
+  const expandIncluded = useCallback((pattern: string, baseDir?: string): string[] | undefined => {
+    const answer = includeAnswer({ kind: 'expand', value: pattern, baseDir })
+    return answer && 'paths' in answer ? answer.paths : undefined
+  }, [])
+  useEffect(() => {
+    includeMounted.current = true
+    return () => {
+      includeMounted.current = false
+    }
+  }, [])
+  useEffect(() => {
+    const source = includeSourceRef.current
+    const missed = [...includeMissed.current]
+    includeMissed.current.clear()
+    if (!source) return
+    const epoch = includeEpoch.current
+    for (const [key, question] of missed) {
+      const request = includeRequests.current.get(key) ?? 0
+      if (includeAsked.current.get(key) === request) continue
+      includeAsked.current.set(key, request)
+      const accept = (answer: IncludeAnswer) => {
+        const current = includeRequests.current.get(key) ?? 0
+        if (!includeMounted.current || includeEpoch.current !== epoch || current !== request) return
+        includeAnswers.current.set(key, answer)
+        setIncludeTick(tick => tick + 1)
+      }
+      const failed = (e: unknown) => accept({ error: String((e as Error)?.message ?? e) })
+      try {
+        if (question.kind === 'read') {
+          source.read(question.value, question.baseDir).then(text => accept({ text: text ?? null }), failed)
+        } else if (source.expand) {
+          source.expand(question.value, question.baseDir).then(paths => accept({ paths: paths ?? [] }), failed)
+        }
+      } catch (e) {
+        failed(e)
+      }
+    }
+  })
+  const invalidateIncludes = useCallback((path?: string) => {
+    if (path === undefined) forgetIncludes()
+    else {
+      for (const key of [...includeAnswers.current.keys(), ...includeAsked.current.keys()]) {
+        if (!key.startsWith('read\u0000') || !key.endsWith(`\u0000${path}`)) continue
+        includeAnswers.current.delete(key)
+        includeAsked.current.delete(key)
+        includeRequests.current.set(key, (includeRequests.current.get(key) ?? 0) + 1)
+      }
+    }
+    setIncludeTick(tick => tick + 1)
+  }, [])
+
   useImperativeHandle(
     ref,
     () => ({
       editor: codeMirror,
       preview: preview,
+      invalidateIncludes,
     }),
     [codeMirror],
   )
@@ -974,9 +1077,9 @@ function PodliteEditorInternal(
         wrapElement={wrapFunction}
         plugins={plugins}
         tree={getTree(source)}
-        includeReader={includeReader}
+        includeReader={includeSource ? readIncluded : includeReader}
         includeBaseDir={includeBaseDir}
-        expandPaths={expandPaths}
+        expandPaths={includeSource?.expand ? expandIncluded : expandPaths}
         imageSrc={imageSrc}
         imageBaseDir={imageBaseDir}
       />
@@ -998,7 +1101,7 @@ function PodliteEditorInternal(
     ) : (
       <div dangerouslySetInnerHTML={{ __html: preview.result as string }} className="content"></div>
     )
-  }, [enablePreview, value, makePreviewComponent])
+  }, [enablePreview, value, makePreviewComponent, includeTick, includeSource, includeBaseDir])
   const previewContent = () => previewJsx
   const conentView = (
     <div className={`podlite-editor-content`} style={{ height: codemirrorProps?.height }}>

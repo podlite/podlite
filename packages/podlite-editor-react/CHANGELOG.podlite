@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<includeSource> reads included files from a source that answers through promises: the preview shows the document at once and the included content when it has come, with no warning while a file is awaited. C<invalidateIncludes> on the editor ref forgets what was read for a path, or for everything, and asks again
+
 =head1 0.0.76
 
 =item the editor no longer goes through C<@uiw/react-codemirror>. It holds the layer between React and CodeMirror itself. Ordinary element attributes are still passed on, and C<basicSetup> is still accepted and still overridden, because the editor installs its own keymap over the standard one. Two things do change: a theme named as a string (C<light>, C<dark>, C<none>) is accepted but no longer selects a theme, and C<placeholder>, C<selection>, C<initialState>, C<onStatistics>, C<root> and the size bounds other than C<height> are accepted and do nothing
