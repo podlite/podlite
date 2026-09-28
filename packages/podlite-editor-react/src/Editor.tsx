@@ -215,7 +215,7 @@ function PodliteEditorInternal(
   // What includeSource has answered so far. The preview reads it while it
   // renders; what is missing is noted then and asked for once the render is done.
   type IncludeAnswer = { text: string | null } | { paths: string[] } | { error: string }
-  type IncludeQuestion = { kind: 'read' | 'expand'; value: string; baseDir?: string }
+  type IncludeQuestion = { source: number; kind: 'read' | 'expand'; value: string; baseDir?: string }
   const includeAnswers = useRef(new Map<string, IncludeAnswer>())
   const includeMissed = useRef(new Map<string, IncludeQuestion>())
   // the request each key was last asked with, and the request it is at now
@@ -225,19 +225,27 @@ function PodliteEditorInternal(
   const includeEpoch = useRef(0)
   const includeMounted = useRef(false)
   const [includeTick, setIncludeTick] = useState(0)
-  const includeSourceRef = useRef(includeSource)
   const forgetIncludes = () => {
     includeAnswers.current.clear()
     includeMissed.current.clear()
     includeAsked.current.clear()
     includeEpoch.current++
   }
-  if (includeSourceRef.current !== includeSource) {
-    includeSourceRef.current = includeSource
-    forgetIncludes()
+  // Each source has answers of its own, so a render that is put off and one
+  // that is shown may read from two sources at once.
+  const includeSourceIds = useRef(new WeakMap<object, number>())
+  const includeSourceCount = useRef(0)
+  const includeSourceId = (source: IncludeSource): number => {
+    const known = includeSourceIds.current.get(source)
+    if (known !== undefined) return known
+    const id = ++includeSourceCount.current
+    includeSourceIds.current.set(source, id)
+    return id
   }
-  // a path read and the same string expanded as a mask are two questions
-  const includeKey = (q: IncludeQuestion): string => `${q.kind}\u0000${q.baseDir ?? ''}\u0000${q.value}`
+  // A path read and the same string expanded as a mask are two questions, and
+  // so are no base directory and an empty one.
+  const includeKey = (q: IncludeQuestion): string =>
+    JSON.stringify([q.source, q.kind, q.baseDir === undefined ? null : [q.baseDir], q.value])
   const includeAnswer = (question: IncludeQuestion): IncludeAnswer | undefined => {
     const key = includeKey(question)
     const answer = includeAnswers.current.get(key)
@@ -245,14 +253,29 @@ function PodliteEditorInternal(
     else if ('error' in answer) throw new Error(answer.error)
     return answer
   }
-  const readIncluded = useCallback((path: string, baseDir?: string): string | null | undefined => {
-    const answer = includeAnswer({ kind: 'read', value: path, baseDir })
-    return answer && 'text' in answer ? answer.text : undefined
-  }, [])
-  const expandIncluded = useCallback((pattern: string, baseDir?: string): string[] | undefined => {
-    const answer = includeAnswer({ kind: 'expand', value: pattern, baseDir })
-    return answer && 'paths' in answer ? answer.paths : undefined
-  }, [])
+  const includeSourceNow = includeSource ? includeSourceId(includeSource) : 0
+  const readIncluded = useCallback(
+    (path: string, baseDir?: string): string | null | undefined => {
+      const answer = includeAnswer({ source: includeSourceNow, kind: 'read', value: path, baseDir })
+      return answer && 'text' in answer ? answer.text : undefined
+    },
+    [includeSourceNow],
+  )
+  const expandIncluded = useCallback(
+    (pattern: string, baseDir?: string): string[] | undefined => {
+      const answer = includeAnswer({ source: includeSourceNow, kind: 'expand', value: pattern, baseDir })
+      return answer && 'paths' in answer ? answer.paths : undefined
+    },
+    [includeSourceNow],
+  )
+  const includeSourceRef = useRef(includeSource)
+  useEffect(() => {
+    includeSourceRef.current = includeSource
+    // the answers of a source that is no longer shown are let go
+    for (const key of [...includeAnswers.current.keys()]) {
+      if (JSON.parse(key)[0] !== includeSourceNow) includeAnswers.current.delete(key)
+    }
+  }, [includeSource])
   useEffect(() => {
     includeMounted.current = true
     return () => {
@@ -260,8 +283,8 @@ function PodliteEditorInternal(
     }
   }, [])
   useEffect(() => {
-    const source = includeSourceRef.current
-    const missed = [...includeMissed.current]
+    const source = includeSource
+    const missed = [...includeMissed.current].filter(([, question]) => question.source === includeSourceNow)
     includeMissed.current.clear()
     if (!source) return
     const epoch = includeEpoch.current
@@ -291,7 +314,8 @@ function PodliteEditorInternal(
     if (path === undefined) forgetIncludes()
     else {
       for (const key of [...includeAnswers.current.keys(), ...includeAsked.current.keys()]) {
-        if (!key.startsWith('read\u0000') || !key.endsWith(`\u0000${path}`)) continue
+        const [, kind, , value] = JSON.parse(key)
+        if (kind !== 'read' || value !== path) continue
         includeAnswers.current.delete(key)
         includeAsked.current.delete(key)
         includeRequests.current.set(key, (includeRequests.current.get(key) ?? 0) + 1)

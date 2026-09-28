@@ -187,6 +187,23 @@ describe('a preview whose included files come from a source that answers later',
     view.done()
   })
 
+  it('asks again when the base directory changes from none to an empty one', async () => {
+    const asked: Array<string | undefined> = []
+    const source: IncludeSource = {
+      read: (_path, baseDir) => {
+        asked.push(baseDir)
+        return Promise.resolve(baseDir === undefined ? '=para None\n' : '=para Empty\n')
+      },
+    }
+    const view = mount(<PodliteEditor value={doc} includeSource={source} />)
+    await settle()
+    act(() => view.root.render(<PodliteEditor value={doc} includeSource={source} includeBaseDir="" />))
+    await settle()
+    expect(asked).toEqual([undefined, ''])
+    expect(view.preview()).toContain('Empty')
+    view.done()
+  })
+
   it('leaves a reader that answers at once as it was', () => {
     const view = mount(<PodliteEditor value={doc} includeReader={() => '=para Included\n'} />)
     expect(view.preview()).toContain('Included')
