@@ -14,6 +14,8 @@ class NoResize {
 }
 ;(global as any).ResizeObserver = NoResize
 ;(global as any).IS_REACT_ACT_ENVIRONMENT = true
+// the preview follows the cursor on a timer, and jsdom has nothing to scroll with
+;(window.HTMLElement.prototype as any).scrollTo = () => {}
 
 type Files = Record<string, string | null | Error>
 
