@@ -179,6 +179,30 @@ describe('a plugin that warns while an included file is read', () => {
   })
 })
 
+describe('a text that fails to parse, when the assembly is told to go on', () => {
+  it('is a source that cannot be had, also when it fails only read on its own', () => {
+    const files = {
+      '/b/main.podlite': '=config para :tag<x>\n\n=para Before\n\n=include file:./p.podlite\n',
+      '/b/p.podlite': '=para In\n',
+    }
+    const problems: IncludeProblem[] = []
+    const tree = assembleIncludes(read(files['/b/main.podlite']), {
+      sources: sourcesFromFiles(files),
+      context: '/b',
+      tolerant: true,
+      parse: (source, file, config) => {
+        if (file === '/b/p.podlite' && !config) throw new Error('parser down')
+        return read(source, file, config)
+      },
+      onError: problem => problems.push(problem),
+    })
+    expect(html(tree)).toContain('Before')
+    expect(problems.map(problem => problem.message)).toEqual([
+      'include target cannot be read: ./p.podlite: parser down',
+    ])
+  })
+})
+
 describe('an include whose source is not known yet', () => {
   it('stays in place with the =set written before it, and nothing is reported', () => {
     const store = createSourceStore()

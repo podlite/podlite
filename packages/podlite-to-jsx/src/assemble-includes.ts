@@ -65,11 +65,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   const origin = new WeakMap<object, IncludeOrigin>()
   // why a file could not be read, when the reader threw
   const reasons = new Map<string, string>()
-  // what each mask of a file came to
-  const expansions = new Map<string, string[][]>()
+  // what the mask of a directive came to, by the directive
+  const expansions = new Map<string, string[]>()
+  const stepOf = (file: string, offset: number | undefined): string => `${file}@${offset ?? ''}`
 
   const sources: Sources = {
-    locate: (written, context, plain) => {
+    locate: (written, _context, plain, at) => {
       const masked = !plain && isGlobPattern(written) && Boolean(opts.expandPaths)
       let paths = [written]
       if (masked && opts.expandPaths) {
@@ -78,8 +79,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
         } catch (e) {
           return { masked, sources: [], failed: String((e as Error)?.message ?? e) }
         }
-        const from = String(context)
-        expansions.set(from, [...(expansions.get(from) ?? []), paths])
+        if (at) expansions.set(stepOf(at.file, at.location?.start?.offset), paths)
       }
       // a file is known to the host by its path as written, and paths written
       // inside it are read the same way
@@ -127,14 +127,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   // the document, then its own. Where a mask brought the file, every file of
   // the mask stands for it, as it always has.
   const stackOf = (where: IncludeOrigin): string[] => {
-    const files = [...(where.via ?? '').split('>').map(step => step.slice(0, step.lastIndexOf('@'))), where.file]
-    const out: string[] = []
-    for (let i = 1; i < files.length; i++) {
-      const from = i === 1 ? DOCUMENT : files[i - 1]
-      const mask = (expansions.get(from) ?? []).find(paths => paths.includes(files[i]))
-      out.push(...(mask ?? [files[i]]))
-    }
-    return out
+    const steps = (where.via ?? '').split('>')
+    // the file each directive brought: the file the next one is written in, or the node's own
+    const files = [...steps.slice(1).map(step => step.slice(0, step.lastIndexOf('@'))), where.file]
+    return steps.flatMap((step, i) => expansions.get(step) ?? [files[i]])
   }
   const markStacks = (node: any): void => {
     if (!node || typeof node !== 'object') return

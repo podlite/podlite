@@ -2,6 +2,7 @@ import { Podlite } from '../src/index'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { podlite } from 'podlite'
+import { getTextContentFromNode } from '@podlite/schema'
 
 type Files = Record<string, string>
 type Call = [string, string | undefined]
@@ -100,6 +101,46 @@ describe('what a reader sees when an include does not come', () => {
     const files = { 'a.podlite': '=head1 A\n\n=include file:b.podlite\n', 'b.podlite': '=head1 B\n' }
     const r = run('=pod\n\n=include file:*.podlite\n', files, { expandPaths: () => ['a.podlite', 'b.podlite'] })
     expect(r.html.match(/>B</g)?.length).toBe(2)
+  })
+})
+
+describe('what is said when a =set is lost to an include that failed further in', () => {
+  it('is said once, with the include that failed', () => {
+    const files = { 'a.podlite': '=include file:absent.podlite\n\n=head1 A\n' }
+    const r = run('=pod\n\n=set :id<x>\n=include file:a.podlite\n', files)
+    expect(r.said).toEqual(['[to-jsx] include is not resolved: file:absent.podlite; =set assignments not applied: id'])
+  })
+})
+
+describe('the files a wrapper is told an included block came through', () => {
+  const stacksOf = (source: string, files: Files, expandPaths: (pattern: string) => string[]) => {
+    const seen: Array<[string, string[] | undefined]> = []
+    const wrapElement = (node: any, children: any, ctx: any) => {
+      if (node.type === 'block' && node.name === 'head')
+        seen.push([String(getTextContentFromNode(node.content)).trim(), ctx?.includeStack])
+      return children
+    }
+    renderToStaticMarkup(
+      <Podlite
+        includeReader={(path: string) => files[path] ?? null}
+        expandPaths={expandPaths}
+        wrapElement={wrapElement}
+      >
+        {source}
+      </Podlite>,
+    )
+    return seen
+  }
+
+  it('are those of the mask that brought it, when two masks name the same file', () => {
+    const files = { 'aa.podlite': '=head1 AA\n', 'ab.podlite': '=head1 AB\n', 'ba.podlite': '=head1 BA\n' }
+    const seen = stacksOf('=pod\n\n=include file:a*.podlite\n\n=include file:*a.podlite\n', files, pattern =>
+      pattern === 'a*.podlite' ? ['aa.podlite', 'ab.podlite'] : ['aa.podlite', 'ba.podlite'],
+    )
+    expect(seen.filter(([text]) => text === 'AA').map(([, stack]) => stack)).toEqual([
+      ['aa.podlite', 'ab.podlite'],
+      ['aa.podlite', 'ba.podlite'],
+    ])
   })
 })
 

@@ -10,14 +10,16 @@ nothing is left to ask.
 =end pod
 */
 import { assembleIncludes, silently } from './index'
-import type { AssembleOptions, IncludeOrigin, Located, Source, Sources } from './index'
+import type { AssembleOptions, IncludeOrigin, IncludeStep, Located, Source, Sources } from './index'
 
 export type AsyncSources = {
-  locate: (path: string, context: unknown, plain?: boolean) => Located | Promise<Located>
+  locate: (path: string, context: unknown, plain?: boolean, at?: IncludeStep) => Located | Promise<Located>
   read: (source: Source) => string | null | Promise<string | null>
 }
 
-type Wanted = { kind: 'locate'; path: string; context: unknown; plain: boolean } | { kind: 'read'; source: Source }
+type Wanted =
+  | { kind: 'locate'; path: string; context: unknown; plain: boolean; at?: IncludeStep }
+  | { kind: 'read'; source: Source }
 
 /*
 =begin pod :kind<export>
@@ -50,11 +52,11 @@ export const createSourceStore = (): SourceStore => {
   }
   return {
     sources: () => ({
-      locate: (path, context, plain = false) => {
+      locate: (path, context, plain = false, at) => {
         const known = places.get(context)?.get(keyOf(path, plain))
         if (known) return known
         want(
-          { kind: 'locate', path, context, plain },
+          { kind: 'locate', path, context, plain, at },
           o => o.kind === 'locate' && o.path === path && o.context === context && o.plain === plain,
         )
         return undefined
@@ -129,7 +131,7 @@ export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Prom
       wanted.map(async item => {
         if (item.kind === 'locate') {
           const answer = await Promise.resolve()
-            .then(() => sources.locate(item.path, item.context, item.plain))
+            .then(() => sources.locate(item.path, item.context, item.plain, item.at))
             .catch((): Located => ({ masked: false, sources: [] }))
           store.located(item.path, item.context, item.plain, answer)
         } else {

@@ -97,7 +97,8 @@ operand of a selector is read that way.
 export type Located = { masked: boolean; sources: Source[]; failed?: string }
 
 export type Sources = {
-  locate: (path: string, context: unknown, plain?: boolean) => Located | undefined
+  // `at` is the directive the path is written in, when it is an include
+  locate: (path: string, context: unknown, plain?: boolean, at?: IncludeStep) => Located | undefined
   read: (source: Source) => string | null | undefined
 }
 
@@ -671,7 +672,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
 
     const wait = () => ({ nodes: [node], inner: failures.slice(mark), roots: undefined, selector, waiting: true })
-    const located = provider.locate(parsed.document, context)
+    const located = provider.locate(parsed.document, context, false, here[here.length - 1])
     if (!located) return wait()
     if (located.failed !== undefined) {
       return fail({
@@ -739,8 +740,23 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const before = brought
       const walked = asDocument(walkNode(own, dir, [...stack, target], here, target, own, { ...config }))
       const placed = brought > before ? finishFile(walked, target) : walked
+      let alone = placed
+      if (scoped) {
+        try {
+          alone = sourceOf(target, text, dir, [...stack, target], here)
+        } catch (e) {
+          if (!opts.tolerant) throw e
+          unread.push({
+            kind: 'source',
+            target: selector,
+            message: `include target cannot be read: ${name}: ${(e as Error)?.message ?? e}`,
+            chain: here,
+          })
+          continue
+        }
+      }
       placedDocs.push(placed)
-      docs.push({ file: name, node: scoped ? sourceOf(target, text, dir, [...stack, target], here) : placed })
+      docs.push({ file: name, node: alone })
     }
     if (waiting) return wait()
     // The blocks found in the files as they read on their own are placed as the
