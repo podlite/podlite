@@ -3,8 +3,10 @@ import { rebuildToc } from '@podlite/toc'
 import { assembleIncludes as assemble } from 'podlite'
 import type { IncludeOrigin, IncludeProblem, Sources } from 'podlite'
 
-export type IncludeReader = (path: string, baseDir?: string) => string | null
-export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
+// `undefined` from either says the answer is not known yet: the include waits,
+// and nothing is said about it
+export type IncludeReader = (path: string, baseDir?: string) => string | null | undefined
+export type ExpandPaths = (pattern: string, baseDir?: string) => string[] | undefined
 
 export type AssembleOptions = {
   includeReader: IncludeReader
@@ -69,16 +71,25 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   const expansions = new Map<string, string[]>()
   const stepOf = (file: string, offset: number | undefined): string => `${file}@${offset ?? ''}`
 
+  // an answer was not known yet: what is said now would be said again later
+  let waiting = false
+
   const sources: Sources = {
     locate: (written, _context, plain, at) => {
       const masked = !plain && isGlobPattern(written) && Boolean(opts.expandPaths)
       let paths = [written]
       if (masked && opts.expandPaths) {
+        let expanded: string[] | undefined
         try {
-          paths = opts.expandPaths(written, opts.includeBaseDir)
+          expanded = opts.expandPaths(written, opts.includeBaseDir)
         } catch (e) {
           return { masked, sources: [], failed: String((e as Error)?.message ?? e) }
         }
+        if (expanded === undefined) {
+          waiting = true
+          return undefined
+        }
+        paths = expanded
         if (at) expansions.set(stepOf(at.file, at.location?.start?.offset), paths)
       }
       // a file is known to the host by its path as written, and paths written
@@ -87,7 +98,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     },
     read: source => {
       try {
-        return opts.includeReader(source.id, opts.includeBaseDir) ?? null
+        const text = opts.includeReader(source.id, opts.includeBaseDir)
+        if (text === undefined) waiting = true
+        return text
       } catch (e) {
         reasons.set(source.id, String((e as Error)?.message ?? e))
         return null
@@ -173,7 +186,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     onError: problem => problems.push(problem),
     onWarning: problem => problems.push(problem),
   })
-  problems.forEach(problem => warn(said(problem)))
+  if (!waiting) problems.forEach(problem => warn(said(problem)))
   const hasIncluded = (node: any): boolean => {
     if (!node || typeof node !== 'object') return false
     if (Array.isArray(node)) return node.some(hasIncluded)

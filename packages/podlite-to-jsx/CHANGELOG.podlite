@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<includeReader> and C<expandPaths> may return C<undefined> for an answer that is not known yet: the include then brings nothing, its C<=set> waits with it, and no warning is given until every answer is known. A host that returned C<undefined> for a missing file gets no warning now; C<null> says the file is not there
+
 =item includes are assembled by the assembly C<convert> uses, so a preview and C<convert> read a document alike: a C<=config> written before C<=include> reaches the blocks the include places, with C<:allow> and folding among its options; a table of contents of the including file reads those options. C<includeReader> and C<expandPaths> are called as before, with one change: a file included more than once is asked for once. A file of a mask may now be included by another file of the same mask, and a file that includes itself is passed over with no warning unless a C<=set> is lost with it. A C<=set> lost to an include that failed further in is named in the warning of that include; it was a warning of its own
 
 =item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won

@@ -144,6 +144,46 @@ describe('the files a wrapper is told an included block came through', () => {
   })
 })
 
+describe('a host that does not know a file yet', () => {
+  const pending = (source: string, props: Record<string, any> = {}) => {
+    const warn = quiet()
+    const html = renderToStaticMarkup(
+      <Podlite includeReader={() => undefined} {...props}>
+        {source}
+      </Podlite>,
+    )
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    return { html: html.replace(/\n/g, ''), said }
+  }
+
+  it('gets the page without the include, and no warning', () => {
+    const r = pending('=pod\n\n=para Before\n\n=set :id<kept>\n=include file:p.podlite\n\n=para After\n')
+    expect(r.html).toContain('Before')
+    expect(r.html).toContain('After')
+    expect(r.html).not.toContain('id="kept"')
+    expect(r.said).toEqual([])
+  })
+
+  it('gets the page when a mask is not expanded yet', () => {
+    const r = pending('=pod\n\n=para Before\n\n=include file:*.podlite\n', { expandPaths: () => undefined })
+    expect(r.html).toContain('Before')
+    expect(r.said).toEqual([])
+  })
+
+  it('hears nothing of a file that is not there while another is not known yet', () => {
+    const warn = quiet()
+    renderToStaticMarkup(
+      <Podlite includeReader={(path: string) => (path === 'absent.podlite' ? null : undefined)}>
+        {'=pod\n\n=include file:absent.podlite\n\n=include file:later.podlite\n'}
+      </Podlite>,
+    )
+    const said = warn.mock.calls.map(c => String(c[0]))
+    warn.mockRestore()
+    expect(said).toEqual([])
+  })
+})
+
 describe('a document given as a tree', () => {
   it('has its includes resolved as one given as text', () => {
     const p = podlite({ importPlugins: true })
