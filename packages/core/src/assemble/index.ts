@@ -722,6 +722,23 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         })
         continue
       }
+      // read on its own first: a text that fails this reading brings nothing, and
+      // what its includes would have said is not said
+      let alone: any
+      if (scoped) {
+        try {
+          alone = sourceOf(target, text, source.context, [...stack, target], here)
+        } catch (e) {
+          if (!opts.tolerant) throw e
+          unread.push({
+            kind: 'source',
+            target: selector,
+            message: `include target cannot be read: ${name}: ${(e as Error)?.message ?? e}`,
+            chain: here,
+          })
+          continue
+        }
+      }
       let own: any
       try {
         own = opts.parse(text, target, scoped ? config : undefined)
@@ -740,23 +757,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const before = brought
       const walked = asDocument(walkNode(own, dir, [...stack, target], here, target, own, { ...config }))
       const placed = brought > before ? finishFile(walked, target) : walked
-      let alone = placed
-      if (scoped) {
-        try {
-          alone = sourceOf(target, text, dir, [...stack, target], here)
-        } catch (e) {
-          if (!opts.tolerant) throw e
-          unread.push({
-            kind: 'source',
-            target: selector,
-            message: `include target cannot be read: ${name}: ${(e as Error)?.message ?? e}`,
-            chain: here,
-          })
-          continue
-        }
-      }
       placedDocs.push(placed)
-      docs.push({ file: name, node: alone })
+      docs.push({ file: name, node: alone ?? placed })
     }
     if (waiting) return wait()
     // The blocks found in the files as they read on their own are placed as the

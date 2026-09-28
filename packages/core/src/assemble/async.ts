@@ -36,7 +36,7 @@ id forgets what was read for that source, without one it forgets everything.
 export type SourceStore = {
   sources: () => Sources
   wanted: () => Wanted[]
-  located: (path: string, context: unknown, plain: boolean, answer: Located) => void
+  located: (path: string, context: unknown, plain: boolean, at: IncludeStep | undefined, answer: Located) => void
   text: (source: Source, answer: string | null) => void
   drop: (id?: string) => void
 }
@@ -45,19 +45,21 @@ export const createSourceStore = (): SourceStore => {
   const places = new Map<unknown, Map<string, Located>>()
   const texts = new Map<string, string | null>()
   let asked: Wanted[] = []
-  // a path read as written and the same path read as a mask are two questions
-  const keyOf = (path: string, plain: boolean): string => `${plain ? 'plain' : 'mask'}\u0000${path}`
+  // A path read as written and the same path read as a mask are two questions,
+  // and so is the same path at two directives: a host may answer by the place.
+  const keyOf = (path: string, plain: boolean, at?: IncludeStep): string =>
+    `${plain ? 'plain' : 'mask'}\u0000${path}\u0000${at ? `${at.file}@${at.location?.start?.offset ?? ''}` : ''}`
   const want = (item: Wanted, same: (other: Wanted) => boolean): void => {
     if (!asked.some(same)) asked.push(item)
   }
   return {
     sources: () => ({
       locate: (path, context, plain = false, at) => {
-        const known = places.get(context)?.get(keyOf(path, plain))
+        const known = places.get(context)?.get(keyOf(path, plain, at))
         if (known) return known
         want(
           { kind: 'locate', path, context, plain, at },
-          o => o.kind === 'locate' && o.path === path && o.context === context && o.plain === plain,
+          o => o.kind === 'locate' && o.context === context && keyOf(o.path, o.plain, o.at) === keyOf(path, plain, at),
         )
         return undefined
       },
@@ -72,10 +74,10 @@ export const createSourceStore = (): SourceStore => {
       asked = []
       return out
     },
-    located: (path, context, plain, answer) => {
-      const at = places.get(context) ?? new Map<string, Located>()
-      at.set(keyOf(path, plain), answer)
-      places.set(context, at)
+    located: (path, context, plain, at, answer) => {
+      const known = places.get(context) ?? new Map<string, Located>()
+      known.set(keyOf(path, plain, at), answer)
+      places.set(context, known)
     },
     text: (source, answer) => {
       texts.set(source.id, answer)
@@ -133,7 +135,7 @@ export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Prom
           const answer = await Promise.resolve()
             .then(() => sources.locate(item.path, item.context, item.plain, item.at))
             .catch((): Located => ({ masked: false, sources: [] }))
-          store.located(item.path, item.context, item.plain, answer)
+          store.located(item.path, item.context, item.plain, item.at, answer)
         } else {
           const answer = await Promise.resolve()
             .then(() => sources.read(item.source))

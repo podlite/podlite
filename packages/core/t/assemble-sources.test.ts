@@ -156,6 +156,26 @@ describe('assembly over sources that answer later', () => {
   })
 })
 
+describe('sources that answer by the directive a path is written in', () => {
+  it('are asked for each directive when they answer later', async () => {
+    const texts: Record<string, string> = { first: '=head1 First\n', second: '=head1 Second\n' }
+    let calls = 0
+    const sources: AsyncSources = {
+      locate: () => {
+        const id = calls++ === 0 ? 'first' : 'second'
+        return Promise.resolve({ masked: false, sources: [{ id, name: 'same', context: '' }] })
+      },
+      read: source => Promise.resolve(texts[source.id] ?? null),
+    }
+    const tree = await assembleAsync(read('=include file:same\n\n=include file:same\n'), {
+      sources,
+      context: '',
+      parse: read,
+    })
+    expect(html(tree)).toBe('<h1 id="First">First</h1><h1 id="Second">Second</h1>')
+  })
+})
+
 describe('a plugin that warns while an included file is read', () => {
   const files = {
     '/b/main.podlite': '=config para :tag<x>\n\n=include file:./a.podlite\n',
@@ -183,7 +203,7 @@ describe('a text that fails to parse, when the assembly is told to go on', () =>
   it('is a source that cannot be had, also when it fails only read on its own', () => {
     const files = {
       '/b/main.podlite': '=config para :tag<x>\n\n=para Before\n\n=include file:./p.podlite\n',
-      '/b/p.podlite': '=para In\n',
+      '/b/p.podlite': '=include file:./absent.podlite\n\n=para In\n',
     }
     const problems: IncludeProblem[] = []
     const tree = assembleIncludes(read(files['/b/main.podlite']), {
