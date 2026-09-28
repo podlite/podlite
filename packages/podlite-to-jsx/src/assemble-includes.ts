@@ -1,17 +1,7 @@
-import {
-  applySetToFirst,
-  ConfigItem,
-  getTextContentFromNode,
-  isSetTransparent,
-  markGuarded,
-  mergeSet,
-  outermost,
-  parseSelector,
-  PodNode,
-  runSelector,
-  SelectorError,
-} from '@podlite/schema'
+import { ConfigItem, ConfigScope, markGuarded, parseSelector } from '@podlite/schema'
 import { rebuildToc } from '@podlite/toc'
+import { assembleIncludes as assemble } from 'podlite'
+import type { IncludeOrigin, IncludeProblem, Sources } from 'podlite'
 
 export type IncludeReader = (path: string, baseDir?: string) => string | null
 export type ExpandPaths = (pattern: string, baseDir?: string) => string[]
@@ -20,7 +10,10 @@ export type AssembleOptions = {
   includeReader: IncludeReader
   includeBaseDir?: string
   expandPaths?: ExpandPaths
-  parser: { parse: (source: string, opts: any) => any; toAst: (tree: any) => any }
+  parser: {
+    parse: (source: string, opts: any) => any
+    toAst: (tree: any, opts?: { config?: ConfigScope }) => any
+  }
 }
 
 export type Assembly = {
@@ -37,10 +30,6 @@ const isBlock = (node: any, name?: string): boolean =>
 
 const isToc = (node: any): boolean => isBlock(node, 'toc') || isBlock(node, 'Toc')
 
-const isWrapper = (node: any): boolean => isBlock(node, 'root') || isBlock(node, '_folded_section')
-
-const names = (set: ConfigItem[]): string => set.map(c => c.name).join(', ')
-
 const warn = (message: string): void => console.warn(`[to-jsx] ${message}`)
 
 // the marks set later change nodes in place, and the tree given is not ours
@@ -52,20 +41,20 @@ const deepCopy = (node: any): any => {
   return copy
 }
 
+// the name the document itself goes by among the files on the way
+const DOCUMENT = ''
+
 /*
 =begin pod :kind<export>
 
 =head2 assembleIncludes
 
 Puts the blocks each C<=include> finds in its place in the list that holds it,
-as C<convert> does, before anything is rendered: selectors, tables of contents
-and links then see the included blocks as blocks of the document. An included
-file is assembled first, its own includes before the parent's selection, and its
-own tables of contents are built again over it. An include that does not resolve
-stays in the tree and is reported once. The C<=set> assignments written before an
-include go to the first block it brings; when it brings none they go on to the
-next block of the same list; when it fails, or an include that failed stands in
-the way, they go nowhere and the message says so. The tree given is not changed.
+as C<convert> does and by the same assembly, before anything is rendered:
+selectors, tables of contents and links then see the included blocks as blocks
+of the document. The host is asked for a file by the path as written, once for
+each file. An include that does not resolve is reported once, by a warning. The
+tree given is not changed.
 
 Returns the assembled tree and, for each included node, the files it came
 through.
@@ -73,37 +62,89 @@ through.
 =end pod
 */
 export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => {
-  const stacks = new WeakMap<object, string[]>()
-  // includes that were tried and left in place
-  const failed = new WeakSet<object>()
+  const origin = new WeakMap<object, IncludeOrigin>()
+  // why a file could not be read, when the reader threw
+  const reasons = new Map<string, string>()
+  // what each mask of a file came to
+  const expansions = new Map<string, string[][]>()
 
-  const markStack = (node: any, stack: string[]): void => {
-    if (!node || typeof node !== 'object') return
-    if (Array.isArray(node)) return node.forEach(n => markStack(n, stack))
-    // a node from a deeper include already knows its own way in
-    if (!stacks.has(node)) stacks.set(node, stack)
-    markStack(node.content, stack)
-  }
-
-  // what an include left in place stops a search for a target: the assignments
-  // it would have carried are lost with it
-  const firstStop = (nodes: any[]): boolean => {
-    for (const node of nodes) {
-      if (!node || typeof node !== 'object') continue
-      if (failed.has(node)) return true
-      if (isWrapper(node)) {
-        const inner = Array.isArray(node.content) ? node.content : [node.content]
-        if (firstStop(inner)) return true
-        if (inner.some((n: any) => isBlock(n) && !isSetTransparent(n))) return false
-        continue
+  const sources: Sources = {
+    locate: (written, context, plain) => {
+      const masked = !plain && isGlobPattern(written) && Boolean(opts.expandPaths)
+      let paths = [written]
+      if (masked && opts.expandPaths) {
+        try {
+          paths = opts.expandPaths(written, opts.includeBaseDir)
+        } catch (e) {
+          return { masked, sources: [], failed: String((e as Error)?.message ?? e) }
+        }
+        const from = String(context)
+        expansions.set(from, [...(expansions.get(from) ?? []), paths])
       }
-      if (!isBlock(node) || isSetTransparent(node)) continue
-      return false
-    }
-    return false
+      // a file is known to the host by its path as written, and paths written
+      // inside it are read the same way
+      return { masked, sources: paths.map(path => ({ id: path, name: path, context: path })) }
+    },
+    read: source => {
+      try {
+        return opts.includeReader(source.id, opts.includeBaseDir) ?? null
+      } catch (e) {
+        reasons.set(source.id, String((e as Error)?.message ?? e))
+        return null
+      }
+    },
   }
 
-  // the tables of contents written in this file, built again over it
+  const names = (lost: string[] | undefined): string => (lost ?? []).join(', ')
+
+  // the words this renderer has always said for a problem of the assembly
+  const said = (problem: IncludeProblem): string => {
+    const lost = problem.lost?.length ? `; =set assignments not applied: ${names(problem.lost)}` : ''
+    const written = parseSelector(problem.target)?.document ?? ''
+    const base = (): string => {
+      if (problem.kind === 'set-target') return `=set before =include has no target block: ${names(problem.lost)}`
+      if (problem.kind === 'unparsed-selector' && !problem.target) return 'include selector cannot be read: (empty)'
+      if (problem.kind === 'unparsed-selector' || problem.kind === 'unsupported-scheme' || problem.kind === 'cycle') {
+        return `include is not resolved: ${problem.target}`
+      }
+      if (problem.kind === 'source') {
+        const cut = problem.message.split('; =set assignments not applied:')[0]
+        if (cut.startsWith('include target not found')) {
+          return reasons.has(written)
+            ? `include target cannot be read: ${written}: ${reasons.get(written)}`
+            : `include is not resolved: ${problem.target}`
+        }
+        const file = cut.replace('include target cannot be read: ', '')
+        return reasons.has(file) ? `${cut}: ${reasons.get(file)}` : cut
+      }
+      return problem.message.split('; =set assignments not applied:')[0]
+    }
+    return problem.kind === 'set-target' ? base() : `${base()}${lost}`
+  }
+
+  const stacks = new WeakMap<object, string[]>()
+  // The files a node came through: the file of each include on its way after
+  // the document, then its own. Where a mask brought the file, every file of
+  // the mask stands for it, as it always has.
+  const stackOf = (where: IncludeOrigin): string[] => {
+    const files = [...(where.via ?? '').split('>').map(step => step.slice(0, step.lastIndexOf('@'))), where.file]
+    const out: string[] = []
+    for (let i = 1; i < files.length; i++) {
+      const from = i === 1 ? DOCUMENT : files[i - 1]
+      const mask = (expansions.get(from) ?? []).find(paths => paths.includes(files[i]))
+      out.push(...(mask ?? [files[i]]))
+    }
+    return out
+  }
+  const markStacks = (node: any): void => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) return node.forEach(markStacks)
+    const where = origin.get(node)
+    if (where?.via && !stacks.has(node)) stacks.set(node, stackOf(where))
+    markStacks(node.content)
+  }
+
+  // the tables of contents written in the document itself, built again over it
   const rebuildOwnTocs = (root: any): any => {
     markGuarded(root)
     const walk = (node: any): any => {
@@ -112,148 +153,37 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
         const mapped = node.map(walk)
         return mapped.some((n, i) => n !== node[i]) ? mapped : node
       }
-      if (isToc(node) && !stacks.has(node)) return rebuildToc(node, root)
+      if (isToc(node) && !origin.get(node)?.via) return rebuildToc(node, root)
       if (!Array.isArray(node.content)) return node
       const content = walk(node.content)
       if (content === node.content) return node
       const copy = { ...node, content }
-      const stack = stacks.get(node)
-      if (stack) stacks.set(copy, stack)
+      const known = origin.get(node)
+      if (known) origin.set(copy, known)
       return copy
     }
     return walk(root)
   }
 
-  // An include resolved: the blocks it brings, each file assembled first; or why
-  // it brought nothing.
-  const resolve = (node: any, stack: string[]): { nodes: any[] } | { failure: string } => {
-    const selector = getTextContentFromNode(node.content as any)
-      ?.toString()
-      .trim()
-    if (!selector) return { failure: 'include selector cannot be read: (empty)' }
-    const parsed = parseSelector(selector)
-    if (!parsed || parsed.scheme !== 'file' || !parsed.document) return { failure: `include is not resolved: ${selector}` }
-    const masked = isGlobPattern(parsed.document) && Boolean(opts.expandPaths)
-    let paths: string[]
-    try {
-      paths =
-        isGlobPattern(parsed.document) && opts.expandPaths
-          ? opts.expandPaths(parsed.document, opts.includeBaseDir)
-          : [parsed.document]
-    } catch (e) {
-      return { failure: `include mask cannot be expanded: ${parsed.document}: ${(e as Error)?.message ?? e}` }
-    }
-    const branch = [...stack, ...paths]
-    const docs: { file: string; node: any }[] = []
-    // a reader or parser that throws is a file that could not be had: it was
-    // caught while rendering before, and one include must not stop the page; of
-    // a mask, the files that were read stand and the other is reported, as in
-    // convert
-    const unread: string[] = []
-    for (const p of paths) {
-      if (stack.includes(p)) continue
-      let own: any
-      try {
-        const source = opts.includeReader(p, opts.includeBaseDir)
-        if (source == null) {
-          // a file a mask names is expected to be there
-          if (masked) unread.push(`include target cannot be read: ${p}`)
-          continue
-        }
-        own = opts.parser.toAst(opts.parser.parse(source, { podMode: 1 }))
-      } catch (e) {
-        unread.push(`include target cannot be read: ${p}: ${(e as Error)?.message ?? e}`)
-        continue
-      }
-      docs.push({ file: p, node: assembleFile(own, branch) })
-    }
-    // a mask that names no file resolved to nothing, as in convert; it holds
-    // no address either
-    if (masked && paths.length === 0) {
-      if (parsed.anchor) return { failure: `include address not found: #${parsed.anchor} in ${parsed.document}` }
-      return { nodes: [] }
-    }
-    if (docs.length === 0) {
-      unread.slice(0, -1).forEach(warn)
-      return { failure: unread[unread.length - 1] ?? `include is not resolved: ${selector}` }
-    }
-    unread.forEach(warn)
-    let found: PodNode[]
-    try {
-      found = outermost((runSelector(selector, docs) as PodNode[]) || [])
-    } catch (e) {
-      if (!(e instanceof SelectorError)) throw e
-      return { failure: `include selector cannot be read: ${e.message}` }
-    }
-    markStack(found, branch)
-    return { nodes: found }
+  const problems: IncludeProblem[] = []
+  const assembled = assemble(deepCopy(tree), {
+    sources,
+    context: DOCUMENT,
+    file: DOCUMENT,
+    parse: (source, _file, config) => opts.parser.toAst(opts.parser.parse(source, { podMode: 1, config }), { config }),
+    origin,
+    tolerant: true,
+    operandsAmongSources: true,
+    onError: problem => problems.push(problem),
+    onWarning: problem => problems.push(problem),
+  })
+  problems.forEach(problem => warn(said(problem)))
+  const hasIncluded = (node: any): boolean => {
+    if (!node || typeof node !== 'object') return false
+    if (Array.isArray(node)) return node.some(hasIncluded)
+    return Boolean(origin.get(node)?.via) || hasIncluded(node.content)
   }
-
-  const walkList = (list: any[], stack: string[], state: { resolved: boolean }): any[] => {
-    const out: any[] = []
-    let pending: ConfigItem[] = []
-    for (const n of list) {
-      if (isBlock(n, 'include')) {
-        // assignments carried from an earlier include are older than its own
-        const set = mergeSet(pending, n.set)
-        pending = []
-        const result = resolve(n, stack)
-        if ('failure' in result) {
-          warn(set.length ? `${result.failure}; =set assignments not applied: ${names(set)}` : result.failure)
-          failed.add(n)
-          out.push(n)
-          continue
-        }
-        state.resolved = true
-        if (!set.length) {
-          out.push(...result.nodes)
-          continue
-        }
-        if (firstStop(result.nodes)) {
-          warn(`an include before the first included block failed; =set assignments not applied: ${names(set)}`)
-          out.push(...result.nodes)
-          continue
-        }
-        const applied = applySetToFirst(result.nodes, set, { mode: 'include', origin: stacks })
-        out.push(...applied.nodes)
-        if (applied.outcome === 'none') pending = set
-        continue
-      }
-      const walked = walkNode(n, stack, state)
-      if (!pending.length) {
-        out.push(walked)
-        continue
-      }
-      if (firstStop([walked])) {
-        warn(`an include before the next block failed; =set assignments not applied: ${names(pending)}`)
-        pending = []
-        out.push(walked)
-        continue
-      }
-      const applied = applySetToFirst([walked], pending, { mode: 'carry', origin: stacks })
-      if (applied.outcome !== 'none') pending = []
-      out.push(...applied.nodes)
-    }
-    if (pending.length) warn(`=set before =include has no target block: ${names(pending)}`)
-    return out
-  }
-
-  const walkNode = (node: any, stack: string[], state: { resolved: boolean }): any => {
-    if (!node || typeof node !== 'object') return node
-    if (Array.isArray(node)) return walkList(node, stack, state)
-    if (!Array.isArray(node.content)) return node
-    const copy = { ...node, content: walkList(node.content, stack, state) }
-    const known = stacks.get(node)
-    if (known) stacks.set(copy, known)
-    return copy
-  }
-
-  // one file: its includes in place, then its own tables of contents
-  const assembleFile = (root: any, stack: string[]): any => {
-    const state = { resolved: false }
-    const assembled = walkNode(root, stack, state)
-    return state.resolved ? rebuildOwnTocs(assembled) : assembled
-  }
-
-  return { tree: assembleFile(deepCopy(tree), []), stacks }
+  const done = hasIncluded(assembled) ? rebuildOwnTocs(assembled) : assembled
+  markStacks(done)
+  return { tree: done, stacks }
 }

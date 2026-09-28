@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the assembly of includes is exported from C<podlite> as well as from C<podlite/assemble>. C<locate> may say why a mask could not be expanded, in C<failed>; with C<tolerant> a text that fails to parse is a source that cannot be had
+
 =item a table of contents written in an included file lists what that file includes: it is built again over the file once its own includes are in, also when the table alone is brought in by a selector. It listed the file as it was before them
 
 =item C<podlite/assemble> gives C<sourcesFromFiles>, sources over texts held in memory by path, and C<assembleAsync>, which assembles a document whose sources answer through promises: it asks for what is missing and assembles again until nothing is. C<createSourceStore> keeps the answers between assemblies. Sources may answer C<undefined> for what is not known yet; the include then stays in place with its C<=set> assignments and nothing is reported

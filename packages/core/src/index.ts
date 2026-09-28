@@ -17,3 +17,4 @@ export const podlite = ({ importPlugins = true }: PodliteOpt): Podlite => {
 }
 
 export { version } from './version'
+export * from './assemble'

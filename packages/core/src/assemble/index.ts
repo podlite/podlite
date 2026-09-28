@@ -93,7 +93,8 @@ operand of a selector is read that way.
 
 =end pod
 */
-export type Located = { masked: boolean; sources: Source[] }
+// `failed` says why a mask could not be expanded
+export type Located = { masked: boolean; sources: Source[]; failed?: string }
 
 export type Sources = {
   locate: (path: string, context: unknown, plain?: boolean) => Located | undefined
@@ -118,6 +119,12 @@ export type AssembleOptions = {
   origin?: WeakMap<object, IncludeOrigin>
   // told of each copy made of a parsed node
   onCopy?: (from: object, to: object) => void
+  // a text that fails to parse is a source that cannot be had, not an exception
+  tolerant?: boolean
+  // An operand of a selector is looked for among the sources of the include
+  // alone, as the React renderer always did. Temporary: it goes when that
+  // renderer reads operands as the rest does.
+  operandsAmongSources?: boolean
 }
 
 export const isWarning = (problem: IncludeProblem): boolean =>
@@ -666,6 +673,14 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const wait = () => ({ nodes: [node], inner: failures.slice(mark), roots: undefined, selector, waiting: true })
     const located = provider.locate(parsed.document, context)
     if (!located) return wait()
+    if (located.failed !== undefined) {
+      return fail({
+        kind: 'source',
+        target: selector,
+        message: `include mask cannot be expanded: ${parsed.document}: ${located.failed}`,
+        chain: here,
+      })
+    }
     const { masked, sources: written } = located
     const first = !masked && written.length ? textOf(written[0]) : null
     if (first === undefined) return wait()
@@ -706,7 +721,19 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         })
         continue
       }
-      const own = opts.parse(text, target, scoped ? config : undefined)
+      let own: any
+      try {
+        own = opts.parse(text, target, scoped ? config : undefined)
+      } catch (e) {
+        if (!opts.tolerant) throw e
+        unread.push({
+          kind: 'source',
+          target: selector,
+          message: `include target cannot be read: ${name}: ${(e as Error)?.message ?? e}`,
+          chain: here,
+        })
+        continue
+      }
       recordOrigin(own, { file: target, text }, origin)
       const dir = source.context
       const before = brought
@@ -825,7 +852,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
     try {
       const found = outermost(
-        keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
+        keepBlocks(
+          opts.operandsAmongSources
+            ? runSelector(selector, docs)
+            : runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }),
+        ),
       )
       if (operandWaits) return wait()
       return done(placedFor(found))

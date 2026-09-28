@@ -47,9 +47,9 @@ describe('what the host is asked when a document includes files', () => {
     expect(r.html).toContain('Deep')
   })
 
-  it('is asked for a file again each time it is included', () => {
+  it('is asked for a file once, however many times it is included', () => {
     const r = run('=pod\n\n=include file:p.podlite\n\n=include file:p.podlite\n', { 'p.podlite': '=head1 Part\n' })
-    expect(r.reads.map(call => call[0])).toEqual(['p.podlite', 'p.podlite'])
+    expect(r.reads.map(call => call[0])).toEqual(['p.podlite'])
   })
 
   it('is asked to expand a mask, and reads every path it returns', () => {
@@ -90,16 +90,16 @@ describe('what a reader sees when an include does not come', () => {
     expect(r.said).toEqual(['[to-jsx] include is not resolved: file:absent.podlite'])
   })
 
-  it('sees a file that includes itself once, with a warning', () => {
+  it('sees a file that includes itself once, and no warning', () => {
     const r = run('=pod\n\n=include file:a.podlite\n', { 'a.podlite': '=head1 A\n\n=include file:a.podlite\n' })
     expect(r.html.match(/<h1/g)?.length).toBe(1)
-    expect(r.said).toEqual(['[to-jsx] include is not resolved: file:a.podlite'])
+    expect(r.said).toEqual([])
   })
 
-  it('does not see a file of a mask brought in by another file of the same mask', () => {
+  it('sees a file of a mask brought in by another file of the same mask as well', () => {
     const files = { 'a.podlite': '=head1 A\n\n=include file:b.podlite\n', 'b.podlite': '=head1 B\n' }
     const r = run('=pod\n\n=include file:*.podlite\n', files, { expandPaths: () => ['a.podlite', 'b.podlite'] })
-    expect(r.html.match(/>B</g)?.length).toBe(1)
+    expect(r.html.match(/>B</g)?.length).toBe(2)
   })
 })
 

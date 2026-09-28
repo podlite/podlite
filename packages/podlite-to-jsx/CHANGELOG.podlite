@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item includes are assembled by the assembly C<convert> uses, so a preview and C<convert> read a document alike: a C<=config> written before C<=include> reaches the blocks the include places, with C<:allow> and folding among its options; a table of contents of the including file reads those options. C<includeReader> and C<expandPaths> are called as before, with one change: a file included more than once is asked for once. A file of a mask may now be included by another file of the same mask, and a file that includes itself is passed over with no warning unless a C<=set> is lost with it
+
 =item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
 
 =item a C<=config> adds its options to an earlier C<=config> for the same block or markup code, and decides the ones both set; it replaced the earlier one whole
