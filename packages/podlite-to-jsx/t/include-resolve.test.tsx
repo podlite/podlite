@@ -53,6 +53,38 @@ Second term
     expect(root.innerHTML).toMatch(/Second term/)
   })
 
+  it('reads a file an operand of in names through the reader', () => {
+    const files: Record<string, string> = {
+      'guide.podlite': '=for para :status<draft>\nDraft\n\n=for para :status<paid>\nPaid\n',
+      'vocabulary.podlite': '=defn paid\nMoney in.\n',
+    }
+    const asked: string[] = []
+    const includeReader = (path: string) => {
+      asked.push(path)
+      return files[path] ?? null
+    }
+    render(
+      <Podlite includeReader={includeReader}>
+        {'=begin pod\n=include file:guide.podlite | para[ :status(in file:vocabulary.podlite | defn) ]\n=end pod\n'}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatch(/Paid/)
+    expect(root.innerHTML).not.toMatch(/Draft/)
+    expect(asked).toEqual(['guide.podlite', 'vocabulary.podlite'])
+  })
+
+  it('reads an operand with no source from the document the include is written in', () => {
+    const includeReader = (path: string) =>
+      path === 'guide.podlite' ? '=for para :status<draft>\nDraft\n\n=for para :status<paid>\nPaid\n' : null
+    render(
+      <Podlite includeReader={includeReader}>
+        {'=begin pod\n=defn draft\nNot done.\n\n=include file:guide.podlite | para[ :status(in defn) ]\n=end pod\n'}
+      </Podlite>,
+    )
+    expect(root.innerHTML).toMatch(/<p>Draft/)
+    expect(root.innerHTML).not.toMatch(/<p>Paid/)
+  })
+
   it('an operand of in that does not resolve brings nothing in and renders the rest', () => {
     const includeReader = (path: string) => (path === 'terms.podlite' ? '=defn alpha\nFirst term\n' : null)
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})

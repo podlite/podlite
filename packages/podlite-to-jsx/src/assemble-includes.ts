@@ -182,7 +182,6 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     parse: (source, _file, config) => opts.parser.toAst(opts.parser.parse(source, { podMode: 1, config }), { config }),
     origin,
     tolerant: true,
-    operandsAmongSources: true,
     onError: problem => problems.push(problem),
     onWarning: problem => problems.push(problem),
   })

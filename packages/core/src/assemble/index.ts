@@ -122,10 +122,6 @@ export type AssembleOptions = {
   onCopy?: (from: object, to: object) => void
   // a text that fails to parse is a source that cannot be had, not an exception
   tolerant?: boolean
-  // An operand of a selector is looked for among the sources of the include
-  // alone, as the React renderer always did. Temporary: it goes when that
-  // renderer reads operands as the rest does.
-  operandsAmongSources?: boolean
 }
 
 export const isWarning = (problem: IncludeProblem): boolean =>
@@ -870,11 +866,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
     try {
       const found = outermost(
-        keepBlocks(
-          opts.operandsAmongSources
-            ? runSelector(selector, docs)
-            : runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile }),
-        ),
+        keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
       )
       if (operandWaits) return wait()
       return done(placedFor(found))
