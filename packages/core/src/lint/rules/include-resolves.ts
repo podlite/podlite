@@ -1,8 +1,18 @@
 import { dirname, relative, resolve } from 'path'
-import { PodliteDocument } from '@podlite/schema'
+import { podlitePluggable, PodliteDocument } from '@podlite/schema'
+import { PluginRegister as markdown } from '@podlite/markdown'
+import { PluginRegister as toc } from '@podlite/toc'
 import type { Rule, Violation, LintContext } from '../types'
-import { detectFileType, parseContent } from '../loader'
+import { detectFileType } from '../loader'
 import { resolveIncludes, IncludeProblem } from '../../resolve-includes'
+import { silently } from '../../assemble'
+import { readerFor } from '../../reader'
+
+// The plugins that change what an include can select or address. The registry
+// convert raises brings the diagram renderer, and the image plugin brings React:
+// a check loads neither.
+export const includePlugins = { ...markdown, ...toc }
+const read = readerFor(podlitePluggable({ plugins: includePlugins }), { format: detectFileType })
 
 export const INCLUDE_RESOLVES_RULE_ID = 'include-resolves'
 
@@ -35,7 +45,8 @@ export const includeResolvesRule: Rule = {
     try {
       resolveIncludes(ast, {
         baseDir: dirname(resolve(ctx.filePath)),
-        parse: (source, file) => parseContent(source, detectFileType(file)),
+        parse: (source, file, config) => silently(() => read(source, file, config)),
+        tolerant: true,
         file: resolve(ctx.filePath),
         self: ctx.filePath,
         onError: problem => problems.push(problem),

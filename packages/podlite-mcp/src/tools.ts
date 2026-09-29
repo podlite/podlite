@@ -1,6 +1,6 @@
 import { parse, parseSelector, runSelector, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
 import type { PodNode, SelectorDoc } from '@podlite/schema'
-import { podlite } from 'podlite'
+import { podlite, readerFor } from 'podlite'
 import { scanSourceRules } from 'podlite/lib/lint/grammar/scan'
 import { DEFAULT_RULES } from 'podlite/lib/lint/rules/index'
 import { runRules } from 'podlite/lib/lint/engine'
@@ -22,8 +22,7 @@ export const parseSource = (text: string) => parse(text)
 export type RenderFormat = 'html' | 'md'
 
 export const renderSource = (text: string, format: RenderFormat): string => {
-  const p = podlite({ importPlugins: true })
-  const tree = p.toAst(p.parse(text, { podMode: 1 }))
+  const tree = readerFor(podlite({ importPlugins: true }))(text, virtualFile)
   const out = format === 'md' ? toMarkdown({}).run(tree) : toHtml({}).run(tree)
   return out.toString()
 }
@@ -46,8 +45,7 @@ export const querySource = (selector: string, text: string, format: QueryFormat)
     throw new Error(`Invalid selector: ${selector}`)
   }
   // the tree convert reads, so a Markdown section is read into blocks
-  const p = podlite({ importPlugins: true })
-  const tree = p.toAst(p.parse(text, { podMode: 1 }))
+  const tree = readerFor(podlite({ importPlugins: true }))(text, virtualFile)
   const sections = new WeakMap<object, unknown>()
   markSections(tree, sections)
   const docs: SelectorDoc[] = [{ file: virtualFile, node: contentOf(tree) }]

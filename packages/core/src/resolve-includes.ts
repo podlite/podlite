@@ -29,6 +29,8 @@ export type ResolveIncludesOptions = {
   origin?: WeakMap<object, IncludeOrigin>
   // told of each copy made of a parsed node
   onCopy?: (from: object, to: object) => void
+  // a text that fails to parse is a source that cannot be had, not an exception
+  tolerant?: boolean
   // the disk when not given
   provider?: SourceProvider
 }

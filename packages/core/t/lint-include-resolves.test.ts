@@ -12,6 +12,9 @@ mkdirSync(join(dir, 'parts'))
 writeFileSync(join(dir, 'parts', 'a.podlite'), '=pod\n\n=for para :id<a>\nA.\n')
 mkdirSync(join(dir, 'folder.podlite'))
 mkdirSync(join(dir, 'empty'))
+writeFileSync(join(dir, 'section.podlite'), '=begin pod\n=begin markdown\n# Title\n\nText.\n=end markdown\n=end pod\n')
+writeFileSync(join(dir, 'section.md'), '# Title\n\nText.\n')
+writeFileSync(join(dir, 'contents.podlite'), '=begin pod\n=toc file:other.podlite | head1\n\n=head1 One\n=end pod\n')
 
 const lint = (name: string, src: string) => {
   const file = join(dir, name)
@@ -20,6 +23,24 @@ const lint = (name: string, src: string) => {
 }
 
 describe('include-resolves rule', () => {
+  it('finds a heading written in a Markdown section of an included file', () => {
+    expect(lint('doc10.podlite', '=pod\n\n=include file:./section.podlite#Title\n')).toEqual([])
+  })
+
+  it('reads an included Markdown file as Markdown', () => {
+    expect(lint('doc11.podlite', '=pod\n\n=include file:./section.md#Title\n')).toEqual([])
+  })
+
+  it('keeps the warnings of a plugin reading an included file off the console', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      lint('doc12.podlite', '=begin pod\n=config para :lang<en>\n\n=include file:./contents.podlite\n=end pod\n')
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
   it('reports a missing source at its directive', () => {
     const v = lint('doc1.podlite', '=pod\n\n=include file:./absent.podlite\n')
     expect(v.map(x => [x.severity, x.location?.start.line])).toEqual([['error', 3]])

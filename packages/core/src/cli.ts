@@ -1,13 +1,13 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { parseSelector, toMarkdown, toHtml } from '@podlite/schema'
-import type { ConfigScope } from '@podlite/schema'
 import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './lint'
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
 import { resolveIncludes, IncludeOrigin } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
+import { readerFor } from './reader'
 import { version } from './version'
 
 // The plugin registry brings the diagram renderer, and with it mermaid and
@@ -204,15 +204,14 @@ function convertFile(
   const fromStdin = inputPath === STDIN_MARKER
   const content = fromStdin ? readStdinSync() : fs.readFileSync(inputPath, 'utf-8')
   const p = parserWithPlugins()
-  const parseToAst = (source: string, config?: ConfigScope) =>
-    p.toAst(p.parse(source, { podMode: 1, config }), { config })
+  const read = readerFor(p)
 
-  let tree = parseToAst(content)
+  let tree = read(content, inputPath)
   try {
     const origin = new WeakMap<object, IncludeOrigin>()
     tree = resolveIncludes(tree, {
       baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
-      parse: (source, _file, config) => parseToAst(source, config),
+      parse: read,
       file: inputPath,
       text: content,
       self: fromStdin ? undefined : inputPath,

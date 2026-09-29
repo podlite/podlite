@@ -1,6 +1,6 @@
 import { ConfigItem, ConfigScope, markGuarded, parseSelector } from '@podlite/schema'
 import { rebuildToc } from '@podlite/toc'
-import { assembleIncludes as assemble } from 'podlite'
+import { assembleIncludes as assemble, readerFor } from 'podlite'
 import type { IncludeOrigin, IncludeProblem, Sources } from 'podlite'
 
 // `undefined` from either says the answer is not known yet: the include waits,
@@ -179,7 +179,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     sources,
     context: DOCUMENT,
     file: DOCUMENT,
-    parse: (source, _file, config) => opts.parser.toAst(opts.parser.parse(source, { podMode: 1, config }), { config }),
+    parse: readerFor(opts.parser),
     origin,
     tolerant: true,
     onError: problem => problems.push(problem),

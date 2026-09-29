@@ -14,6 +14,7 @@ import {
 import type { ConfigScope } from '@podlite/schema'
 import { diskProvider, expandMask, hasMask, resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
+import { readerFor } from './reader'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
@@ -34,7 +35,7 @@ type Source = { file: string; text: string; fromStdin?: boolean }
 // and formula plugins only render, so they are left out, and with them mermaid
 // and React; the three that are needed are raised when a query runs, not when
 // the module loads.
-type QueryReader = { toTree: (text: string, config?: ConfigScope) => any; written: (text: string) => any }
+type QueryReader = { toTree: (text: string, file: string, config?: ConfigScope) => any; written: (text: string) => any }
 
 const queryReader = (): QueryReader => {
   /* eslint-disable @typescript-eslint/no-var-requires */
@@ -44,7 +45,7 @@ const queryReader = (): QueryReader => {
   /* eslint-enable @typescript-eslint/no-var-requires */
   const p = podlitePluggable({ plugins: { ...markdown, ...image, ...toc } })
   return {
-    toTree: (text: string, config?: ConfigScope) => p.toAst(p.parse(text, { podMode: 1, config }), { config }),
+    toTree: readerFor(p),
     written: (text: string) => p.parse(text, { podMode: 1 }),
   }
 }
@@ -161,8 +162,8 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
   // each file is read on its own before its includes, as convert reads it
-  const toTree = (text: string, config?: ConfigScope): any => {
-    const tree = reader.toTree(text, config)
+  const toTree = (text: string, file: string, config?: ConfigScope): any => {
+    const tree = reader.toTree(text, file, config)
     markSections(tree, sections)
     return tree
   }
@@ -176,9 +177,9 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const file = path.resolve(document)
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return undefined
     const text = fs.readFileSync(file, 'utf-8')
-    const node = resolveIncludes(toTree(text), {
+    const node = resolveIncludes(toTree(text, file), {
       baseDir: path.dirname(file),
-      parse: (source, _file, config) => toTree(source, config),
+      parse: toTree,
       file: document,
       self: file,
       text,
@@ -190,7 +191,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
   // a mask no file answers selects nothing, and its operands are still read
   if (emptyMask) {
-    const blank: SelectorDoc = { file: '', node: toTree('') }
+    const blank: SelectorDoc = { file: '', node: toTree('', '') }
     try {
       runSelector(opts.selector, [], { readFile, home: [blank] })
     } catch (e) {
@@ -204,9 +205,9 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
-    const resolved = resolveIncludes(toTree(src.text), {
+    const resolved = resolveIncludes(toTree(src.text, src.file), {
       baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
-      parse: (source, _file, config) => toTree(source, config),
+      parse: toTree,
       file: src.file,
       self: fromStdin ? undefined : src.file,
       text: src.text,

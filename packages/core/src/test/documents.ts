@@ -11,6 +11,7 @@ import type {
 } from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
+import { readerFor } from '../reader'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, SourceProvider } from '../resolve-includes'
 import type { Result } from './types'
 import { err, ok } from './types'
@@ -21,6 +22,7 @@ type Reader = {
     recognition: RecognitionEvent[],
     diagnostics: ParseDiagnostic[],
     config?: ConfigScope,
+    file?: string,
   ) => unknown
   written: (text: string) => unknown
 }
@@ -47,9 +49,10 @@ export type Profile = {
 
 const readerOf = (importPlugins: boolean) => (): Reader => {
   const p = podlite({ importPlugins })
+  const read = readerFor(p)
   return {
-    toTree: (text, recognition, diagnostics, config) =>
-      p.toAst(p.parse(text, { podMode: 1, recognition, diagnostics, config }), { config }),
+    toTree: (text, recognition, diagnostics, config, file = '') =>
+      read(text, file, config, { recognition, diagnostics }),
     written: text => p.parse(text, { podMode: 1 }),
   }
 }
@@ -202,7 +205,7 @@ export const prepareDocument = (
   const toTree = (body: string, file: string, config?: ConfigScope): unknown => {
     const events: RecognitionEvent[] = []
     const diagnostics: ParseDiagnostic[] = []
-    const tree = reader.toTree(body, events, diagnostics, config)
+    const tree = reader.toTree(body, events, diagnostics, config, file)
     recognition.set(identify(file), events)
     markSections(tree, undefined)
     const at = new Map<number, string>()
