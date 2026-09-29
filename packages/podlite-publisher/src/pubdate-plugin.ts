@@ -3,6 +3,7 @@ import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { getFromTree, getTextContentFromNode, makeAttrs, mkRootBlock, PodNode } from '@podlite/schema'
 import { getPublishAttributes } from './node-utils'
 import { addUrl } from './shared'
+import { withOrigin } from './source'
 
 export interface PodliteWebPluginParams {
   [name: string]: any
@@ -34,17 +35,22 @@ export function getArticles(item: publishRecord) {
           const description = getFromTree(articleContent, 'para')[0]
           const pubdate = makeAttrs(nodePublished, {}).getFirstValue('pubdate')
           //TODO: use footer and header of document for generated articles
-          articles.push({
-            pubdate,
-            title: getTextContentFromNode(nodePublished).trim(),
-            type: 'page',
-            isPage: false,
-            publishUrl: '',
-            sources: [],
-            node: mkRootBlock({}, articleContent),
-            description,
-            file,
-          })
+          articles.push(
+            withOrigin(
+              {
+                pubdate,
+                title: getTextContentFromNode(nodePublished).trim(),
+                type: 'page',
+                isPage: false,
+                publishUrl: '',
+                sources: [],
+                node: mkRootBlock({}, articleContent),
+                description,
+                file,
+              },
+              item,
+            ),
+          )
         }
       }
     }
@@ -73,17 +79,20 @@ export function getNotes(item: publishRecord): publishRecord[] {
         ? a_pubdate.replace(' ', 'T')
         : a_pubdate
       //TODO: use footer and header of document for generated notes
-      return {
-        pubdate,
-        type: 'note',
-        isPage: false,
-        title: null,
-        node: mkRootBlock({}, [n]),
-        description: n,
-        file,
-        publishUrl: '',
-        sources: [],
-      }
+      return withOrigin(
+        {
+          pubdate,
+          type: 'note',
+          isPage: false,
+          title: null,
+          node: mkRootBlock({}, [n]),
+          description: n,
+          file,
+          publishUrl: '',
+          sources: [],
+        },
+        item,
+      )
     })
   return notes
 }
@@ -95,7 +104,7 @@ export function getPages(item: publishRecord): publishRecord[] {
     .map((n: PodNode) => {
       const { title, description, puburl, pubdate, isPage } = getPublishAttributes(n)
       //TODO: use footer and header of document for generated pages
-      return {
+      const page = {
         pubdate: pubdate || '',
         type: 'page',
         isPage,
@@ -106,6 +115,7 @@ export function getPages(item: publishRecord): publishRecord[] {
         publishUrl: puburl || '',
         sources,
       } as publishRecord
+      return withOrigin(page, item)
     })
   return pages
 }

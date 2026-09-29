@@ -1,5 +1,8 @@
 import { PodliteDocument, PodNode } from '@podlite/schema'
 
+export { recordSource, recordOrigin, isParsedTree } from './source'
+export type { RecordSource } from './source'
+
 export type pubRecord = {
   type: string
   pubdate: string // '2024-08-02T12:34:56Z' ISO 8601, 'Tue, 02 Aug 2024 12:34:56 GMT' RFC 2822

@@ -17,6 +17,7 @@ import { parseMd } from '@podlite/markdown'
 import { podlite } from 'podlite'
 import matter from 'gray-matter'
 import { pubRecord, publishRecord } from './record'
+import { withSource } from './source'
 
 export const getPathToOpen = (filepath, parentDocPath) => {
   const isRemoteReg = new RegExp(/^(https?|ftp):/)
@@ -167,7 +168,16 @@ const PARSER_TYPE_MIME_TYPES: {
 
 type PartserTypes = typeof PARSER_TYPES[keyof typeof PARSER_TYPES]
 
-type MimeTypes = keyof typeof MIME_TYPES_EXTENSIONS
+/*
+=begin pod :kind<export>
+
+=head2 MimeTypes
+
+The types a file can be read as, whatever its extension says.
+
+=end pod
+*/
+export type MimeTypes = keyof typeof MIME_TYPES_EXTENSIONS
 
 export function getParserTypeforFile(filePath: string, mime?: MimeTypes): PartserTypes {
   // get parser type using PARSER_TYPE_MIME_TYPES
@@ -192,7 +202,18 @@ export function getParserTypeforFile(filePath: string, mime?: MimeTypes): Partse
   return parserTypeMap[ext] || PARSER_TYPES.DEFAULT
 }
 
-export function parseFile(filePath: string, fileContent?: string, mime?: MimeTypes) {
+/*
+=begin pod :kind<export>
+
+=head2 parseText
+
+Parses a text the way a file of that name is read: the type comes from C<mime>,
+else from the extension. The text is taken as given, an empty one included, and
+nothing is read from disk.
+
+=end pod
+*/
+export function parseText(filePath: string, text: string, mime?: MimeTypes) {
   // check extension of file and parse it deepnds on mime type
 
   const parser_type = getParserTypeforFile(filePath, mime)
@@ -213,8 +234,11 @@ export function parseFile(filePath: string, fileContent?: string, mime?: MimeTyp
       return podlite_processor.toAstResult(tree).interator as PodliteDocument
     },
   }
-  const src = fileContent || fs.readFileSync(filePath).toString()
-  return typeToParserMap[parser_type](src)
+  return typeToParserMap[parser_type](text)
+}
+
+export function parseFile(filePath: string, fileContent?: string, mime?: MimeTypes) {
+  return parseText(filePath, fileContent || fs.readFileSync(filePath).toString(), mime)
 }
 // An address written without quotes is cut into a list at every space, and only
 // its first word reaches the page. The page then lands on a short address, or on
@@ -353,13 +377,14 @@ export function getPublishAttributes(node: PodNode, filePath?: string) {
 }
 
 export function processFile(f: string, content?: string, mime?: MimeTypes) {
-  const podlite_document = parseFile(f, content, mime)
+  const text = content || fs.readFileSync(f).toString()
+  const podlite_document = parseText(f, text, mime)
   // now extract some extra meta inforamtion, like pubdate, puburl
   // markdown front matter and pod attributes reach here as different shapes
   const attr: { [name: string]: any } = ((f, node) => {
     if (getParserTypeforFile(f, mime) === PARSER_TYPES.MARKDOWN) {
       // try to extract from markdown front matter
-      const { data } = matter(content || fs.readFileSync(f).toString())
+      const { data } = matter(text)
       return data
     } else {
       return getDocumentAttributes(podlite_document, f)
@@ -367,7 +392,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
   })(f, podlite_document)
   // prepare attributes
   const { title, description, subtitle, author, footer, puburl, pubdate, header } = attr
-  return {
+  const record = {
     type: 'page',
     isPage: attr.isPage === true || attr.type === 'page',
     title,
@@ -382,6 +407,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
     sources: [],
     node: podlite_document,
   } as publishRecord
+  return withSource(record, f, text, mime)
 }
 export function parseSources(path: string): publishRecord[] {
   let count = 0

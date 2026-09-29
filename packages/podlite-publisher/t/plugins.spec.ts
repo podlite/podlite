@@ -66,6 +66,9 @@ it('parse Source:  markdown file', () => {
       "subtitle": undefined,
       "title": "My article",
       "type": "page",
+      Symbol(@podlite/publisher:source/1): Object {
+        "file": "packages/podlite-publisher/t/test-parse/text.md",
+      },
     }
   `)
 })
@@ -89,6 +92,9 @@ it('parse Source:  typescript file', () => {
       "subtitle": undefined,
       "title": "",
       "type": "page",
+      Symbol(@podlite/publisher:source/1): Object {
+        "file": "packages/podlite-publisher/t/test-parse/main.ts",
+      },
     }
   `)
 })
@@ -113,6 +119,9 @@ it('parse Source:  podlite file', () => {
       "title": "The Last of the Mohicans
     ",
       "type": "page",
+      Symbol(@podlite/publisher:source/1): Object {
+        "file": "packages/podlite-publisher/t/test-parse/note.podlite",
+      },
     }
   `)
 })
