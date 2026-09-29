@@ -5,8 +5,9 @@ import type { MimeTypes } from './node-utils'
 
 =head2 RecordSource
 
-The text a record was read from, the name it was read under and the type it was
-read as. One object stands for one reading: every copy of the record holds the
+The text a record was read from, the name it was read under and the type given
+for it, if one was given; without one the type follows from the name. One object
+stands for one reading: every copy of the record holds the
 same object, so two records with the same source came from one reading.
 
 C<text> is not an enumerable property. A copy of the object made with spread or
@@ -74,8 +75,8 @@ export const recordSource = (record: object): RecordSource | undefined => held(r
 =head2 recordOrigin
 
 The reading a record comes from: its own source, or the source of the record it
-was cut from. Several records cut from one file share one origin. An origin is
-not a text the record can be read again from.
+was cut from. Several records cut from one file share one origin, and that
+origin holds the text of the whole file, not of the record.
 
 =end pod
 */

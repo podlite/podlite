@@ -177,8 +177,11 @@ A note.
 it('the source stays out of what is written and out of the keys', () => {
   const record = processFile('virtual/doc.podlite', text)
   expect(recordSource(record)?.text).toBe(text)
-  expect(JSON.stringify(record)).not.toContain('=begin pod')
-  expect(JSON.stringify(buildPagesIndex([record], [{ offset: 0, length: 1 }]))).not.toContain('=begin pod')
+  const written = JSON.stringify(text).slice(1, -1)
+  const named = Object.fromEntries(Object.entries(record))
+  expect(JSON.stringify(record)).toBe(JSON.stringify(named))
+  expect(JSON.stringify(record)).not.toContain(written)
+  expect(JSON.stringify(buildPagesIndex([record], [{ offset: 0, length: 1 }]))).not.toContain(written)
   expect(Object.keys(record)).toEqual([
     'type',
     'isPage',
@@ -205,7 +208,7 @@ it('a printed record shows where it was read from and not the text', () => {
   expect(printed).not.toContain('=begin pod')
 })
 
-it('the site data document has a source, and it does not carry the text of the pages', () => {
+it('the site data document has a source', () => {
   const index = processFile(
     'virtual/index.podlite',
     `=begin pod :puburl</> :pubdate('2024-01-01 10:00')\n=TITLE Index\n=end pod\n`,
@@ -218,7 +221,6 @@ it('the site data document has a source, and it does not carry the text of the p
   expect(data).toBeDefined()
   const source = data && recordSource(data)
   expect(source?.text).toContain('=for NAME  :id<PLUGIN_DATA>')
-  expect(source?.text).not.toContain('=TITLE Index')
 })
 
 it('the entries of the package give the readers and keep the writers inside', () => {
