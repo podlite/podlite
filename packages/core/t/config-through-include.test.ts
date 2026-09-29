@@ -171,48 +171,89 @@ describe('=set assignments that found no block', () => {
   })
 })
 
-describe('a found block the settings at the directive read as something else', () => {
-  const files = (): string => {
-    write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n')
-    return write('host.podlite', '=config markdown :allow<B>\n\n=include file:./child.podlite | head1\n')
-  }
+describe('a =markdown block under :allow', () => {
+  const section = '=begin markdown\n# Title\n\nText.\n\n- one\n- two\n=end markdown\n'
+  const blocks = (source: string): number[] =>
+    ['head1', 'para', 'item'].map(name => runSelector(name, [{ file: 'doc', node: read(source) }]).length)
 
-  it('is placed as its file reads on its own, with a warning', () => {
-    const { tree, problems } = assemble(files())
-    expect(runSelector('head1', [{ file: 'doc', node: tree }]).length).toBe(1)
-    expect(problems.map(problem => [problem.kind, isWarning(problem)])).toEqual([['include-reading-differs', true]])
+  it('is read as Markdown whichever way :allow reaches it', () => {
+    const plain = blocks(section)
+    expect(plain[0]).toBe(1)
+    expect(blocks(section.replace('=begin markdown', '=begin markdown :allow<B>'))).toEqual(plain)
+    expect(blocks(`=set :allow<B>\n${section}`)).toEqual(plain)
+    expect(blocks(`=config markdown :allow<B>\n\n${section}`)).toEqual(plain)
+    expect(blocks('=for markdown :allow<B>\n# Title\n')[0]).toBe(1)
   })
 
-  it('does not fail a query, which prints the block as the section holds it', () => {
-    const r = q('head1', files())
-    expect([r.matchCount, r.exitCode]).toEqual([1, 0])
-    expect(r.problems.length).toBe(1)
+  it('is read as Markdown when the settings come from the including file', () => {
+    write('child.podlite', section)
+    const host = write('host.podlite', '=config markdown :allow<B>\n\n=include file:./child.podlite | head1\n')
+    const { tree, problems } = assemble(host)
+    expect(runSelector('head1', [{ file: 'doc', node: tree }]).length).toBe(1)
+    expect(problems).toEqual([])
+  })
+
+  it('prints a heading of the section as the section holds it', () => {
+    write('child.podlite', section)
+    const host = write('host.podlite', '=config markdown :allow<B>\n\n=include file:./child.podlite | head1\n')
+    const r = q('head1', host)
+    expect([r.matchCount, r.exitCode, r.problems]).toEqual([1, 0, []])
     expect(r.output).not.toContain('=begin')
   })
 
-  it('takes a =set written before the include when an include after it fails', () => {
-    write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n\n=include file:./absent.podlite\n')
+  it('prints the heading as the section holds it when a =set reaches it', () => {
+    write('child.podlite', section)
     const host = write(
       'host.podlite',
       '=config markdown :allow<B>\n\n=set :id<chosen>\n=include file:./child.podlite | head1\n',
     )
-    const { tree, problems } = assemble(host)
-    expect(problems.map(problem => problem.message).filter(message => message.includes('=set'))).toEqual([])
-    expect(runSelector('head1[ :id<chosen> ]', [{ file: 'doc', node: tree }]).length).toBe(1)
+    const r = q('head1[ :id<chosen> ]', host)
+    expect([r.matchCount, r.problems]).toEqual([1, []])
+    expect(r.output).not.toContain('=begin')
+  })
+})
+
+describe('a found block the settings at the directive read as something else', () => {
+  const table = (): string => {
+    write('child.podlite', '=begin data-table :mime-type<text/csv>\na,b\n=end data-table\n')
+    return write('host.podlite', '=config data-table :columns<1>\n\n=include file:./child.podlite | cell\n')
+  }
+  // the operand reads the file it is written in: with the settings of the host the
+  // term has a language, the operand is empty and the nested include brings nothing
+  const operand = (set = '', after = ''): string => {
+    write('leaf.podlite', '=for para :lang<fr>\nText\n')
+    write(
+      'part.podlite',
+      `=defn fr\nFrench.\n\n=include file:./leaf.podlite | para[ :lang(in defn[ :!?lang ]) ]\n${after}`,
+    )
+    return write('host.podlite', `=config defn :lang<en>\n\n${set}=include file:./part.podlite | para[ :lang<fr> ]\n`)
+  }
+
+  it('is placed as its file reads on its own, with a warning', () => {
+    const { tree, problems } = assemble(table())
+    expect(texts('cell', tree)).toEqual(['a', 'b'])
+    expect(problems.map(problem => [problem.kind, isWarning(problem)])).toEqual([['include-reading-differs', true]])
   })
 
-  it('prints the block as the section holds it when a =set reaches it', () => {
-    write('child.podlite', '=begin markdown\n# H B<X>\n=end markdown\n')
-    const host = write(
-      'host.podlite',
-      '=config markdown :allow<B>\n\n=set :id<chosen>\n=include file:./child.podlite | head1\n',
-    )
-    expect(q('head1', host).output).not.toContain('=begin')
+  it('does not fail a query', () => {
+    const r = q('para[ :lang<fr> ]', operand())
+    expect([r.matchCount, r.exitCode]).toEqual([1, 0])
+    expect(r.problems.length).toBe(1)
+  })
+
+  it('takes a =set written before the include when an include after it fails', () => {
+    const host = operand('=set :id<chosen>\n', '\n=include file:./absent.podlite\n')
+    const { tree, problems } = assemble(host)
+    expect(problems.map(problem => problem.message).filter(message => message.includes('=set'))).toEqual([])
+    expect(runSelector('para[ :id<chosen> ]', [{ file: 'doc', node: tree }]).length).toBe(1)
   })
 
   it('does not fail a test run over the document', () => {
-    const doc = files()
-    const main = write('rules.podlite', '=begin test :id<has-heading>\n=begin assert\nhead1\n=end assert\n=end test\n')
+    const doc = operand()
+    const main = write(
+      'rules.podlite',
+      '=begin test :id<has-para>\n=begin assert\npara[ :lang<fr> ]\n=end assert\n=end test\n',
+    )
     const [test] = runTests({ tests: [{ kind: 'file', path: main }], against: [doc] }).tests
     expect(test.status).toBe('passed')
   })
