@@ -13,6 +13,10 @@ writeFileSync(join(dir, 'parts', 'a.podlite'), '=pod\n\n=for para :id<a>\nA.\n')
 mkdirSync(join(dir, 'folder.podlite'))
 mkdirSync(join(dir, 'empty'))
 writeFileSync(join(dir, 'section.podlite'), '=begin pod\n=begin markdown\n# Title\n\nText.\n=end markdown\n=end pod\n')
+writeFileSync(
+  join(dir, 'picture.podlite'),
+  '=begin pod\n=for picture :id<shot>\nphoto.png\n\n=Image other.png\n=end pod\n',
+)
 writeFileSync(join(dir, 'section.md'), '# Title\n\nText.\n')
 writeFileSync(join(dir, 'contents.podlite'), '=begin pod\n=toc file:other.podlite | head1\n\n=head1 One\n=end pod\n')
 
@@ -29,6 +33,12 @@ describe('include-resolves rule', () => {
 
   it('reads an included Markdown file as Markdown', () => {
     expect(lint('doc11.podlite', '=pod\n\n=include file:./section.md#Title\n')).toEqual([])
+  })
+
+  it('finds a picture of an included file by its address and by its name, with no image plugin', () => {
+    expect(lint('doc13.podlite', '=pod\n\n=include file:./picture.podlite#shot\n')).toEqual([])
+    expect(lint('doc14.podlite', '=pod\n\n=include file:./picture.podlite | picture\n')).toEqual([])
+    expect(lint('doc15.podlite', '=pod\n\n=include file:./picture.podlite#absent\n')).toHaveLength(1)
   })
 
   it('keeps the warnings of a plugin reading an included file off the console', () => {

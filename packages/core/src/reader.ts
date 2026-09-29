@@ -20,7 +20,8 @@ type Reader<T> = (text: string, file: string, config?: ConfigScope, extras?: Rea
 
 Makes the reading an include assembly asks for out of a parser: a text, the name
 of its file and the settings in effect where it is placed give a tree. The parser
-keeps its own plugins. With C<format>, a file the function names C<md> is read as
+keeps its own plugins. The fourth argument carries the lists the parser fills
+with recognition events and diagnostics. With C<format>, a file the function names C<md> is read as
 Markdown and comes back as the Markdown reader leaves it, without the plugins and
 without the settings.
 

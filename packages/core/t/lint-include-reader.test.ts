@@ -38,7 +38,7 @@ describe('how the include check reads an included file', () => {
     lint('book.podlite', '=begin pod\n=config code :allow<B>\n\n=include file:./part.podlite\n=end pod\n')
     const placed = seen.filter(s => s.file.endsWith('part.podlite') && s.config)
     expect(placed.length).toBe(1)
-    expect(Object.keys(placed[0].config as object)).toEqual(['code'])
+    expect(placed[0].config).toEqual({ code: expect.anything() })
   })
 
   it('a file whose reading throws costs one finding, and the others stay', () => {

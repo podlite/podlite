@@ -4,7 +4,6 @@ import { build } from 'esbuild'
 import { frozenIds, parseAttributes, podlitePluggable } from '@podlite/schema'
 import type { RecognitionEvent } from '@podlite/schema'
 import { parseMd, PluginRegister as markdown } from '@podlite/markdown'
-import { PluginRegister as image } from '@podlite/image'
 import { PluginRegister as toc } from '@podlite/toc'
 import { podlite, readerFor } from '../src'
 import { includePlugins } from '../src/lint/rules/include-resolves'
@@ -72,16 +71,6 @@ describe('the plugins a check reads an included file with', () => {
       m => m[2],
     )
     expect(raised.sort()).toEqual(['@podlite/image', '@podlite/markdown', '@podlite/toc'])
-  })
-
-  it('find a picture by its address as the query plugins do', () => {
-    const part = '=begin pod\n=for picture :id<shot>\nphoto.png\n\n=end pod\n'
-    const ids = (plugins): string[] => {
-      const p = podlitePluggable({ plugins })
-      return JSON.stringify(p.toAst(p.parse(part, { podMode: 1 }))).match(/"name":"id","value":"shot"/g) || []
-    }
-    expect(ids(includePlugins)).toEqual(ids({ ...markdown, ...image, ...toc }))
-    expect(ids(includePlugins).length).toBeGreaterThan(0)
   })
 })
 

@@ -2,9 +2,9 @@
 
 =head1 Upcoming
 
-=item C<podlite lint> reads an included Podlite file the way C<convert> does, with the plugins that change the tree and with the settings in effect at the directive: a heading written in a Markdown section of an included file is found by its address; it was reported as not found. A warning a plugin prints while an included file is read stays off the console, and an included file that cannot be read costs one finding and leaves the others in place
+=item C<podlite lint> reads an included Podlite file with the Markdown and table of contents plugins and with the settings in effect at the directive: a heading written in a Markdown section of an included file is found by its address; it was reported as not found. A warning a plugin prints while an included file is read stays off the console, and an included file that cannot be read costs one finding and leaves the others in place
 
-=item C<readerFor> makes the reading an include assembly asks for out of a parser, so a host need not write it
+=item C<readerFor> makes the reading an include assembly asks for out of a parser, so a host need not write it; its fourth argument hands the parser the lists it fills with recognition events and diagnostics
 
 =item the assembly of includes is exported from C<podlite> as well as from C<podlite/assemble>. C<locate> may say why a mask could not be expanded, in C<failed>; with C<tolerant> a text that fails to parse is a source that cannot be had
 
