@@ -187,6 +187,20 @@ describe('a preview whose included files come from a source that answers later',
     view.done()
   })
 
+  it('asks a source again when it comes back after another', async () => {
+    const first = later({ 'p.podlite': '=para First\n' })
+    const second = later({ 'p.podlite': '=para Second\n' })
+    const view = mount(<PodliteEditor value={doc} includeSource={first.source} />)
+    await settle()
+    act(() => view.root.render(<PodliteEditor value={doc} includeSource={second.source} />))
+    await settle()
+    act(() => view.root.render(<PodliteEditor value={doc} includeSource={first.source} />))
+    await settle()
+    expect(view.preview()).toContain('First')
+    expect(first.asked).toEqual(['read p.podlite', 'read p.podlite'])
+    view.done()
+  })
+
   it('asks again when the base directory changes from none to an empty one', async () => {
     const asked: Array<string | undefined> = []
     const source: IncludeSource = {

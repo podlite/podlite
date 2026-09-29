@@ -271,9 +271,12 @@ function PodliteEditorInternal(
   const includeSourceRef = useRef(includeSource)
   useEffect(() => {
     includeSourceRef.current = includeSource
-    // the answers of a source that is no longer shown are let go
-    for (const key of [...includeAnswers.current.keys()]) {
-      if (JSON.parse(key)[0] !== includeSourceNow) includeAnswers.current.delete(key)
+    // what a source that is no longer shown answered, and was asked, is let go:
+    // it is asked again when it comes back
+    for (const key of [...includeAnswers.current.keys(), ...includeAsked.current.keys()]) {
+      if (JSON.parse(key)[0] === includeSourceNow) continue
+      includeAnswers.current.delete(key)
+      includeAsked.current.delete(key)
     }
   }, [includeSource])
   useEffect(() => {
@@ -295,6 +298,8 @@ function PodliteEditorInternal(
       const accept = (answer: IncludeAnswer) => {
         const current = includeRequests.current.get(key) ?? 0
         if (!includeMounted.current || includeEpoch.current !== epoch || current !== request) return
+        const shown = includeSourceRef.current ? includeSourceId(includeSourceRef.current) : 0
+        if (question.source !== shown) return
         includeAnswers.current.set(key, answer)
         setIncludeTick(tick => tick + 1)
       }

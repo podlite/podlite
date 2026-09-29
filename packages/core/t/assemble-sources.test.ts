@@ -223,6 +223,30 @@ describe('a text that fails to parse, when the assembly is told to go on', () =>
   })
 })
 
+describe('a file an operand names that fails to parse, when the assembly is told to go on', () => {
+  it('is an operand that cannot be read', () => {
+    const files = {
+      '/b/main.podlite':
+        '=para Before\n\n=include file:./doc.podlite | para[ :status(in file:./voc.podlite | defn) ]\n',
+      '/b/doc.podlite': '=for para :status<paid>\nPaid\n',
+      '/b/voc.podlite': '=defn paid\nMoney in.\n',
+    }
+    const problems: IncludeProblem[] = []
+    const tree = assembleIncludes(read(files['/b/main.podlite']), {
+      sources: sourcesFromFiles(files),
+      context: '/b',
+      tolerant: true,
+      parse: (source, file, config) => {
+        if (file === '/b/voc.podlite') throw new Error('operand parse down')
+        return read(source, file, config)
+      },
+      onError: problem => problems.push(problem),
+    })
+    expect(html(tree)).toContain('Before')
+    expect(problems.map(problem => problem.kind)).toEqual(['operand'])
+  })
+})
+
 describe('an include whose source is not known yet', () => {
   it('stays in place with the =set written before it, and nothing is reported', () => {
     const store = createSourceStore()

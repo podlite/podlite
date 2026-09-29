@@ -855,7 +855,14 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const text = !source || stack.includes(target) ? null : textOf(source)
       if (!found || text === undefined) operandWaits = true
       if (!source || text === null || text === undefined) return undefined
-      const own = opts.parse(text, target)
+      let own: any
+      try {
+        own = opts.parse(text, target)
+      } catch (e) {
+        // a file that fails to parse is one the operand cannot be read from
+        if (!opts.tolerant) throw e
+        return undefined
+      }
       recordOrigin(own, { file: target, text }, origin)
       return [
         {
