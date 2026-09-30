@@ -37,42 +37,34 @@ const rawBody = (block: any): string | undefined => {
   return content.map(part => part.value).join('')
 }
 
-// Where the lines of a body stand in the text of its document. The parser cuts
-// the start of a line and nothing else, so each line of the body ends a line of
-// the document; the last one stands on the last line of the block before its
-// closing marker. With a line that does not, there is no telling, and no answer.
+// Where the characters of a body stand in the text of its document. The parser
+// cuts the indent at the start of a line and nothing else, so the body read
+// backwards from where it ends is the text read backwards with runs of spaces
+// and tabs left out. A body that is not, has no place, and there is no answer.
 const placeOf = (body: string, block: any, text: string): Place | undefined => {
-  const end = block.location?.end
-  if (!end) return undefined
-  const lines = text.split('\n')
-  const starts: number[] = []
-  let offset = 0
-  for (const line of lines) {
-    starts.push(offset)
-    offset += line.length + 1
-  }
-  const written = body.endsWith('\n') ? body.slice(0, -1).split('\n') : body.split('\n')
-  // the last line the block takes, counted from one
-  let last = end.column === 1 ? end.line - 1 : end.line
-  const closing = new RegExp(`^\\s*=end\\s+${block.name}\\s*$`)
-  if (closing.test(lines[last - 1] ?? '')) last--
-  const first = last - written.length + 1
-  if (first < 1) return undefined
-  const cut: number[] = []
-  for (let i = 0; i < written.length; i++) {
-    const line = lines[first - 1 + i]
-    if (line === undefined || !line.endsWith(written[i])) return undefined
-    cut.push(line.length - written[i].length)
+  const from = block.location?.start?.offset
+  const to = block.location?.end?.offset
+  if (typeof from !== 'number' || typeof to !== 'number') return undefined
+  // a delimited block ends with its closing marker, the other forms with their body
+  const closing = new RegExp(`[ \\t]*=end[ \\t]+${block.name}[ \\t]*(\\r\\n|\\n|\\r)?$`)
+  const within = text.slice(0, to)
+  const end = within.length - (closing.exec(within)?.[0].length ?? 0)
+  const at: number[] = new Array(body.length + 1)
+  at[body.length] = end
+  let offset = end
+  for (let i = body.length - 1; i >= 0; i--) {
+    offset--
+    while (offset >= from && text[offset] !== body[i] && (text[offset] === ' ' || text[offset] === '\t')) offset--
+    if (offset < from || text[offset] !== body[i]) return undefined
+    at[i] = offset
   }
   return point => {
-    if (point.line > written.length) {
-      // just past the body: the start of the line after it
-      const line = Math.min(last + 1, lines.length)
-      return { line, column: 1, offset: Math.min(starts[line - 1] ?? text.length, text.length) }
-    }
-    const line = first + point.line - 1
-    const column = point.column + cut[point.line - 1]
-    return { line, column, offset: starts[line - 1] + column - 1 }
+    const offset = at[Math.min(Math.max(point.offset, 0), body.length)]
+    // lines are counted the way the parser counts them
+    const lineStart = text.lastIndexOf('\n', offset - 1) + 1
+    let line = 1
+    for (let i = text.indexOf('\n'); i !== -1 && i < offset; i = text.indexOf('\n', i + 1)) line++
+    return { line, column: offset - lineStart + 1, offset }
   }
 }
 

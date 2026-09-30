@@ -96,6 +96,18 @@ describe('the places of the blocks of a body', () => {
     expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', 'first line', '']])
   })
 
+  it.each([
+    ['CR and LF', '\r\n'],
+    ['CR alone', '\r'],
+  ])('are found in a text whose lines end with %s', (_name, eol) => {
+    const text = ['=begin pod', '  =begin React', '  =para one', '', '  =head2 Two', '  =end React', '=end pod', ''].join(eol)
+    const starts = blocksOf(react(read(text, 'a'))).map(child => {
+      expect(child.location.start).toEqual(at(text, child.location.start.offset))
+      return text.slice(child.location.start.offset, child.location.start.offset + 9)
+    })
+    expect(starts).toEqual(['=para one', '=head2 Tw'])
+  })
+
   it('are found in a block the text ends with', () => {
     const text = '=begin React\n=para one\n=end React'
     expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', '=para one', '=end React']])
@@ -142,6 +154,8 @@ describe('a body that is not to be read', () => {
     } as typeof p
     const block = react(readerFor(odd, { body: node => node.name === 'React' })(text, 'a'))
     expect(block.content).toEqual([{ type: 'verbatim', value: '=para other\n' }])
+    // the same reader reads a body that is found in the text
+    expect(names(react(read(text, 'a')))).toEqual(['para'])
   })
 
   it('is left as it was in a block the host does not name', () => {
