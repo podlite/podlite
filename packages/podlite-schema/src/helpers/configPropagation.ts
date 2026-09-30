@@ -36,40 +36,67 @@ const lookupKeys = (node: { name?: string; level?: string | number }): string[] 
   return keys
 }
 
-const walk = (node: PodNode, config: ConfigMap): void => {
+// a block as the walk over settings meets it
+export type ScopedBlock = {
+  type?: string
+  name?: string
+  level?: string | number
+  config?: ConfigItem[]
+  content?: unknown
+}
+
+const walk = (node: PodNode, config: ConfigMap, visit: (block: ScopedBlock, scope: ConfigScope) => void): void => {
   if (Array.isArray(node)) {
-    for (const child of node) walk(child as PodNode, config)
+    for (const child of node) walk(child as PodNode, config, visit)
     return
   }
   if (!node || typeof node !== 'object') return
-  const anyNode = node as {
-    type?: string
-    name?: string
-    level?: string | number
-    config?: ConfigItem[]
-    content?: unknown
-  }
+  const anyNode = node as ScopedBlock
   if (anyNode.type === 'config' && typeof anyNode.name === 'string' && Array.isArray(anyNode.config)) {
     config[anyNode.name] = mergeConfigSettings(anyNode.config, config[anyNode.name])
   } else if (anyNode.type === 'block') {
-    for (const key of lookupKeys(anyNode)) {
-      const defaults = config[key]
-      if (defaults && defaults.length) {
-        anyNode.config = mergeDefaults(anyNode.config, defaults)
-      }
-    }
+    visit(anyNode, config)
   }
   if (anyNode.content !== undefined) {
     // a block is a lexical scope: what is declared inside it stays inside
-    walk(anyNode.content as PodNode, anyNode.type === 'block' ? { ...config } : config)
+    walk(anyNode.content as PodNode, anyNode.type === 'block' ? { ...config } : config, visit)
   }
 }
+
+const applyDefaults = (block: ScopedBlock, config: ConfigScope): void => {
+  for (const key of lookupKeys(block)) {
+    const defaults = config[key]
+    if (defaults && defaults.length) {
+      block.config = mergeDefaults(block.config, defaults)
+    }
+  }
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 walkConfigScopes
+
+Calls C<visit> for each block of a tree, in document order, with the C<=config>
+settings in effect where the block stands: those handed in as C<inherited> and
+those declared before the block in the blocks around it. A block is a scope: what
+is declared inside it stays inside. The settings object is the walk's own and
+changes as it goes on; a visitor that keeps it copies it. The content a visitor
+gives a block is walked next, as the content of that block.
+
+=end pod
+*/
+export const walkConfigScopes = (
+  ast: PodliteDocument | PodNode | unknown[],
+  inherited: ConfigScope,
+  visit: (block: ScopedBlock, scope: ConfigScope) => void,
+): void => walk(ast as PodNode, { ...inherited }, visit)
 
 export const propagateConfigDefaults = <T extends PodliteDocument | PodNode | unknown[]>(
   ast: T,
   inherited: ConfigScope = {},
 ): T => {
-  walk(ast as PodNode, { ...inherited })
+  walk(ast as PodNode, { ...inherited }, applyDefaults)
   return ast
 }
 

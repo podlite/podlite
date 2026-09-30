@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<walkConfigScopes> calls a visitor for each block of a tree with the C<=config> settings in effect where the block stands
+
 =item a blank line in the body of an indented C<=begin> block with verbatim content is kept when it is indented less than the block, an empty line among them: an indented C<=begin code> or C<=begin markdown> lost such lines, and paragraphs of Markdown ran together
 
 =item C<runSelector> takes C<readSource>: the host reads the documents an operand with a C<file:> or a C<doc:> source names
