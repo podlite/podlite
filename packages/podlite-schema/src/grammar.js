@@ -8182,7 +8182,8 @@ function peg$parse(input, options) {
         if (string.indexOf(vmargin) == 0 ) {
             return string.replace(vmargin, '')
         }
-        return string.replace(/^\s+/, '')
+        // a line indented less than the margin loses its indent, not its line break
+        return string.replace(/^[^\S\r\n]+/, '')
     }
 
 
