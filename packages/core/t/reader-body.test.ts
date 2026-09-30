@@ -108,6 +108,13 @@ describe('the places of the blocks of a body', () => {
     expect(starts).toEqual(['=para one', '=head2 Tw'])
   })
 
+  it.each([
+    ['an abbreviated block', '=begin pod\n=React hello =end React\n\n=para after\n=end pod\n'],
+    ['a paragraph block', '=begin pod\n=for React\nhello =end React\n\n=para after\n=end pod\n'],
+  ])('are found in %s whose text ends with the words of a closing marker', (_name, text) => {
+    expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', 'hello =end React', '']])
+  })
+
   it('are found in a block the text ends with', () => {
     const text = '=begin React\n=para one\n=end React'
     expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', '=para one', '=end React']])

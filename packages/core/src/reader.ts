@@ -45,8 +45,9 @@ const placeOf = (body: string, block: any, text: string): Place | undefined => {
   const from = block.location?.start?.offset
   const to = block.location?.end?.offset
   if (typeof from !== 'number' || typeof to !== 'number') return undefined
-  // a delimited block ends with its closing marker, the other forms with their body
-  const closing = new RegExp(`[ \\t]*=end[ \\t]+${block.name}[ \\t]*(\\r\\n|\\n|\\r)?$`)
+  // a delimited block ends with its closing marker, the other forms with their body;
+  // the marker starts its line: the same words at the end of a line of text are text
+  const closing = new RegExp(`(?<=^|[\\r\\n])[ \\t]*=end[ \\t]+${block.name}[ \\t]*(\\r\\n|\\n|\\r)?$`)
   const within = text.slice(0, to)
   const end = within.length - (closing.exec(within)?.[0].length ?? 0)
   const at: number[] = new Array(body.length + 1)
