@@ -13,12 +13,19 @@ import { assembleIncludes, silently } from './index'
 import type { AssembleOptions, IncludeOrigin, IncludeStep, Located, Source, Sources } from './index'
 
 export type AsyncSources = {
-  locate: (path: string, context: unknown, plain?: boolean, at?: IncludeStep) => Located | Promise<Located>
+  schemes?: readonly string[]
+  locate: (
+    path: string,
+    context: unknown,
+    plain?: boolean,
+    at?: IncludeStep,
+    scheme?: string,
+  ) => Located | Promise<Located>
   read: (source: Source) => string | null | Promise<string | null>
 }
 
 type Wanted =
-  | { kind: 'locate'; path: string; context: unknown; plain: boolean; at?: IncludeStep }
+  | { kind: 'locate'; path: string; context: unknown; plain: boolean; at?: IncludeStep; scheme?: string }
   | { kind: 'read'; source: Source }
 
 /*
@@ -36,7 +43,14 @@ id forgets what was read for that source, without one it forgets everything.
 export type SourceStore = {
   sources: () => Sources
   wanted: () => Wanted[]
-  located: (path: string, context: unknown, plain: boolean, at: IncludeStep | undefined, answer: Located) => void
+  located: (
+    path: string,
+    context: unknown,
+    plain: boolean,
+    at: IncludeStep | undefined,
+    answer: Located,
+    scheme?: string,
+  ) => void
   text: (source: Source, answer: string | null) => void
   drop: (id?: string) => void
 }
@@ -47,19 +61,22 @@ export const createSourceStore = (): SourceStore => {
   let asked: Wanted[] = []
   // A path read as written and the same path read as a mask are two questions,
   // and so is the same path at two directives: a host may answer by the place.
-  const keyOf = (path: string, plain: boolean, at?: IncludeStep): string =>
-    `${plain ? 'plain' : 'mask'}\u0000${path}\u0000${at ? `${at.file}@${at.location?.start?.offset ?? ''}` : ''}`
+  const keyOf = (path: string, plain: boolean, at?: IncludeStep, scheme = 'file'): string =>
+    `${plain ? 'plain' : 'mask'}\u0000${scheme}\u0000${path}\u0000${
+      at ? `${at.file}@${at.location?.start?.offset ?? ''}` : ''
+    }`
   const want = (item: Wanted, same: (other: Wanted) => boolean): void => {
     if (!asked.some(same)) asked.push(item)
   }
   return {
     sources: () => ({
-      locate: (path, context, plain = false, at) => {
-        const known = places.get(context)?.get(keyOf(path, plain, at))
+      locate: (path, context, plain = false, at, scheme) => {
+        const key = keyOf(path, plain, at, scheme)
+        const known = places.get(context)?.get(key)
         if (known) return known
         want(
-          { kind: 'locate', path, context, plain, at },
-          o => o.kind === 'locate' && o.context === context && keyOf(o.path, o.plain, o.at) === keyOf(path, plain, at),
+          { kind: 'locate', path, context, plain, at, scheme },
+          o => o.kind === 'locate' && o.context === context && keyOf(o.path, o.plain, o.at, o.scheme) === key,
         )
         return undefined
       },
@@ -74,9 +91,9 @@ export const createSourceStore = (): SourceStore => {
       asked = []
       return out
     },
-    located: (path, context, plain, at, answer) => {
+    located: (path, context, plain, at, answer, scheme) => {
       const known = places.get(context) ?? new Map<string, Located>()
-      known.set(keyOf(path, plain, at), answer)
+      known.set(keyOf(path, plain, at, scheme), answer)
       places.set(context, known)
     },
     text: (source, answer) => {
@@ -116,11 +133,13 @@ source that fails to answer is taken as one that cannot be had.
 export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Promise<any> => {
   const { sources, store = createSourceStore(), ...rest } = opts
   const ignore = (): void => {}
+  // the store answers for the host, so it knows the schemes the host knows
+  const known = (): Sources => ({ ...store.sources(), schemes: sources.schemes })
   for (let round = 0; round < maxRounds; round++) {
     silently(() =>
       assembleIncludes(tree, {
         ...rest,
-        sources: store.sources(),
+        sources: known(),
         origin: new WeakMap<object, IncludeOrigin>(),
         onCopy: undefined,
         onError: ignore,
@@ -128,14 +147,14 @@ export const assembleAsync = async (tree: any, opts: AssembleAsyncOptions): Prom
       }),
     )
     const wanted = store.wanted()
-    if (wanted.length === 0) return assembleIncludes(tree, { ...rest, sources: store.sources() })
+    if (wanted.length === 0) return assembleIncludes(tree, { ...rest, sources: known() })
     await Promise.all(
       wanted.map(async item => {
         if (item.kind === 'locate') {
           const answer = await Promise.resolve()
-            .then(() => sources.locate(item.path, item.context, item.plain, item.at))
+            .then(() => sources.locate(item.path, item.context, item.plain, item.at, item.scheme))
             .catch((): Located => ({ masked: false, sources: [] }))
-          store.located(item.path, item.context, item.plain, item.at, answer)
+          store.located(item.path, item.context, item.plain, item.at, answer, item.scheme)
         } else {
           const answer = await Promise.resolve()
             .then(() => sources.read(item.source))

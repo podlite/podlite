@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<runSelector> takes C<readSource>: the host reads the documents an operand with a C<file:> or a C<doc:> source names
+
 =item the body of a C<=markdown> block is read as Markdown whatever C<:allow> it is given, on the block, by a C<=set> before it, by C<=config> or by the settings of an including file; with a code named in C<:allow> the body was read for Podlite markup codes and its headings, lists and paragraphs were lost
 
 =item C<toHtml> writes the blocks of a C<root> block with no warning; it printed the whole document to the error stream as a node left unhandled

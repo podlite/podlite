@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a provider of include sources names the address schemes it resolves in C<schemes>, C<file> alone when it names none, and C<locate> is given the scheme as its last argument: C<=include doc:Name> and an operand C<in doc:Name> reach a provider that lists C<doc>. A path that is not a mask names one source: a provider says why it cannot give one in C<failed>, the problem carries the address and that reason, and the directive stays in the tree; two sources with different ids for such a path are refused the same way. A document that includes itself is told from its id before it is read. C<SourceStore.located> takes the scheme as its last argument
+
 =item C<podlite lint> reads an included Podlite file with the Markdown and table of contents plugins and with the settings in effect at the directive: a heading written in a Markdown section of an included file is found by its address; it was reported as not found. A warning a plugin prints while an included file is read stays off the console, and an included file that cannot be read costs one finding and leaves the others in place
 
 =item C<readerFor> makes the reading an include assembly asks for out of a parser, so a host need not write it; its fourth argument hands the parser the lists it fills with recognition events and diagnostics

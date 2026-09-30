@@ -65,6 +65,9 @@ export type IncludeOrigin = {
 
 A text an C<=include> can bring. C<id> is its identity: two sources are the same
 text when their ids are equal, and a source already on the way in is a cycle.
+One id stands for one place: the same text, read as the same format, with paths
+inside it resolved from the same place. The same text held in two places is two
+sources. The format is told from the id, as from a file name.
 C<name> is what a selector matches the source by and what messages show.
 C<context> is what paths written inside the source are resolved from; only the
 provider reads it.
@@ -91,14 +94,25 @@ then left in place with its C<=set> assignments, and nothing is reported. With
 C<plain> the path names one source as written, mask characters and all: an
 operand of a selector is read that way.
 
+C<schemes> names the address schemes the provider resolves, C<file> alone when
+not given; the list is complete, and an address of another scheme is reported as
+unsupported without asking. The scheme comes as the last argument of C<locate>.
+For C<doc:> the path is the name of a document: the text or the C<:id> of a
+C<=NAME> or C<=TITLE> block written in it, at any depth; a block its includes
+bring gives it no name. A path that is not a mask names one source. A provider
+that finds more than one, or none it can give, says why in C<failed>; it does not
+throw. For the document to be caught including itself, C<self> is the id the
+provider gives it.
+
 =end pod
 */
-// `failed` says why a mask could not be expanded
+// `failed` says why the path could not be resolved
 export type Located = { masked: boolean; sources: Source[]; failed?: string }
 
 export type Sources = {
+  schemes?: readonly string[]
   // `at` is the directive the path is written in, when it is an include
-  locate: (path: string, context: unknown, plain?: boolean, at?: IncludeStep) => Located | undefined
+  locate: (path: string, context: unknown, plain?: boolean, at?: IncludeStep, scheme?: string) => Located | undefined
   read: (source: Source) => string | null | undefined
 }
 
@@ -201,6 +215,16 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const text = provider.read(source)
     if (text !== undefined) texts.set(source.id, text)
     return text
+  }
+
+  const schemes = provider.schemes ?? ['file']
+  // why a path gives no source to read: the provider said so, or it named more than one
+  const refusal = (located: Located): string | undefined => {
+    if (located.failed !== undefined) return located.failed
+    if (located.masked) return undefined
+    const places = new Map(located.sources.map((source): [string, Source] => [source.id, source]))
+    if (places.size < 2) return undefined
+    return `more than one source answers: ${[...places.values()].map(s => `${s.name} (${s.id})`).join(', ')}`
   }
 
   const emit = (problem: IncludeProblem): void => {
@@ -655,7 +679,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         true,
       )
     }
-    if (parsed.scheme !== 'file') {
+    if (!schemes.includes(parsed.scheme)) {
       return fail(
         {
           kind: 'unsupported-scheme',
@@ -668,20 +692,37 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
 
     const wait = () => ({ nodes: [node], inner: failures.slice(mark), roots: undefined, selector, waiting: true })
-    const located = provider.locate(parsed.document, context, false, here[here.length - 1])
+    const located = provider.locate(parsed.document, context, false, here[here.length - 1], parsed.scheme)
     if (!located) return wait()
-    if (located.failed !== undefined) {
-      return fail({
-        kind: 'source',
-        target: selector,
-        message: `include mask cannot be expanded: ${parsed.document}: ${located.failed}`,
-        chain: here,
-      })
+    const refused = refusal(located)
+    if (refused !== undefined) {
+      return located.masked
+        ? fail({
+            kind: 'source',
+            target: selector,
+            message: `include mask cannot be expanded: ${parsed.document}: ${refused}`,
+            chain: here,
+          })
+        : fail(
+            {
+              kind: 'source',
+              target: selector,
+              message: `include source cannot be resolved: ${parsed.scheme}:${parsed.document}: ${refused}`,
+              chain: here,
+            },
+            true,
+          )
     }
-    const { masked, sources: written } = located
-    const first = !masked && written.length ? textOf(written[0]) : null
+    const { masked } = located
+    // two answers with one id are one source
+    const written = masked
+      ? located.sources
+      : located.sources.filter((source, at, all) => all.findIndex(other => other.id === source.id) === at)
+    // a source already on the way in is not read again to find that out
+    const back = !masked && written.length > 0 && stack.includes(written[0].id)
+    const first = !masked && written.length && !back ? textOf(written[0]) : null
     if (first === undefined) return wait()
-    if (!masked && first === null) {
+    if (!masked && !back && first === null) {
       return fail({
         kind: 'source',
         target: selector,
@@ -848,8 +889,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     // a file an operand names is read the way an included file is, from the
     // directory of the directive; one already on the way does not resolve
     let operandWaits = false
-    const readFile = (document: string): SelectorDoc[] | undefined => {
-      const found = provider.locate(document, context, true)
+    const readSource = (scheme: string, document: string): SelectorDoc[] | undefined => {
+      if (!schemes.includes(scheme)) return undefined
+      const found = provider.locate(document, context, true, undefined, scheme)
+      const refused = found && refusal(found)
+      if (refused !== undefined) {
+        throw new SelectorError('resolution', `the source does not resolve: ${scheme}:${document}: ${refused}`)
+      }
       const source = found?.sources[0]
       const target = source?.id ?? ''
       const text = !source || stack.includes(target) ? null : textOf(source)
@@ -873,7 +919,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
     try {
       const found = outermost(
-        keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readFile })),
+        keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readSource })),
       )
       if (operandWaits) return wait()
       return done(placedFor(found))

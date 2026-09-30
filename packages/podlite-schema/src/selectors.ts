@@ -711,12 +711,18 @@ source is looked up in it; without it the documents being selected from are used
 C<readFile> reads the documents a C<file:> operand names, relative to the file the
 selector is written in, and returns C<undefined> when there is none; without it a
 C<file:> operand is looked for among the documents being selected from.
+C<readSource> reads the documents an operand with a C<file:> or a C<doc:> source
+names and is asked instead of C<readFile> when given. For C<doc:> its C<undefined>
+means it does not know the name, and the documents being selected from are
+searched; for C<file:> it means there is none. It throws a C<SelectorError> of the
+kind C<resolution> to say why a source cannot be resolved.
 
 =end pod
 */
 export type SelectorOptions = {
   home?: SelectorDoc[]
   readFile?: (document: string) => SelectorDoc[] | undefined
+  readSource?: (scheme: 'file' | 'doc', document: string) => SelectorDoc[] | undefined
 }
 
 const termOf = (block: PodNode): string[] => {
@@ -753,7 +759,12 @@ const dataValues = (key: string, address: string | undefined, home: SelectorDoc[
 
 // How one selection reads its operands: the current document, the reader of
 // files, and every document the selection was given.
-type Reading = { home: SelectorDoc[]; readFile?: SelectorOptions['readFile']; corpus: SelectorDoc[] }
+type Reading = {
+  home: SelectorDoc[]
+  readFile?: SelectorOptions['readFile']
+  readSource?: SelectorOptions['readSource']
+  corpus: SelectorDoc[]
+}
 
 // The blocks an address names, found the way a link finds its target; the first
 // of two blocks sharing it answers.
@@ -765,13 +776,17 @@ const addressed = (docs: SelectorDoc[], anchor: string): PodNode[] =>
 
 const operandBlocks = (selector: ParsedSelector, reading: Reading): PodNode[] => {
   const { scheme, document, anchor, patterns } = selector
-  const { home, readFile, corpus } = reading
+  const { home, readFile, readSource, corpus } = reading
   const shown = scheme ? `${scheme}:${document}` : patterns.map(p => p.blockType).join(', ')
   let sources: SelectorDoc[] | undefined = home
   if (scheme === 'file' && document) {
-    sources = readFile ? readFile(document) : corpus.filter(d => filePathMatches(d.file, document))
+    sources = readSource
+      ? readSource('file', document)
+      : readFile
+      ? readFile(document)
+      : corpus.filter(d => filePathMatches(d.file, document))
   } else if (scheme === 'doc' && document) {
-    sources = corpus.filter(d => getDocIDs(d).includes(document))
+    sources = readSource?.('doc', document) ?? corpus.filter(d => getDocIDs(d).includes(document))
   }
   if (!sources || sources.length === 0) throw new SelectorError('resolution', `the source does not resolve: ${shown}`)
   if (anchor) {
@@ -850,7 +865,12 @@ export const runSelector = <T extends SelectorDoc>(
   // Patterns are applied in source order and a block found twice is kept once;
   // an operand reads from all the documents given, not only the matched ones
   if (patterns.length > 0) {
-    return selectBlocks(patterns, matchedDocs, { home: options.home ?? docs, readFile: options.readFile, corpus: docs })
+    return selectBlocks(patterns, matchedDocs, {
+      home: options.home ?? docs,
+      readFile: options.readFile,
+      readSource: options.readSource,
+      corpus: docs,
+    })
   }
 
   // No anchor, no patterns — return whole docs
