@@ -208,13 +208,14 @@ describe('an operand that names a document', () => {
 })
 
 describe('a provider of named documents that answers later', () => {
+  const none: Located = { masked: false, sources: [] }
   const later = (files: Record<string, string>) => {
     const { sources: inner, located } = byName(files)
     const sources: AsyncSources = {
       schemes: inner.schemes,
       locate: (path, context, plain, at, scheme) =>
         new Promise<Located>(resolve =>
-          setTimeout(() => resolve(inner.locate(path, context, plain, at, scheme) as Located), 1),
+          setTimeout(() => resolve(inner.locate(path, context, plain, at, scheme) ?? none), 1),
         ),
       read: source => new Promise<string | null>(resolve => setTimeout(() => resolve(inner.read(source) ?? null), 1)),
     }
@@ -255,10 +256,72 @@ describe('a provider of named documents that answers later', () => {
     expect(located.sort()).toEqual(['doc:Dumper', 'file:Dumper'])
   })
 
-  it('waits for an operand the provider has not answered yet', async () => {
+  it('reads an operand once the provider has answered', async () => {
     const { tree, problems } = await assembledLater(
       '=include file:./guide.podlite | Invoice[ :type(in doc:Vocabulary | defn) ]\n',
     )
     expect([count('Invoice', tree), problems]).toEqual([1, []])
+  })
+})
+
+describe('an include whose source is not known yet', () => {
+  it('waits, and so does one whose operand is not known yet', () => {
+    const base = sourcesFromFiles(library)
+    const sources: Sources = {
+      schemes: ['file', 'doc'],
+      locate: (path, context, plain, at, scheme) =>
+        scheme === 'doc' ? undefined : base.locate(path, context, plain, at),
+      read: base.read,
+    }
+    for (const text of [
+      '=include doc:Dumper | code\n',
+      '=include file:./guide.podlite | Invoice[ :type(in doc:Vocabulary | defn) ]\n',
+    ]) {
+      const { tree, problems } = assembled(text, sources)
+      expect([includes(tree), problems]).toEqual([1, []])
+    }
+  })
+})
+
+describe('what a provider that names schemes leaves as it was', () => {
+  it('reads operands with a file, with data and with no source', () => {
+    // data and an operand with no source are read in the document the selector is written in
+    const own =
+      "=begin data :key<kinds> :mime-type('text/tab-separated-values; header=present')\nvalue\tlabel\ndraft\tDraft\n=end data\n\n=defn draft\nMine.\n\n"
+    for (const operand of ['in file:./vocabulary.podlite | defn', 'in data:kinds#value', 'in defn']) {
+      const text = `${own}=include file:./guide.podlite | Invoice[ :type(${operand}) ]\n`
+      const { tree, problems } = assembled(text, byName(library).sources)
+      expect([operand, count('Invoice', tree), problems]).toEqual([operand, 1, []])
+    }
+  })
+
+  it('says nothing of a cycle that loses no =set', () => {
+    const files = { ...library, '/lib/main.podlite': '=begin pod\n=NAME Main\n\n=include doc:Main\n=end pod\n' }
+    const { sources, reads } = byName(files)
+    expect([assembled(files['/lib/main.podlite'], sources).problems, reads]).toEqual([[], []])
+  })
+})
+
+describe('what a provider that names no schemes does as before', () => {
+  const sources = sourcesFromFiles(library)
+
+  it('expands a mask', () => {
+    const { tree, problems } = assembled('=include file:./*.podlite | code\n', sources)
+    expect([count('code', tree), problems]).toEqual([1, []])
+  })
+
+  it('reports a file that is not there', () => {
+    const { problems } = assembled('=include file:./absent.podlite\n', sources)
+    expect(problems.map(problem => problem.message)).toEqual(['include target not found: ./absent.podlite'])
+  })
+
+  it('does not resolve an operand that names the file already on the way in', () => {
+    const files = {
+      ...library,
+      '/lib/main.podlite':
+        '=defn draft\nMine.\n\n=include file:./guide.podlite | Invoice[ :type(in file:./main.podlite | defn) ]\n',
+    }
+    const { problems } = assembled(files['/lib/main.podlite'], sourcesFromFiles(files))
+    expect(problems.map(problem => problem.kind)).toEqual(['operand'])
   })
 })

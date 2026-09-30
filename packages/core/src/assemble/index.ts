@@ -68,7 +68,8 @@ text when their ids are equal, and a source already on the way in is a cycle.
 One id stands for one place: the same text, read as the same format, with paths
 inside it resolved from the same place. The same text held in two places is two
 sources. The format is told from the id, as from a file name.
-C<name> is what a selector matches the source by and what messages show.
+C<name> is what a C<file:> selector matches the source by and what messages show; a
+C<doc:> selector matches the names written in the text.
 C<context> is what paths written inside the source are resolved from; only the
 provider reads it.
 
@@ -95,8 +96,9 @@ C<plain> the path names one source as written, mask characters and all: an
 operand of a selector is read that way.
 
 C<schemes> names the address schemes the provider resolves, C<file> alone when
-not given; the list is complete, and an address of another scheme is reported as
-unsupported without asking. The scheme comes as the last argument of C<locate>.
+not given; the list is complete, and an include of another scheme is reported as
+unsupported without asking, while an operand of another scheme is looked for among
+the documents at hand. The scheme comes as the last argument of C<locate>.
 For C<doc:> the path is the name of a document: the text or the C<:id> of a
 C<=NAME> or C<=TITLE> block written in it, at any depth; a block its includes
 bring gives it no name. A path that is not a mask names one source. A provider
