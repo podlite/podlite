@@ -198,6 +198,7 @@ describe('a =markdown block under :allow', () => {
     const host = write('host.podlite', '=config markdown :allow<B>\n\n=include file:./child.podlite | head1\n')
     const r = q('head1', host)
     expect([r.matchCount, r.exitCode, r.problems]).toEqual([1, 0, []])
+    expect(r.output).toContain('Title')
     expect(r.output).not.toContain('=begin')
   })
 
@@ -209,6 +210,7 @@ describe('a =markdown block under :allow', () => {
     )
     const r = q('head1[ :id<chosen> ]', host)
     expect([r.matchCount, r.problems]).toEqual([1, []])
+    expect(r.output).toContain('Title')
     expect(r.output).not.toContain('=begin')
   })
 })
@@ -218,8 +220,7 @@ describe('a found block the settings at the directive read as something else', (
     write('child.podlite', '=begin data-table :mime-type<text/csv>\na,b\n=end data-table\n')
     return write('host.podlite', '=config data-table :columns<1>\n\n=include file:./child.podlite | cell\n')
   }
-  // the operand reads the file it is written in: with the settings of the host the
-  // term has a language, the operand is empty and the nested include brings nothing
+  // under the settings of the host the term has a language, so the operand is empty
   const operand = (set = '', after = ''): string => {
     write('leaf.podlite', '=for para :lang<fr>\nText\n')
     write(
