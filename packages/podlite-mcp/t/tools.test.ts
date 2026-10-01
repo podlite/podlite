@@ -118,9 +118,14 @@ const x = 1
     expect([para.matchCount, para.output]).toEqual([1, 'Md text.'])
   })
 
-  it('gives in json a block of a section the place of the section, without a file', () => {
+  it('gives in json a block of a section the place of the section, and its file first', () => {
     const [head] = JSON.parse(querySource('head1', section, 'json').output)
-    expect([head.precision, head.location.start.line, 'file' in head]).toEqual(['section', 3, false])
+    expect([head.precision, head.location.start.line, Object.keys(head)[0], head.file]).toEqual([
+      'section',
+      3,
+      'file',
+      'input.podlite',
+    ])
   })
 
   it('does not count the root inside a section as found', () => {
@@ -239,3 +244,129 @@ describe('includes with the files the caller gives', () => {
     ])
   })
 })
+
+describe('a selector that names its own source in the files given', () => {
+  const text = '=begin pod\n=for Invoice :type<draft>\nA\n\n=for Invoice :type<paid>\nB\n=end pod\n'
+  const files = {
+    'part.podlite': '=begin pod\n=head1 Part\n\n=for head1 :id<A>\nAnchored\n=end pod\n',
+    'notes/part.podlite': '=begin pod\n=head1 Nested\n=end pod\n',
+    'terms.podlite': '=begin pod\n=defn draft\nNot final.\n=end pod\n',
+  }
+  const used = 'text not used as the document of the selection: the selector names its own source'
+
+  it('finds the blocks of the file named and gives them as the file holds them', () => {
+    const report = querySource('file:part.podlite | head1', text, 'podlite', files)
+    expect([report.matchCount, report.output, report.notes]).toEqual([2, '=head1 Part\n\n=for head1 :id<A>\nAnchored', [used]])
+  })
+
+  it('does not take a file of the same name in a directory', () => {
+    expect(querySource('file:part.podlite | head1', text, 'podlite', files).output).not.toContain('Nested')
+  })
+
+  it('reads a path without a scheme and with an address, its steps taken', () => {
+    for (const selector of ['file:notes/../part.podlite#A | head1', 'notes/../part.podlite#A | head1']) {
+      expect(querySource(selector, text, 'podlite', files).output).toBe('=for head1 :id<A>\nAnchored')
+    }
+  })
+
+  it('takes the document itself into a mask and says nothing about text then', () => {
+    const report = querySource('file:*.podlite | head1, Invoice', text, 'podlite', files)
+    expect(report.matchCount).toBe(4)
+    expect(report.output).not.toContain('Nested')
+    expect(report.notes).toEqual([])
+  })
+
+  it('keeps a mask in its directory', () => {
+    expect(querySource('file:notes/*.podlite | head1', text, 'podlite', files).output).toBe('=head1 Nested')
+  })
+
+  it('changes only the path of the source, not the same path in a condition', () => {
+    const selector = 'file:notes/../part.podlite | head1[ :id<notes/../part.podlite> ]'
+    expect(querySource(selector, text, 'podlite', files).matchCount).toBe(0)
+    expect(() => querySource(selector, text, 'podlite', files)).not.toThrow()
+  })
+
+  it('reads an operand from the files given', () => {
+    const report = querySource('Invoice[ :type(in file:terms.podlite | defn) ]', text, 'podlite', files)
+    expect([report.matchCount, report.output]).toEqual([1, '=for Invoice :type<draft>\nA'])
+  })
+
+  it('reads a mask in an operand as written', () => {
+    expect(() => querySource('Invoice[ :type(in file:*.podlite | defn) ]', text, 'podlite', files)).toThrow(
+      /the source does not resolve/,
+    )
+  })
+
+  it('reads an operand with no source in the document each block is found in', () => {
+    const two = {
+      'a.podlite': '=begin pod\n=defn x\nIn a.\n\n=for para :term<x>\nPara a.\n=end pod\n',
+      'b.podlite': '=begin pod\n=defn y\nIn b.\n\n=for para :term<x>\nPara b.\n=end pod\n',
+    }
+    const report = querySource('file:?.podlite | para[ :term(in defn) ]', text, 'podlite', two)
+    expect(report.output).toBe('=for para :term<x>\nPara a.')
+  })
+
+  it('tells that text is not used even when it is empty', () => {
+    expect(querySource('file:part.podlite | head1', '', 'podlite', files).notes).toEqual([used])
+  })
+
+  it('names the file it includes but not the file it selected from', () => {
+    const withInclude = { ...files, 'book.podlite': '=begin pod\n=include file:part.podlite\n=end pod\n' }
+    const report = querySource('file:book.podlite | head1', text, 'podlite', withInclude)
+    expect(report.notes).toEqual([used, 'included from files: part.podlite'])
+  })
+
+  it('reads the neighbour of a file in a directory and does not include a file in itself twice', () => {
+    const nested = {
+      'notes/b.podlite': '=begin pod\n=head1 B\n\n=include file:c.podlite\n\n=include file:b.podlite\n=end pod\n',
+      'notes/c.podlite': '=begin pod\n=head1 C\n=end pod\n',
+    }
+    const report = querySource('file:notes/b.podlite | head1', text, 'podlite', nested)
+    expect(report.output).toBe('=head1 B\n\n=head1 C')
+  })
+
+  it('brings the document itself to a file of the set that includes it', () => {
+    const report = querySource('file:shell.podlite | Invoice', text, 'podlite', {
+      'shell.podlite': '=begin pod\n=include file:input.podlite\n=end pod\n',
+    })
+    expect(report.matchCount).toBe(2)
+  })
+
+  it('does not report the includes of text when the selection reads another file', () => {
+    const broken = '=begin pod\n=include file:absent.podlite\n=end pod\n'
+    const report = querySource('file:part.podlite | head1', broken, 'podlite', files)
+    expect([report.error, report.problems]).toEqual([false, []])
+  })
+
+  it('reads the operands of a mask that finds nothing', () => {
+    expect(() =>
+      querySource('file:none*.podlite | Invoice[ :type(in file:missing.podlite | defn) ]', text, 'podlite', files),
+    ).toThrow(/the source does not resolve/)
+  })
+
+  it('answers a source not given as before when no files are given', () => {
+    expect(() => querySource('file:part.podlite | head1', text, 'podlite')).toThrow(/the source does not resolve/)
+  })
+
+  it('warns that a mask is looked for in text only when no files are given', () => {
+    const report = querySource('file:*.podlite | Invoice', text, 'podlite')
+    expect([report.matchCount, report.problems]).toEqual([
+      2,
+      ["files were not given; the selector's source is looked for in text only: *.podlite"],
+    ])
+  })
+
+  it('gives each block its file in json', () => {
+    const report = querySource('file:*.podlite | head1', text, 'json', files)
+    expect(JSON.parse(report.output).map((b: { file: string }) => b.file)).toEqual(['part.podlite', 'part.podlite'])
+  })
+})
+
+describe('a mask of an include in the files given', () => {
+  it('does not go down into a directory, so validate does not see a file there', () => {
+    const doc = '=begin pod\n=include file:*.podlite\n=end pod\n'
+    const report = validateSource(doc, { 'notes/b.podlite': '=begin pod\n=include file:absent.podlite\n=end pod\n' })
+    expect([report.ok, report.problems]).toEqual([true, []])
+  })
+})
+

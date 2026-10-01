@@ -47,7 +47,7 @@ A structural break in generated markup comes back as a line-located problem, so 
 - The lint rule set is growing. A clean `podlite_validate` result means the source parses and passes current rules, not an exhaustive audit.
 - `=include` is resolved only against the `files` a call gives to `podlite_render`, `podlite_query` or `podlite_validate`: a map from path to text, with paths relative to the document, which stands at the root of the map as `input.podlite`. The server reads no disk. Without `files` an include is left as written and the answer names the paths it asks for; with `files: {}` a missing file is an error. When blocks of the files are in the document, the answer of `podlite_render` and `podlite_query` names those files; `podlite_validate` answers with its report alone.
 - Included text goes through the same conversion as any text. The server checks the arguments of a call; the caller answers for what the files contain.
-- A selector of `podlite_query` that names a source of its own resolves only `file:input.podlite`, the document itself; another name, such as `file:part.podlite | head1`, is reported as a source that does not resolve, even when `files` holds it.
+- A selector of `podlite_query` that names a source of its own (`file:part.podlite | head1`, a mask such as `file:notes/*.podlite`, or `input.podlite` for the document itself) reads it from `files`, each file with its own includes; the answer says when `text` was not used as the document of the selection. An operand such as `in file:terms.podlite` is read from `files` too. A mask's `*` does not go down into a directory; `**` does. In json each block carries the file it comes from.
 - Read-only: no tools mutate files.
 
 ## Links

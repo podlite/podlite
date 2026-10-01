@@ -84,4 +84,18 @@ describe('a set of texts given by path', () => {
     })
     expect(sourcesFromFiles({ 'part.podlite': '' }).locate('part.podlite', '')?.sources[0].id).toBe('/part.podlite')
   })
+
+  it('keeps a mask in its directory: * does not go down, ** does', () => {
+    const files = { 'a.podlite': '', 'notes/b.podlite': '', 'other/notes/c.podlite': '' }
+    const ids = (written: string, context = '') =>
+      sourcesFromFiles(files)
+        .locate(written, context)
+        ?.sources.map(source => source.id)
+    expect(ids('*.podlite')).toEqual(['/a.podlite'])
+    expect(ids('notes/*.podlite')).toEqual(['/notes/b.podlite'])
+    expect(ids('**/*.podlite')).toEqual(['/a.podlite', '/notes/b.podlite', '/other/notes/c.podlite'])
+    expect(ids('notes/../*.podlite')).toEqual(['/a.podlite'])
+    expect(ids('../*.podlite', '/notes')).toEqual(['/a.podlite'])
+  })
 })
+

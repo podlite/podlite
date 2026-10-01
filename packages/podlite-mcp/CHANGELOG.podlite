@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item C<podlite_query> reads a source its selector names (C<file:part.podlite | head1>, a mask, or C<input.podlite> for the document itself) and a C<file:> operand from C<files>; each file found is read with its own includes, and the selection runs over each of them, as C<podlite query> does over files on disk. When the selection names a source other than the document, the answer says that C<text> was not used as its document
+
+=item the json answer of C<podlite_query> gives each block the file it comes from, first
+
+=item C<files> and the document are one set: a file of the set that includes C<input.podlite> gets the document itself
+
 =item C<podlite_render>, C<podlite_query> and C<podlite_validate> take C<files>, the texts a document includes, by path relative to the document; an C<=include> is assembled from them as C<convert> assembles it from disk. In C<podlite_render> and C<podlite_query> a problem the assembly reports as an error makes the answer an error, with the problems first; other problems and the list of the files whose blocks are in the document come after the output. C<podlite_validate> answers with its report alone The document stands in the map as C<input.podlite>, and a key of that name is refused
 
 =item a call without C<files> on a document with an C<=include> now answers with a second part naming the paths the includes ask for; the output is as before. C<podlite_validate> gives the same as an C<info> problem, and the report stays C<ok>

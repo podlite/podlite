@@ -44,7 +44,8 @@ directory of the text the directive is written in; the context of the document
 itself is its directory, a string, empty for the root of the set. The set is a
 root of its own: C<a.podlite> and C</a.podlite> name one place, and of two such
 paths the later one holds. A mask of C<*> and C<?> names the files that match
-it, in the order of their paths.
+it, in the order of their paths: it is resolved like a path first, and C<*> does
+not go down into a directory while C<**> does.
 
 =end pod
 */
@@ -55,20 +56,23 @@ export const sourcesFromFiles = (files: Record<string, string>): Sources => {
     locate: (written, context, plain) => {
       const dir = String(context ?? '')
       if (plain || !isMask(written)) return { masked: false, sources: [sourceAt(join(dir, written), written)] }
-      // a mask with a leading slash is matched from the root of the set
+      // The mask is resolved like a path first, its . and .. steps taken, and then
+      // matched against whole paths of the set with the slash kept in front, so
+      // that it stays anchored: * does not go down into a directory, ** does.
       const absolute = written.startsWith('/')
-      const base = absolute ? '' : placeOf(dir)
+      const pattern = placeOf(absolute ? written : join(dir, written))
+      const base = placeOf(dir)
       const prefix = base === '' ? '' : `${base}/`
-      // matched with the slash kept on both sides, so the mask stays anchored at the root
-      const matches = (name: string) =>
-        absolute ? filePathMatches(`/${name}`, `/${placeOf(written)}`) : filePathMatches(name, written)
-      const names = [...texts.keys()]
-        .filter(id => id.startsWith(prefix))
-        .map(id => id.slice(prefix.length))
-        .filter(matches)
-        .sort()
-      const named = (name: string) => (absolute ? `/${name}` : name)
-      return { masked: true, sources: names.map(name => sourceAt(join(dir, named(name)), named(name))) }
+      const rooted = dir === '' || dir.startsWith('/')
+      const keys = [...texts.keys()].filter(key => filePathMatches(`/${key}`, `/${pattern}`)).sort()
+      return {
+        masked: true,
+        sources: keys.map(key => {
+          // named as written: from the directory of the text, or from the root when outside it
+          const name = !absolute && key.startsWith(prefix) ? key.slice(prefix.length) : `/${key}`
+          return sourceAt(rooted ? `/${key}` : key, name)
+        }),
+      }
     },
     read: source => texts.get(placeOf(source.id)) ?? null,
   }

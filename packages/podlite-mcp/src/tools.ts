@@ -1,4 +1,4 @@
-import { parse, parseSelector, runSelector, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
+import { filePathMatches, parse, parseSelector, runSelector, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
 import type { ConfigScope, PodNode, SelectorDoc } from '@podlite/schema'
 import { podlite, readerFor } from 'podlite'
 import { assembleIncludes, sourcesFromFiles } from 'podlite'
@@ -54,20 +54,41 @@ const describeProblem = (problem: IncludeProblem): string => {
   return `${at ? placeOf(at.file) : virtualFile}${line}: ${problem.message}`
 }
 
+const dirOf = (key: string): string => {
+  const at = key.lastIndexOf('/')
+  return at < 0 ? '' : key.slice(0, at)
+}
+
 type Assembled = {
   tree: any
+  // the place of the document in the set and its text
+  key: string
+  text: string
+}
+
+// The set a call reads: the files given and the document itself under the name
+// virtualFile, for the includes and for the sources of a selector alike. Without
+// files only the document is known: an include of any other path is left in
+// place, and the paths asked for are named once.
+type Reading = {
+  texts: Map<string, string>
+  given: boolean
+  sources: Sources
   origin: WeakMap<object, IncludeOrigin>
   sections: WeakMap<object, unknown>
   report: AssemblyReport
+  // the files whose blocks an include brought, in the order met
+  included: Set<string>
+  assemble: (key: string) => Assembled
+  finish: () => AssemblyReport
 }
 
-// Without files the sources are not known: an include is left in place and the
-// paths asked for are named once. With files the set is the only source, and
-// the files included are named.
-const assemble = (text: string, files?: Files): Assembled => {
+const openReading = (text: string, files?: Files): Reading => {
   if (files && Object.keys(files).some(key => placeOf(key) === virtualFile)) {
     throw new Error(`files must not hold ${virtualFile}: that name is the document itself`)
   }
+  const all: Files = { ...(files ?? {}), [virtualFile]: text }
+  const texts = new Map(Object.keys(all).map((path): [string, string] => [placeOf(path), all[path]]))
   const p = podlite({ importPlugins: true })
   const read = readerFor(p, { format: detectFileType })
   const sections = new WeakMap<object, unknown>()
@@ -81,47 +102,59 @@ const assemble = (text: string, files?: Files): Assembled => {
     if (sections.has(from)) sections.set(to, sections.get(from))
   }
   const asked: string[] = []
+  const known = sourcesFromFiles(all)
   const sources: Sources = files
-    ? sourcesFromFiles(files)
+    ? known
     : {
-        locate: path => {
+        locate: (path, context, plain, at, scheme) => {
+          const found = known.locate(path, context, plain, at, scheme)
+          // only the document itself is known; a mask could name files that were not given
+          if (found && !found.masked && found.sources.every(source => texts.has(placeOf(source.id)))) return found
           if (!asked.includes(path)) asked.push(path)
           return undefined
         },
-        read: () => undefined,
+        read: known.read,
       }
   const report: AssemblyReport = { problems: [], error: false, notes: [] }
-  const assembled = assembleIncludes(toTree(text, virtualFile), {
-    sources,
-    context: '',
-    file: virtualFile,
-    self: `/${virtualFile}`,
-    text,
-    parse: toTree,
-    origin,
-    onCopy: carry,
-    tolerant: true,
-    onError: problem => {
-      report.error = true
-      report.problems.push(describeProblem(problem))
-    },
-    onWarning: problem => report.problems.push(describeProblem(problem)),
-  })
-  const tree = refreshTocs(assembled, p.parse(text, { podMode: 1 }), virtualFile, origin, carry)
-  // a warning: it comes with the other warnings of the assembly, after the output
-  if (asked.length) report.problems.push(`files were not given; includes not assembled: ${asked.join(', ')}`)
-  // a file is named when a block of it is in the document, not when it was read
   const included = new Set<string>()
-  const visit = (node: any): void => {
-    if (!node || typeof node !== 'object') return
-    if (Array.isArray(node)) return node.forEach(visit)
-    const from = origin.get(node)?.file
-    if (from && placeOf(from) !== virtualFile) included.add(placeOf(from))
-    visit(node.content)
+  const assemble = (key: string): Assembled => {
+    const own = texts.get(key) ?? ''
+    const assembled = assembleIncludes(toTree(own, key), {
+      sources,
+      // paths written in the file are resolved from its directory in the set
+      context: dirOf(key) === '' ? '' : `/${dirOf(key)}`,
+      file: key,
+      self: `/${key}`,
+      text: own,
+      parse: toTree,
+      origin,
+      onCopy: carry,
+      tolerant: true,
+      onError: problem => {
+        report.error = true
+        report.problems.push(describeProblem(problem))
+      },
+      onWarning: problem => report.problems.push(describeProblem(problem)),
+    })
+    const tree = refreshTocs(assembled, p.parse(own, { podMode: 1 }), key, origin, carry)
+    // a file is named when a block of it is in the document, not when it was read
+    const visit = (node: any): void => {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const from = origin.get(node)?.file
+      if (files && from && placeOf(from) !== key) included.add(placeOf(from))
+      visit(node.content)
+    }
+    visit(tree)
+    return { tree, key, text: own }
   }
-  if (files) visit(tree)
-  if (included.size) report.notes.push(`included from files: ${[...included].join(', ')}`)
-  return { tree, origin, sections, report }
+  const finish = (): AssemblyReport => {
+    // a warning: it comes with the other warnings of the assembly, after the output
+    if (asked.length) report.problems.push(`files were not given; includes not assembled: ${asked.join(', ')}`)
+    if (included.size) report.notes.push(`included from files: ${[...included].join(', ')}`)
+    return report
+  }
+  return { texts, given: Boolean(files), sources, origin, sections, report, included, assemble, finish }
 }
 
 export type RenderFormat = 'html' | 'md'
@@ -132,9 +165,10 @@ export const renderSource = (text: string, format: RenderFormat, files?: Files):
   renderReport(text, format, files).output
 
 export const renderReport = (text: string, format: RenderFormat, files?: Files): RenderReport => {
-  const { tree, report } = assemble(text, files)
+  const reading = openReading(text, files)
+  const { tree } = reading.assemble(virtualFile)
   const out = format === 'md' ? toMarkdown({}).run(tree) : toHtml({}).run(tree)
-  return { ...report, output: out.toString() }
+  return { ...reading.finish(), output: out.toString() }
 }
 
 export type QueryFormat = 'podlite' | 'json' | 'html' | 'md'
@@ -150,39 +184,95 @@ const renderBlock = (block: PodNode, format: 'html' | 'md'): string => {
   return out.toString().trimEnd()
 }
 
+// The leading path of a selector, with or without its scheme, up to its address
+// or the first bar
+const leadingPath = /^(\s*(?:file:)?)([^\s#|]+)/
+
 export const querySource = (selector: string, text: string, format: QueryFormat, files?: Files): QueryReport => {
-  if (!parseSelector(selector)) {
+  const parsed = parseSelector(selector)
+  if (!parsed) {
     throw new Error(`Invalid selector: ${selector}`)
   }
-  // the tree convert reads, so a Markdown section is read into blocks
-  const { tree, origin, sections, report } = assemble(text, files)
-  const docs: SelectorDoc[] = [{ file: virtualFile, node: contentOf(tree) }]
-  const blocks: PodNode[] = []
-  for (const item of runSelector(selector, docs)) {
-    if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
-      blocks.push(item as PodNode)
+  const reading = openReading(text, files)
+  const { texts, origin, sections } = reading
+  // an operand names one file of the set, written as it is, from the root of the set
+  const readFile = (document: string): SelectorDoc[] | undefined => {
+    const key = placeOf(document)
+    if (!texts.has(key)) return undefined
+    return [{ file: key, node: contentOf(reading.assemble(key).tree) }]
+  }
+  type Found = { file: string; text: string; block: PodNode }
+  const found: Found[] = []
+  const take = (doc: Assembled, items: ReturnType<typeof runSelector>): void => {
+    for (const item of items) {
+      if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
+        const where = origin.get(item as object)
+        found.push({
+          file: placeOf(where?.file ?? doc.key),
+          text: where?.text ?? doc.text,
+          block: item as PodNode,
+        })
+      }
     }
   }
+  const { scheme, document, anchor } = parsed
+  if (scheme === 'file' && document) {
+    // the selector names its own source: the documents of the set it names are
+    // read, each with its includes, and the selection runs over each of them
+    const written = document
+    const pattern = placeOf(written)
+    const masked = /[*?]/.test(written)
+    const keys = masked
+      ? [...texts.keys()].filter(key => filePathMatches(`/${key}`, `/${pattern}`)).sort()
+      : texts.has(pattern)
+      ? [pattern]
+      : []
+    if (!masked && keys.length === 0) {
+      throw new Error(`the source does not resolve: file:${written}${anchor ? `#${anchor}` : ''}`)
+    }
+    const local = selector.replace(leadingPath, (_all, lead) => `${lead}${pattern}`)
+    if (keys.length === 0) {
+      // nothing found, and the operands of the selection are still read
+      const blank = { file: '', node: { type: 'block', name: 'root', margin: '', content: [] } } as SelectorDoc
+      runSelector(local, [], { readFile, home: [blank] })
+    }
+    for (const key of keys) {
+      const doc = reading.assemble(key)
+      take(doc, runSelector(local, [{ file: key, node: contentOf(doc.tree) }], { readFile }))
+    }
+    // the documents found are named in the selection: they are not counted as included
+    for (const key of keys) reading.included.delete(key)
+    if (!reading.given && masked) {
+      reading.report.problems.push(`files were not given; the selector's source is looked for in text only: ${written}`)
+    }
+    if (!keys.includes(virtualFile)) {
+      reading.report.notes.push('text not used as the document of the selection: the selector names its own source')
+    }
+  } else {
+    const doc = reading.assemble(virtualFile)
+    take(doc, runSelector(selector, [{ file: virtualFile, node: contentOf(doc.tree) }], { readFile }))
+  }
+  const report = reading.finish()
   let output: string
   if (format === 'json') {
     output = JSON.stringify(
-      blocks.map(b => jsonBlock(b, sections)),
+      found.map(m => ({ file: m.file, ...jsonBlock(m.block, sections) })),
       null,
       2,
     )
   } else if (format === 'podlite') {
-    output = blocks
+    output = found
       // a block an include brought is given as its own file holds it
-      .map(b => podliteText(b, origin.get(b as object)?.text ?? text, sections).trimEnd())
+      .map(m => podliteText(m.block, m.text, sections).trimEnd())
       .filter(Boolean)
       .join('\n\n')
   } else {
-    output = blocks
-      .map(b => renderBlock(b, format))
+    output = found
+      .map(m => renderBlock(m.block, format))
       .filter(Boolean)
       .join('\n\n')
   }
-  return { ...report, matchCount: blocks.length, output }
+  return { ...report, matchCount: found.length, output }
 }
 
 export const validateSource = (text: string, files?: Files): ValidateReport => {
