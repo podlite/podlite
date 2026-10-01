@@ -59,6 +59,10 @@ describe('a set of texts given by path', () => {
   it('matches a mask with a leading slash from the root of the set', () => {
     const files = { '/lib/a.podlite': doc('=para One text'), 'lib/b.podlite': doc('=para Two text') }
     expect(assembled(doc('=include file:/lib/*.podlite'), files)).toEqual({ paras: ['One', 'Two'], problems: [] })
+    const nested = { '/lib/a.podlite': '', '/other/lib/b.podlite': '' }
+    expect(sourcesFromFiles(nested).locate('/lib/*.podlite', '/lib')?.sources.map(source => source.id)).toEqual([
+      '/lib/a.podlite',
+    ])
     expect(sourcesFromFiles({ '/lib/a.podlite': '' }).locate('/lib/*.podlite', '')).toEqual({
       masked: true,
       sources: [{ id: '/lib/a.podlite', name: '/lib/a.podlite', context: '/lib' }],

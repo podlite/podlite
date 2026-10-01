@@ -59,11 +59,13 @@ export const sourcesFromFiles = (files: Record<string, string>): Sources => {
       const absolute = written.startsWith('/')
       const base = absolute ? '' : placeOf(dir)
       const prefix = base === '' ? '' : `${base}/`
-      const pattern = absolute ? placeOf(written) : written
+      // matched with the slash kept on both sides, so the mask stays anchored at the root
+      const matches = (name: string) =>
+        absolute ? filePathMatches(`/${name}`, `/${placeOf(written)}`) : filePathMatches(name, written)
       const names = [...texts.keys()]
         .filter(id => id.startsWith(prefix))
         .map(id => id.slice(prefix.length))
-        .filter(name => filePathMatches(name, pattern))
+        .filter(matches)
         .sort()
       const named = (name: string) => (absolute ? `/${name}` : name)
       return { masked: true, sources: names.map(name => sourceAt(join(dir, named(name)), named(name))) }

@@ -28,8 +28,8 @@ const toViolation = (problem: IncludeProblem, filePath: string, fromDisk: boolea
       ? ` (in ${
           fromDisk
             ? relative(dirname(resolve(filePath)), last.file)
-            : typeof context === 'string' && last.file.startsWith('/')
-            ? posix.relative(posix.join('/', context), last.file)
+            : typeof context === 'string'
+            ? posix.relative(posix.join('/', context), posix.join('/', last.file))
             : last.file
         }:${last.location.start.line})`
       : ''
