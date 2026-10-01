@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item C<sourcesFromFiles> is a root of its own: a path with or without a leading slash names the same text, so a host can give its files by plain relative paths; a source keeps the identity it had
+
+=item the lint context takes C<sources>, C<context> and C<self>: the C<include-resolves> rule checks a text that is not read from disk against the sources a host gives
+
+=item C<podlite/lib/refresh-tocs> is exported
+
 =item C<readerFor> takes C<body>: a block the host says yes to has its raw body read as Podlite in its place, with the settings in effect where the block stands; the blocks of the body stand at their places in the text, and an include assembly given the same reader brings what an C<=include> written in the body names
 
 =item a provider of include sources names the address schemes it resolves in C<schemes>, C<file> alone when it names none, and C<locate> is given the scheme as its last argument: C<=include doc:Name> and an operand C<in doc:Name> reach a provider that lists C<doc>. A path that is not a mask names one source. When a provider says in C<failed> why it cannot give one, the problem carries the address and that reason and the directive stays in the tree; two sources with different ids for such a path are refused the same way. A source that is not found, with no reason given, is reported as before. A document that includes itself is told from its id before it is read. C<SourceStore.located> takes the scheme as its last argument

@@ -43,6 +43,10 @@
     "./lib/query-blocks": {
       "types": "./lib/query-blocks.d.ts",
       "default": "./lib/query-blocks.js"
+    },
+    "./lib/refresh-tocs": {
+      "types": "./lib/refresh-tocs.d.ts",
+      "default": "./lib/refresh-tocs.js"
     }
   },
   "funding": {

@@ -59,14 +59,14 @@ First B<paragraph>
 `
 
   it('renders html', () => {
-    const html = renderSource(doc, 'html')
+    const html = renderSource(doc, 'html').output
     expect(html).toContain('Introduction')
     expect(html).toMatch(/<h1[\s>]/)
     expect(html).toContain('<strong>paragraph</strong>')
   })
 
   it('renders markdown', () => {
-    const md = renderSource(doc, 'md')
+    const md = renderSource(doc, 'md').output
     expect(md).toContain('# Introduction')
     expect(md).toContain('**paragraph**')
   })
@@ -138,5 +138,93 @@ describe('querySource with a source in the selector', () => {
 
   it('finds the text given under the name the tool gives it', () => {
     expect(querySource('file:input.podlite | para', '=pod\n\nText.\n', 'podlite').matchCount).toBe(1)
+  })
+})
+
+describe('includes with the files the caller gives', () => {
+  const doc = '=begin pod\n=head1 Doc\n\n=include file:part.podlite\n\n=para after\n=end pod\n'
+  const part = '=begin pod\n=head2 Part\n\nPart text.\n=end pod\n'
+
+  it('renders the blocks of an included file and not its address', () => {
+    const report = renderSource(doc, 'md', { 'part.podlite': part })
+    expect(report.output).toContain('## Part')
+    expect(report.output).not.toContain('file:part.podlite')
+    expect([report.problems, report.error, report.notes]).toEqual([[], false, ['included from files: part.podlite']])
+  })
+
+  it('leaves an include in place without files and names the path it asks for', () => {
+    const report = renderSource(doc, 'md')
+    expect(report.output).toContain('file:part.podlite')
+    expect([report.problems, report.error, report.notes]).toEqual([
+      [],
+      false,
+      ['files were not given; includes not assembled: part.podlite'],
+    ])
+  })
+
+  it('names a mask it asks for without files', () => {
+    const report = renderSource('=begin pod\n=include file:chapters/*.podlite\n=end pod\n', 'md')
+    expect(report.notes).toEqual(['files were not given; includes not assembled: chapters/*.podlite'])
+  })
+
+  it('reports a missing file of an empty set as an error at its directive', () => {
+    const report = renderSource(doc, 'md', {})
+    expect([report.error, report.problems]).toEqual([true, ['input.podlite:4: include target not found: part.podlite']])
+  })
+
+  it('refuses a file under the name of the document itself', () => {
+    expect(() => renderSource(doc, 'md', { './input.podlite': part })).toThrow(/input.podlite/)
+    expect(() => validateSource(doc, { 'input.podlite': part })).toThrow(/input.podlite/)
+  })
+
+  it('assembles a nested include and an included Markdown file', () => {
+    const files = {
+      'part.podlite': '=begin pod\n=include file:notes/more.md\n=end pod\n',
+      'notes/more.md': '# More\n\nFrom Markdown.\n',
+    }
+    const report = renderSource(doc, 'md', files)
+    expect(report.output).toContain('From Markdown.')
+    expect(report.notes).toEqual(['included from files: part.podlite, notes/more.md'])
+  })
+
+  it('reports an include by a document name as a warning, not an error', () => {
+    const report = renderSource('=begin pod\n=include doc:Other\n=end pod\n', 'md', {})
+    expect(report.error).toBe(false)
+    expect(report.problems.length).toBe(1)
+  })
+
+  it('finds a block of an included file and gives it as that file holds it', () => {
+    const report = querySource('head2', doc, 'podlite', { 'part.podlite': part })
+    expect([report.matchCount, report.output]).toEqual([1, '=head2 Part'])
+  })
+
+  it('gives a block of a Markdown section of an included file as its Markdown', () => {
+    const section = '=begin pod\n=begin markdown\n# Title\n\nMd text.\n=end markdown\n=end pod\n'
+    const report = querySource('para', doc, 'podlite', { 'part.podlite': section })
+    expect(report.output).toContain('Md text.')
+  })
+
+  it('finds no include directive once the include is assembled, and finds it without files', () => {
+    expect(querySource('include', doc, 'podlite', { 'part.podlite': part }).matchCount).toBe(0)
+    expect(querySource('include', doc, 'podlite').matchCount).toBe(1)
+  })
+
+  it('validates an include against the files given', () => {
+    const clean = validateSource(doc, { 'part.podlite': part })
+    const missing = validateSource(doc, { 'other.podlite': part })
+    expect([clean.ok, clean.problems]).toEqual([true, []])
+    expect([missing.ok, missing.problems.map(p => [p.rule, p.severity, p.location?.start.line])]).toEqual([
+      false,
+      [['include-resolves', 'error', 4]],
+    ])
+  })
+
+  it('names the includes it did not check when no files are given', () => {
+    const report = validateSource(doc)
+    expect([report.ok, report.counts, report.problems.map(p => [p.severity, p.message])]).toEqual([
+      true,
+      { error: 0, warning: 0, info: 1 },
+      [['info', 'files were not given; includes not checked: part.podlite']],
+    ])
   })
 })

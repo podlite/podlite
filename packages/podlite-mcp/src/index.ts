@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { parseSource, querySource, renderSource, validateSource } from './tools'
+import type { AssemblyReport } from './tools'
 
 const { version } = require('../package.json')
 
@@ -12,6 +13,24 @@ const errorResult = (e: unknown): ToolResult => ({
   content: [{ type: 'text', text: e instanceof Error ? e.message : String(e) }],
   isError: true,
 })
+
+// The output, then the problems of the assembly, then what was included. A
+// problem that lost included content marks the answer an error and comes first.
+const assembledResult = (output: string, report: AssemblyReport): ToolResult => {
+  const problems = report.problems.length ? [{ type: 'text' as const, text: report.problems.join('\n') }] : []
+  const notes = report.notes.map(note => ({ type: 'text' as const, text: note }))
+  const shown = { type: 'text' as const, text: output }
+  return report.error
+    ? { content: [...problems, shown, ...notes], isError: true }
+    : { content: [shown, ...problems, ...notes] }
+}
+
+const files = z
+  .record(z.string(), z.string())
+  .optional()
+  .describe(
+    'Texts the document includes, by path relative to the document. The document itself stands at the root of this set under the name input.podlite, which a key may not take. Without this field the includes are left as written and the paths they ask for are named. Included text goes through the same conversion as any text; the server checks these arguments, and the caller answers for what the files contain.',
+  )
 
 export const createServer = (): McpServer => {
   const server = new McpServer({ name: 'podlite', version })
@@ -42,9 +61,16 @@ export const createServer = (): McpServer => {
         'Check Podlite source: parse errors plus lint rules. The rule set is growing; a clean result means the source parses and passes current rules, not an exhaustive audit.',
       inputSchema: {
         text: z.string().describe('Podlite source text'),
+        files,
       },
     },
-    async ({ text }) => textResult(JSON.stringify(validateSource(text), null, 2)),
+    async ({ text, files }) => {
+      try {
+        return textResult(JSON.stringify(validateSource(text, files), null, 2))
+      } catch (e) {
+        return errorResult(e)
+      }
+    },
   )
 
   server.registerTool(
@@ -55,11 +81,13 @@ export const createServer = (): McpServer => {
       inputSchema: {
         text: z.string().describe('Podlite source text'),
         format: z.enum(['html', 'md']).describe('Output format'),
+        files,
       },
     },
-    async ({ text, format }) => {
+    async ({ text, format, files }) => {
       try {
-        return textResult(renderSource(text, format))
+        const report = renderSource(text, format, files)
+        return assembledResult(report.output, report)
       } catch (e) {
         return errorResult(e)
       }
@@ -76,15 +104,13 @@ export const createServer = (): McpServer => {
         selector: z.string().describe('Block selector'),
         text: z.string().describe('Podlite source text'),
         format: z.enum(['podlite', 'json', 'html', 'md']).describe('Output format'),
+        files,
       },
     },
-    async ({ selector, text, format }) => {
+    async ({ selector, text, format, files }) => {
       try {
-        const report = querySource(selector, text, format)
-        if (report.matchCount === 0) {
-          return textResult('No matches.')
-        }
-        return textResult(report.output)
+        const report = querySource(selector, text, format, files)
+        return assembledResult(report.matchCount === 0 ? 'No matches.' : report.output, report)
       } catch (e) {
         return errorResult(e)
       }

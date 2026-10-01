@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<podlite_render>, C<podlite_query> and C<podlite_validate> take C<files>, the texts a document includes, by path relative to the document; an C<=include> is assembled from them as C<convert> assembles it from disk. A problem that loses included content makes the answer an error, with the problems first; other problems and the list of files included come after the output. The document stands in the map as C<input.podlite>, and a key of that name is refused
+
+=item a call without C<files> on a document with an C<=include> now answers with a second part naming the paths the includes ask for; the output is as before. C<podlite_validate> gives the same as an C<info> problem, and the report stays C<ok>
+
 =item C<podlite_query> reports a source or an address in the selector that does not resolve as an error of the tool; it returned no matches
 
 =item the query tool selects from the tree C<convert> reads, so a Markdown section is read into blocks, and gives a found block as C<podlite query> does. It is given text, not a file, so an C<=include> in it is not resolved

@@ -2,6 +2,9 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { lintFile, lintSource } from '../src/lint'
+import { parseContent } from '../src/lint/loader'
+import { includeResolvesRule } from '../src/lint/rules/include-resolves'
+import { sourcesFromFiles } from '../src/assemble'
 import { INCLUDE_RESOLVES_RULE_ID } from '../src/lint/rules/include-resolves'
 
 const dir = mkdtempSync(join(tmpdir(), 'podlite-includes-'))
@@ -124,5 +127,34 @@ describe('include-resolves rule', () => {
     )
     const markdown = lint('doc8.md', src)
     expect([fromDisk.length, byName.length, markdown.length]).toEqual([1, 0, 0])
+  })
+
+  it('checks text handed in by name against the sources a host gives', () => {
+    const src = '=pod\n\n=include file:part.podlite\n\n=include file:absent.podlite\n'
+    const check = (files: Record<string, string>) =>
+      includeResolvesRule.check(parseContent(src, 'podlite'), {
+        filePath: 'input.podlite',
+        fileType: 'podlite',
+        config: {},
+        sources: sourcesFromFiles(files),
+        context: '',
+        self: '/input.podlite',
+      })
+    expect(check({ 'part.podlite': '=pod\n\nPart.\n' }).map(v => [v.severity, v.location?.start.line])).toEqual([
+      ['error', 5],
+    ])
+  })
+
+  it('names a file of the given set as the host named it', () => {
+    const src = '=pod\n\n=include file:part.podlite\n'
+    const [violation] = includeResolvesRule.check(parseContent(src, 'podlite'), {
+      filePath: 'input.podlite',
+      fileType: 'podlite',
+      config: {},
+      sources: sourcesFromFiles({ 'part.podlite': '=pod\n\n=include file:absent.podlite\n' }),
+      context: '',
+      self: '/input.podlite',
+    })
+    expect(violation.message).toContain('(in /part.podlite:3)')
   })
 })

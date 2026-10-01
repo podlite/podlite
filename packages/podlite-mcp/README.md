@@ -28,9 +28,9 @@ claude mcp add podlite -- npx -y @podlite/mcp
 | Tool | Input | Output |
 |------|-------|--------|
 | `podlite_parse` | `text` | AST as JSON: typed blocks with `line`/`column` locations |
-| `podlite_validate` | `text` | `{ok, counts, problems[]}` — parse errors, lint rules, schema check |
-| `podlite_render` | `text`, `format: html\|md` | rendered document |
-| `podlite_query` | `selector`, `text`, `format: podlite\|json\|html\|md` | blocks matching a structural selector |
+| `podlite_validate` | `text`, `files?` | `{ok, counts, problems[]}` — parse errors, lint rules, schema check |
+| `podlite_render` | `text`, `format: html\|md`, `files?` | rendered document |
+| `podlite_query` | `selector`, `text`, `format: podlite\|json\|html\|md`, `files?` | blocks matching a structural selector |
 
 Selector examples for `podlite_query`:
 
@@ -45,7 +45,9 @@ A structural break in generated markup comes back as a line-located problem, so 
 ## Scope notes
 
 - The lint rule set is growing. A clean `podlite_validate` result means the source parses and passes current rules, not an exhaustive audit.
-- `=include` blocks are not resolved: the server receives text without a file context.
+- `=include` is resolved only against the `files` a call gives to `podlite_render`, `podlite_query` or `podlite_validate`: a map from path to text, with paths relative to the document, which stands at the root of the map as `input.podlite`. The server reads no disk. Without `files` an include is left as written and the answer names the paths it asks for; with `files: {}` a missing file is an error. When files were included, the answer names them.
+- Included text goes through the same conversion as any text. The server checks the arguments of a call; the caller answers for what the files contain.
+- A selector of `podlite_query` that names a source of its own (`file:part.podlite | head1`) still reads only `input.podlite`.
 - Read-only: no tools mutate files.
 
 ## Links

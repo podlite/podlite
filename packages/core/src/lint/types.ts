@@ -1,4 +1,5 @@
 import type { Location, PodliteDocument } from '@podlite/schema'
+import type { Sources } from '../assemble'
 
 export type Severity = 'error' | 'warning' | 'info'
 
@@ -25,6 +26,12 @@ export type LintContext = {
   // set only when the document was read from the file named by filePath: a rule
   // that reads files next to it has nothing to read for text handed in by name
   fromDisk?: boolean
+  // where included text comes from when the document is not read from disk: a
+  // host that holds the files itself gives them here, with what the paths in
+  // the document are resolved from and the name of the document among them
+  sources?: Sources
+  context?: unknown
+  self?: string
 }
 
 export type Violation = {

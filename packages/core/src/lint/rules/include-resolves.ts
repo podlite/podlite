@@ -5,7 +5,7 @@ import { PluginRegister as toc } from '@podlite/toc'
 import type { Rule, Violation, LintContext } from '../types'
 import { detectFileType } from '../loader'
 import { resolveIncludes, IncludeProblem } from '../../resolve-includes'
-import { silently } from '../../assemble'
+import { assembleIncludes, silently } from '../../assemble'
 import { readerFor } from '../../reader'
 
 // The plugins that change what an include can select or address. The registry
@@ -18,12 +18,13 @@ export const INCLUDE_RESOLVES_RULE_ID = 'include-resolves'
 
 // A problem deep in an included file is reported at the directive of this file
 // it came through, so the report and lint-ignore read offsets of this file only.
-const toViolation = (problem: IncludeProblem, filePath: string): Violation => {
+// A file of a host's own set is named as the host named it.
+const toViolation = (problem: IncludeProblem, filePath: string, fromDisk: boolean): Violation => {
   const first = problem.chain[0]
   const last = problem.chain[problem.chain.length - 1]
   const inner =
     problem.chain.length > 1 && last.location
-      ? ` (in ${relative(dirname(resolve(filePath)), last.file)}:${last.location.start.line})`
+      ? ` (in ${fromDisk ? relative(dirname(resolve(filePath)), last.file) : last.file}:${last.location.start.line})`
       : ''
   return {
     rule: INCLUDE_RESOLVES_RULE_ID,
@@ -40,18 +41,36 @@ export const includeResolvesRule: Rule = {
   severity: 'error',
   check: (ast: PodliteDocument, ctx: LintContext): Violation[] => {
     // A markdown document has no directives: an =include line there is text.
-    if (!ctx.fromDisk || ctx.fileType === 'md') return []
+    if (ctx.fileType === 'md') return []
+    // text handed in by name has nothing next to it to read, unless the host
+    // gives the sources itself
+    if (!ctx.fromDisk && !ctx.sources) return []
     const problems: IncludeProblem[] = []
+    const parse = (source: string, file: string, config?: Parameters<typeof read>[2]) =>
+      silently(() => read(source, file, config))
     try {
-      resolveIncludes(ast, {
-        baseDir: dirname(resolve(ctx.filePath)),
-        parse: (source, file, config) => silently(() => read(source, file, config)),
-        tolerant: true,
-        file: resolve(ctx.filePath),
-        self: ctx.filePath,
-        onError: problem => problems.push(problem),
-        onWarning: problem => problems.push(problem),
-      })
+      if (ctx.sources) {
+        assembleIncludes(ast, {
+          sources: ctx.sources,
+          context: ctx.context ?? '',
+          parse,
+          tolerant: true,
+          file: ctx.filePath,
+          self: ctx.self,
+          onError: problem => problems.push(problem),
+          onWarning: problem => problems.push(problem),
+        })
+      } else {
+        resolveIncludes(ast, {
+          baseDir: dirname(resolve(ctx.filePath)),
+          parse,
+          tolerant: true,
+          file: resolve(ctx.filePath),
+          self: ctx.filePath,
+          onError: problem => problems.push(problem),
+          onWarning: problem => problems.push(problem),
+        })
+      }
     } catch (e) {
       return [
         {
@@ -61,6 +80,6 @@ export const includeResolvesRule: Rule = {
         },
       ]
     }
-    return problems.map(problem => toViolation(problem, ctx.filePath))
+    return problems.map(problem => toViolation(problem, ctx.filePath, Boolean(ctx.fromDisk) && !ctx.sources))
   },
 }
