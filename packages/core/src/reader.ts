@@ -37,17 +37,21 @@ const rawBody = (block: any): string | undefined => {
   return content.map(part => part.value).join('')
 }
 
+// white space within a line, as the parser takes it for an indent
+const blank = '[^\\S\\r\\n]'
+const indent = new RegExp(blank)
+
 // Where the characters of a body stand in the text of its document. The parser
 // cuts the indent at the start of a line and nothing else, so the body read
-// backwards from where it ends is the text read backwards with runs of spaces
-// and tabs left out. A body that is not, has no place, and there is no answer.
+// backwards from where it ends is the text read backwards with runs of white
+// space left out. A body that is not, has no place, and there is no answer.
 const placeOf = (body: string, block: any, text: string): Place | undefined => {
   const from = block.location?.start?.offset
   const to = block.location?.end?.offset
   if (typeof from !== 'number' || typeof to !== 'number') return undefined
   // a delimited block ends with its closing marker, the other forms with their body;
   // the marker starts its line: the same words at the end of a line of text are text
-  const closing = new RegExp(`(?<=^|[\\r\\n])[ \\t]*=end[ \\t]+${block.name}[ \\t]*(\\r\\n|\\n|\\r)?$`)
+  const closing = new RegExp(`(?<=^|[\\r\\n])${blank}*=end${blank}+${block.name}${blank}*(\\r\\n|\\n|\\r)?$`)
   const within = text.slice(0, to)
   const end = within.length - (closing.exec(within)?.[0].length ?? 0)
   const at: number[] = new Array(body.length + 1)
@@ -55,7 +59,7 @@ const placeOf = (body: string, block: any, text: string): Place | undefined => {
   let offset = end
   for (let i = body.length - 1; i >= 0; i--) {
     offset--
-    while (offset >= from && text[offset] !== body[i] && (text[offset] === ' ' || text[offset] === '\t')) offset--
+    while (offset >= from && text[offset] !== body[i] && indent.test(text[offset])) offset--
     if (offset < from || text[offset] !== body[i]) return undefined
     at[i] = offset
   }

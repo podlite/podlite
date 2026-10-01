@@ -115,6 +115,15 @@ describe('the places of the blocks of a body', () => {
     expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', 'hello =end React', '']])
   })
 
+  it('are found where an indent or the end of the closing marker holds a no-break space', () => {
+    const text = '=begin pod\n  =begin React\n  =para one\n\u00a0\u00a0=para two\n  =end React\u00a0\n=end pod\n'
+    expect(placesOf(text, react(read(text, 'a')))).toEqual([
+      // a block ends where the next line of the body starts, past the indent cut from it
+      ['para', '=para one', '=para two'],
+      ['para', '=para two', '  =end React\u00a0'],
+    ])
+  })
+
   it('are found in a block the text ends with', () => {
     const text = '=begin React\n=para one\n=end React'
     expect(placesOf(text, react(read(text, 'a')))).toEqual([['para', '=para one', '=end React']])
