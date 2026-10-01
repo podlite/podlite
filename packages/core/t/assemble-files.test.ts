@@ -51,7 +51,18 @@ describe('a set of texts given by path', () => {
 
   it('takes a path with a leading slash for the same place, the later one holding', () => {
     const files = { 'part.podlite': doc('=para First text'), '/part.podlite': doc('=para Second text') }
+    const reversed = { '/part.podlite': doc('=para First text'), 'part.podlite': doc('=para Second text') }
     expect(assembled(doc('=include file:part.podlite'), files)).toEqual({ paras: ['Second'], problems: [] })
+    expect(assembled(doc('=include file:part.podlite'), reversed)).toEqual({ paras: ['Second'], problems: [] })
+  })
+
+  it('matches a mask with a leading slash from the root of the set', () => {
+    const files = { '/lib/a.podlite': doc('=para One text'), 'lib/b.podlite': doc('=para Two text') }
+    expect(assembled(doc('=include file:/lib/*.podlite'), files)).toEqual({ paras: ['One', 'Two'], problems: [] })
+    expect(sourcesFromFiles({ '/lib/a.podlite': '' }).locate('/lib/*.podlite', '')).toEqual({
+      masked: true,
+      sources: [{ id: '/lib/a.podlite', name: '/lib/a.podlite', context: '/lib' }],
+    })
   })
 
   it('finds a path written with a leading slash from an empty context as before', () => {

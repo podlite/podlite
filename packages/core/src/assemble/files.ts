@@ -55,14 +55,18 @@ export const sourcesFromFiles = (files: Record<string, string>): Sources => {
     locate: (written, context, plain) => {
       const dir = String(context ?? '')
       if (plain || !isMask(written)) return { masked: false, sources: [sourceAt(join(dir, written), written)] }
-      const base = placeOf(dir)
+      // a mask with a leading slash is matched from the root of the set
+      const absolute = written.startsWith('/')
+      const base = absolute ? '' : placeOf(dir)
       const prefix = base === '' ? '' : `${base}/`
+      const pattern = absolute ? placeOf(written) : written
       const names = [...texts.keys()]
         .filter(id => id.startsWith(prefix))
         .map(id => id.slice(prefix.length))
-        .filter(name => filePathMatches(name, written))
+        .filter(name => filePathMatches(name, pattern))
         .sort()
-      return { masked: true, sources: names.map(name => sourceAt(join(dir, name), name)) }
+      const named = (name: string) => (absolute ? `/${name}` : name)
+      return { masked: true, sources: names.map(name => sourceAt(join(dir, named(name)), named(name))) }
     },
     read: source => texts.get(placeOf(source.id)) ?? null,
   }

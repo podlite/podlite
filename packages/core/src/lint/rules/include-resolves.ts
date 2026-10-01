@@ -1,4 +1,4 @@
-import { dirname, relative, resolve } from 'path'
+import { dirname, posix, relative, resolve } from 'path'
 import { podlitePluggable, PodliteDocument } from '@podlite/schema'
 import { PluginRegister as markdown } from '@podlite/markdown'
 import { PluginRegister as toc } from '@podlite/toc'
@@ -18,13 +18,20 @@ export const INCLUDE_RESOLVES_RULE_ID = 'include-resolves'
 
 // A problem deep in an included file is reported at the directive of this file
 // it came through, so the report and lint-ignore read offsets of this file only.
-// A file of a host's own set is named as the host named it.
-const toViolation = (problem: IncludeProblem, filePath: string, fromDisk: boolean): Violation => {
+// A file of a host's own set is named as the host named it: from the root the
+// paths of the document are resolved from.
+const toViolation = (problem: IncludeProblem, filePath: string, fromDisk: boolean, context?: unknown): Violation => {
   const first = problem.chain[0]
   const last = problem.chain[problem.chain.length - 1]
   const inner =
     problem.chain.length > 1 && last.location
-      ? ` (in ${fromDisk ? relative(dirname(resolve(filePath)), last.file) : last.file}:${last.location.start.line})`
+      ? ` (in ${
+          fromDisk
+            ? relative(dirname(resolve(filePath)), last.file)
+            : typeof context === 'string' && last.file.startsWith('/')
+            ? posix.relative(posix.join('/', context), last.file)
+            : last.file
+        }:${last.location.start.line})`
       : ''
   return {
     rule: INCLUDE_RESOLVES_RULE_ID,
@@ -80,6 +87,8 @@ export const includeResolvesRule: Rule = {
         },
       ]
     }
-    return problems.map(problem => toViolation(problem, ctx.filePath, Boolean(ctx.fromDisk) && !ctx.sources))
+    return problems.map(problem =>
+      toViolation(problem, ctx.filePath, Boolean(ctx.fromDisk) && !ctx.sources, ctx.context ?? ''),
+    )
   },
 }

@@ -156,15 +156,15 @@ describe('includes with the files the caller gives', () => {
     const report = renderReport(doc, 'md')
     expect(report.output).toContain('file:part.podlite')
     expect([report.problems, report.error, report.notes]).toEqual([
-      [],
-      false,
       ['files were not given; includes not assembled: part.podlite'],
+      false,
+      [],
     ])
   })
 
   it('names a mask it asks for without files', () => {
     const report = renderReport('=begin pod\n=include file:chapters/*.podlite\n=end pod\n', 'md')
-    expect(report.notes).toEqual(['files were not given; includes not assembled: chapters/*.podlite'])
+    expect(report.problems).toEqual(['files were not given; includes not assembled: chapters/*.podlite'])
   })
 
   it('reports a missing file of an empty set as an error at its directive', () => {

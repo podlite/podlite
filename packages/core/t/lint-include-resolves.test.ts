@@ -155,6 +155,6 @@ describe('include-resolves rule', () => {
       context: '',
       self: '/input.podlite',
     })
-    expect(violation.message).toContain('(in /part.podlite:3)')
+    expect(violation.message).toContain('(in part.podlite:3)')
   })
 })

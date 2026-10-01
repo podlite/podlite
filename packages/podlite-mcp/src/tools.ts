@@ -33,8 +33,7 @@ export type AssemblyReport = {
   problems: string[]
   // a problem lost included content
   error: boolean
-  // lines of information: the files included, or the paths that were asked for
-  // when no files were given
+  // lines of information: the files whose blocks are in the document
   notes: string[]
 }
 
@@ -109,7 +108,8 @@ const assemble = (text: string, files?: Files): Assembled => {
     onWarning: problem => report.problems.push(describeProblem(problem)),
   })
   const tree = refreshTocs(assembled, p.parse(text, { podMode: 1 }), virtualFile, origin, carry)
-  if (asked.length) report.notes.push(`files were not given; includes not assembled: ${asked.join(', ')}`)
+  // a warning: it comes with the other warnings of the assembly, after the output
+  if (asked.length) report.problems.push(`files were not given; includes not assembled: ${asked.join(', ')}`)
   // a file is named when a block of it is in the document, not when it was read
   const included = new Set<string>()
   const visit = (node: any): void => {

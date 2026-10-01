@@ -59,6 +59,18 @@ describe('podlite mcp server', () => {
     ])
   })
 
+  it('gives the paths asked for without files with the other warnings, in one part after the output', async () => {
+    const { isError, texts } = await call('podlite_render', {
+      text: '=begin pod\n=include doc:Other\n\n=include file:part.podlite\n=end pod\n',
+      format: 'md',
+    })
+    expect([isError, texts.length]).toEqual([false, 2])
+    expect(texts[1].split('\n')).toEqual([
+      'input.podlite:2: include scheme is not supported: doc:',
+      'files were not given; includes not assembled: part.podlite',
+    ])
+  })
+
   it('gives a warning of the assembly after the output', async () => {
     const { isError, texts } = await call('podlite_render', {
       text: '=begin pod\n=include doc:Other\n=end pod\n',
