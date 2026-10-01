@@ -38,12 +38,16 @@ export type AssemblyReport = {
   notes: string[]
 }
 
-// a path of the set as the set names it: no leading slash, no . steps
-const placeOf = (path: string): string =>
-  path
-    .split('/')
-    .filter(part => part !== '' && part !== '.')
-    .join('/')
+// a path of the set as the set names it: no leading slash, its . and .. steps taken
+const placeOf = (path: string): string => {
+  const out: string[] = []
+  for (const part of path.split('/')) {
+    if (part === '' || part === '.') continue
+    if (part === '..') out.pop()
+    else out.push(part)
+  }
+  return out.join('/')
+}
 
 const describeProblem = (problem: IncludeProblem): string => {
   const at = problem.chain[problem.chain.length - 1]
@@ -78,17 +82,8 @@ const assemble = (text: string, files?: Files): Assembled => {
     if (sections.has(from)) sections.set(to, sections.get(from))
   }
   const asked: string[] = []
-  const included = new Set<string>()
-  const given = files ? sourcesFromFiles(files) : undefined
-  const sources: Sources = given
-    ? {
-        locate: (...args) => given.locate(...args),
-        read: source => {
-          const found = given.read(source)
-          if (typeof found === 'string') included.add(placeOf(source.id))
-          return found
-        },
-      }
+  const sources: Sources = files
+    ? sourcesFromFiles(files)
     : {
         locate: path => {
           if (!asked.includes(path)) asked.push(path)
@@ -115,6 +110,16 @@ const assemble = (text: string, files?: Files): Assembled => {
   })
   const tree = refreshTocs(assembled, p.parse(text, { podMode: 1 }), virtualFile, origin, carry)
   if (asked.length) report.notes.push(`files were not given; includes not assembled: ${asked.join(', ')}`)
+  // a file is named when a block of it is in the document, not when it was read
+  const included = new Set<string>()
+  const visit = (node: any): void => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) return node.forEach(visit)
+    const from = origin.get(node)?.file
+    if (from && placeOf(from) !== virtualFile) included.add(placeOf(from))
+    visit(node.content)
+  }
+  if (files) visit(tree)
   if (included.size) report.notes.push(`included from files: ${[...included].join(', ')}`)
   return { tree, origin, sections, report }
 }
@@ -123,7 +128,10 @@ export type RenderFormat = 'html' | 'md'
 
 export type RenderReport = AssemblyReport & { output: string }
 
-export const renderSource = (text: string, format: RenderFormat, files?: Files): RenderReport => {
+export const renderSource = (text: string, format: RenderFormat, files?: Files): string =>
+  renderReport(text, format, files).output
+
+export const renderReport = (text: string, format: RenderFormat, files?: Files): RenderReport => {
   const { tree, report } = assemble(text, files)
   const out = format === 'md' ? toMarkdown({}).run(tree) : toHtml({}).run(tree)
   return { ...report, output: out.toString() }

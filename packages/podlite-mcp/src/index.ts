@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { parseSource, querySource, renderSource, validateSource } from './tools'
+import { parseSource, querySource, renderReport, validateSource } from './tools'
 import type { AssemblyReport } from './tools'
 
 const { version } = require('../package.json')
@@ -86,7 +86,7 @@ export const createServer = (): McpServer => {
     },
     async ({ text, format, files }) => {
       try {
-        const report = renderSource(text, format, files)
+        const report = renderReport(text, format, files)
         return assembledResult(report.output, report)
       } catch (e) {
         return errorResult(e)

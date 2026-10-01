@@ -1,4 +1,4 @@
-import { parseSource, querySource, renderSource, validateSource } from '../src/tools'
+import { parseSource, querySource, renderReport, renderSource, validateSource } from '../src/tools'
 
 const validDoc = `=begin pod
 =TITLE Notes
@@ -59,14 +59,14 @@ First B<paragraph>
 `
 
   it('renders html', () => {
-    const html = renderSource(doc, 'html').output
+    const html = renderSource(doc, 'html')
     expect(html).toContain('Introduction')
     expect(html).toMatch(/<h1[\s>]/)
     expect(html).toContain('<strong>paragraph</strong>')
   })
 
   it('renders markdown', () => {
-    const md = renderSource(doc, 'md').output
+    const md = renderSource(doc, 'md')
     expect(md).toContain('# Introduction')
     expect(md).toContain('**paragraph**')
   })
@@ -146,14 +146,14 @@ describe('includes with the files the caller gives', () => {
   const part = '=begin pod\n=head2 Part\n\nPart text.\n=end pod\n'
 
   it('renders the blocks of an included file and not its address', () => {
-    const report = renderSource(doc, 'md', { 'part.podlite': part })
+    const report = renderReport(doc, 'md', { 'part.podlite': part })
     expect(report.output).toContain('## Part')
     expect(report.output).not.toContain('file:part.podlite')
     expect([report.problems, report.error, report.notes]).toEqual([[], false, ['included from files: part.podlite']])
   })
 
   it('leaves an include in place without files and names the path it asks for', () => {
-    const report = renderSource(doc, 'md')
+    const report = renderReport(doc, 'md')
     expect(report.output).toContain('file:part.podlite')
     expect([report.problems, report.error, report.notes]).toEqual([
       [],
@@ -163,18 +163,29 @@ describe('includes with the files the caller gives', () => {
   })
 
   it('names a mask it asks for without files', () => {
-    const report = renderSource('=begin pod\n=include file:chapters/*.podlite\n=end pod\n', 'md')
+    const report = renderReport('=begin pod\n=include file:chapters/*.podlite\n=end pod\n', 'md')
     expect(report.notes).toEqual(['files were not given; includes not assembled: chapters/*.podlite'])
   })
 
   it('reports a missing file of an empty set as an error at its directive', () => {
-    const report = renderSource(doc, 'md', {})
+    const report = renderReport(doc, 'md', {})
     expect([report.error, report.problems]).toEqual([true, ['input.podlite:4: include target not found: part.podlite']])
   })
 
   it('refuses a file under the name of the document itself', () => {
-    expect(() => renderSource(doc, 'md', { './input.podlite': part })).toThrow(/input.podlite/)
+    expect(() => renderReport(doc, 'md', { './input.podlite': part })).toThrow(/input.podlite/)
+    expect(() => renderReport(doc, 'md', { 'x/../input.podlite': part })).toThrow(/input.podlite/)
     expect(() => validateSource(doc, { 'input.podlite': part })).toThrow(/input.podlite/)
+  })
+
+  it('names a file only when a block of it is in the document', () => {
+    const selected = '=begin pod\n=include file:part.podlite | head2\n=end pod\n'
+    const report = renderReport(selected, 'md', { 'part.podlite': '=begin pod\n=head1 Present\n=end pod\n' })
+    expect([report.output.trim(), report.notes]).toEqual(['', []])
+  })
+
+  it('still gives a string from renderSource', () => {
+    expect(typeof renderSource(doc, 'md', { 'part.podlite': part })).toBe('string')
   })
 
   it('assembles a nested include and an included Markdown file', () => {
@@ -182,13 +193,13 @@ describe('includes with the files the caller gives', () => {
       'part.podlite': '=begin pod\n=include file:notes/more.md\n=end pod\n',
       'notes/more.md': '# More\n\nFrom Markdown.\n',
     }
-    const report = renderSource(doc, 'md', files)
+    const report = renderReport(doc, 'md', files)
     expect(report.output).toContain('From Markdown.')
     expect(report.notes).toEqual(['included from files: part.podlite, notes/more.md'])
   })
 
   it('reports an include by a document name as a warning, not an error', () => {
-    const report = renderSource('=begin pod\n=include doc:Other\n=end pod\n', 'md', {})
+    const report = renderReport('=begin pod\n=include doc:Other\n=end pod\n', 'md', {})
     expect(report.error).toBe(false)
     expect(report.problems.length).toBe(1)
   })
