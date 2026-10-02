@@ -1,4 +1,13 @@
-import { filePathMatches, parse, parseSelector, runSelector, toHtml, toMarkdown, validatePodliteAst } from '@podlite/schema'
+import {
+  filePathMatches,
+  parse,
+  parseSelector,
+  runSelector,
+  SelectorError,
+  toHtml,
+  toMarkdown,
+  validatePodliteAst,
+} from '@podlite/schema'
 import type { ConfigScope, PodNode, SelectorDoc } from '@podlite/schema'
 import { podlite, readerFor } from 'podlite'
 import { assembleIncludes, sourcesFromFiles } from 'podlite'
@@ -236,12 +245,24 @@ export const querySource = (selector: string, text: string, format: QueryFormat,
       const blank = { file: '', node: { type: 'block', name: 'root', margin: '', content: [] } } as SelectorDoc
       runSelector(local, [], { readFile, home: [blank] })
     }
+    // under a mask a file without the address is passed over, as podlite query does;
+    // the address is missing only if no file holds it
+    let addressed = false
     for (const key of keys) {
       const doc = reading.assemble(key)
-      take(doc, runSelector(local, [{ file: key, node: contentOf(doc.tree) }], { readFile }))
+      let items: ReturnType<typeof runSelector>
+      try {
+        items = runSelector(local, [{ file: key, node: contentOf(doc.tree) }], { readFile })
+      } catch (e) {
+        if (masked && anchor && e instanceof SelectorError && e.kind === 'address') continue
+        throw e
+      }
+      addressed = true
+      take(doc, items)
     }
-    // the documents found are named in the selection: they are not counted as included
-    for (const key of keys) reading.included.delete(key)
+    if (masked && anchor && keys.length > 0 && !addressed) {
+      throw new Error(`no block has the address ${anchor}: file:${written}#${anchor}`)
+    }
     if (!reading.given && masked) {
       reading.report.problems.push(`files were not given; the selector's source is looked for in text only: ${written}`)
     }

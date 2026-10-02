@@ -338,10 +338,30 @@ describe('a selector that names its own source in the files given', () => {
     expect([report.error, report.problems]).toEqual([false, []])
   })
 
-  it('reads the operands of a mask that finds nothing', () => {
+  it('still reads the operands of a mask that finds nothing', () => {
     expect(() =>
       querySource('file:none*.podlite | Invoice[ :type(in file:missing.podlite | defn) ]', text, 'podlite', files),
     ).toThrow(/the source does not resolve/)
+  })
+
+  it('passes over a file of a mask that does not hold the address', () => {
+    const two = {
+      'a.podlite': '=begin pod\n=head1 Plain\n=end pod\n',
+      'b.podlite': '=begin pod\n=for head1 :id<A>\nAddressed\n=end pod\n',
+    }
+    expect(querySource('file:?.podlite#A | head1', text, 'podlite', two).output).toBe('=for head1 :id<A>\nAddressed')
+    expect(() => querySource('file:?.podlite#Z | head1', text, 'podlite', two)).toThrow(/no block has the address Z/)
+  })
+
+  it('names a file a selected file includes even when the mask selected it too', () => {
+    const two = {
+      'a.podlite': '=begin pod\n=include file:b.podlite\n=end pod\n',
+      'b.podlite': '=begin pod\n=head1 B\n=end pod\n',
+    }
+    expect(querySource('file:?.podlite | head1', text, 'podlite', two).notes).toEqual([
+      used,
+      'included from files: b.podlite',
+    ])
   })
 
   it('answers a source not given as before when no files are given', () => {
