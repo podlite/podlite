@@ -4,7 +4,7 @@ import * as os from 'os'
 import type { ConfigScope } from '@podlite/schema'
 import { podlite } from '../src/index'
 import { assembleIncludes, sourcesFromFiles } from '../src/assemble'
-import type { Sources } from '../src/assemble'
+import type { Source, Sources } from '../src/assemble'
 import { resolveIncludes, IncludeProblem } from '../src/resolve-includes'
 
 let tmpDir: string
@@ -191,14 +191,15 @@ describe('content from outside the root', () => {
     write('root/inside.podlite', '=pod\n\n=head1 Inside\n')
     write('out/relay.podlite', '=include file:../root/inside.podlite\n')
     write('out/broken.podlite', '=include\n')
+    write('out/comment.podlite', '=comment Not shown\n')
     write('out/shown.podlite', '=pod\n\n=head1 Shown\n')
     const doc = write(
       'root/doc.podlite',
-      '=pod\n\n=include file:../out/empty.podlite\n\n=include file:../out/relay.podlite\n\n=include file:../out/broken.podlite\n\n=include file:../out/shown.podlite\n',
+      '=pod\n\n=include file:../out/empty.podlite\n\n=include file:../out/relay.podlite\n\n=include file:../out/broken.podlite\n\n=include file:../out/comment.podlite\n\n=include file:../out/shown.podlite\n',
     )
     const root = path.join(tmpDir, 'root')
     expect(external(doc, root)).toEqual([
-      `root/doc.podlite:9: included file comes from ${outside(root)}: ../out/shown.podlite`,
+      `root/doc.podlite:11: included file comes from ${outside(root)}: ../out/shown.podlite`,
     ])
   })
 
@@ -321,8 +322,41 @@ describe('sources a host gives', () => {
   }
 
   it('are not external unless the provider says so', () => {
+    const files = { 'a.podlite': '=pod\n\n=head1 A\n', 'b.podlite': '=pod\n\n=head1 B\n' }
+    const known = sourcesFromFiles(files)
+    const sources: Sources = {
+      ...known,
+      locate: (...args) => {
+        const located = known.locate(...args)
+        if (!located) return located
+        const mark = (source: Source): Source =>
+          source.id.endsWith('b.podlite') ? { ...source, external: 'a remote source' } : source
+        return { ...located, sources: located.sources.map(mark) }
+      },
+    }
+    expect(assemble('=pod\n\n=include file:a.podlite\n\n=include file:b.podlite\n', sources)).toEqual([
+      'included file comes from a remote source: b.podlite',
+    ])
+  })
+
+  it('count a source once when the provider names it twice', () => {
     const files = { 'a.podlite': '=pod\n\n=head1 A\n' }
-    expect(assemble('=pod\n\n=include file:a.podlite\n', sourcesFromFiles(files))).toEqual([])
+    const known = sourcesFromFiles(files)
+    const sources: Sources = {
+      ...known,
+      locate: (...args) => {
+        const located = known.locate(...args)
+        if (!located) return located
+        const twice = [...located.sources, ...located.sources].map(source => ({
+          ...source,
+          external: 'a remote source',
+        }))
+        return { ...located, masked: true, sources: twice }
+      },
+    }
+    expect(assemble('=pod\n\n=include file:a.podlite\n', sources)).toEqual([
+      'included file comes from a remote source: a.podlite',
+    ])
   })
 
   it('give one line with a count for each reason when the reasons differ', () => {

@@ -155,12 +155,33 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   // no document answers
   let answered = false
   let addressed = false
+  // While an input is read, its problems wait for the selection: an external
+  // source is reported only when the selection shows blocks of it.
+  let waiting: IncludeProblem[] | undefined
   const onError = (problem: IncludeProblem): void => {
     failed = true
-    problems.push(describeProblem(problem))
+    if (waiting) waiting.push(problem)
+    else problems.push(describeProblem(problem))
   }
   const onWarning = (problem: IncludeProblem): void => {
-    problems.push(describeProblem(problem))
+    if (waiting) waiting.push(problem)
+    else problems.push(describeProblem(problem))
+  }
+  const report = (found: unknown[], origin: WeakMap<object, IncludeOrigin>): void => {
+    const shown = new Set<string>()
+    const visit = (node: any): void => {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const where = origin.get(node)
+      if (where) shown.add(where.file)
+      visit(node.content)
+    }
+    visit(found)
+    for (const problem of waiting ?? []) {
+      if (problem.kind === 'external' && !problem.sources?.some(id => shown.has(id))) continue
+      problems.push(describeProblem(problem))
+    }
+    waiting = undefined
   }
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
@@ -209,6 +230,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
     const baseDir = fromStdin ? process.cwd() : path.dirname(path.resolve(src.file))
+    waiting = []
     const resolved = resolveIncludes(toTree(src.text, src.file), {
       baseDir,
       root: opts.root ?? baseDir,
@@ -228,12 +250,16 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       if (section) sections.set(to, section)
     })
     const docs: SelectorDoc[] = [{ file: src.file, node: contentOf(node) }]
-    if (scheme === 'doc' && document && !getDocIDs(docs[0]).includes(document)) continue
+    if (scheme === 'doc' && document && !getDocIDs(docs[0]).includes(document)) {
+      report([], origin)
+      continue
+    }
     answered = true
     let result: ReturnType<typeof runSelector>
     try {
       result = runSelector(opts.selector, docs, { readFile })
     } catch (e) {
+      report([], origin)
       if (!(e instanceof SelectorError)) throw e
       // with an address the selection is not applied, so no operand is read
       if (anchor && e.kind === 'address') continue
@@ -241,6 +267,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       problems.push(`${src.file}: ${e.message}`)
       continue
     }
+    report(result, origin)
     if (anchor) addressed = true
     for (const item of result) {
       // what the tree adds around the written blocks is not counted as found

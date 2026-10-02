@@ -6,7 +6,7 @@
 
 =item C<podlite convert> prints the file and line of the directive in front of every include warning
 
-=item a source may carry C<external>, the reason it is external; an include whose blocks from such sources stand in the assembled document is reported once as an C<external> warning. C<resolveIncludes> takes C<root>, and a C<SourceProvider> may give C<real>, the path of a file with links followed
+=item a source may carry C<external>, the reason it is external; an include whose blocks from such sources stand in the assembled document is reported once as an C<external> warning, with the ids of those sources in C<sources>. C<resolveIncludes> takes C<root>, and a C<SourceProvider> may give C<real>, the path of a file with links followed
 
 =item a mask of C<sourcesFromFiles> is resolved like a path, its C<.> and C<..> steps taken, and stays in its directory: C<*.podlite> no longer names files in directories below, as on disk; C<**> goes down
 

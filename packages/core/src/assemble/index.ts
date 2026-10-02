@@ -51,6 +51,8 @@ export type IncludeProblem = {
   // the first step is the directive in the document itself, the last one the
   // directive the problem was found at
   chain: IncludeStep[]
+  // for external: the ids of the sources whose blocks stand in the result
+  sources?: string[]
 }
 
 export type IncludeOrigin = {
@@ -595,9 +597,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
+      // what a directive, a comment or a failed include holds is not shown
+      if (isSetTransparent(node) || isMark(node)) return
       const where = origin.get(node)
       const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
-      if (where && !wrapper && !isSetTransparent(node) && !isMark(node)) {
+      if (where && !wrapper) {
         for (const step of stepsOf.get(where) ?? []) {
           const files = placed.get(step) ?? new Set<string>()
           files.add(where.file)
@@ -611,7 +615,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (!entry.outside) continue
       const { step, written, sources } = entry.outside
       const files = placed.get(step)
-      const shown = sources.filter(source => files?.has(source.id))
+      const shown = sources.filter(
+        (source, at) => files?.has(source.id) && sources.findIndex(other => other.id === source.id) === at,
+      )
       if (shown.length === 0) continue
       const message = outsideMessage(shown, written)
       const at = entry.problem.chain[entry.problem.chain.length - 1]
@@ -619,6 +625,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (said.has(key)) continue
       said.add(key)
       entry.problem.message = message
+      entry.problem.sources = shown.map(source => source.id)
       entry.shown = true
     }
   }

@@ -37,6 +37,7 @@ describe('podlite convert and the root', () => {
   })
 
   it('does not warn when the root holds the file', () => {
+    expect(run(['convert', 'book/book.podlite', '--to', 'md', '-o', '-', '--root', 'book']).stderr).toContain('outside')
     const r = run(['convert', 'book/book.podlite', '--to', 'md', '-o', '-', '--root', '.'])
     expect(r.status).toBe(0)
     expect(r.stderr).toBe('')
@@ -46,6 +47,10 @@ describe('podlite convert and the root', () => {
     // from the document, shared would name book/shared, which does not exist
     const r = run(['convert', 'book/book.podlite', '--to', 'md', '-o', '-', '--root', 'shared'])
     expect([r.status, r.stderr]).toEqual([0, ''])
+    const inside = run(['convert', 'book.podlite', '--to', 'md', '-o', '-', '--root', '.'], {
+      cwd: path.join(dir, 'book'),
+    })
+    expect(inside.stderr).toContain(`outside the root ${path.join(dir, 'book')}`)
   })
 
   it('takes the working directory as the root of a document read from stdin', () => {
@@ -82,7 +87,17 @@ describe('podlite query and the root', () => {
   })
 
   it('takes one root for every input', () => {
+    expect(run(['query', 'head1', 'book/book.podlite', '--root', 'book']).stderr).toContain('outside')
     expect(run(['query', 'head1', 'book/book.podlite', '--root', '.']).stderr).toBe('2 matches\n')
+  })
+
+  it('warns only about outside blocks the selection shows', () => {
+    fs.writeFileSync(
+      path.join(dir, 'book/book.podlite'),
+      '=pod\n\n=head2 Own\n\n=include file:../shared/legal.podlite\n',
+    )
+    expect(run(['query', 'head2', 'book/book.podlite']).stderr).toBe('1 match\n')
+    expect(run(['query', 'head1', 'book/book.podlite']).stderr).toContain('outside')
   })
 
   it('stops before reading any input when the root is not a directory', () => {
