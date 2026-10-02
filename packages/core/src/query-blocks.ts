@@ -63,7 +63,7 @@ export const markSections = (tree: unknown, sections: WeakMap<object, any>, sect
   markSections(node.content, sections, own)
 }
 
-const hasPlace = (block: any): boolean =>
+export const hasPlace = (block: any): boolean =>
   typeof block?.location?.start?.offset === 'number' && typeof block?.location?.end?.offset === 'number'
 
 const sliceBlock = (text: string, block: any): string =>

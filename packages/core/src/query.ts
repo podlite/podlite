@@ -23,7 +23,7 @@ import {
 } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
 import { readerFor } from './reader'
-import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
+import { contentOf, hasPlace, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
 
@@ -169,6 +169,9 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
   const report = (found: unknown[], origin: WeakMap<object, IncludeOrigin>): void => {
     const shown: IncludeOrigin[] = []
+    // the podlite output gives a block with a place as its own text: what an
+    // include brought inside it is not printed
+    const ownText = (node: any): boolean => opts.format === 'podlite' && hasPlace(node) && !sections.has(node)
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
@@ -176,7 +179,11 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       if (where) shown.push(where)
       visit(node.content)
     }
-    visit(found)
+    for (const item of found) {
+      const where = item && typeof item === 'object' ? origin.get(item) : undefined
+      if (!ownText(item)) visit(item)
+      else if (where) shown.push(where)
+    }
     // a block shown came from an external source through this very directive
     const brought = (problem: IncludeProblem): boolean => {
       const at = problem.chain[problem.chain.length - 1]

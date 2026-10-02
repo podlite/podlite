@@ -100,6 +100,18 @@ describe('podlite query and the root', () => {
     expect(run(['query', 'head1', 'book/book.podlite']).stderr).toContain('outside')
   })
 
+  it('does not warn about what an include brought inside a block the podlite output gives as its own text', () => {
+    fs.writeFileSync(path.join(dir, 'shared/term.podlite'), '=head1 Term\n')
+    fs.writeFileSync(
+      path.join(dir, 'book/book.podlite'),
+      '=begin pod\n=include file:../shared/term.podlite\n=end pod\n',
+    )
+    const own = run(['query', 'pod', 'book/book.podlite'])
+    expect(own.stdout).not.toContain('Term')
+    expect(own.stderr).toBe('1 match\n')
+    expect(run(['query', 'pod', 'book/book.podlite', '--to', 'md']).stderr).toContain('outside')
+  })
+
   it('warns only about the include whose blocks the selection shows, when two bring the same file', () => {
     fs.writeFileSync(path.join(dir, 'shared/term.podlite'), '=head1 Term\n')
     fs.writeFileSync(
