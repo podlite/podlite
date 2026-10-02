@@ -203,7 +203,7 @@ const renderBlock = (block: PodNode, format: 'html' | 'md'): string => {
 // The selector with the path of its leading source written anew: the path as the
 // parser read it, after the scheme if one is written; the rest stays as written
 const withSourcePath = (selector: string, written: string, path: string): string => {
-  const lead = /^\s*(?:file:)?/.exec(selector)?.[0] ?? ''
+  const lead = /^\s*(?:file:\s*)?/.exec(selector)?.[0] ?? ''
   return selector.slice(lead.length).startsWith(written)
     ? `${lead}${path}${selector.slice(lead.length + written.length)}`
     : selector
@@ -226,11 +226,13 @@ export const querySource = (selector: string, text: string, format: QueryFormat,
   const found: Found[] = []
   const take = (doc: Assembled, items: ReturnType<typeof runSelector>): void => {
     for (const item of items) {
-      // a source selected whole comes back as the list of its blocks
+      // a source selected whole comes back as the list of its blocks; a blank line
+      // between them is not a block
       if (Array.isArray(item)) {
         take(doc, item as ReturnType<typeof runSelector>)
         continue
       }
+      if (item && typeof item === 'object' && (item as { type?: string }).type === 'blankline') continue
       if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
         const where = origin.get(item as object)
         found.push({

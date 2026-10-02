@@ -390,6 +390,16 @@ describe('a selector that names its own source in the files given', () => {
     expect(querySource('file:part.podlite', '', 'podlite', whole).output).toBe('=begin pod\n=head1 Part\n=end pod')
   })
 
+  it('reads a source written with a space after its scheme', () => {
+    const spaced = { 'my file.podlite': '=begin pod\n=for head1 :id<A>\nPart\n=end pod\n' }
+    expect(querySource('file: notes/../my *.podlite#A | head1', '', 'podlite', spaced).matchCount).toBe(1)
+  })
+
+  it('counts only the blocks of a source selected whole, not the blank lines between them', () => {
+    const two = { 'two.podlite': '=begin pod\n=head1 One\n=end pod\n\n=begin pod\n=head1 Two\n=end pod\n' }
+    expect(querySource('file:two.podlite', '', 'json', two).matchCount).toBe(2)
+  })
+
   it('validates against the same set, the document itself in it', () => {
     const self = '=begin pod\n=for head1 :id<A>\nHome\n\n=include file:*.podlite#A\n=end pod\n'
     expect(validateSource(self, {}).ok).toBe(true)
