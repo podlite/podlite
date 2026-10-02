@@ -2,11 +2,11 @@
 
 =head1 Upcoming
 
-=item C<podlite convert> and C<podlite query> warn when an included file comes from outside the root: the directory of each input file, or the current directory for stdin. C<--root> sets one root for every input. A file is outside by its real path, with links followed. The warning names the directive and the path as written, gives a mask the number of its files that are outside, and is given only when blocks of such a file stand in the output
+=item C<podlite convert> and C<podlite query> warn when an included file comes from outside the root: the directory of each input file, or the current directory for stdin. C<--root> sets one root for every input. A file is outside by its real path, with links followed. The warning names the directive and the path as written, gives a mask the number of its files that are outside, and is given only when blocks of such a file stand in the assembled document; C<query> gives it only for blocks it prints
 
 =item C<podlite convert> prints the file and line of the directive in front of every include warning
 
-=item a source may carry C<external>, the reason it is external; an include whose blocks from such sources stand in the assembled document is reported once as an C<external> warning, with the ids of those sources in C<sources>. C<resolveIncludes> takes C<root>, and a C<SourceProvider> may give C<real>, the path of a file with links followed
+=item a source may carry C<external>, the reason it is external; an include whose blocks from such sources stand in the assembled document is reported once as an C<external> warning, with the ids of those sources in C<sources>. The origin of a node lists the directives it came through in C<steps>. C<resolveIncludes> takes C<root>, and a C<SourceProvider> may give C<real>, the path of a file with links followed
 
 =item a mask of C<sourcesFromFiles> is resolved like a path, its C<.> and C<..> steps taken, and stays in its directory: C<*.podlite> no longer names files in directories below, as on disk; C<**> goes down
 

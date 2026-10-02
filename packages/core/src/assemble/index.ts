@@ -60,6 +60,8 @@ export type IncludeOrigin = {
   text: string
   // the directives the node came through inside the file it was read with
   via?: string
+  // the same directives, outermost first, by file and place
+  steps?: IncludeStep[]
 }
 
 /*
@@ -482,7 +484,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         }
         const { nodes, failure, inner, roots, selector } = resolved
         if (!failure) brought++
-        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`, stepOf(file, n.location))
+        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`, { file, location: n.location })
         if (!failure && resolved.outside.length) {
           const step = stepOf(file, n.location)
           const problem: IncludeProblem = { kind: 'external', target: selector, message: '', chain: here }
@@ -565,19 +567,15 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   }
 
   // The directive a block came through is kept with its origin, so that the
-  // two readings of a file name the same block the same way. The same steps are
-  // kept as a list beside the origin, outermost first, for telling which
-  // directive brought a block; copies carry the origin object, and the list with it.
-  const stepsOf = new WeakMap<IncludeOrigin, string[]>()
-  const markVia = (nodes: any[], step: string, key: string): void => {
+  // two readings of a file name the same block the same way.
+  const markVia = (nodes: any[], step: string, at: IncludeStep): void => {
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
       const known = origin.get(node)
       if (known) {
-        const next = { ...known, via: known.via ? `${step}>${known.via}` : step }
-        stepsOf.set(next, [key, ...(stepsOf.get(known) ?? [])])
-        origin.set(node, next)
+        const via = known.via ? `${step}>${known.via}` : step
+        origin.set(node, { ...known, via, steps: [at, ...(known.steps ?? [])] })
       }
       visit(node.content)
     }
@@ -602,7 +600,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const where = origin.get(node)
       const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
       if (where && !wrapper) {
-        for (const step of stepsOf.get(where) ?? []) {
+        for (const at of where.steps ?? []) {
+          const step = stepOf(at.file, at.location)
           const files = placed.get(step) ?? new Set<string>()
           files.add(where.file)
           placed.set(step, files)

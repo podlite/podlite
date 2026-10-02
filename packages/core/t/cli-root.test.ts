@@ -100,6 +100,24 @@ describe('podlite query and the root', () => {
     expect(run(['query', 'head1', 'book/book.podlite']).stderr).toContain('outside')
   })
 
+  it('warns only about the include whose blocks the selection shows, when two bring the same file', () => {
+    fs.writeFileSync(path.join(dir, 'shared/term.podlite'), '=head1 Term\n')
+    fs.writeFileSync(
+      path.join(dir, 'book/book.podlite'),
+      '=pod\n\n=set :id<one>\n=include file:../shared/term.podlite\n\n=set :id<two>\n=include file:../shared/term.podlite\n',
+    )
+    const r = run(['query', '*[:id<one>]', 'book/book.podlite'])
+    expect(r.stdout).toContain('Term')
+    expect(r.stderr.split('\n')).toEqual([
+      `podlite query: book/book.podlite:4: included file comes from outside the root ${path.join(
+        dir,
+        'book',
+      )}: ../shared/term.podlite`,
+      '1 match',
+      '',
+    ])
+  })
+
   it('stops before reading any input when the root is not a directory', () => {
     const r = run(['query', 'head1', 'book/book.podlite', '--root', 'nowhere'])
     expect(r.status).toBe(1)

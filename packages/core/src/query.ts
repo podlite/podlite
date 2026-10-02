@@ -168,17 +168,27 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     else problems.push(describeProblem(problem))
   }
   const report = (found: unknown[], origin: WeakMap<object, IncludeOrigin>): void => {
-    const shown = new Set<string>()
+    const shown: IncludeOrigin[] = []
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
       const where = origin.get(node)
-      if (where) shown.add(where.file)
+      if (where) shown.push(where)
       visit(node.content)
     }
     visit(found)
+    // a block shown came from an external source through this very directive
+    const brought = (problem: IncludeProblem): boolean => {
+      const at = problem.chain[problem.chain.length - 1]
+      const offset = at?.location?.start?.offset
+      return shown.some(
+        where =>
+          problem.sources?.includes(where.file) &&
+          where.steps?.some(step => step.file === at?.file && step.location?.start?.offset === offset),
+      )
+    }
     for (const problem of waiting ?? []) {
-      if (problem.kind === 'external' && !problem.sources?.some(id => shown.has(id))) continue
+      if (problem.kind === 'external' && !brought(problem)) continue
       problems.push(describeProblem(problem))
     }
     waiting = undefined
