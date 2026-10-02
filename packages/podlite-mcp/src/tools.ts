@@ -92,24 +92,14 @@ type Reading = {
   finish: () => AssemblyReport
 }
 
-const openReading = (text: string, files?: Files): Reading => {
+// The set of a call and its sources. Without files only the document is known: a
+// path to anything else is not known, and is named once.
+const openSet = (text: string, files?: Files) => {
   if (files && Object.keys(files).some(key => placeOf(key) === virtualFile)) {
     throw new Error(`files must not hold ${virtualFile}: that name is the document itself`)
   }
   const all: Files = { ...(files ?? {}), [virtualFile]: text }
   const texts = new Map(Object.keys(all).map((path): [string, string] => [placeOf(path), all[path]]))
-  const p = podlite({ importPlugins: true })
-  const read = readerFor(p, { format: detectFileType })
-  const sections = new WeakMap<object, unknown>()
-  const origin = new WeakMap<object, IncludeOrigin>()
-  const toTree = (source: string, file: string, config?: ConfigScope) => {
-    const tree = read(source, file, config)
-    markSections(tree, sections)
-    return tree
-  }
-  const carry = (from: object, to: object): void => {
-    if (sections.has(from)) sections.set(to, sections.get(from))
-  }
   const asked: string[] = []
   const known = sourcesFromFiles(all)
   const sources: Sources = files
@@ -124,6 +114,23 @@ const openReading = (text: string, files?: Files): Reading => {
         },
         read: known.read,
       }
+  return { texts, sources, asked }
+}
+
+const openReading = (text: string, files?: Files): Reading => {
+  const { texts, sources, asked } = openSet(text, files)
+  const p = podlite({ importPlugins: true })
+  const read = readerFor(p, { format: detectFileType })
+  const sections = new WeakMap<object, unknown>()
+  const origin = new WeakMap<object, IncludeOrigin>()
+  const toTree = (source: string, file: string, config?: ConfigScope) => {
+    const tree = read(source, file, config)
+    markSections(tree, sections)
+    return tree
+  }
+  const carry = (from: object, to: object): void => {
+    if (sections.has(from)) sections.set(to, sections.get(from))
+  }
   const report: AssemblyReport = { problems: [], error: false, notes: [] }
   const included = new Set<string>()
   const assemble = (key: string): Assembled => {
@@ -193,9 +200,14 @@ const renderBlock = (block: PodNode, format: 'html' | 'md'): string => {
   return out.toString().trimEnd()
 }
 
-// The leading path of a selector, with or without its scheme, up to its address
-// or the first bar
-const leadingPath = /^(\s*(?:file:)?)([^\s#|]+)/
+// The selector with the path of its leading source written anew: the path as the
+// parser read it, after the scheme if one is written; the rest stays as written
+const withSourcePath = (selector: string, written: string, path: string): string => {
+  const lead = /^\s*(?:file:)?/.exec(selector)?.[0] ?? ''
+  return selector.slice(lead.length).startsWith(written)
+    ? `${lead}${path}${selector.slice(lead.length + written.length)}`
+    : selector
+}
 
 export const querySource = (selector: string, text: string, format: QueryFormat, files?: Files): QueryReport => {
   const parsed = parseSelector(selector)
@@ -214,6 +226,11 @@ export const querySource = (selector: string, text: string, format: QueryFormat,
   const found: Found[] = []
   const take = (doc: Assembled, items: ReturnType<typeof runSelector>): void => {
     for (const item of items) {
+      // a source selected whole comes back as the list of its blocks
+      if (Array.isArray(item)) {
+        take(doc, item as ReturnType<typeof runSelector>)
+        continue
+      }
       if (item && typeof item === 'object' && !('file' in (item as object)) && !isWrapper(item)) {
         const where = origin.get(item as object)
         found.push({
@@ -239,7 +256,7 @@ export const querySource = (selector: string, text: string, format: QueryFormat,
     if (!masked && keys.length === 0) {
       throw new Error(`the source does not resolve: file:${written}${anchor ? `#${anchor}` : ''}`)
     }
-    const local = selector.replace(leadingPath, (_all, lead) => `${lead}${pattern}`)
+    const local = withSourcePath(selector, written, pattern)
     if (keys.length === 0) {
       // nothing found, and the operands of the selection are still read
       const blank = { file: '', node: { type: 'block', name: 'root', margin: '', content: [] } } as SelectorDoc
@@ -297,21 +314,10 @@ export const querySource = (selector: string, text: string, format: QueryFormat,
 }
 
 export const validateSource = (text: string, files?: Files): ValidateReport => {
-  if (files && Object.keys(files).some(key => placeOf(key) === virtualFile)) {
-    throw new Error(`files must not hold ${virtualFile}: that name is the document itself`)
-  }
+  // the same set as render and query: without files only the document itself is
+  // known, the includes of other paths are not checked, and the paths are named
+  const { sources, asked } = openSet(text, files)
   const problems: Violation[] = [...scanSourceRules(text)]
-  // without files the includes are not checked, and the paths asked for are named
-  const asked: string[] = []
-  const sources: Sources = files
-    ? sourcesFromFiles(files)
-    : {
-        locate: path => {
-          if (!asked.includes(path)) asked.push(path)
-          return undefined
-        },
-        read: () => undefined,
-      }
   try {
     const ast = parseContent(text, 'podlite')
     const ctx: LintContext = {

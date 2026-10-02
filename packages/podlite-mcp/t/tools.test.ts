@@ -376,6 +376,25 @@ describe('a selector that names its own source in the files given', () => {
     ])
   })
 
+  it('reads a path with a space, with or without its scheme', () => {
+    const spaced = { 'my file.podlite': '=begin pod\n=head1 Part\n=end pod\n' }
+    for (const selector of ['file:my file.podlite | head1', 'my file.podlite | head1']) {
+      expect(querySource(selector, '', 'podlite', spaced).output).toBe('=head1 Part')
+    }
+  })
+
+  it('gives the blocks of a source selected whole, each with its file first in json', () => {
+    const whole = { 'part.podlite': '=begin pod\n=head1 Part\n=end pod\n' }
+    const [block] = JSON.parse(querySource('file:part.podlite', '', 'json', whole).output)
+    expect([Object.keys(block)[0], block.file, block.name]).toEqual(['file', 'part.podlite', 'pod'])
+    expect(querySource('file:part.podlite', '', 'podlite', whole).output).toBe('=begin pod\n=head1 Part\n=end pod')
+  })
+
+  it('validates against the same set, the document itself in it', () => {
+    const self = '=begin pod\n=for head1 :id<A>\nHome\n\n=include file:*.podlite#A\n=end pod\n'
+    expect(validateSource(self, {}).ok).toBe(true)
+  })
+
   it('gives each block its file in json', () => {
     const report = querySource('file:*.podlite | head1', text, 'json', files)
     expect(JSON.parse(report.output).map((b: { file: string }) => b.file)).toEqual(['part.podlite', 'part.podlite'])
