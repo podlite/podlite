@@ -7,10 +7,12 @@ export { isWarning } from './assemble'
 export type { IncludeStep, IncludeProblem, IncludeOrigin } from './assemble'
 
 // Where included text comes from. A file is named by its absolute path; a
-// listing names files relative to the directory asked for.
+// listing names files relative to the directory asked for. `real` gives the path
+// a file has with links followed, or null; without it nothing is outside a root.
 export type SourceProvider = {
   read: (file: string) => string | null
   list: (dir: string, deep: boolean) => string[]
+  real?: (file: string) => string | null
 }
 
 export type ResolveIncludesOptions = {
@@ -33,6 +35,8 @@ export type ResolveIncludesOptions = {
   tolerant?: boolean
   // the disk when not given
   provider?: SourceProvider
+  // a file whose real path is not under it is external
+  root?: string
 }
 
 export const hasMask = (target: string): boolean => /[*?]/.test(target)
@@ -87,33 +91,73 @@ const readSource = (target: string): string | null => {
   }
 }
 
-export const diskProvider: SourceProvider = { read: readSource, list: (dir, deep) => listDir(dir, deep) }
+// the native call gives the case the disk has, so a path written in another case
+// still compares equal on a disk that ignores case
+const realPath = (file: string): string | null => {
+  try {
+    return fs.realpathSync.native(file)
+  } catch {
+    return null
+  }
+}
+
+export const diskProvider: SourceProvider = {
+  read: readSource,
+  list: (dir, deep) => listDir(dir, deep),
+  real: realPath,
+}
+
+const isUnder = (file: string, dir: string): boolean => {
+  const relative = path.relative(dir, file)
+  return relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+}
 
 // The disk and a provider of the earlier shape, as sources: a path is resolved
 // against the directory of the text it is written in, and a file is its own
 // absolute path.
-const sourcesOf = (provider: SourceProvider): Sources => ({
-  locate: (written, context, plain) => {
-    const baseDir = String(context)
-    const masked = !plain && hasMask(written)
-    const names = masked ? expandMask(written, baseDir, provider) : [written]
-    return {
-      masked,
-      sources: names.map(name => {
-        const id = path.resolve(baseDir, name)
-        return { id, name, context: path.dirname(id) }
-      }),
-    }
-  },
-  read: source => provider.read(source.id),
-})
+const sourcesOf = (provider: SourceProvider, root?: string): Sources => {
+  const given = root === undefined ? undefined : path.resolve(root)
+  const realRoot = given === undefined ? null : provider.real?.(given) ?? null
+  const outside = (id: string): string | undefined => {
+    if (realRoot === null) return undefined
+    const real = provider.real?.(id)
+    return real && !isUnder(real, realRoot) ? `outside the root ${given}` : undefined
+  }
+  return {
+    locate: (written, context, plain) => {
+      const baseDir = String(context)
+      const masked = !plain && hasMask(written)
+      const names = masked ? expandMask(written, baseDir, provider) : [written]
+      return {
+        masked,
+        sources: names.map(name => {
+          const id = path.resolve(baseDir, name)
+          const external = outside(id)
+          return external === undefined
+            ? { id, name, context: path.dirname(id) }
+            : { id, name, context: path.dirname(id), external }
+        }),
+      }
+    },
+    read: source => provider.read(source.id),
+  }
+}
 
 export const resolveIncludes = (tree: any, opts: ResolveIncludesOptions): any => {
-  const { baseDir, provider, self, ...rest } = opts
+  const { baseDir, provider, self, root, ...rest } = opts
   return assembleIncludes(tree, {
     ...rest,
-    sources: sourcesOf(provider ?? diskProvider),
+    sources: sourcesOf(provider ?? diskProvider, root),
     context: baseDir,
     self: self ? path.resolve(self) : undefined,
   })
+}
+
+// Where a problem was met: the directive it was found at, its file as the
+// command line names it, or from the working directory when absolute.
+export const describeProblem = (problem: IncludeProblem): string => {
+  const at = problem.chain[problem.chain.length - 1]
+  const line = at?.location ? `:${at.location.start.line}` : ''
+  const file = at ? (path.isAbsolute(at.file) ? path.relative(process.cwd(), at.file) : at.file) : '<document>'
+  return `${file}${line}: ${problem.message}`
 }

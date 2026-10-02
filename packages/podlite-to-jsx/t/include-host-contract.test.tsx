@@ -144,6 +144,31 @@ describe('the files a wrapper is told an included block came through', () => {
   })
 })
 
+describe('the files a wrapper is told a block came through, by paths with directories', () => {
+  it('are named as the directives write them', () => {
+    const files = {
+      'parts/one chapter.podlite': '=pod\n\n=head1 Chapter\n\n=include file:../shared/legal.podlite\n',
+      // the adapter asks for a path as the directive writes it
+      '../shared/legal.podlite': '=head1 Legal\n',
+    }
+    const seen: Array<[string, string[] | undefined]> = []
+    const wrapElement = (node: any, children: any, ctx: any) => {
+      if (node.type === 'block' && node.name === 'head')
+        seen.push([String(getTextContentFromNode(node.content)).trim(), ctx?.includeStack])
+      return children
+    }
+    renderToStaticMarkup(
+      <Podlite includeReader={(path: string) => files[path] ?? null} wrapElement={wrapElement}>
+        {'=pod\n\n=include file:parts/one chapter.podlite\n'}
+      </Podlite>,
+    )
+    expect(seen).toEqual([
+      ['Chapter', ['parts/one chapter.podlite']],
+      ['Legal', ['parts/one chapter.podlite', '../shared/legal.podlite']],
+    ])
+  })
+})
+
 describe('a host that does not know a file yet', () => {
   const pending = (source: string, props: Record<string, any> = {}) => {
     const warn = quiet()

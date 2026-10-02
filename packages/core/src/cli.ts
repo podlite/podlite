@@ -5,7 +5,7 @@ import { reportLint, resolveConfig, runLint, LintFormat, LintOptions } from './l
 import { ConfigError } from './lint/config'
 import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
-import { resolveIncludes, IncludeOrigin } from './resolve-includes'
+import { describeProblem, resolveIncludes, IncludeOrigin } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
 import { readerFor } from './reader'
 import { version } from './version'
@@ -41,10 +41,10 @@ const RENDER_MODES: RenderMode[] = ['production', 'draft']
 
 function usage() {
   console.log(`Usage:
-  podlite convert <files...|-> --to <format> [-o <output|->] [--render-mode <production|draft>]
+  podlite convert <files...|-> --to <format> [-o <output|->] [--render-mode <production|draft>] [--root <dir>]
   podlite lint <files...|-> [--strict] [--format <text|json>] [--config <path>]
                            [--enable <rule>] [--disable <rule>]
-  podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet]
+  podlite query <selector> <files...> [--to <format>] [--fail-on-empty] [--quiet] [--root <dir>]
   podlite test <files...> [--against <document>] [--format <text|json>] [--allow-skipped]
 
 Commands:
@@ -71,6 +71,9 @@ Options:
   --render-mode
              convert: production (default, covered content is masked) or draft
              (covered content is shown); or env PODLITE_RENDER_MODE
+  --root     convert, query: an included file outside this directory is reported
+             as external; without it, the directory of each input file, or the
+             current directory for stdin
   -o         Output file or directory, or - for stdout (default: same dir, new extension)
   --fail-on-empty  query: exit 1 if no blocks matched
   --quiet    query: suppress match count on stderr
@@ -106,6 +109,7 @@ type Args = {
   configPath: string
   base: string
   renderMode: string
+  root: string
   enable: string[]
   disable: string[]
   against: string[]
@@ -127,6 +131,7 @@ function parseArgs(argv: string[]): Args | null | 'version' {
     configPath: '',
     base: '',
     renderMode: '',
+    root: '',
     enable: [],
     disable: [],
     against: [],
@@ -164,6 +169,10 @@ function parseArgs(argv: string[]): Args | null | 'version' {
       args.base = argv[++i] || ''
     } else if (arg === '--render-mode') {
       args.renderMode = argv[++i] || ''
+    } else if (arg === '--root') {
+      const dir = argv[++i]
+      if (dir && !dir.startsWith('-')) args.root = dir
+      else args.missing.push('--root')
     } else if (arg === '--enable') {
       const rule = argv[++i]
       if (rule) args.enable.push(rule)
@@ -194,6 +203,7 @@ function convertFile(
   outputPath?: string,
   base?: string,
   renderMode: RenderMode = 'production',
+  root?: string,
 ): void {
   const ext = FORMATS[format]
   if (!ext) {
@@ -209,14 +219,16 @@ function convertFile(
   let tree = read(content, inputPath)
   try {
     const origin = new WeakMap<object, IncludeOrigin>()
+    const baseDir = fromStdin ? process.cwd() : path.dirname(inputPath)
     tree = resolveIncludes(tree, {
-      baseDir: fromStdin ? process.cwd() : path.dirname(inputPath),
+      baseDir,
+      root: root ?? baseDir,
       parse: read,
       file: inputPath,
       text: content,
       self: fromStdin ? undefined : inputPath,
       origin,
-      onWarning: problem => console.error(`podlite convert: ${problem.message}`),
+      onWarning: problem => console.error(`podlite convert: ${describeProblem(problem)}`),
     })
     tree = refreshTocs(tree, p.parse(content, { podMode: 1 }), inputPath, origin)
   } catch (e) {
@@ -263,6 +275,28 @@ function readStdinSync(): string {
   return fs.readFileSync(0, 'utf-8')
 }
 
+// The root a command was given, resolved from the working directory once and
+// checked before any input is read.
+function rootOf(args: Args, command: string): string | undefined {
+  if (args.missing.includes('--root')) {
+    console.error(`podlite ${command}: --root needs a directory`)
+    process.exit(1)
+  }
+  if (!args.root) return undefined
+  const root = path.resolve(args.root)
+  let isDir = false
+  try {
+    isDir = fs.statSync(root).isDirectory()
+  } catch {
+    isDir = false
+  }
+  if (!isDir) {
+    console.error(`podlite ${command}: --root is not a directory: ${args.root}`)
+    process.exit(1)
+  }
+  return root
+}
+
 function runQueryCommand(args: Args): void {
   // First positional arg is the selector, rest are files
   if (args.files.length === 0) {
@@ -279,9 +313,10 @@ function runQueryCommand(args: Args): void {
     process.exit(1)
   }
 
+  const root = rootOf(args, 'query')
   // a selector that names a file reads that file; what else is given is not read
   if (parseSelector(selector)?.scheme === 'file') {
-    reportQuery(args, { selector, files: positional, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet })
+    reportQuery(args, { selector, files: positional, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet, root })
     return
   }
 
@@ -307,7 +342,7 @@ function runQueryCommand(args: Args): void {
     }
   }
 
-  reportQuery(args, { selector, files, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet, stdinContent })
+  reportQuery(args, { selector, files, format, failOnEmpty: args.failOnEmpty, quiet: args.quiet, stdinContent, root })
 }
 
 function reportQuery(args: Args, options: Parameters<typeof runQuery>[0]): void {
@@ -479,12 +514,13 @@ function main() {
     fs.mkdirSync(args.output, { recursive: true })
   }
 
+  const root = rootOf(args, 'convert')
   for (const file of sources) {
     if (file !== STDIN_MARKER && !fs.existsSync(file)) {
       console.error(`File not found: ${file}`)
       process.exit(1)
     }
-    convertFile(file, args.to, args.output || undefined, args.base || process.env.PODLITE_BASE, renderMode)
+    convertFile(file, args.to, args.output || undefined, args.base || process.env.PODLITE_BASE, renderMode, root)
   }
 }
 

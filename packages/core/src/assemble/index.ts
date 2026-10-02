@@ -42,6 +42,8 @@ export type IncludeProblem = {
     | 'set-target'
     // a found block that the settings at the directive read as something else
     | 'include-reading-differs'
+    // blocks of a source the provider calls external stand in the document
+    | 'external'
   target: string
   message: string
   // the =set assignments the problem lost, by name
@@ -72,6 +74,12 @@ C<name> is what a C<file:> selector matches the source by and what messages show
 C<doc:> selector matches the names written in the text.
 C<context> is what paths written inside the source are resolved from; only the
 provider reads it.
+C<external>, when the provider gives it, says the source is external and why, as
+the words that follow "comes from": C<outside the root /home/a/book>. A directive
+whose blocks of an external source stand in the assembled document is reported
+once as C<external>. A table of contents built over such blocks is not: its
+entries are made anew and carry no origin. Directives are told apart by their
+place, so in a tree built without places two directives of one file count as one.
 
 =end pod
 */
@@ -79,6 +87,7 @@ export type Source = {
   id: string
   name: string
   context: unknown
+  external?: string
 }
 
 /*
@@ -146,7 +155,26 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'unsupported-scheme' ||
   problem.kind === 'cycle' ||
   problem.kind === 'set-target' ||
-  problem.kind === 'include-reading-differs'
+  problem.kind === 'include-reading-differs' ||
+  problem.kind === 'external'
+
+// one line for an include, however many reasons its external sources give
+const outsideMessage = (sources: Source[], written: string): string => {
+  const reasons = new Map<string, number>()
+  for (const source of sources) {
+    const reason = source.external ?? ''
+    reasons.set(reason, (reasons.get(reason) ?? 0) + 1)
+  }
+  const total = sources.length
+  if (reasons.size === 1) {
+    const [reason] = [...reasons.keys()]
+    return total === 1
+      ? `included file comes from ${reason}: ${written}`
+      : `${total} included files come from ${reason}: ${written}`
+  }
+  const parts = [...reasons].map(([reason, count]) => `${count} ${count === 1 ? 'comes' : 'come'} from ${reason}`)
+  return `${total} included files: ${parts.join(', ')}: ${written}`
+}
 
 /*
 =begin pod :kind<export>
@@ -243,7 +271,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // inside it failed fails too, and the assignments it loses are named in that
   // inner report, which by then has been made. An error with no handler is
   // thrown at once, as it was.
-  type Held = { problem: IncludeProblem; shown: boolean }
+  // An include that read external sources waits for the walk of its entry: it is
+  // reported only if blocks it brought from them stand in the result.
+  type Outside = { step: string; written: string; sources: Source[] }
+  type Held = { problem: IncludeProblem; shown: boolean; outside?: Outside }
   const held: Held[] = []
   // the problem an error thrown with no handler was made from
   const thrownFrom = new WeakMap<object, Held>()
@@ -449,7 +480,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         }
         const { nodes, failure, inner, roots, selector } = resolved
         if (!failure) brought++
-        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`)
+        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`, stepOf(file, n.location))
+        if (!failure && resolved.outside.length) {
+          const step = stepOf(file, n.location)
+          const problem: IncludeProblem = { kind: 'external', target: selector, message: '', chain: here }
+          hold([{ problem, shown: false, outside: { step, written: resolved.written, sources: resolved.outside } }])
+        }
         if (failure) {
           const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
           if (set.length) lose(entries, set)
@@ -504,8 +540,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     level++
     try {
       for (const n of list) {
+        const from = out.length
         visit(n)
-        if (level === 1) flush()
+        if (level === 1) {
+          confirmOutside(out.slice(from))
+          flush()
+        }
       }
     } finally {
       level--
@@ -523,16 +563,64 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   }
 
   // The directive a block came through is kept with its origin, so that the
-  // two readings of a file name the same block the same way.
-  const markVia = (nodes: any[], step: string): void => {
+  // two readings of a file name the same block the same way. The same steps are
+  // kept as a list beside the origin, outermost first, for telling which
+  // directive brought a block; copies carry the origin object, and the list with it.
+  const stepsOf = new WeakMap<IncludeOrigin, string[]>()
+  const markVia = (nodes: any[], step: string, key: string): void => {
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
       const known = origin.get(node)
-      if (known) origin.set(node, { ...known, via: known.via ? `${step}>${known.via}` : step })
+      if (known) {
+        const next = { ...known, via: known.via ? `${step}>${known.via}` : step }
+        stepsOf.set(next, [key, ...(stepsOf.get(known) ?? [])])
+        origin.set(node, next)
+      }
       visit(node.content)
     }
     visit(nodes)
+  }
+
+  // Which directive of which entry: the file it is written in, as the walk names
+  // it, and its offset there.
+  const stepOf = (file: string, location?: Location): string => `${file}\u0000${location?.start?.offset ?? ''}`
+  const said = new Set<string>()
+  // The external sources whose blocks stand in what an entry of the document's
+  // own list became confirm the includes that brought them.
+  const confirmOutside = (nodes: any[]): void => {
+    const waiting = held.filter(entry => entry.outside && !entry.shown)
+    if (waiting.length === 0) return
+    const placed = new Map<string, Set<string>>()
+    const visit = (node: any): void => {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const where = origin.get(node)
+      const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
+      if (where && !wrapper && !isSetTransparent(node) && !isMark(node)) {
+        for (const step of stepsOf.get(where) ?? []) {
+          const files = placed.get(step) ?? new Set<string>()
+          files.add(where.file)
+          placed.set(step, files)
+        }
+      }
+      visit(node.content)
+    }
+    visit(nodes)
+    for (const entry of waiting) {
+      if (!entry.outside) continue
+      const { step, written, sources } = entry.outside
+      const files = placed.get(step)
+      const shown = sources.filter(source => files?.has(source.id))
+      if (shown.length === 0) continue
+      const message = outsideMessage(shown, written)
+      const at = entry.problem.chain[entry.problem.chain.length - 1]
+      const key = `${at?.file}\u0000${at?.location?.start?.offset ?? ''}\u0000${message}`
+      if (said.has(key)) continue
+      said.add(key)
+      entry.problem.message = message
+      entry.shown = true
+    }
   }
 
   const isFolded = (node: any): boolean =>
@@ -651,17 +739,23 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     selector: string
     // a source of the include is not known yet
     waiting?: boolean
+    // the external sources read, and the path as the directive writes it
+    outside: Source[]
+    written: string
   } => {
     const mark = failures.length
     reached.push(false)
     // the walked files a selection ran over, in order
     let roots: any[] | undefined
+    const outside: Source[] = []
     const done = (nodes: any[], failure?: IncludeProblem[]) => ({
       nodes,
       failure,
       inner: failures.slice(mark),
       roots,
       selector,
+      outside,
+      written: parsed?.document ?? selector,
     })
     const selector = getTextContentFromNode(node.content)?.toString().trim() ?? ''
     const parsed = selector ? parseSelector(selector) : undefined
@@ -693,7 +787,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       )
     }
 
-    const wait = () => ({ nodes: [node], inner: failures.slice(mark), roots: undefined, selector, waiting: true })
+    const wait = () => ({ ...done([node]), roots: undefined, waiting: true })
     const located = provider.locate(parsed.document, context, false, here[here.length - 1], parsed.scheme)
     if (!located) return wait()
     const refused = refusal(located)
@@ -798,6 +892,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const placed = brought > before ? finishFile(walked, target) : walked
       placedDocs.push(placed)
       docs.push({ file: name, node: alone ?? placed })
+      if (source.external !== undefined) outside.push(source)
     }
     if (waiting) return wait()
     // The blocks found in the files as they read on their own are placed as the

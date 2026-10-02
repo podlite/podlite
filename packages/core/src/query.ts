@@ -12,7 +12,15 @@ import {
   PodNode,
 } from '@podlite/schema'
 import type { ConfigScope } from '@podlite/schema'
-import { diskProvider, expandMask, hasMask, resolveIncludes, IncludeOrigin, IncludeProblem } from './resolve-includes'
+import {
+  describeProblem,
+  diskProvider,
+  expandMask,
+  hasMask,
+  resolveIncludes,
+  IncludeOrigin,
+  IncludeProblem,
+} from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
 import { readerFor } from './reader'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
@@ -26,6 +34,8 @@ export type QueryOptions = {
   failOnEmpty: boolean
   quiet: boolean
   stdinContent?: string
+  // one root for every input; each file's own directory when not given
+  root?: string
 }
 
 type Source = { file: string; text: string; fromStdin?: boolean }
@@ -97,13 +107,6 @@ export type QueryResult = {
   problems: string[]
 }
 
-const describe = (problem: IncludeProblem): string => {
-  const at = problem.chain[problem.chain.length - 1]
-  const line = at?.location ? `:${at.location.start.line}` : ''
-  const file = at ? (path.isAbsolute(at.file) ? path.relative(process.cwd(), at.file) : at.file) : '<document>'
-  return `${file}${line}: ${problem.message}`
-}
-
 export const runQuery = (opts: QueryOptions): QueryResult => {
   const parsed = parseSelector(opts.selector)
   if (!parsed) {
@@ -154,10 +157,10 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   let addressed = false
   const onError = (problem: IncludeProblem): void => {
     failed = true
-    problems.push(describe(problem))
+    problems.push(describeProblem(problem))
   }
   const onWarning = (problem: IncludeProblem): void => {
-    problems.push(describe(problem))
+    problems.push(describeProblem(problem))
   }
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
@@ -205,8 +208,10 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   for (const src of sources) {
     const origin = new WeakMap<object, IncludeOrigin>()
     const fromStdin = src.fromStdin === true
+    const baseDir = fromStdin ? process.cwd() : path.dirname(path.resolve(src.file))
     const resolved = resolveIncludes(toTree(src.text, src.file), {
-      baseDir: fromStdin ? process.cwd() : path.dirname(path.resolve(src.file)),
+      baseDir,
+      root: opts.root ?? baseDir,
       parse: toTree,
       file: src.file,
       self: fromStdin ? undefined : src.file,
