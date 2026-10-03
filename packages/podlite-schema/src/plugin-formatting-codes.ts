@@ -109,19 +109,21 @@ const middle: ParserPlugin = opt => tree => {
       const literal = inheritsAllow && declared !== undefined && declared.length === 0
       const allowed = [...allowValues].sort()
       const inner = { ...ctx, allowedIn, allowFromTable: passesAllow }
-      // a paragraph or code written without a marker that was given :allow reads its own codes
-      const ownAllow = (node, ctx) => {
-        const own = allowOf(node)
-        if (own === undefined) return { ...node, content: transformer(node.content, ctx) }
-        return transformerBlocks(node, { ...ctx, allowedIn })
-      }
+      // code written without a marker is verbatim unless its own :allow names codes
+      const ownCode = (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn })
+      // a paragraph written without a marker reads the codes of the block around it
+      // unless it was given an :allow of its own
+      const ownPara = (node, ctx) =>
+        allowOf(node) === undefined
+          ? { ...node, content: transformer(node.content, ctx) }
+          : transformerBlocks(node, { ...ctx, allowedIn })
       const transformer = makeTransformer({
         ':verbatim': (node: nVerbatim, ctx) =>
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
         ':text': (node: nText, ctx) =>
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
-        ':para': ownAllow,
-        ':code': ownAllow,
+        ':para': ownPara,
+        ':code': ownCode,
         ':config': (node, ctx) => {
           declareAllowedIn(node, allowedIn)
           return node

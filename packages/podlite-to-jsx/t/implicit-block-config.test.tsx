@@ -15,6 +15,11 @@ describe('a paragraph and code written without a marker render with their settin
     expect(count(html, 'blockquote')).toBe(2)
   })
 
+  it('code written with or without a marker is nested alike', () => {
+    const body = '=config code :nested(1)\n\n    x;\n\n=begin code\ny;\n=end code'
+    expect(count(page(body), 'blockquote')).toBe(2)
+  })
+
   it('the paragraph of a definition is nested', () => {
     const html = page('=config para :nested(1)\n\n=defn Term\nDefinition.')
     expect(html).toMatch(/<blockquote[^>]*><dd[^>]*>Definition\./)

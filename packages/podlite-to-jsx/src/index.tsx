@@ -423,14 +423,16 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         ))
       }),
     ),
-    code: setFn((node, ctx) => {
-      const id = getSafeNodeId(node, ctx)
-      return mkComponent(({ children, key }) => (
-        <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="block">
-          {children}
-        </HighlightedCode>
-      ))
-    }),
+    code: handleNested(
+      setFn((node, ctx) => {
+        const id = getSafeNodeId(node, ctx)
+        return mkComponent(({ children, key }) => (
+          <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="block">
+            {children}
+          </HighlightedCode>
+        ))
+      }),
+    ),
     image: nodeContent,
     ':image': setFn((node, ctx) => {
       const hook = opts.imageSrc

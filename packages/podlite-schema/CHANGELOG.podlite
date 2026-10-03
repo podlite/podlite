@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item code written without a marker inside an item, a definition or a C<=nested> block is verbatim unless its own C<:allow> names markup codes, as at the top of a document; it read every markup code, and the C<:allow> of the block around it
+
 =item C<=config para> and C<=config code> reach a paragraph and code written without a marker, in a document, a C<=pod>, an item in every form, a definition, a C<=nested>, a cell, a semantic block and a C<=markdown> block; the text of an explicit C<=para> and of a heading and the term of a definition take none. C<=set> gives its assignments to such a paragraph or code as to the next block. The selection, C<:masked>, C<:allow> and C<:nested> treat them as an explicit C<=para> and C<=code>. Only the explicit block received them
 
 =item the C<Para> and C<Code> nodes carry an optional C<config>, present only when C<=config> or C<=set> gave them settings

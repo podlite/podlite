@@ -134,6 +134,21 @@ describe('a paragraph and code written without a marker render with their settin
     expect(html(pod('=config code :allow<B>\n\n    my B<x>;'))).toContain('<strong>x</strong>')
   })
 
+  it('code in an item reads no markup code of the item', () => {
+    const out = html(pod('=begin item :allow<I>\nText.\n\n    my B<x> I<y>;\n=end item'))
+    expect(out).toContain('my B&lt;x&gt; I&lt;y&gt;;')
+  })
+
+  it('code in an item reads the markup codes of its own settings', () => {
+    const out = html(pod('=config code :allow<B>\n\n=begin item\nText.\n\n    my B<x> I<y>;\n=end item'))
+    expect(out).toContain('my <strong>x</strong> I&lt;y&gt;;')
+  })
+
+  it('a paragraph in an item given its own :allow reads those codes only', () => {
+    const out = html(pod('=config para :allow<B>\n\n=begin item :allow<I>\nB<bold> I<italic>\n=end item'))
+    expect(out).toContain('<strong>bold</strong> I&lt;italic&gt;')
+  })
+
   it('code allowing no markup code leaves it as written', () => {
     expect(html(pod('    my B<x>;'))).toContain('my B&lt;x&gt;;')
   })

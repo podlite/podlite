@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an explicit C<=code> block renders its C<:nested>, as in HTML and Markdown
+
 =item a paragraph and code written without a marker render the C<:nested> and C<:masked> that C<=config> or C<=set> gave them, the paragraph of a definition too. An C<:id> given this way is written on the paragraph itself; an explicit C<=para> writes it on an element around the paragraph
 
 =item an included C<.md> file is rendered as Markdown, and a file of another extension than Podlite or Markdown is read in the default mode; a C<:mime-type> on the C<=include> line decides how a file is read

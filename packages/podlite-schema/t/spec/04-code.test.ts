@@ -907,8 +907,11 @@ it('spec: 04-code 5', () => {
                 "content": Array [
                   Object {
                     "content": Array [
-                      "and this is!
+                      Object {
+                        "type": "verbatim",
+                        "value": "and this is!
     ",
+                      },
                     ],
                     "location": Object {
                       "end": Object {
