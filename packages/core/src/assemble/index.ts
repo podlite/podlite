@@ -188,8 +188,8 @@ const readWhole = (tail: string): ConfigItem[] | undefined => {
 
 // The line of a directive holds the selector and, after the address of the
 // source, its configuration: it begins at the first white space followed by a
-// colon before the selection, and ends at the first bar after which what stands
-// before reads whole, or at the end of the line. A configuration that does not
+// colon before the selection, and ends at the last bar before which it reads
+// whole, or at the end of the line. A configuration that does not
 // read whole leaves the line unread.
 const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
   // without the address of a source there is no place for a configuration: a
@@ -207,7 +207,9 @@ const splitDirective = (line: string): { selector: string; mimeType?: string; un
   const ends: number[] = []
   for (let i = start; i < line.length; i++) if (line[i] === '|') ends.push(i)
   ends.push(line.length)
-  for (const end of ends) {
+  // the longest one that reads whole: a bar or a quote inside a value can make a
+  // shorter one read whole too
+  for (const end of ends.reverse()) {
     const items = readWhole(line.slice(start, end).trim())
     if (!items) continue
     const rest = line.slice(end).trim()
