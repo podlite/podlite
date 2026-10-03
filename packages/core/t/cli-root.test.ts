@@ -154,6 +154,17 @@ describe('podlite query and the root', () => {
     expect(r.stderr).toContain('outside the root')
   })
 
+  it('gives one line when two readings of an include come to the same text', () => {
+    fs.writeFileSync(path.join(dir, 'shared/two.podlite'), '=head2 Two\n')
+    fs.writeFileSync(path.join(dir, 'book/relay.podlite'), '=include file:../shared/*.podlite\n')
+    fs.writeFileSync(
+      path.join(dir, 'book/book.podlite'),
+      '=pod\n\n=include file:relay.podlite | head1\n\n=include file:relay.podlite | head1, head2\n',
+    )
+    const lines = run(['query', 'head1', 'book/book.podlite']).stderr.split('\n')
+    expect(lines.filter(line => line.includes('outside the root'))).toHaveLength(1)
+  })
+
   it('warns about an outside comment the selection gives', () => {
     fs.writeFileSync(path.join(dir, 'shared/note.podlite'), '=comment Kept out of rendering\n')
     fs.writeFileSync(path.join(dir, 'book/book.podlite'), '=pod\n\n=include file:../shared/note.podlite\n')

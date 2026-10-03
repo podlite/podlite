@@ -203,7 +203,9 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       const sources = brought(problem)
       if (sources.length === 0) continue
       const written = parseSelector(problem.target)?.document ?? problem.target
-      problems.push(describeProblem({ ...problem, message: externalMessage(sources, written) }))
+      const line = describeProblem({ ...problem, message: externalMessage(sources, written) })
+      // counted again, two lines of one directive may come to the same text
+      if (!problems.includes(line)) problems.push(line)
     }
     waiting = undefined
   }
