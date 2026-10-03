@@ -1,4 +1,5 @@
 import { ConfigItem, PodNode, PodliteDocument } from '../types'
+import { blockNameOf, holderInside, Walked } from './blockName'
 
 export type ConfigScope = Record<string, ConfigItem[]>
 type ConfigMap = ConfigScope
@@ -45,9 +46,19 @@ export type ScopedBlock = {
   content?: unknown
 }
 
-const walk = (node: PodNode, config: ConfigMap, visit: (block: ScopedBlock, scope: ConfigScope) => void): void => {
+// A paragraph or code written without a marker takes the settings of its block
+// type, by the name the block rule gives it; it has no name of its own.
+type ImplicitVisit = (node: ScopedBlock, name: string, scope: ConfigScope) => void
+
+const walk = (
+  node: PodNode,
+  config: ConfigMap,
+  holder: Walked | undefined,
+  visit: (block: ScopedBlock, scope: ConfigScope) => void,
+  implicit?: ImplicitVisit,
+): void => {
   if (Array.isArray(node)) {
-    for (const child of node) walk(child as PodNode, config, visit)
+    for (const child of node) walk(child as PodNode, config, holder, visit, implicit)
     return
   }
   if (!node || typeof node !== 'object') return
@@ -56,10 +67,14 @@ const walk = (node: PodNode, config: ConfigMap, visit: (block: ScopedBlock, scop
     config[anyNode.name] = mergeConfigSettings(anyNode.config, config[anyNode.name])
   } else if (anyNode.type === 'block') {
     visit(anyNode, config)
+  } else if (implicit) {
+    const name = blockNameOf(anyNode, holder)
+    if (name !== undefined) implicit(anyNode, name, config)
   }
   if (anyNode.content !== undefined) {
     // a block is a lexical scope: what is declared inside it stays inside
-    walk(anyNode.content as PodNode, anyNode.type === 'block' ? { ...config } : config, visit)
+    const scope = anyNode.type === 'block' ? { ...config } : config
+    walk(anyNode.content as PodNode, scope, holderInside(anyNode, holder), visit, implicit)
   }
 }
 
@@ -70,6 +85,11 @@ const applyDefaults = (block: ScopedBlock, config: ConfigScope): void => {
       block.config = mergeDefaults(block.config, defaults)
     }
   }
+}
+
+const applyImplicitDefaults: ImplicitVisit = (node, name, config) => {
+  const defaults = config[name]
+  if (defaults && defaults.length) node.config = mergeDefaults(node.config, defaults)
 }
 
 /*
@@ -90,13 +110,13 @@ export const walkConfigScopes = (
   ast: PodliteDocument | PodNode | unknown[],
   inherited: ConfigScope,
   visit: (block: ScopedBlock, scope: ConfigScope) => void,
-): void => walk(ast as PodNode, { ...inherited }, visit)
+): void => walk(ast as PodNode, { ...inherited }, undefined, visit)
 
 export const propagateConfigDefaults = <T extends PodliteDocument | PodNode | unknown[]>(
   ast: T,
   inherited: ConfigScope = {},
 ): T => {
-  walk(ast as PodNode, { ...inherited }, applyDefaults)
+  walk(ast as PodNode, { ...inherited }, undefined, applyDefaults, applyImplicitDefaults)
   return ast
 }
 

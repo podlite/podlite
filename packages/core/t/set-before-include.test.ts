@@ -481,6 +481,38 @@ describe('=set before =include in core', () => {
   })
 })
 
+// a paragraph and code written without a marker are blocks the assignments stop at
+const paraAttr = (tree: any, name: string): Array<[string, any]> => {
+  const out: Array<[string, any]> = []
+  const visit = (node: any): void => {
+    if (Array.isArray(node)) return node.forEach(visit)
+    if (!node || typeof node !== 'object') return
+    if (node.type === 'para' && Array.isArray(node.config))
+      out.push([String(node.text).trim(), attrOf(node, name)?.value])
+    visit(node.content)
+  }
+  visit(tree)
+  return out
+}
+
+describe('=set before =include reaching text written without a marker', () => {
+  it('gives the assignment to a paragraph the included file starts with', () => {
+    write('p.podlite', 'Opening text.\n\n=head1 After\n')
+    const main = write('main.podlite', '=pod\n\n=set :x<1>\n=include file:./p.podlite\n')
+    const run = resolve(main)
+    expect(paraAttr(run.tree, 'x')).toEqual([['Opening text.', '1']])
+    expect(headIds(run.tree)).toEqual([['After', undefined]])
+  })
+
+  it('does not report the assignment lost when an include after that paragraph fails', () => {
+    write('a.podlite', 'Opening text.\n\n=include file:absent.podlite\n')
+    const main = write('main.podlite', '=pod\n\n=set :x<1>\n=include file:./a.podlite\n')
+    const run = resolve(main)
+    expect(run.errors.map(e => e.message)).toEqual(['include target not found: absent.podlite'])
+    expect(paraAttr(run.tree, 'x')).toEqual([['Opening text.', '1']])
+  })
+})
+
 describe('problems met before a later include throws', () => {
   const texts: Record<string, string> = { 'broken.podlite': '=head1 Broken\n' }
   const provider = {

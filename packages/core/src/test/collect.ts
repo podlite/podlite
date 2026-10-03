@@ -1,4 +1,5 @@
 import type { Location, RecognitionEvent } from '@podlite/schema'
+import { blockNameOf, holderInside } from '@podlite/schema'
 import { coreProfile, prepareDocument, readDocument } from './documents'
 import type { DocumentText, PreparedDocument, Profile } from './documents'
 import { resourceKey } from './resources'
@@ -128,26 +129,34 @@ const placeOf = (node: object, prepared: PreparedSource): Place => {
 const keyOf = (place: Place): string =>
   `${place.file}:${place.location?.start.offset ?? '?'}:${place.location?.end.offset ?? '?'}`
 
+type Shape = { type?: string; name?: string }
+
 // The settings in effect for the blocks of a test: each block by name with its
-// options in a fixed order, and the markup codes read in its text, since the
-// settings decide which of them are read. A place it is brought to and what the
-// reading adds to it are no part of them.
+// options in a fixed order, a paragraph or code written without a marker too,
+// and the markup codes read in its text, since the settings decide which of
+// them are read. A place it is brought to and what the reading adds to it are
+// no part of them.
 const settingsOf = (node: unknown): string => {
   const parts: string[] = []
-  const visit = (n: unknown): void => {
-    if (Array.isArray(n)) return n.forEach(visit)
+  const visit = (n: unknown, holder: Shape | undefined): void => {
+    if (Array.isArray(n)) return n.forEach(child => visit(child, holder))
     if (!isObject(n)) return
-    if (n.type === 'block' && typeof n.name === 'string' && n.name !== '_folded_section' && n.name !== 'root') {
+    const walked: Shape = {
+      type: typeof n.type === 'string' ? n.type : undefined,
+      name: typeof n.name === 'string' ? n.name : undefined,
+    }
+    const name = blockNameOf(walked, holder)
+    if (name !== undefined) {
       const options = (Array.isArray(n.config) ? n.config : [])
         .filter(isObject)
         .map(c => `${String(c.name)}=${String(c.type)}:${JSON.stringify(c.value)}`)
         .sort()
-      parts.push(`${n.name}(${options.join(',')})`)
+      parts.push(`${name}(${options.join(',')})`)
     }
     if (n.type === 'fcode' && typeof n.name === 'string') parts.push(`${n.name}<>`)
-    visit(n.content)
+    visit(n.content, holderInside(walked, holder))
   }
-  visit(node)
+  visit(node, undefined)
   return parts.join(';')
 }
 

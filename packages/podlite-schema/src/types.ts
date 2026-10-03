@@ -367,6 +367,8 @@ export interface Para {
   text: string
   margin: string
   location: Location
+  // the settings =config and =set gave a paragraph written without a marker
+  config?: ConfigItem[]
   content: Array<Node | FormattingCodes>
 }
 
@@ -384,6 +386,8 @@ export interface Code {
   text: string
   margin: string
   location: Location
+  // the settings =config and =set gave code written without a marker
+  config?: ConfigItem[]
   content: Array<Verbatim | string>
 }
 

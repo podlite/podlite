@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item a C<=set> before C<=include> reaches a paragraph or code written without a marker that the include brings first, and an include failing after such a paragraph no longer reports the assignment lost
+
+=item C<podlite test> runs a test under each configuration that reaches a paragraph or code written without a marker in it
+
 =item a file is read in the format its name gives: C<.podlite> and C<.pod6> as Podlite, C<.md> and C<.markdown> as Markdown, any other extension or none in the default mode, where text outside blocks is ambient; the extension is compared without regard to case. This holds for an included file, for the document C<convert>, C<query> and C<podlite test> are given, and for C<lint>; text from the standard input stays Podlite. A C<.md> file brought by C<=include> was read as Podlite, and a C<.txt> file as Podlite paragraphs
 
 =item a C<:mime-type> written on the C<=include> line after the address of the source, before a selection, decides how that file is read: C<text/podlite>, C<text/markdown>, and any other C<text/> type in the default mode; a type that is not text is an error of the new kind C<format>, and the include brings nothing. A configuration that does not read whole leaves the line unread. It was taken as part of the file name

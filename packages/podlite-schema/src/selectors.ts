@@ -4,13 +4,13 @@ import {
   getFromTree,
   getNodeId,
   getTextContentFromNode,
-  isSemanticBlock,
   makeAttrs,
   PodliteDocument,
   PodNode,
 } from './index'
 import { ConfigItem } from './types'
 import { parseAttributes } from './helpers/parseAttributes'
+import { blockNameOf, holderInside, Walked } from './helpers/blockName'
 import { extractDataText, findDataBlockByKey, parseCsv, parseMimeType, parseTsv } from './plugin-tables'
 
 /*
@@ -490,34 +490,6 @@ const matchCondition = (node: PodNode, cond: Condition, operands: OperandValues)
   return false
 }
 
-// Within these blocks text written without a marker is a paragraph and lines
-// set in from the margin are a code block. Anywhere else a para node is the
-// text of the block around it: of an explicit =para, of a heading.
-const IMPLICIT_HOLDERS = new Set(['root', 'pod', 'item', 'defn', 'nested', 'cell'])
-
-type Walked = { type?: string; name?: string; content?: unknown }
-
-// A node outside any block is in the document, and a document is a pod.
-const holdsImplicit = (holder: Walked | undefined): boolean =>
-  holder === undefined ||
-  (holder.type === 'block' &&
-    (IMPLICIT_HOLDERS.has(holder.name ?? '') || (Boolean(holder.name) && isSemanticBlock(holder))))
-
-// Wrappers the tree adds around written blocks: the document, the blocks of a
-// Markdown section, a heading folded together with its text. No author writes
-// them, so no pattern finds them; the walk goes through.
-const WRAPPERS = new Set(['root', '_folded_section'])
-
-// The block a node stands for: the name of a block written with a directive,
-// para or code for one written without, none for anything else. The term of
-// a =defn is its heading, not a paragraph.
-const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
-  if (node.type === 'block') return WRAPPERS.has(node.name ?? '') ? undefined : node.name
-  if (node.type === 'code') return 'code'
-  if (node.type === 'para' && node.name !== 'term' && holdsImplicit(holder)) return 'para'
-  return undefined
-}
-
 // Replicate name/level handling from getFromTree for backward compat with
 // 'head1' / 'item' style block-types. `*` finds any block a name would find,
 // written with a directive or without.
@@ -563,10 +535,7 @@ const collectMatches = (
     seen.add(node)
   }
   if (anyNode.content !== undefined) {
-    // a folded section is a wrapper the tree adds around a heading and its text;
-    // the text stands where it was written
-    const inner = anyNode.type === 'block' && anyNode.name === '_folded_section' ? holder : anyNode
-    collectMatches(anyNode.content as PodNode, inner, patterns, seen, out, operands)
+    collectMatches(anyNode.content as PodNode, holderInside(anyNode, holder), patterns, seen, out, operands)
   }
 }
 

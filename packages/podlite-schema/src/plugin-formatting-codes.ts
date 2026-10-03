@@ -36,19 +36,36 @@ const inheritedAllowedIn = (config: ConfigScope = {}): AllowedIn => {
   return scope
 }
 
+// the codes a paragraph or code written without a marker allows: those =config
+// or =set gave it, none declared means the default of its block type
+const allowOf = (node: unknown): string[] | undefined => {
+  const conf = makeAttrs(node, {})
+  return conf.exists('allow') ? conf.getAllValues('allow') : undefined
+}
+
 const middle: ParserPlugin = opt => tree => {
   const transformerBlocks = makeTransformer({
     ':para': (n, ctx, visiter) => {
       const allowedIn = ctx.allowedIn
+      const allowed = allowOf(n)
       return makeTransformer({
         ':text': (n: nText, ctx) => {
-          return fcparser.parse(n.value, { allowedIn, parseAttributes })
+          return fcparser.parse(n.value, { allowed, allowedIn, parseAttributes })
         },
         ':verbatim': (n: nVerbatim, ctx) => {
-          return fcparser.parse(n.value, { allowedIn, parseAttributes })
+          return fcparser.parse(n.value, { allowed, allowedIn, parseAttributes })
         },
       })(n, { ...ctx })
       return n
+    },
+    // code is verbatim unless :allow names the codes read in it
+    ':code': (n, ctx) => {
+      const allowed = allowOf(n) || []
+      if (allowed.length === 0) return n
+      const allowedIn = ctx.allowedIn
+      return makeTransformer({
+        ':verbatim': (node: nVerbatim) => fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+      })(n, { ...ctx })
     },
     ':config': (n, ctx) => {
       declareAllowedIn(n, ctx.allowedIn)
@@ -92,11 +109,19 @@ const middle: ParserPlugin = opt => tree => {
       const literal = inheritsAllow && declared !== undefined && declared.length === 0
       const allowed = [...allowValues].sort()
       const inner = { ...ctx, allowedIn, allowFromTable: passesAllow }
+      // a paragraph or code written without a marker that was given :allow reads its own codes
+      const ownAllow = (node, ctx) => {
+        const own = allowOf(node)
+        if (own === undefined) return { ...node, content: transformer(node.content, ctx) }
+        return transformerBlocks(node, { ...ctx, allowedIn })
+      }
       const transformer = makeTransformer({
         ':verbatim': (node: nVerbatim, ctx) =>
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
         ':text': (node: nText, ctx) =>
           literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':para': ownAllow,
+        ':code': ownAllow,
         ':config': (node, ctx) => {
           declareAllowedIn(node, allowedIn)
           return node

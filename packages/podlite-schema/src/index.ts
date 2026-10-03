@@ -40,6 +40,7 @@ import defnTerms_plug from './plugin-defn-fill-term'
 import set_plug from './plugin-set'
 import { propagateConfigDefaults, ConfigScope } from './helpers/configPropagation'
 export { mergeConfigSettings, propagateConfigDefaults, walkConfigScopes } from './helpers/configPropagation'
+export { blockNameOf, holderInside } from './helpers/blockName'
 export type { ConfigScope, ScopedBlock } from './helpers/configPropagation'
 import table_plug from './plugin-tables'
 import data_table_plug from './plugin-data-table'
@@ -188,10 +189,12 @@ function makeTree() {
   chain.use = use
   chain.parse = parse
   chain.use(vmargin_plug)
+  // the term of a =defn is cut out before =set looks for its target: a term is
+  // no target, the definition after it is
+  chain.use(defnTerms_plug)
   chain.use(set_plug)
   chain.use(itemsNumbering_plug)
   chain.use(heading_plug)
-  chain.use(defnTerms_plug)
   chain.use(table_plug)
   // a data table is read by its attributes, so those a =config gives it must be
   // on it by then; the rows it turns into get theirs in the pass below
@@ -245,7 +248,7 @@ export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
 export { parseSelector, runSelector, outermost, filePathMatches, getDocIDs, SelectorError } from './selectors'
-export { applySetToFirst, mergeSet, isSetTransparent } from './set-assign'
+export { applySetToFirst, mergeSet, isSetTransparent, isSetTarget } from './set-assign'
 export type { SetOutcome } from './set-assign'
 export { markGuarded, isCovered } from './guard'
 export { applyFoldedSections } from './folded-sections'

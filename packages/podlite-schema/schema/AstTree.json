@@ -1127,6 +1127,12 @@
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
                 "content": {
                     "type": "array",
                     "items": {
@@ -1685,6 +1691,12 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 },
                 "content": {
                     "type": "array",

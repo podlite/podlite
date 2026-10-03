@@ -10,6 +10,7 @@ the target is chosen in the content the include resolves to.
 */
 import { ConfigItem } from './types'
 import { markGuarded } from './guard'
+import { blockNameOf, holderInside, Walked } from './helpers/blockName'
 
 // Directives and =comment blocks pass =set attributes through to the next
 // block instead of consuming them.
@@ -20,6 +21,22 @@ export const isSetTransparent = (node: any): boolean => {
     return true
   return false
 }
+
+/*
+=begin pod :kind<export>
+
+=head2 isSetTarget
+
+Whether C<=set> assignments stop at C<node>: a block the rule of blocks names,
+written with a directive or a paragraph or code written without one, that is not
+transparent to them. C<holder> is the block whose content holds the node; none
+means the document. A wrapper the tree adds is not a target: the search goes
+inside it.
+
+=end pod
+*/
+export const isSetTarget = (node: any, holder: Walked | undefined): boolean =>
+  Boolean(node) && typeof node === 'object' && blockNameOf(node, holder) !== undefined && !isSetTransparent(node)
 
 // wrappers the tree adds around written blocks: the search goes inside them
 const isWrapper = (node: any): boolean =>
@@ -92,7 +109,8 @@ Gives C<set> to the first block of C<nodes> that is not transparent to C<=set>
 targeting, looking inside the wrappers the tree adds (C<root>,
 C<_folded_section>). The nodes given are not changed: the path to the target and
 the target's subtree are copied, C<origin>, when given, is carried to the
-copies, and C<onCopy> is told of each copy in the target's subtree. An C<=include> met first, not yet resolved, takes the assignments into its
+copies, and C<onCopy> is told of each copy in the target's subtree. C<holder>
+is the block whose content C<nodes> are; none means the document. An C<=include> met first, not yet resolved, takes the assignments into its
 own C<set>, where they wait for its content; those of the same name already there
 were written nearer to that content and stay.
 
@@ -109,9 +127,9 @@ C<'none'>.
 export const applySetToFirst = (
   nodes: any[],
   set: ConfigItem[],
-  options: { mode: 'include' | 'carry'; origin?: WeakMap<object, any>; onCopy?: Copied },
+  options: { mode: 'include' | 'carry'; origin?: WeakMap<object, any>; onCopy?: Copied; holder?: Walked },
 ): { nodes: any[]; outcome: SetOutcome } => {
-  const { origin, onCopy } = options
+  const { origin, onCopy, holder } = options
   const out = [...nodes]
   for (let i = 0; i < out.length; i++) {
     const node = out[i]
@@ -124,14 +142,14 @@ export const applySetToFirst = (
     }
     if (isWrapper(node)) {
       const inner = Array.isArray(node.content) ? node.content : node.content ? [node.content] : []
-      const found = applySetToFirst(inner, set, options)
+      const found = applySetToFirst(inner, set, { ...options, holder: holderInside(node, holder) })
       if (found.outcome === 'none') continue
       out[i] = { ...node, content: Array.isArray(node.content) ? found.nodes : found.nodes[0] }
       const known = origin?.get(node)
       if (origin && known) origin.set(out[i], known)
       return { nodes: out, outcome: found.outcome }
     }
-    if (node.type !== 'block' || isSetTransparent(node)) continue
+    if (!isSetTarget(node, holder)) continue
     const copy = deepCopy(node, origin, onCopy)
     copy.config = assign(node.config, set)
     markGuarded(copy)

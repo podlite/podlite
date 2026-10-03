@@ -95,6 +95,15 @@ describe('collecting tests', () => {
     expect(planRuns(collect(first, second).tests, 0)).toHaveLength(2)
   })
 
+  it('runs a test with a fixture under each configuration of a paragraph written without a marker in it', () => {
+    const body = aTest({ id: 'shared', fixture: '=head1 A', between: '=begin nested\nA note.\n=end nested\n' })
+    write('t/one.podlite', `=pod\n\n${body}`)
+    const include = '=include file:./t/one.podlite#shared\n'
+    const first = write('first.podlite', `=pod\n\n=config para :tag<one>\n\n${include}`)
+    const second = write('second.podlite', `=pod\n\n=config para :tag<two>\n\n${include}`)
+    expect(planRuns(collect(first, second).tests, 0)).toHaveLength(2)
+  })
+
   it('runs a test with a fixture once when a configuration reaches none of its blocks', () => {
     write('t/one.podlite', `=pod\n\n${aTest({ id: 'shared', fixture: '=head1 A' })}`)
     const include = '=include file:./t/one.podlite#shared\n'

@@ -218,7 +218,7 @@ const rules = {
   'Z<>': emptyContent,
 
   pod: content,
-  ':code': (writer, processor) => (node, ctx, interator) => {
+  ':code': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
@@ -235,7 +235,7 @@ const rules = {
       })
     }
     writer.writeRaw('```\n')
-  },
+  }),
   code: handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
@@ -277,10 +277,10 @@ const rules = {
 
   // block =para
   para: handleNested(content),
-  ':para': (writer, processor) => (node, ctx, interator) => {
+  ':para': handleNested((writer, processor) => (node, ctx, interator) => {
     if (node.content) interator(node.content, ctx)
     writer.writeRaw('\n')
-  },
+  }),
   'head:block': subUse(
     {
       ':para': content,
@@ -544,7 +544,8 @@ const toMarkdown = opt =>
       if (ctx?.maskMode) return defaultFn()
       if (ctx?.renderMode === 'draft') return defaultFn()
       if (node.guarded) return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
-      if (node.type !== 'block') return defaultFn()
+      // a paragraph or code written without a marker carries what =config or =set gave it
+      if (node.type !== 'block' && node.type !== 'para' && node.type !== 'code') return defaultFn()
       const conf = makeAttrs(node, ctx || {})
       if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
       return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)

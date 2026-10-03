@@ -9,8 +9,9 @@ const GUARD_CODE = 'G'
 const isGuardCode = (node: { type?: string; name?: string }): boolean =>
   node.type === 'fcode' && node.name === GUARD_CODE
 
+// a paragraph or code written without a marker is masked by the settings it was given
 const isMaskedBlock = (node: { type?: string }): boolean => {
-  if (node.type !== 'block') return false
+  if (node.type !== 'block' && node.type !== 'para' && node.type !== 'code') return false
   const conf = makeAttrs(node as never, {})
   return conf.exists('masked') && Boolean(conf.getFirstValue('masked'))
 }

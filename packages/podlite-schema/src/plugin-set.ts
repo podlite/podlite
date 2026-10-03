@@ -1,13 +1,14 @@
 import { ConfigItem } from './types'
-import { isSetTransparent } from './set-assign'
+import { isSetTarget } from './set-assign'
+import { holderInside, Walked } from './helpers/blockName'
 
 const isBlock = (node: any): boolean => node && typeof node === 'object' && node.type === 'block'
 
 const isInclude = (node: any): boolean => isBlock(node) && node.name === 'include'
 
 // Each content array is its own lexical scope: pending attributes never leak
-// into or out of a nested block.
-const applyInScope = (content: any[]): any[] => {
+// into or out of a nested block. `holder` is the block the content belongs to.
+const applyInScope = (content: any[], holder: Walked | undefined): any[] => {
   let pending: ConfigItem[] = []
   const out: any[] = []
   for (const node of content) {
@@ -21,14 +22,14 @@ const applyInScope = (content: any[]): any[] => {
     }
     let next = node
     if (isBlock(node) && Array.isArray(node.content)) {
-      next = { ...node, content: applyInScope(node.content) }
+      next = { ...node, content: applyInScope(node.content, holderInside(node, holder)) }
     }
     // the target is chosen in the content the include resolves to
     if (pending.length && isInclude(next)) {
       next = { ...next, set: pending.map(c => ({ ...c, from: 'set' as const })) }
       pending = []
     }
-    if (pending.length && isBlock(next) && !isSetTransparent(next)) {
+    if (pending.length && isSetTarget(next, holder)) {
       const own = new Set((next.config || []).map((c: any) => c && c.name))
       const additions = pending.filter(c => !own.has(c.name)).map(c => ({ ...c, from: 'set' as const }))
       if (additions.length) next = { ...next, config: [...(next.config || []), ...additions] }
@@ -43,9 +44,9 @@ const applyInScope = (content: any[]): any[] => {
 }
 
 export default () => (tree: any) => {
-  if (Array.isArray(tree)) return applyInScope(tree)
+  if (Array.isArray(tree)) return applyInScope(tree, undefined)
   if (tree && typeof tree === 'object' && Array.isArray(tree.content)) {
-    return { ...tree, content: applyInScope(tree.content) }
+    return { ...tree, content: applyInScope(tree.content, holderInside(tree, undefined)) }
   }
   return tree
 }

@@ -1,5 +1,7 @@
 import {
   applySetToFirst,
+  holderInside,
+  isSetTarget,
   isSetTransparent,
   markGuarded,
   bindTarget,
@@ -394,35 +396,37 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   const failedAt = new WeakMap<object, Held[]>()
   const FAILED = 'include-failed'
   const isMark = (node: any): boolean => node && typeof node === 'object' && node.type === FAILED
-  const firstStop = (nodes: any[]): Held[] | undefined => {
+  const firstStop = (nodes: any[], holder: any): Held[] | undefined => {
     for (const node of nodes) {
       if (!node || typeof node !== 'object') continue
       const failed = failedAt.get(node)
       if (failed) return failed
       if (node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')) {
         const inner = Array.isArray(node.content) ? node.content : node.content ? [node.content] : []
-        const found = firstStop(inner)
+        const within = holderInside(node, holder)
+        const found = firstStop(inner, within)
         if (found !== undefined) return found
-        if (inner.some((n: any) => n && n.type === 'block' && !isSetTransparent(n))) return undefined
+        if (inner.some((n: any) => isSetTarget(n, within))) return undefined
         continue
       }
-      if (node.type !== 'block' || isSetTransparent(node)) continue
+      if (!isSetTarget(node, holder)) continue
       return undefined
     }
     return undefined
   }
   // The block the assignments would go to, before any is given: the first that
   // is not transparent, looking inside the wrappers the tree adds.
-  const firstTarget = (nodes: any[]): any => {
+  const firstTarget = (nodes: any[], holder: any): any => {
     for (const node of nodes) {
       if (!node || typeof node !== 'object') continue
       if (failedAt.has(node)) return node
       if (node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')) {
-        const found = firstTarget(Array.isArray(node.content) ? node.content : node.content ? [node.content] : [])
+        const inner = Array.isArray(node.content) ? node.content : node.content ? [node.content] : []
+        const found = firstTarget(inner, holderInside(node, holder))
         if (found) return found
         continue
       }
-      if (node.type !== 'block' || isSetTransparent(node)) continue
+      if (!isSetTarget(node, holder)) continue
       return node
     }
     return undefined
@@ -498,7 +502,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   }
 
   // `home` is the file a directive is written in: an operand of a selector
-  // without a source, or with data:, reads from it. The =set assignments before
+  // without a source, or with data:, reads from it. `holder` is the block the
+  // list is the content of; none means the document. The =set assignments before
   // an include go to the first block it brings; when it brings none they go on
   // to the next block of the same list, and when it fails they go nowhere and
   // the failure says so.
@@ -510,6 +515,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     file: string,
     home: any,
     config: ConfigScope,
+    holder?: any,
   ): any[] => {
     const out: any[] = []
     let pending: ConfigItem[] = []
@@ -574,13 +580,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           return
         }
         // an include inside that failed before the target stops the search
-        const stopped = roots ? stoppedBefore(roots, firstTarget(nodes)) : firstStop(nodes)
+        const stopped = roots ? stoppedBefore(roots, firstTarget(nodes, holder)) : firstStop(nodes, holder)
         if (stopped) {
           lose(stopped, set)
           out.push(...nodes)
           return
         }
-        const applied = applySetToFirst(nodes, set, { mode: 'include', origin, onCopy: opts.onCopy })
+        const applied = applySetToFirst(nodes, set, { mode: 'include', origin, onCopy: opts.onCopy, holder })
         out.push(...applied.nodes)
         if (applied.outcome !== 'none') return
         // nothing came in because an include inside failed: what it would
@@ -593,20 +599,20 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         last = { chain: here, selector }
         return
       }
-      const walked = walkNode(n, context, stack, chain, file, home, config)
+      const walked = walkNode(n, context, stack, chain, file, home, config, holder)
       const items = Array.isArray(walked) ? walked : [walked]
       if (!pending.length) {
         out.push(...items)
         return
       }
-      const stopped = firstStop(items)
+      const stopped = firstStop(items, holder)
       if (stopped) {
         lose(stopped, pending)
         pending = []
         out.push(...items)
         return
       }
-      const applied = applySetToFirst(items, pending, { mode: 'carry', origin, onCopy: opts.onCopy })
+      const applied = applySetToFirst(items, pending, { mode: 'carry', origin, onCopy: opts.onCopy, holder })
       if (applied.outcome !== 'none') pending = []
       out.push(...applied.nodes)
     }
@@ -1142,19 +1148,19 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     file: string,
     home: any,
     config: ConfigScope,
+    holder?: any,
   ): any => {
     if (!node || typeof node !== 'object') return node
-    if (Array.isArray(node)) return walkList(node, context, stack, chain, file, home, config)
-    if (isIncludeBlock(node)) return walkList([node], context, stack, chain, file, home, config)
+    if (Array.isArray(node)) return walkList(node, context, stack, chain, file, home, config, holder)
+    if (isIncludeBlock(node)) return walkList([node], context, stack, chain, file, home, config, holder)
     const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
-    if (node.type === 'block' && !wrapper && !isSetTransparent(node)) {
-      markReached()
-    }
+    if (isSetTarget(node, holder)) markReached()
 
     if (Array.isArray(node.content)) {
       // a block is a lexical scope for the settings declared inside it
       const scope = node.type === 'block' && !wrapper ? { ...config } : config
-      const copy = { ...node, content: walkList(node.content, context, stack, chain, file, home, scope) }
+      const inner = holderInside(node, holder)
+      const copy = { ...node, content: walkList(node.content, context, stack, chain, file, home, scope, inner) }
       const known = origin.get(node)
       if (known) origin.set(copy, known)
       opts.onCopy?.(node, copy)

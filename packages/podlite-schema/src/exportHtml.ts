@@ -244,7 +244,7 @@ const rules = {
   'Z<>': emptyContent,
 
   pod: content,
-  ':code': wrapContent('<pre><code>', '</code></pre>'),
+  ':code': handleNested(wrapContent('<pre><code>', '</code></pre>')),
   code: handleNested(setFn((node, ctx) => wrapContent(`${openTag('pre', node, ctx)}<code>`, '</code></pre>'))),
   // a folded section is a heading plus the nodes under it; the disclosure is
   // native so the reader needs no script to open it
@@ -299,7 +299,8 @@ const rules = {
       anchorOf(node, ctx) ? subUse({ ':para': content }, wrapContent(openTag('p', node, ctx), '</p>')) : content,
     ),
   ),
-  ':para': setFn((node, ctx) => wrapContent(openTag('p', node, ctx), '</p>')),
+  // a paragraph written without a marker is nested by the settings it was given
+  ':para': handleNested(setFn((node, ctx) => wrapContent(openTag('p', node, ctx), '</p>'))),
   'head:block': subUse(
     {
       // inside head don't wrap into <p>
@@ -549,7 +550,8 @@ const toHtml = opt =>
       if (ctx?.maskMode) return defaultFn()
       if (ctx?.renderMode === 'draft') return defaultFn()
       if (node.guarded) return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
-      if (node.type !== 'block') return defaultFn()
+      // a paragraph or code written without a marker carries what =config or =set gave it
+      if (node.type !== 'block' && node.type !== 'para' && node.type !== 'code') return defaultFn()
       const conf = makeAttrs(node, ctx || {})
       if (!conf.exists('masked') || !conf.getFirstValue('masked')) return defaultFn()
       return defaultFn(node, { ...(ctx || {}), maskMode: true }, interator)
