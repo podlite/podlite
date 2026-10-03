@@ -178,7 +178,7 @@ export const isWarning = (problem: IncludeProblem): boolean =>
 // colon before the selection. A bar or a colon inside a value, quoted or in
 // brackets, belongs to the value. A configuration that does not read whole
 // leaves the line unread.
-const opening: Record<string, string> = { '<': '>', '(': ')', '[': ']', '{': '}' }
+const opening: Record<string, string> = { '<': '>', '(': ')', '[': ']', '{': '}', '｢': '｣' }
 const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
   // without the address of a source there is no place for a configuration: a
   // source is written with its scheme, or without one when a selection follows
@@ -199,12 +199,12 @@ const splitDirective = (line: string): { selector: string; mimeType?: string; un
   let written = 0
   for (let i = start; i < line.length; i++) {
     const c = line[i]
-    // inside angle brackets a quote is a character of the value
-    const literal = closing[closing.length - 1] === '>'
+    // inside angle brackets and corner quotes a quote is a character of the value
+    const literal = closing[closing.length - 1] === '>' || closing[closing.length - 1] === '｣'
     if (quote) {
       if (c === quote) quote = ''
     } else if (!literal && (c === "'" || c === '"')) quote = c
-    else if (opening[c] && !(literal && c !== '<')) closing.push(opening[c])
+    else if (opening[c] && (!literal || c === '<')) closing.push(opening[c])
     else if (closing.length && c === closing[closing.length - 1]) closing.pop()
     else if (closing.length === 0 && c === '|') {
       end = i

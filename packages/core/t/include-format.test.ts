@@ -165,11 +165,13 @@ describe('an included file is read in its format', () => {
         '',
         "=include x.txt :mime-type('text/markdown') | head1",
         '',
+        '=include file:./x.txt :mime-type<text/markdown> :caption｢a|b｣',
+        '',
       ].join('\n'),
     )
     const { tree, problems } = assemble(doc)
     expect(problems).toEqual([])
-    expect(texts('head1', tree)).toEqual(['Heading', 'Heading'])
+    expect(texts('head1', tree)).toEqual(['Heading', 'Heading', 'Heading'])
   })
 
   it('takes a type written without space before it as part of the path', () => {
