@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { bindTarget, buildBindingIndex } from '@podlite/schema'
 import type { PodliteDocument, PodNode, SelectorDoc } from '@podlite/schema'
+import { formatOfFile } from '../file-format'
 import type { IncludeProblem } from '../resolve-includes'
 import { diskProvider } from '../resolve-includes'
 import { canonical, prepareDocument, readDocument } from './documents'
@@ -157,7 +158,10 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
         text === null
           ? err({ kind: 'source-unavailable', input: 'named', source, base, message: `cannot read ${document}` })
           : complete(
-              prepareDocument({ name: key, text, baseDir: path.dirname(file), self: file }, { profile: env.profile }),
+              prepareDocument(
+                { name: key, text, baseDir: path.dirname(file), self: file, format: formatOfFile(file) },
+                { profile: env.profile },
+              ),
               'named',
             )
       named.set(key, prepared)

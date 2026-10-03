@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an included C<.md> file is rendered as Markdown, and a file of another extension than Podlite or Markdown is read in the default mode; a C<:mime-type> on the C<=include> line decides how a file is read
+
 =item an operand of C<in> in the selector of an C<=include> is read as C<convert> reads it: a file it names is asked of C<includeReader>, and an operand with no source reads the document the include is written in; both were looked for among the included files alone
 
 =item C<includeReader> and C<expandPaths> may return C<undefined> for an answer that is not known yet: the include then brings nothing, its C<=set> waits with it, and no warning is given until every answer is known. A host that returned C<undefined> for a missing file gets no warning now; C<null> says the file is not there

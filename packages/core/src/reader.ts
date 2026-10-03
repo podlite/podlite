@@ -1,4 +1,4 @@
-import { walkConfigScopes } from '@podlite/schema'
+import { propagateConfigDefaults, walkConfigScopes } from '@podlite/schema'
 import type {
   AstTree,
   ConfigScope,
@@ -11,8 +11,9 @@ import type {
   parseOpt,
 } from '@podlite/schema'
 import { parseMd } from '@podlite/markdown'
+import type { ReadFormat } from './file-format'
 
-export type ReadFormat = 'podlite' | 'md'
+export type { ReadFormat } from './file-format'
 
 export type ReaderOptions = {
   // the format a file of that name is read as; Podlite when not given
@@ -22,7 +23,8 @@ export type ReaderOptions = {
 }
 
 type Parser = Pick<Podlite, 'parse' | 'toAst'>
-type ReadExtras = Pick<parseOpt, 'recognition' | 'diagnostics'>
+// `format` is the format this reading asks for, over the one the name gives
+type ReadExtras = Pick<parseOpt, 'recognition' | 'diagnostics'> & { format?: ReadFormat }
 
 type Reader<T> = (text: string, file: string, config?: ConfigScope, extras?: ReadExtras) => T
 
@@ -89,14 +91,30 @@ const placeTree = (node: any, place: Place): void => {
 /*
 =begin pod :kind<export>
 
+=head2 writtenTree
+
+A text as its file holds it, read in its format by the parser alone, without the
+plugins: what a table of contents is built again from once the includes are in.
+
+=end pod
+*/
+export const writtenTree = (parser: Pick<Podlite, 'parse'>, text: string, format: ReadFormat = 'podlite'): any =>
+  format === 'md' ? parseMd(text) : parser.parse(text, { podMode: format === 'default' ? 0 : 1 })
+
+/*
+=begin pod :kind<export>
+
 =head2 readerFor
 
 Makes the reading an include assembly asks for out of a parser: a text, the name
 of its file and the settings in effect where it is placed give a tree. The parser
 keeps its own plugins. The fourth argument carries the lists the parser fills
-with recognition events and diagnostics. With C<format>, a file the function names C<md> is read as
-Markdown and comes back as the Markdown reader leaves it, without the plugins and
-without the settings.
+with recognition events and diagnostics, and may carry the C<format> of this one
+reading. Without it, C<format> gives the format from the name of the file, and
+without either the text is Podlite. A Markdown text comes back as the Markdown
+reader leaves it, without the plugins, with the settings in effect where it is
+placed given to its blocks; a text in the default format is read in the
+parser's default mode.
 
 With C<body>, a block the function says yes to has its raw body read as Podlite
 in its place: the blocks of the body become the content of the block, read with
@@ -141,9 +159,12 @@ export function readerFor(parser: Parser, options: ReaderOptions = {}): Reader<P
       block.content = read.content
     })
   return (text, file, config, extras = {}) => {
-    if (format?.(file) === 'md') return parseMd(text)
-    const tree = parser.toAst(parser.parse(text, { ...extras, podMode: 1, config }), { config })
-    if (body) readBodies(tree, text, config ?? {}, extras, tree)
+    const { format: asked, ...lists } = extras
+    const chosen = asked ?? format?.(file) ?? 'podlite'
+    if (chosen === 'md') return config ? propagateConfigDefaults(parseMd(text), config) : parseMd(text)
+    const podMode = chosen === 'default' ? 0 : 1
+    const tree = parser.toAst(parser.parse(text, { ...lists, podMode, config }), { config })
+    if (body) readBodies(tree, text, config ?? {}, lists, tree)
     return tree
   }
 }

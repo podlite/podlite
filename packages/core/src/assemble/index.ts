@@ -12,6 +12,7 @@ import {
   Location,
   mergeSet,
   outermost,
+  parseAttributes,
   parseSelector,
   runSelector,
   SelectorDoc,
@@ -19,6 +20,8 @@ import {
   SelectorError,
 } from '@podlite/schema'
 import { rebuildToc } from '@podlite/toc'
+import { formatOfFile, formatOfType } from '../file-format'
+import type { ReadFormat } from '../file-format'
 
 // One directive on the way from the document to the problem: the file it is
 // written in and where.
@@ -44,6 +47,8 @@ export type IncludeProblem = {
     | 'include-reading-differs'
     // blocks of a source the provider calls external stand in the document
     | 'external'
+    // the directive declares a type there is no reader for
+    | 'format'
   target: string
   message: string
   // the =set assignments the problem lost, by name
@@ -74,6 +79,9 @@ text when their ids are equal, and a source already on the way in is a cycle.
 One id stands for one place: the same text, read as the same format, with paths
 inside it resolved from the same place. The same text held in two places is two
 sources. The format is told from the id, as from a file name.
+C<format>, when the provider gives it, is the format the text is read in; without
+it the format is told from the id. A C<:mime-type> written on the directive
+line after the address of the source overrides both for that one reading.
 C<name> is what a C<file:> selector matches the source by and what messages show; a
 C<doc:> selector matches the names written in the text.
 C<context> is what paths written inside the source are resolved from; only the
@@ -92,6 +100,7 @@ export type Source = {
   id: string
   name: string
   context: unknown
+  format?: ReadFormat
   external?: string
 }
 
@@ -137,7 +146,8 @@ export type AssembleOptions = {
   // what the paths written in the document itself are resolved from
   context: unknown
   // `config` holds the settings in effect at the directive that places the text
-  parse: (source: string, file: string, config?: ConfigScope) => any
+  // `how.format` is the format the text is read in
+  parse: (source: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }) => any
   // the document's name and text, for messages and for origin
   file?: string
   text?: string
@@ -162,6 +172,55 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'set-target' ||
   problem.kind === 'include-reading-differs' ||
   problem.kind === 'external'
+
+// The line of a directive holds the selector and, after the address of the
+// source, its configuration: it begins at the first white space followed by a
+// colon before the selection, and a bar inside a quoted value is not the start
+// of the selection. A configuration that does not read whole leaves the line
+// unread.
+const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
+  // without the address of a source there is no place for a configuration
+  if (!/^[a-z][\w+.-]*:/i.test(line)) return { selector: line }
+  let start = -1
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '|') break
+    if (/\s/.test(line[i]) && line[i + 1] === ':') {
+      start = i
+      break
+    }
+  }
+  if (start === -1) return { selector: line }
+  let quote = ''
+  let end = line.length
+  for (let i = start; i < line.length; i++) {
+    const c = line[i]
+    if (quote) {
+      if (c === quote) quote = ''
+    } else if (c === "'" || c === '"') quote = c
+    else if (c === '|') {
+      end = i
+      break
+    }
+  }
+  if (quote) return { selector: line, unread: true }
+  const tail = line.slice(start, end).trim()
+  const rest = line.slice(end).trim()
+  const selector = rest ? `${line.slice(0, start).trim()} ${rest}` : line.slice(0, start).trim()
+  const items = parseAttributes(tail)
+  // every attribute written begins with a colon at the top level of the tail
+  let written = 0
+  quote = ''
+  for (let i = 0; i < tail.length; i++) {
+    const c = tail[i]
+    if (quote) {
+      if (c === quote) quote = ''
+    } else if (c === "'" || c === '"') quote = c
+    else if (c === ':' && (i === 0 || /\s/.test(tail[i - 1]))) written++
+  }
+  const types = items.filter(item => item.name === 'mime-type')
+  if (items.length !== written || types.length > 1) return { selector, unread: true }
+  return { selector, mimeType: types.length ? String(types[0].value) : undefined }
+}
 
 /*
 =begin pod :kind<export>
@@ -722,11 +781,18 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // A file as it reads on its own, its includes in. It is the same wherever it
   // is included from, apart from the files already on the way.
   const sources = new Map<string, any>()
-  const sourceOf = (target: string, text: string, dir: unknown, stack: string[], here: IncludeStep[]): any => {
-    const key = stack.join('\n')
+  const sourceOf = (
+    target: string,
+    text: string,
+    dir: unknown,
+    stack: string[],
+    here: IncludeStep[],
+    format: ReadFormat,
+  ): any => {
+    const key = `${stack.join('\n')}\u0000${format}`
     const known = sources.get(key)
     if (known) return known
-    const own = silently(() => opts.parse(text, target))
+    const own = silently(() => opts.parse(text, target, undefined, { format }))
     recordOrigin(own, { file: target, text }, origin)
     const failed = failures.length
     const from = reachedFrom
@@ -781,8 +847,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       outside,
       written: parsed?.document ?? selector,
     })
-    const selector = getTextContentFromNode(node.content)?.toString().trim() ?? ''
-    const parsed = selector ? parseSelector(selector) : undefined
+    const line = getTextContentFromNode(node.content)?.toString().trim() ?? ''
+    const split = splitDirective(line)
+    const selector = split.selector
+    const parsed = selector && !split.unread ? parseSelector(selector) : undefined
     if (parsed?.anchor) reached[reached.length - 1] = true
     // The directive stays in the tree as before when its selector is not read;
     // what it would have brought in is missing, and a reader of the tree cannot
@@ -792,13 +860,24 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       return fail(
         {
           kind: 'unparsed-selector',
-          target: selector,
-          message: `include selector cannot be read: ${selector || '(empty)'}`,
+          target: line,
+          message: `include selector cannot be read: ${line || '(empty)'}`,
           chain: here,
         },
         true,
       )
     }
+    // a type declared on the directive decides the reading; one with no reader brings nothing
+    const declared = split.mimeType === undefined ? undefined : formatOfType(split.mimeType)
+    if (split.mimeType !== undefined && declared === undefined) {
+      return fail({
+        kind: 'format',
+        target: selector,
+        message: `include format is not supported: ${split.mimeType}: ${parsed.document}`,
+        chain: here,
+      })
+    }
+    const formatOf = (source: Source): ReadFormat => declared ?? source.format ?? formatOfFile(source.id)
     if (!schemes.includes(parsed.scheme)) {
       return fail(
         {
@@ -884,7 +963,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       let alone: any
       if (scoped) {
         try {
-          alone = sourceOf(target, text, source.context, [...stack, target], here)
+          alone = sourceOf(target, text, source.context, [...stack, target], here, formatOf(source))
         } catch (e) {
           if (!opts.tolerant) throw e
           unread.push({
@@ -898,7 +977,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       }
       let own: any
       try {
-        own = opts.parse(text, target, scoped ? config : undefined)
+        own = opts.parse(text, target, scoped ? config : undefined, { format: formatOf(source) })
       } catch (e) {
         if (!opts.tolerant) throw e
         unread.push({
@@ -1024,7 +1103,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (!source || text === null || text === undefined) return undefined
       let own: any
       try {
-        own = opts.parse(text, target)
+        own = opts.parse(text, target, undefined, { format: source.format ?? formatOfFile(target) })
       } catch (e) {
         // a file that fails to parse is one the operand cannot be read from
         if (!opts.tolerant) throw e

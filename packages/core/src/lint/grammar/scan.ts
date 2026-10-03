@@ -6,7 +6,6 @@ import { scanMarkdownInPod, markdownInPodRule } from '../rules/markdown-in-pod'
 import { scanUnclosedMarkupCodes, unclosedMarkupCodeRule } from '../rules/unclosed-markup-code'
 import lintGrammar from './lint.js'
 
-
 export const ATTR_NESTED_ANGLE_RULE_ID = 'attr-nested-angle'
 export const DELIMITED_BLOCK_BALANCE_RULE_ID = 'delimited-block-balance'
 export const ATTR_CONTINUATION_DROPPED_RULE_ID = 'attr-continuation-dropped'
@@ -47,7 +46,7 @@ type GrammarOptions = {
 
 // The file type decides whether markup of another language is out of place:
 // in a markdown file markdown is the language, not a stray.
-export function scanSourceRules(content: string, fileType: 'md' | 'podlite' = 'podlite'): Violation[] {
+export function scanSourceRules(content: string, fileType: 'md' | 'podlite' | 'default' = 'podlite'): Violation[] {
   const opts: GrammarOptions = {
     diagnostics: [],
     _blockStack: [],
@@ -70,7 +69,8 @@ export function scanSourceRules(content: string, fileType: 'md' | 'podlite' = 'p
   }
   opts.diagnostics.push(...scanTableColumns(content))
   opts.diagnostics.push(...scanAbbreviatedAttrs(content))
-  if (fileType !== 'md') opts.diagnostics.push(...scanMarkdownInPod(content))
+  // text outside blocks in the default mode is neither Podlite nor Markdown
+  if (fileType === 'podlite') opts.diagnostics.push(...scanMarkdownInPod(content))
   opts.diagnostics.push(...scanUnclosedMarkupCodes(content))
   return opts.diagnostics
 }

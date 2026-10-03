@@ -203,6 +203,17 @@ describe('includes with the files the caller gives', () => {
     expect(report.notes).toEqual(['included from files: part.podlite, notes/more.md'])
   })
 
+  it('reads a file of the set in the type the directive declares', () => {
+    const files = { 'includes/text.txt': '# Declared\n' }
+    const report = renderReport(
+      "=begin pod\n=include file:includes/text.txt#Declared :mime-type('text/markdown')\n=end pod\n",
+      'md',
+      files,
+    )
+    expect([report.problems, report.error]).toEqual([[], false])
+    expect(report.output).toContain('Declared')
+  })
+
   it('reports an include by a document name as a warning, not an error', () => {
     const report = renderReport('=begin pod\n=include doc:Other\n=end pod\n', 'md', {})
     expect(report.error).toBe(false)
@@ -256,7 +267,11 @@ describe('a selector that names its own source in the files given', () => {
 
   it('finds the blocks of the file named and gives them as the file holds them', () => {
     const report = querySource('file:part.podlite | head1', text, 'podlite', files)
-    expect([report.matchCount, report.output, report.notes]).toEqual([2, '=head1 Part\n\n=for head1 :id<A>\nAnchored', [used]])
+    expect([report.matchCount, report.output, report.notes]).toEqual([
+      2,
+      '=head1 Part\n\n=for head1 :id<A>\nAnchored',
+      [used],
+    ])
   })
 
   it('does not take a file of the same name in a directory', () => {
@@ -418,4 +433,3 @@ describe('a mask of an include in the files given', () => {
     expect([report.ok, report.problems]).toEqual([true, []])
   })
 })
-

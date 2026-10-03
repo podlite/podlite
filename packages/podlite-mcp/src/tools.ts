@@ -11,7 +11,7 @@ import {
 import type { ConfigScope, PodNode, SelectorDoc } from '@podlite/schema'
 import { podlite, readerFor } from 'podlite'
 import { assembleIncludes, sourcesFromFiles } from 'podlite'
-import type { IncludeOrigin, IncludeProblem, Sources } from 'podlite'
+import type { IncludeOrigin, IncludeProblem, ReadFormat, Sources } from 'podlite'
 import { refreshTocs } from 'podlite/lib/refresh-tocs'
 import { detectFileType } from 'podlite/lib/lint/loader'
 import { scanSourceRules } from 'podlite/lib/lint/grammar/scan'
@@ -123,8 +123,8 @@ const openReading = (text: string, files?: Files): Reading => {
   const read = readerFor(p, { format: detectFileType })
   const sections = new WeakMap<object, unknown>()
   const origin = new WeakMap<object, IncludeOrigin>()
-  const toTree = (source: string, file: string, config?: ConfigScope) => {
-    const tree = read(source, file, config)
+  const toTree = (source: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }) => {
+    const tree = read(source, file, config, { format: how?.format })
     markSections(tree, sections)
     return tree
   }

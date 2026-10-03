@@ -11,7 +11,9 @@ import type {
 } from '@podlite/schema'
 import { podlite } from '../index'
 import { refreshTocs } from '../refresh-tocs'
-import { readerFor } from '../reader'
+import { readerFor, writtenTree } from '../reader'
+import { formatOfFile } from '../file-format'
+import type { ReadFormat } from '../file-format'
 import { resolveIncludes, IncludeOrigin, IncludeProblem, SourceProvider } from '../resolve-includes'
 import type { Result } from './types'
 import { err, ok } from './types'
@@ -23,8 +25,9 @@ type Reader = {
     diagnostics: ParseDiagnostic[],
     config?: ConfigScope,
     file?: string,
+    format?: ReadFormat,
   ) => unknown
-  written: (text: string) => unknown
+  written: (text: string, format?: ReadFormat) => unknown
 }
 
 // What reads a document for an assertion. A reader is made per document, so no
@@ -51,9 +54,9 @@ const readerOf = (importPlugins: boolean) => (): Reader => {
   const p = podlite({ importPlugins })
   const read = readerFor(p)
   return {
-    toTree: (text, recognition, diagnostics, config, file = '') =>
-      read(text, file, config, { recognition, diagnostics }),
-    written: text => p.parse(text, { podMode: 1 }),
+    toTree: (text, recognition, diagnostics, config, file = '', format) =>
+      read(text, file, config, { recognition, diagnostics, format }),
+    written: (text, format) => writtenTree(p, text, format),
   }
 }
 
@@ -108,6 +111,8 @@ export type DocumentText = {
   baseDir: string
   // the path the text was read from, when it was: an include back to it is a cycle
   self?: string
+  // the format the text is read in; Podlite when not given, as a fixture is
+  format?: ReadFormat
 }
 
 export const canonical = (file: string): string => {
@@ -203,10 +208,10 @@ export const prepareDocument = (
     const own = node.type === 'block' && (node.name === 'markdown' || node.name === 'Markdown') ? node : section
     markSections(node.content, own)
   }
-  const toTree = (body: string, file: string, config?: ConfigScope): unknown => {
+  const toTree = (body: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }): unknown => {
     const events: RecognitionEvent[] = []
     const diagnostics: ParseDiagnostic[] = []
-    const tree = reader.toTree(body, events, diagnostics, config, file)
+    const tree = reader.toTree(body, events, diagnostics, config, file, how?.format)
     recognition.set(identify(file), events)
     markSections(tree, undefined)
     const at = new Map<number, string>()
@@ -231,7 +236,7 @@ export const prepareDocument = (
     ;(isLosing(problem) ? errors : warnings).push(problem)
   }
   try {
-    const resolved = resolveIncludes(toTree(text, name), {
+    const resolved = resolveIncludes(toTree(text, name, undefined, { format: input.format }), {
       baseDir,
       parse: toTree,
       file: name,
@@ -243,7 +248,7 @@ export const prepareDocument = (
       onError: note,
       onWarning: note,
     })
-    const tree = refreshTocs(resolved, reader.written(text), name, origin, carry)
+    const tree = refreshTocs(resolved, reader.written(text, input.format), name, origin, carry)
     const place = (node: object): string | undefined => {
       const where = origin.get(node)
       return where ? identify(where.file) : undefined
@@ -270,7 +275,13 @@ export const prepareDocument = (
 export const readDocument = (file: string): Result<DocumentText, string> => {
   try {
     const text = fs.readFileSync(file, 'utf-8')
-    return ok({ name: canonical(file), text, baseDir: path.dirname(path.resolve(file)), self: file })
+    return ok({
+      name: canonical(file),
+      text,
+      baseDir: path.dirname(path.resolve(file)),
+      self: file,
+      format: formatOfFile(file),
+    })
   } catch (e) {
     return err(e instanceof Error ? e.message : String(e))
   }

@@ -18,5 +18,6 @@ export const podlite = ({ importPlugins = true }: PodliteOpt): Podlite => {
 
 export { version } from './version'
 export * from './assemble'
-export { readerFor } from './reader'
+export { readerFor, writtenTree } from './reader'
+export { formatOfFile, formatOfType } from './file-format'
 export type { ReadFormat, ReaderOptions } from './reader'

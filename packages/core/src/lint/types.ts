@@ -3,7 +3,7 @@ import type { Sources } from '../assemble'
 
 export type Severity = 'error' | 'warning' | 'info'
 
-export type FileType = 'md' | 'podlite'
+export type FileType = 'md' | 'podlite' | 'default'
 
 export type RuleSetting = 'off' | Severity
 

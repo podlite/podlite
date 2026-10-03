@@ -144,6 +144,17 @@ describe('the files a wrapper is told an included block came through', () => {
   })
 })
 
+describe('an included Markdown file', () => {
+  it('is read as Markdown', () => {
+    const files: Record<string, string> = { 'notes.md': '# From Markdown\n' }
+    const html = renderToStaticMarkup(
+      <Podlite includeReader={(path: string) => files[path] ?? null}>{'=pod\n\n=include file:notes.md\n'}</Podlite>,
+    )
+    expect(html).toContain('From Markdown')
+    expect(html).not.toContain('# From Markdown')
+  })
+})
+
 describe('the files a wrapper is told a block came through, by paths with directories', () => {
   it('are named as the directives write them', () => {
     const files = {

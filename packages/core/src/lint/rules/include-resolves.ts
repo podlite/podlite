@@ -7,6 +7,7 @@ import { detectFileType } from '../loader'
 import { resolveIncludes, IncludeProblem } from '../../resolve-includes'
 import { assembleIncludes, silently } from '../../assemble'
 import { readerFor } from '../../reader'
+import type { ReadFormat } from '../../file-format'
 
 // The plugins that change what an include can select or address. The registry
 // convert raises brings the diagram renderer, and the image plugin brings React:
@@ -37,7 +38,9 @@ const toViolation = (problem: IncludeProblem, filePath: string, fromDisk: boolea
     rule: INCLUDE_RESOLVES_RULE_ID,
     // an include that loses its content is an error; one that still brings it in, a warning
     severity:
-      problem.kind === 'source' || problem.kind === 'address' || problem.kind === 'operand' ? 'error' : 'warning',
+      problem.kind === 'source' || problem.kind === 'address' || problem.kind === 'operand' || problem.kind === 'format'
+        ? 'error'
+        : 'warning',
     message: `${problem.message}${inner}`,
     location: first?.location,
   }
@@ -53,8 +56,8 @@ export const includeResolvesRule: Rule = {
     // gives the sources itself
     if (!ctx.fromDisk && !ctx.sources) return []
     const problems: IncludeProblem[] = []
-    const parse = (source: string, file: string, config?: Parameters<typeof read>[2]) =>
-      silently(() => read(source, file, config))
+    const parse = (source: string, file: string, config?: Parameters<typeof read>[2], how?: { format?: ReadFormat }) =>
+      silently(() => read(source, file, config, { format: how?.format }))
     try {
       if (ctx.sources) {
         assembleIncludes(ast, {

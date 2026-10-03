@@ -21,9 +21,17 @@ describe('detectFileType', () => {
     expect(detectFileType('legacy.pod6')).toBe('podlite')
   })
 
-  it('unknown extension → podlite (default)', () => {
-    expect(detectFileType('file.txt')).toBe('podlite')
-    expect(detectFileType('no-extension')).toBe('podlite')
+  it('.markdown → md', () => {
+    expect(detectFileType('notes.markdown')).toBe('md')
+  })
+
+  it('any other extension, or none, → the default mode', () => {
+    expect(detectFileType('file.txt')).toBe('default')
+    expect(detectFileType('no-extension')).toBe('default')
+  })
+
+  it('standard input → podlite', () => {
+    expect(detectFileType('<stdin>')).toBe('podlite')
   })
 })
 

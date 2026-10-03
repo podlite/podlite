@@ -24,7 +24,9 @@ import {
 import { externalMessage } from './assemble'
 import type { Source as IncludeSource } from './assemble'
 import { refreshTocs } from './refresh-tocs'
-import { readerFor } from './reader'
+import { readerFor, writtenTree } from './reader'
+import { formatOfFile } from './file-format'
+import type { ReadFormat } from './file-format'
 import { contentOf, hasPlace, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
 
 export type QueryFormat = 'podlite' | 'md' | 'html' | 'json'
@@ -47,7 +49,10 @@ type Source = { file: string; text: string; fromStdin?: boolean }
 // and formula plugins only render, so they are left out, and with them mermaid
 // and React; the three that are needed are raised when a query runs, not when
 // the module loads.
-type QueryReader = { toTree: (text: string, file: string, config?: ConfigScope) => any; written: (text: string) => any }
+type QueryReader = {
+  toTree: (text: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }) => any
+  written: (text: string, format: ReadFormat) => any
+}
 
 const queryReader = (): QueryReader => {
   /* eslint-disable @typescript-eslint/no-var-requires */
@@ -58,7 +63,7 @@ const queryReader = (): QueryReader => {
   const p = podlitePluggable({ plugins: { ...markdown, ...image, ...toc } })
   return {
     toTree: readerFor(p),
-    written: (text: string) => p.parse(text, { podMode: 1 }),
+    written: (text: string, format: ReadFormat) => writtenTree(p, text, format),
   }
 }
 
@@ -212,8 +217,8 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
   // each file is read on its own before its includes, as convert reads it
-  const toTree = (text: string, file: string, config?: ConfigScope): any => {
-    const tree = reader.toTree(text, file, config)
+  const toTree = (text: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }): any => {
+    const tree = reader.toTree(text, file, config, { format: how?.format })
     markSections(tree, sections)
     return tree
   }
@@ -227,7 +232,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const file = path.resolve(document)
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return undefined
     const text = fs.readFileSync(file, 'utf-8')
-    const node = resolveIncludes(toTree(text, file), {
+    const node = resolveIncludes(toTree(text, file, undefined, { format: formatOfFile(file) }), {
       baseDir: path.dirname(file),
       parse: toTree,
       file: document,
@@ -257,7 +262,9 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     const fromStdin = src.fromStdin === true
     const baseDir = fromStdin ? process.cwd() : path.dirname(path.resolve(src.file))
     waiting = []
-    const resolved = resolveIncludes(toTree(src.text, src.file), {
+    // a document is read in the format its name gives; text from the standard input is Podlite
+    const format = fromStdin ? 'podlite' : formatOfFile(src.file)
+    const resolved = resolveIncludes(toTree(src.text, src.file, undefined, { format }), {
       baseDir,
       root: opts.root ?? baseDir,
       parse: toTree,
@@ -271,7 +278,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     })
     // the tables of contents are made again over what the includes brought; a
     // copy keeps the section its block was read out of
-    const node = refreshTocs(resolved, reader.written(src.text), src.file, origin, (from, to) => {
+    const node = refreshTocs(resolved, reader.written(src.text, format), src.file, origin, (from, to) => {
       const section = sections.get(from)
       if (section) sections.set(to, section)
     })

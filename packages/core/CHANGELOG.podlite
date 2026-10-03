@@ -2,6 +2,14 @@
 
 =head1 Upcoming
 
+=item a file is read in the format its name gives: C<.podlite> and C<.pod6> as Podlite, C<.md> and C<.markdown> as Markdown, any other extension or none in the default mode, where text outside blocks is ambient; the extension is compared without regard to case. This holds for an included file, for the document C<convert>, C<query> and C<podlite test> are given, and for C<lint>; text from the standard input stays Podlite. A C<.md> file brought by C<=include> was read as Podlite, and a C<.txt> file as Podlite paragraphs
+
+=item a C<:mime-type> written on the C<=include> line after the address of the source, before a selection, decides how that file is read: C<text/podlite>, C<text/markdown>, and any other C<text/> type in the default mode; a type that is not text is an error of the new kind C<format>, and the include brings nothing. A configuration that does not read whole leaves the line unread. It was taken as part of the file name
+
+=item an included Markdown file gets the C<=config> of the including file on its blocks
+
+=item C<formatOfFile>, C<formatOfType> and C<writtenTree> are exported; C<ReadFormat> has the value C<default>. A source may carry C<format>; the fourth argument of the reader and of C<parse> in an include assembly may carry C<format> for that one reading
+
 =item C<podlite convert> and C<podlite query> warn when an included file comes from outside the root: the directory of each input file, or the current directory for stdin. C<--root> sets one root for every input. A file is outside by its real path, with links followed. The warning names the directive and the path as written, gives a mask the number of its files that are outside, and is given only when blocks of such a file stand in the assembled document; C<query> gives it only for blocks it prints
 
 =item C<podlite convert> prints the file and line of the directive in front of every include warning

@@ -7,7 +7,8 @@ import { lintFilesInParallel, worthThreads } from './lint/parallel'
 import { runQuery, QueryFormat } from './query'
 import { describeProblem, resolveIncludes, IncludeOrigin } from './resolve-includes'
 import { refreshTocs } from './refresh-tocs'
-import { readerFor } from './reader'
+import { readerFor, writtenTree } from './reader'
+import { formatOfFile } from './file-format'
 import { version } from './version'
 
 // The plugin registry brings the diagram renderer, and with it mermaid and
@@ -215,8 +216,10 @@ function convertFile(
   const content = fromStdin ? readStdinSync() : fs.readFileSync(inputPath, 'utf-8')
   const p = parserWithPlugins()
   const read = readerFor(p)
+  // a document is read in the format its name gives; text from the standard input is Podlite
+  const readFormat = fromStdin ? 'podlite' : formatOfFile(inputPath)
 
-  let tree = read(content, inputPath)
+  let tree = read(content, inputPath, undefined, { format: readFormat })
   try {
     const origin = new WeakMap<object, IncludeOrigin>()
     const baseDir = fromStdin ? process.cwd() : path.dirname(inputPath)
@@ -230,7 +233,7 @@ function convertFile(
       origin,
       onWarning: problem => console.error(`podlite convert: ${describeProblem(problem)}`),
     })
-    tree = refreshTocs(tree, p.parse(content, { podMode: 1 }), inputPath, origin)
+    tree = refreshTocs(tree, writtenTree(p, content, readFormat), inputPath, origin)
   } catch (e) {
     console.error(`podlite convert: ${(e as Error).message}`)
     process.exit(1)
