@@ -76,12 +76,12 @@ export type IncludeOrigin = {
 
 A text an C<=include> can bring. C<id> is its identity: two sources are the same
 text when their ids are equal, and a source already on the way in is a cycle.
-One id stands for one place: the same text, read as the same format, with paths
-inside it resolved from the same place. The same text held in two places is two
-sources. The format is told from the id, as from a file name.
+One id stands for one place: the same text, with paths inside it resolved from
+the same place. The same text held in two places is two sources.
 C<format>, when the provider gives it, is the format the text is read in; without
 it the format is told from the id. A C<:mime-type> written on the directive
-line after the address of the source overrides both for that one reading.
+line after the address of the source overrides both for that one reading, so
+one source may be read in two formats by two directives.
 C<name> is what a C<file:> selector matches the source by and what messages show; a
 C<doc:> selector matches the names written in the text.
 C<context> is what paths written inside the source are resolved from; only the
@@ -175,12 +175,14 @@ export const isWarning = (problem: IncludeProblem): boolean =>
 
 // The line of a directive holds the selector and, after the address of the
 // source, its configuration: it begins at the first white space followed by a
-// colon before the selection, and a bar inside a quoted value is not the start
-// of the selection. A configuration that does not read whole leaves the line
-// unread.
+// colon before the selection. A bar or a colon inside a value, quoted or in
+// brackets, belongs to the value. A configuration that does not read whole
+// leaves the line unread.
+const opening: Record<string, string> = { '<': '>', '(': ')', '[': ']', '{': '}' }
 const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
-  // without the address of a source there is no place for a configuration
-  if (!/^[a-z][\w+.-]*:/i.test(line)) return { selector: line }
+  // without the address of a source there is no place for a configuration: a
+  // source is written with its scheme, or without one when a selection follows
+  if (!/^[a-z][\w+.-]*:/i.test(line) && !line.includes('|')) return { selector: line }
   let start = -1
   for (let i = 0; i < line.length; i++) {
     if (line[i] === '|') break
@@ -190,33 +192,30 @@ const splitDirective = (line: string): { selector: string; mimeType?: string; un
     }
   }
   if (start === -1) return { selector: line }
+  // the end of the configuration and the colons that begin its attributes, at the top level of it
   let quote = ''
+  const closing: string[] = []
   let end = line.length
+  let written = 0
   for (let i = start; i < line.length; i++) {
     const c = line[i]
+    // inside angle brackets a quote is a character of the value
+    const literal = closing[closing.length - 1] === '>'
     if (quote) {
       if (c === quote) quote = ''
-    } else if (c === "'" || c === '"') quote = c
-    else if (c === '|') {
+    } else if (!literal && (c === "'" || c === '"')) quote = c
+    else if (opening[c] && !(literal && c !== '<')) closing.push(opening[c])
+    else if (closing.length && c === closing[closing.length - 1]) closing.pop()
+    else if (closing.length === 0 && c === '|') {
       end = i
       break
-    }
+    } else if (closing.length === 0 && c === ':' && /\s/.test(line[i - 1])) written++
   }
-  if (quote) return { selector: line, unread: true }
+  if (quote || closing.length) return { selector: line, unread: true }
   const tail = line.slice(start, end).trim()
   const rest = line.slice(end).trim()
   const selector = rest ? `${line.slice(0, start).trim()} ${rest}` : line.slice(0, start).trim()
   const items = parseAttributes(tail)
-  // every attribute written begins with a colon at the top level of the tail
-  let written = 0
-  quote = ''
-  for (let i = 0; i < tail.length; i++) {
-    const c = tail[i]
-    if (quote) {
-      if (c === quote) quote = ''
-    } else if (c === "'" || c === '"') quote = c
-    else if (c === ':' && (i === 0 || /\s/.test(tail[i - 1]))) written++
-  }
   const types = items.filter(item => item.name === 'mime-type')
   if (items.length !== written || types.length > 1) return { selector, unread: true }
   return { selector, mimeType: types.length ? String(types[0].value) : undefined }

@@ -9,6 +9,7 @@ import { assembleIncludes, sourcesFromFiles } from '../src/assemble'
 import type { Source, Sources } from '../src/assemble'
 import { resolveIncludes, IncludeProblem } from '../src/resolve-includes'
 import { lintSource, resolveConfig } from '../src/lint'
+import { detectFileType, parseContent } from '../src/lint/loader'
 import { runQuery } from '../src/query'
 
 let tmpDir: string
@@ -151,6 +152,24 @@ describe('an included file is read in its format', () => {
     expect(problems).toEqual([])
     expect(texts('head1', tree)).toEqual(['One'])
     expect(texts('head2', tree)).toEqual(['Two', 'Two'])
+  })
+
+  it('reads a value in brackets whole, and takes a type after a source written without its scheme', () => {
+    write('x.txt', '# Heading\n')
+    const doc = write(
+      'doc.podlite',
+      [
+        '=pod',
+        '',
+        "=include file:./x.txt :mime-type<text/markdown> :caption<one :two | three it's>",
+        '',
+        "=include x.txt :mime-type('text/markdown') | head1",
+        '',
+      ].join('\n'),
+    )
+    const { tree, problems } = assemble(doc)
+    expect(problems).toEqual([])
+    expect(texts('head1', tree)).toEqual(['Heading', 'Heading'])
   })
 
   it('takes a type written without space before it as part of the path', () => {
@@ -300,6 +319,8 @@ describe('commands that read an included file', () => {
       true,
     )
     expect(report.violations.map(v => v.rule)).not.toContain('markdown-in-pod')
+    const tree: any = parseContent(fs.readFileSync(file, 'utf-8'), detectFileType(file))
+    expect(tree.content.some((node: any) => node.type === 'ambient')).toBe(true)
   })
 
   it('query reads the example of the norm', () => {
