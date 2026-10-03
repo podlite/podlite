@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { ConfigScope, filePathMatches } from '@podlite/schema'
 import { assembleIncludes, IncludeOrigin, IncludeProblem, Sources } from './assemble'
+import type { ReadFormat } from './file-format'
 
 export { isWarning } from './assemble'
 export type { IncludeStep, IncludeProblem, IncludeOrigin } from './assemble'
@@ -18,8 +19,9 @@ export type SourceProvider = {
 
 export type ResolveIncludesOptions = {
   baseDir: string
-  // `config` holds the settings in effect at the directive that places the text
-  parse: (source: string, file: string, config?: ConfigScope) => any
+  // `config` holds the settings in effect at the directive that places the text,
+  // `how.format` the format the text is read in
+  parse: (source: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }) => any
   // the document's name and text, for messages and for origin
   file?: string
   text?: string

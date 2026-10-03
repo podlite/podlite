@@ -37,7 +37,8 @@ const assemble = (file: string): { tree: any; problems: IncludeProblem[] } => {
   const text = fs.readFileSync(file, 'utf-8')
   const tree = resolveIncludes(read(text, file), {
     baseDir: path.dirname(file),
-    parse: read,
+    // a host's own reader is handed the format as the fourth argument
+    parse: (source, name, config, how) => read(source, name, config, how),
     file,
     text,
     self: file,
@@ -167,11 +168,15 @@ describe('an included file is read in its format', () => {
         '',
         '=include file:./x.txt :mime-type<text/markdown> :caption｢a|b｣',
         '',
+        '=include file:./x.txt :mime-type<text/markdown> :caption｢a < b｣',
+        '',
+        "=include file:./x.txt :mime-type<text/markdown> :caption<'a > b'>",
+        '',
       ].join('\n'),
     )
     const { tree, problems } = assemble(doc)
     expect(problems).toEqual([])
-    expect(texts('head1', tree)).toEqual(['Heading', 'Heading', 'Heading'])
+    expect(texts('head1', tree)).toEqual(['Heading', 'Heading', 'Heading', 'Heading', 'Heading'])
   })
 
   it('takes a type written without space before it as part of the path', () => {

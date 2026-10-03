@@ -173,12 +173,21 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'include-reading-differs' ||
   problem.kind === 'external'
 
+// The configuration as the attribute reader takes it, when the reader takes
+// the text whole: an attribute added after it is read last.
+const readWhole = (tail: string): ConfigItem[] | undefined => {
+  const items = parseAttributes(tail)
+  if (items.length === 0) return undefined
+  const probe = parseAttributes(`${tail} :end-of-configuration`)
+  const whole = probe.length === items.length + 1 && probe[probe.length - 1].name === 'end-of-configuration'
+  return whole ? items : undefined
+}
+
 // The line of a directive holds the selector and, after the address of the
 // source, its configuration: it begins at the first white space followed by a
-// colon before the selection. A bar or a colon inside a value, quoted or in
-// brackets, belongs to the value. A configuration that does not read whole
-// leaves the line unread.
-const opening: Record<string, string> = { '<': '>', '(': ')', '[': ']', '{': '}', '｢': '｣' }
+// colon before the selection, and ends at the first bar after which what stands
+// before reads whole, or at the end of the line. A configuration that does not
+// read whole leaves the line unread.
 const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
   // without the address of a source there is no place for a configuration: a
   // source is written with its scheme, or without one when a selection follows
@@ -192,33 +201,19 @@ const splitDirective = (line: string): { selector: string; mimeType?: string; un
     }
   }
   if (start === -1) return { selector: line }
-  // the end of the configuration and the colons that begin its attributes, at the top level of it
-  let quote = ''
-  const closing: string[] = []
-  let end = line.length
-  let written = 0
-  for (let i = start; i < line.length; i++) {
-    const c = line[i]
-    // inside angle brackets and corner quotes a quote is a character of the value
-    const literal = closing[closing.length - 1] === '>' || closing[closing.length - 1] === '｣'
-    if (quote) {
-      if (c === quote) quote = ''
-    } else if (!literal && (c === "'" || c === '"')) quote = c
-    else if (opening[c] && (!literal || c === '<')) closing.push(opening[c])
-    else if (closing.length && c === closing[closing.length - 1]) closing.pop()
-    else if (closing.length === 0 && c === '|') {
-      end = i
-      break
-    } else if (closing.length === 0 && c === ':' && /\s/.test(line[i - 1])) written++
+  const ends: number[] = []
+  for (let i = start; i < line.length; i++) if (line[i] === '|') ends.push(i)
+  ends.push(line.length)
+  for (const end of ends) {
+    const items = readWhole(line.slice(start, end).trim())
+    if (!items) continue
+    const rest = line.slice(end).trim()
+    const selector = rest ? `${line.slice(0, start).trim()} ${rest}` : line.slice(0, start).trim()
+    const types = items.filter(item => item.name === 'mime-type')
+    if (types.length > 1) return { selector, unread: true }
+    return { selector, mimeType: types.length ? String(types[0].value) : undefined }
   }
-  if (quote || closing.length) return { selector: line, unread: true }
-  const tail = line.slice(start, end).trim()
-  const rest = line.slice(end).trim()
-  const selector = rest ? `${line.slice(0, start).trim()} ${rest}` : line.slice(0, start).trim()
-  const items = parseAttributes(tail)
-  const types = items.filter(item => item.name === 'mime-type')
-  if (items.length !== written || types.length > 1) return { selector, unread: true }
-  return { selector, mimeType: types.length ? String(types[0].value) : undefined }
+  return { selector: line, unread: true }
 }
 
 /*
