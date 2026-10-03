@@ -130,6 +130,36 @@ describe('podlite query and the root', () => {
     ])
   })
 
+  it('counts only the files of a mask whose blocks the selection shows', () => {
+    fs.writeFileSync(path.join(dir, 'shared/two.podlite'), '=head2 Two\n')
+    fs.writeFileSync(path.join(dir, 'book/book.podlite'), '=pod\n\n=include file:../shared/*.podlite\n')
+    const root = path.join(dir, 'book')
+    expect(run(['query', 'head1', 'book/book.podlite']).stderr.split('\n')[0]).toBe(
+      `podlite query: book/book.podlite:3: included file comes from outside the root ${root}: ../shared/*.podlite`,
+    )
+    expect(run(['query', 'head1, head2', 'book/book.podlite']).stderr.split('\n')[0]).toBe(
+      `podlite query: book/book.podlite:3: 2 included files come from outside the root ${root}: ../shared/*.podlite`,
+    )
+  })
+
+  it('warns about a file one include reads twice with different selections', () => {
+    fs.writeFileSync(path.join(dir, 'shared/two.podlite'), '=head2 Two\n')
+    fs.writeFileSync(path.join(dir, 'book/relay.podlite'), '=include file:../shared/*.podlite\n')
+    fs.writeFileSync(
+      path.join(dir, 'book/book.podlite'),
+      '=pod\n\n=include file:relay.podlite | head1\n\n=include file:relay.podlite | head2\n',
+    )
+    const r = run(['query', 'head2', 'book/book.podlite', '--to', 'md'])
+    expect(r.stdout).toContain('Two')
+    expect(r.stderr).toContain('outside the root')
+  })
+
+  it('warns about an outside comment the selection gives', () => {
+    fs.writeFileSync(path.join(dir, 'shared/note.podlite'), '=comment Kept out of rendering\n')
+    fs.writeFileSync(path.join(dir, 'book/book.podlite'), '=pod\n\n=include file:../shared/note.podlite\n')
+    expect(run(['query', 'comment', 'book/book.podlite', '--to', 'json']).stderr).toContain('outside the root')
+  })
+
   it('stops before reading any input when the root is not a directory', () => {
     const r = run(['query', 'head1', 'book/book.podlite', '--root', 'nowhere'])
     expect(r.status).toBe(1)

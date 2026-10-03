@@ -186,7 +186,7 @@ describe('content from outside the root', () => {
     ])
   })
 
-  it('is not reported for an outside file that brings no block of its own', () => {
+  it('is not reported for an outside file that brings no block of its own, and is for a comment', () => {
     write('out/empty.podlite', '')
     write('root/inside.podlite', '=pod\n\n=head1 Inside\n')
     write('out/relay.podlite', '=include file:../root/inside.podlite\n')
@@ -199,6 +199,7 @@ describe('content from outside the root', () => {
     )
     const root = path.join(tmpDir, 'root')
     expect(external(doc, root)).toEqual([
+      `root/doc.podlite:9: included file comes from ${outside(root)}: ../out/comment.podlite`,
       `root/doc.podlite:11: included file comes from ${outside(root)}: ../out/shown.podlite`,
     ])
   })

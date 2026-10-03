@@ -51,8 +51,8 @@ export type IncludeProblem = {
   // the first step is the directive in the document itself, the last one the
   // directive the problem was found at
   chain: IncludeStep[]
-  // for external: the ids of the sources whose blocks stand in the result
-  sources?: string[]
+  // for external: the sources whose blocks stand in the result
+  sources?: Source[]
 }
 
 export type IncludeOrigin = {
@@ -81,7 +81,8 @@ provider reads it.
 C<external>, when the provider gives it, says the source is external and why, as
 the words that follow "comes from": C<outside the root /home/a/book>. A directive
 whose blocks of an external source stand in the assembled document is reported
-once as C<external>. A table of contents built over such blocks is not: its
+once as C<external>. A block counts where a renderer leaves it out, as a comment:
+it stands in the document. A table of contents built over such blocks is not: its
 entries are made anew and carry no origin. Directives are told apart by their
 place, so in a tree built without places two directives of one file count as one.
 
@@ -162,8 +163,18 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'include-reading-differs' ||
   problem.kind === 'external'
 
-// one line for an include, however many reasons its external sources give
-const outsideMessage = (sources: Source[], written: string): string => {
+/*
+=begin pod :kind<export>
+
+=head2 externalMessage
+
+The text of an C<external> warning: the external sources an include brought, by
+count and reason, and the path as the directive writes it. A host that shows part
+of a document gives it the sources whose blocks it shows.
+
+=end pod
+*/
+export const externalMessage = (sources: Source[], written: string): string => {
   const reasons = new Map<string, number>()
   for (const source of sources) {
     const reason = source.external ?? ''
@@ -585,7 +596,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // Which directive of which entry: the file it is written in, as the walk names
   // it, and its offset there.
   const stepOf = (file: string, location?: Location): string => `${file}\u0000${location?.start?.offset ?? ''}`
-  const said = new Set<string>()
+  const said = new Map<string, IncludeProblem>()
   // The external sources whose blocks stand in what an entry of the document's
   // own list became confirm the includes that brought them.
   const confirmOutside = (nodes: any[]): void => {
@@ -595,8 +606,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const visit = (node: any): void => {
       if (!node || typeof node !== 'object') return
       if (Array.isArray(node)) return node.forEach(visit)
-      // what a directive, a comment or a failed include holds is not shown
-      if (isSetTransparent(node) || isMark(node)) return
+      // what a directive or a failed include holds stands nowhere; a comment does
+      const comment = node.type === 'block' && node.name === 'comment'
+      if ((isSetTransparent(node) && !comment) || isMark(node)) return
       const where = origin.get(node)
       const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
       if (where && !wrapper) {
@@ -618,13 +630,19 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         (source, at) => files?.has(source.id) && sources.findIndex(other => other.id === source.id) === at,
       )
       if (shown.length === 0) continue
-      const message = outsideMessage(shown, written)
+      const message = externalMessage(shown, written)
       const at = entry.problem.chain[entry.problem.chain.length - 1]
       const key = `${at?.file}\u0000${at?.location?.start?.offset ?? ''}\u0000${message}`
-      if (said.has(key)) continue
-      said.add(key)
+      // the same line again is not shown, but what it brought is kept with the first
+      const first = said.get(key)
+      if (first) {
+        const known = first.sources ?? []
+        first.sources = [...known, ...shown.filter(source => !known.some(other => other.id === source.id))]
+        continue
+      }
+      said.set(key, entry.problem)
       entry.problem.message = message
-      entry.problem.sources = shown.map(source => source.id)
+      entry.problem.sources = shown
       entry.shown = true
     }
   }

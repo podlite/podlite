@@ -8,7 +8,8 @@ export type { IncludeStep, IncludeProblem, IncludeOrigin } from './assemble'
 
 // Where included text comes from. A file is named by its absolute path; a
 // listing names files relative to the directory asked for. `real` gives the path
-// a file has with links followed, or null; without it nothing is outside a root.
+// a file or a directory has with links followed, or null; without it, or with no
+// path for the root, nothing is outside a root.
 export type SourceProvider = {
   read: (file: string) => string | null
   list: (dir: string, deep: boolean) => string[]

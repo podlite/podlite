@@ -21,6 +21,8 @@ import {
   IncludeOrigin,
   IncludeProblem,
 } from './resolve-includes'
+import { externalMessage } from './assemble'
+import type { Source as IncludeSource } from './assemble'
 import { refreshTocs } from './refresh-tocs'
 import { readerFor } from './reader'
 import { contentOf, hasPlace, isWrapper, jsonBlock, markSections, podliteText } from './query-blocks'
@@ -184,19 +186,24 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       if (!ownText(item)) visit(item)
       else if (where) shown.push(where)
     }
-    // a block shown came from an external source through this very directive
-    const brought = (problem: IncludeProblem): boolean => {
+    // the external sources whose blocks are shown and came through this very directive
+    const brought = (problem: IncludeProblem): IncludeSource[] => {
       const at = problem.chain[problem.chain.length - 1]
       const offset = at?.location?.start?.offset
-      return shown.some(
-        where =>
-          problem.sources?.includes(where.file) &&
-          where.steps?.some(step => step.file === at?.file && step.location?.start?.offset === offset),
+      const through = shown.filter(where =>
+        where.steps?.some(step => step.file === at?.file && step.location?.start?.offset === offset),
       )
+      return (problem.sources ?? []).filter(source => through.some(where => where.file === source.id))
     }
     for (const problem of waiting ?? []) {
-      if (problem.kind === 'external' && !brought(problem)) continue
-      problems.push(describeProblem(problem))
+      if (problem.kind !== 'external') {
+        problems.push(describeProblem(problem))
+        continue
+      }
+      const sources = brought(problem)
+      if (sources.length === 0) continue
+      const written = parseSelector(problem.target)?.document ?? problem.target
+      problems.push(describeProblem({ ...problem, message: externalMessage(sources, written) }))
     }
     waiting = undefined
   }
