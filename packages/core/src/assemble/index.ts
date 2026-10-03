@@ -12,8 +12,9 @@ import {
   Location,
   mergeSet,
   outermost,
-  parseAttributes,
+  ParseDiagnostic,
   parseSelector,
+  podlitePluggable,
   runSelector,
   SelectorDoc,
   PodNode,
@@ -173,14 +174,16 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'include-reading-differs' ||
   problem.kind === 'external'
 
-// The configuration as the attribute reader takes it, when the reader takes
-// the text whole: an attribute added after it is read last.
+// The configuration as the parser reads it on a block, when it reads the text
+// whole: no value is dropped and nothing spills into the body.
+let configParser: ReturnType<typeof podlitePluggable> | undefined
 const readWhole = (tail: string): ConfigItem[] | undefined => {
-  const items = parseAttributes(tail)
-  if (items.length === 0) return undefined
-  const probe = parseAttributes(`${tail} :end-of-configuration`)
-  const whole = probe.length === items.length + 1 && probe[probe.length - 1].name === 'end-of-configuration'
-  return whole ? items : undefined
+  configParser = configParser ?? podlitePluggable()
+  const diagnostics: ParseDiagnostic[] = []
+  const tree: any = configParser.parse(`=for para ${tail}\nbody\n`, { podMode: 1, diagnostics })
+  const block = (tree.content ?? []).find((node: any) => node && node.type === 'block')
+  if (diagnostics.length || !block || !Array.isArray(block.config) || block.config.length === 0) return undefined
+  return String(getTextContentFromNode(block.content)).trim() === 'body' ? block.config : undefined
 }
 
 // The line of a directive holds the selector and, after the address of the
