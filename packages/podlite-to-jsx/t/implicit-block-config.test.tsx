@@ -22,7 +22,7 @@ describe('a paragraph and code written without a marker render with their settin
 
   it('the paragraph of a definition is nested', () => {
     const html = page('=config para :nested(1)\n\n=defn Term\nDefinition.')
-    expect(html).toMatch(/<blockquote[^>]*><dd[^>]*>Definition\./)
+    expect(html).toMatch(/<dd[^>]*><blockquote[^>]*>Definition\./)
   })
 
   it('an explicit para is nested once, not by its text again', () => {

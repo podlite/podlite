@@ -174,6 +174,14 @@ describe('a paragraph and code written without a marker render with their settin
     expect(markdown(src)).toContain('> Plain.')
   })
 
+  it('a nested definition starts a line of its own in markdown', () => {
+    expect(markdown(pod('=config para :nested(1)\n\n=defn Term\nDefinition.'))).toContain('**Term:** \n> Definition.')
+  })
+
+  it('a definition without nesting stays on the line of its term in markdown', () => {
+    expect(markdown(pod('=defn Term\nDefinition.'))).toContain('**Term:** Definition.')
+  })
+
   it('an explicit para is nested once, not by its text again', () => {
     const out = html(pod('=config para :nested(2)\n\n=para Explicit\n\nPlain.'))
     expect(out.match(/<blockquote>/g)).toHaveLength(4)

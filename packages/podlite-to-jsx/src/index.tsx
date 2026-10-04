@@ -535,7 +535,14 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       [
         // to avoid overlap para blocks handlers
         // define general :para at first
-        { ':para': handleNested(mkComponent('dd')) },
+        {
+          // the nesting goes inside the description, so the list keeps its terms and descriptions
+          ':para': (writer, processor) => {
+            const inner = handleNested(nodeContent)(writer, processor)
+            return (node, ctx, interator) =>
+              makeComponent('dd', node, inner(node, ctx, interator), { id: getSafeNodeId(node, ctx) }, ctx)
+          },
+        },
         { 'term:para': mkComponent('dt') },
       ],
       nodeContent,

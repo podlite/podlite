@@ -103,6 +103,17 @@ const inlineCode = (text: string): string => {
   return `${ticks}${pad}${text}${pad}${ticks}`
 }
 
+const implicitPara = handleNested((writer, processor) => (node, ctx, interator) => {
+  if (node.content) interator(node.content, ctx)
+  writer.writeRaw('\n')
+})
+
+const termPara = (writer, processor) => (node, ctx, interator) => {
+  writer.writeRaw('**')
+  if (node.content) interator(node.content, ctx)
+  writer.writeRaw(':** ')
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value) {
@@ -277,10 +288,7 @@ const rules = {
 
   // block =para
   para: handleNested(content),
-  ':para': handleNested((writer, processor) => (node, ctx, interator) => {
-    if (node.content) interator(node.content, ctx)
-    writer.writeRaw('\n')
-  }),
+  ':para': implicitPara,
   'head:block': subUse(
     {
       ':para': content,
@@ -363,15 +371,26 @@ const rules = {
   'boundary:block': (writer, processor) => (node, ctx) => {
     writer.writeRaw('\n---\n')
   },
-  defn: (writer, processor) => (node, ctx, interator) => {
-    if (node.content) interator(node.content, ctx)
-    writer.writeRaw('\n')
-  },
-  'term:para': (writer, processor) => (node, ctx, interator) => {
-    writer.writeRaw('**')
-    if (node.content) interator(node.content, ctx)
-    writer.writeRaw(':** ')
-  },
+  defn: subUse(
+    [
+      {
+        // a nested definition starts a line of its own, not the line of its term
+        ':para': (writer, processor) => {
+          const para = implicitPara(writer, processor)
+          return (node, ctx, interator) => {
+            if (makeAttrs(node, ctx).getFirstValue('nested')) writer.writeRaw('\n')
+            para(node, ctx, interator)
+          }
+        },
+      },
+      { 'term:para': termPara },
+    ],
+    (writer, processor) => (node, ctx, interator) => {
+      if (node.content) interator(node.content, ctx)
+      writer.writeRaw('\n')
+    },
+  ),
+  'term:para': termPara,
   nested: handleNested(content, 1),
   output: handleNested(
     (writer, processor) => (node, ctx, interator) => {
