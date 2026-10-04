@@ -5,6 +5,7 @@ import makeAttrs from './helpers/config'
 import { parseAttributes } from './helpers/parseAttributes'
 import { ParserPlugin, Node, nPara, AST, nText, nVerbatim } from './'
 import { ConfigScope } from './helpers/configPropagation'
+import { blockNameOf } from './helpers/blockName'
 
 /**
  *  Main transforms
@@ -112,9 +113,10 @@ const middle: ParserPlugin = opt => tree => {
       // code written without a marker is verbatim unless its own :allow names codes
       const ownCode = (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn })
       // a paragraph written without a marker reads codes as an explicit =para does;
-      // the text of a cell keeps the codes its table and row allow it
+      // the own text of a block, a term among them, and the text of a cell read the
+      // codes of the block they belong to
       const ownPara = (node, ctx) =>
-        inheritsAllow && allowOf(node) === undefined
+        blockNameOf(node, n) !== 'para' || (inheritsAllow && allowOf(node) === undefined)
           ? { ...node, content: transformer(node.content, ctx) }
           : transformerBlocks(node, { ...ctx, allowedIn })
       const transformer = makeTransformer({
