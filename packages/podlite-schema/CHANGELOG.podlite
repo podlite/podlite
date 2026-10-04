@@ -60,7 +60,7 @@
 
 =item html output shows the caption of a table of contents, with the markup written in it and a hidden word hidden, and the wrapper of the table is written with C<class> rather than C<className>. C<tocTitleText> gives the caption of a tree that carries only the C<title> string, hidden as a whole when it holds a C<G> code
 
-=item C<=table file:…> is reported with the code C<table-source-deferred>: the tree holds the address of the source and none of its rows
+=item C<=table file:...> is reported with the code C<table-source-deferred>: the tree holds the address of the source and none of its rows
 
 =item a table whose data source was read but holds no rows is reported with the code C<table-source-empty>, apart from a source that could not be had
 
