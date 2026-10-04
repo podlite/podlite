@@ -111,10 +111,10 @@ const middle: ParserPlugin = opt => tree => {
       const inner = { ...ctx, allowedIn, allowFromTable: passesAllow }
       // code written without a marker is verbatim unless its own :allow names codes
       const ownCode = (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn })
-      // a paragraph written without a marker reads the codes of the block around it
-      // unless it was given an :allow of its own
+      // a paragraph written without a marker reads codes as an explicit =para does;
+      // the text of a cell keeps the codes its table and row allow it
       const ownPara = (node, ctx) =>
-        allowOf(node) === undefined
+        inheritsAllow && allowOf(node) === undefined
           ? { ...node, content: transformer(node.content, ctx) }
           : transformerBlocks(node, { ...ctx, allowedIn })
       const transformer = makeTransformer({

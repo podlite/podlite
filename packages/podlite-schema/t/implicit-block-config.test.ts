@@ -144,6 +144,11 @@ describe('a paragraph and code written without a marker render with their settin
     expect(out).toContain('my <strong>x</strong> I&lt;y&gt;;')
   })
 
+  it('a paragraph in an item reads codes as an explicit para in the same item does', () => {
+    const out = html(pod('=begin item :allow<I>\nB<x> I<y>\n\n=para B<x> I<y>\n=end item'))
+    expect(out.match(/<strong>x<\/strong> <em>y<\/em>/g)).toHaveLength(2)
+  })
+
   it('a paragraph in an item given its own :allow reads those codes only', () => {
     const out = html(pod('=config para :allow<B>\n\n=begin item :allow<I>\nB<bold> I<italic>\n=end item'))
     expect(out).toContain('<strong>bold</strong> I&lt;italic&gt;')
