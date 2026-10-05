@@ -10,6 +10,7 @@ import { attrValueDroppedRule } from './attr-value-dropped'
 import { tableShapeRule } from './table-shape'
 import { deadDefinitionsRule } from './dead-definitions'
 import { includeResolvesRule } from './include-resolves'
+import { directiveNamedBlockRule, imageNamedBlockRule } from './named-blocks'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -23,4 +24,6 @@ export const DEFAULT_RULES: Rule[] = [
   tableShapeRule,
   deadDefinitionsRule,
   includeResolvesRule,
+  directiveNamedBlockRule,
+  imageNamedBlockRule,
 ]

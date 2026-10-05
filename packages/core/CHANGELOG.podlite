@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<lint> warns about a block named C<=Include>, C<=Set>, C<=Config> or C<=Alias>, which is a named block and not the directive (rule C<directive-named-block>), and about C<=Image>, which the specification writes as C<=picture> (rule C<image-named-block>); each rule can be turned off on its own
+
 =item C<assembleIncludes> takes C<reportCycles>: an include whose path names a source already on the way in is then reported as C<cycle> even when it loses no C<=set>; a mask that finds the file it is written in still passes it by without a word
 
 =head1 0.0.84
