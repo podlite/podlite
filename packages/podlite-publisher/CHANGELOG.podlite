@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> the include plugin assembles C<=include> with the assembler of C<podlite>. The blocks an include finds take the place of the directive, and no C<include> node is left around them. They are read from the text of their source, with the settings in effect where the directive stands, and the includes inside them are assembled as well. The plugin takes C<catalogue>, the records the site read before the plugins ran: an include finds its source there, as well as among the documents plugins make on the way. Without it the plugin says so and looks among the records at hand. A relative path in a C<file:> source is resolved from the file the directive is written in; before, the source was the record whose path ended with the written one. A C<doc:> name that two documents answer to resolves to neither, and the warning names both. With C<bounds>, a path written in one of those directories does not lead out of it. A warning names the file and the line of the directive
+
+=item a C<=set> before an include that brings no block reaches the next block
+
+=item C<=Include> is no longer read as C<=include>: by the specification it is a named block. The lint of C<podlite> warns about it
+
 =head1 0.0.52
 
 =item a record keeps the text it was read from: C<recordSource> returns the text, the file name and the type given for it, C<recordOrigin> returns the same for a record the pubdate plugin cut out of a file, and C<isParsedTree> tells whether the tree is still the one that was parsed. C<parseText> parses a given text as a file of that name is read. The source is held under a symbol key, so it is absent from JSON and from C<Object.keys>, and present when a record is printed or compared deeply

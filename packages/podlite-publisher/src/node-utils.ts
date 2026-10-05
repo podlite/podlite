@@ -144,7 +144,7 @@ export function parseFiles(path: string) {
     .filter(Boolean)
   return allFiles as pubRecord[]
 }
-const PARSER_TYPES = {
+export const PARSER_TYPES = {
   MARKDOWN: 'markdown' as const,
   PODLITE: 'podlite' as const,
   DEFAULT: 'default' as const,

@@ -1,116 +1,60 @@
-import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, makeInterator, PodNode } from '@podlite/schema'
+import * as path from 'path'
+import { getFromTree } from '@podlite/schema'
+import { assembleIncludes, podlite, readerFor } from 'podlite'
+import type { IncludeProblem } from 'podlite'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { applySetToFirst, ConfigItem, outermost, SelectorError } from '@podlite/schema'
-import { parseSelector, runSelector } from './shared'
+import { catalogueOf, idOfFile } from './catalogue'
 
-// A selector whose source, address or operand does not resolve brings nothing
-// in, and says so once, naming the =set assignments lost with it.
-const select = (selector: string, recs: publishRecord[], lost = '') => {
-  // a selector that is not read, or a scheme not resolved here, finds nothing
-  // without saying why
-  const parsed = parseSelector(selector)
-  if (!parsed) {
-    console.warn(`[plugin: resolve ] selector ${selector} cannot be read${lost}`)
-    return null
-  }
-  if (parsed.scheme && parsed.scheme !== 'doc' && parsed.scheme !== 'file') {
-    console.warn(`[plugin: resolve ] selector ${selector}: scheme ${parsed.scheme}: is not supported${lost}`)
-    return null
-  }
-  try {
-    return runSelector(selector, recs)
-  } catch (e) {
-    if (!(e instanceof SelectorError)) throw e
-    console.warn(`[plugin: resolve ] selector ${selector} cannot be read: ${e.message}${lost}`)
-    return null
-  }
+export type IncludeResolveOptions = {
+  // the records the site read before the plugins ran, mounted sources among them:
+  // what an include can bring
+  catalogue?: publishRecord[]
+  // directories a path written inside one of them does not lead out of
+  bounds?: string[]
 }
 
-const names = (set: ConfigItem[]): string => set.map(c => c.name).join(', ')
-
-// The =set assignments written before an include go to the first block it
-// brings; once placed or lost, the directive no longer carries them. When the
-// include brings no block they stay without a target: carrying them on to the
-// next block is not done here, nor through an include inside what was brought.
-const assignments = (node: any) => {
-  const set: ConfigItem[] = node.set || []
-  const { set: _, ...rest } = node
-  const lost = set.length ? `; =set assignments not applied: ${names(set)}` : ''
-  const place = (blocks: PodNode[]): PodNode[] => {
-    if (!set.length) return blocks
-    const applied = applySetToFirst(blocks, set, { mode: 'include' })
-    if (applied.outcome !== 'block') {
-      console.warn(`[plugin: resolve ] =set before =include has no target block: ${names(set)}`)
-    }
-    return applied.outcome === 'block' ? applied.nodes : blocks
-  }
-  return { node: rest, lost, place }
+// Where a problem was met: the directive it was found at, its file from the
+// working directory when absolute.
+export const describeProblem = (problem: IncludeProblem): string => {
+  const at = problem.chain[problem.chain.length - 1]
+  const line = at?.location ? `:${at.location.start.line}` : ''
+  const file = at ? (path.isAbsolute(at.file) ? path.relative(process.cwd(), at.file) : at.file) : '<document>'
+  return `${file}${line}: ${problem.message}`
 }
-const plugin = (): PodliteWebPlugin => {
+
+const say = (problem: IncludeProblem) => console.warn(`[plugin: resolve ] ${describeProblem(problem)}`)
+
+// The blocks an include finds take the place of the directive, read from the
+// text of their source with the settings in effect where the directive stands.
+const plugin = (options: IncludeResolveOptions = {}): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
-  const docsMap = new Map()
   const onExit = ctx => ({ ...ctx, ...outCtx })
-  const processNode = (node: PodNode, recs: publishRecord[]) => {
-    const rules = {
-      // TODO: remove 'Include' due to duplicate to 'include'
-      Include: written => {
-        const { node, lost, place } = assignments(written)
-        const { content } = node
-        const selector = getTextContentFromNode(content).trim()
-        console.warn(`[include] start resolve selector: ${selector}`)
-        if (selector) {
-          // try to resolve selector
-          const result = select(selector, recs, lost)
-          if (!result) return node
-          const [block] = result
-          if (typeof block === 'object' && !('file' in block)) {
-            const updated = { content: place([block as PodNode])[0] }
-            return { ...node, ...updated }
-          }
-          if (!block) {
-            console.warn(`[plugin: resolve ] selector ${selector} not found`)
-            place([])
-          }
-        }
-        return node
-      },
-      include: written => {
-        const { node, lost, place } = assignments(written)
-        const { content } = node
-        const selector = getTextContentFromNode(content).trim()
-        console.warn(`[include] start resolve selector: ${selector}`)
-        if (selector) {
-          const result = select(selector, recs, lost)
-          if (!result) return node
-          const blocks: PodNode[] = []
-          for (const item of result) {
-            if (typeof item === 'object' && item !== null && !('file' in item)) {
-              blocks.push(item as PodNode)
-            }
-          }
-          if (blocks.length > 0) {
-            return { ...node, content: place(outermost(blocks)) }
-          }
-          console.warn(`[plugin: resolve ] selector ${selector} not found`)
-          place([])
-        } else if (lost) {
-          console.warn(`[plugin: resolve ] include selector cannot be read: (empty)${lost}`)
-        }
-        return node
-      },
-    }
-    return makeInterator(rules)(node, {})
-  }
+  const read = readerFor(podlite({ importPlugins: true }))
+  const catalogue = catalogueOf(options.catalogue ?? [], { bounds: options.bounds, parse: read })
   const onProcess = (recs: publishRecord[]) => {
-    // convert all doc: links to file:: links
-    const docsWithIncludesResolves = recs.map(item => {
-      const node = processNode(item.node, recs)
-      //   const node = item.node
-      return { ...item, node }
+    if (!options.catalogue) {
+      console.warn(
+        '[plugin: resolve ] no catalogue of the site is given; an include is looked for among the records at hand',
+      )
+    }
+    // a document a plugin made on the way is a source too
+    catalogue.add(recs)
+    return recs.map(record => {
+      if (!getFromTree(record.node, 'include').length) return record
+      const self = catalogue.idOf(record)
+      const node = assembleIncludes(record.node, {
+        sources: catalogue.sources,
+        context: path.dirname(self ?? idOfFile(record.file)),
+        parse: read,
+        file: record.file,
+        self,
+        reportCycles: true,
+        onError: say,
+        onWarning: say,
+      })
+      return { ...record, node }
     })
-
-    return docsWithIncludesResolves
   }
 
   return [onProcess, onExit]

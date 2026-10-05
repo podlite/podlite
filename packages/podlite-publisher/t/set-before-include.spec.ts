@@ -14,7 +14,7 @@ Text.
 
 const run = (...files: Array<[string, string]>) => {
   const state = files.map(([name, text]) => processFile(name, text))
-  const config: PluginConfig = { plugin: resolvePlugin(), includePatterns: '.*' }
+  const config: PluginConfig = { plugin: resolvePlugin({ catalogue: state }), includePatterns: '.*' }
   const [res] = processPlugin(config, state, { testing: true })
   return { state, res }
 }
@@ -71,7 +71,8 @@ describe('=set before =include in the publisher', () => {
     const said = warn.mock.calls.map(c => String(c[0]))
     warn.mockRestore()
     expect(headIds(res[0].node)).toEqual([['After', undefined]])
-    expect(said.some(s => /cannot be read: .*; =set assignments not applied: id$/.test(s))).toBe(true)
+    expect(said).toHaveLength(1)
+    expect(said[0]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:4: .*Absent; =set assignments not applied: id$/)
   })
 
   it('does not pass it on when the scheme is not one the publisher reads, and says so once', () => {
@@ -80,10 +81,12 @@ describe('=set before =include in the publisher', () => {
     const said = warn.mock.calls.map(c => String(c[0])).filter(s => s.startsWith('[plugin: resolve ]'))
     warn.mockRestore()
     expect(headIds(res[0].node)).toEqual([['After', undefined]])
-    expect(said).toEqual(['[plugin: resolve ] selector https:foo: scheme https: is not supported; =set assignments not applied: id'])
+    expect(said).toEqual([
+      '[plugin: resolve ] src/main.podlite:4: include scheme is not supported: https:; =set assignments not applied: id',
+    ])
   })
 
-  it('warns that the assignment has no target when the first placed block is an include it does not resolve', () => {
+  it('gives it to the first block of an include the found file holds, once that include is in', () => {
     const warn = quiet()
     const nested = `
 =for NAME :id<Nested>
@@ -93,18 +96,21 @@ Nested
 
 =head1 Later
 `
-    run(
+    const { res } = run(
       ['src/part.podlite', part],
       ['src/nested.podlite', nested],
-      ['src/main.podlite', '=pod\n\n=set :id<x>\n=include doc:Nested | include, head1\n'],
+      ['src/main.podlite', '=pod\n\n=set :id<x>\n=include doc:Nested | head1\n'],
     )
     const said = warn.mock.calls.map(c => String(c[0]))
     warn.mockRestore()
-    expect(said).toContain('[plugin: resolve ] =set before =include has no target block: id')
+    expect(headIds(res[2].node)).toEqual([
+      ['Included', 'x'],
+      ['Later', undefined],
+    ])
+    expect(said).toEqual([])
   })
 
-  // the norm carries it on to the next block; the publisher does not yet (T687)
-  test.failing('passes it on to the next block when the include brings none', () => {
+  it('passes it on to the next block when the include brings none', () => {
     const warn = quiet()
     const { res } = run(
       ['src/part.podlite', part],

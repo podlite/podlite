@@ -30,6 +30,10 @@ test
 `
 const tctx = { testing: true }
 
+// the records the site read are the catalogue an include looks in
+const resolve = (state: publishRecord[]) =>
+  processPlugin({ plugin: resolvePlugin({ catalogue: state }), includePatterns: '.*' }, state, tctx)
+
 it('listfiles comp: parse', () => {
   const state = [processFile('src/file1.podlite', file1), processFile('src/file2.podlite', file2)]
   const [block] = runSelector('doc:File1#data1', state)
@@ -39,11 +43,7 @@ it('listfiles comp: parse', () => {
 
   const resT = getTextContentFromNode(block as PodNode).trim()
   expect(resT).toBe('TEST')
-  const config: PluginConfig = {
-    plugin: resolvePlugin(),
-    includePatterns: '.*',
-  }
-  const [res, ctx] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   const [content] = getFromTree(res[1].node, 'data').map(n => JSON.parse(getTextContentFromNode(n)))
   expect(content).toMatchInlineSnapshot(`
     Object {
@@ -65,11 +65,7 @@ data
 =end test
 `
   const state = [processFile('src/file1.podlite', file1), processFile('src/tests.podlite', tests)]
-  const config: PluginConfig = {
-    plugin: resolvePlugin(),
-    includePatterns: '.*',
-  }
-  const [res] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   expect(getFromTree(res[1].node, 'data')).toHaveLength(0)
 })
 
@@ -94,7 +90,7 @@ Third term
 `
 const glossaryFile = `
 =head1 Index
-=include file:src/terms.podlite | defn
+=include file:terms.podlite | defn
 `
 
 it('runSelector: file:<path> | defn extracts all defn blocks', () => {
@@ -123,13 +119,9 @@ it('runSelector: comma-separated block names', () => {
   expect(blocks.length).toBeGreaterThanOrEqual(4)
 })
 
-it('include-resolve-plugin: inlines defn blocks from file', () => {
+it('include-resolve-plugin: inlines defn blocks from a file named from the file of the directive', () => {
   const state = [processFile('src/terms.podlite', termsFile), processFile('src/glossary.podlite', glossaryFile)]
-  const config: PluginConfig = {
-    plugin: resolvePlugin(),
-    includePatterns: '.*',
-  }
-  const [res] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   const glossary = res.find(r => r.file === 'src/glossary.podlite')
   const defns = getFromTree(glossary!.node, 'defn')
   expect(defns).toHaveLength(3)
@@ -211,18 +203,14 @@ it('runSelector: glob with no matches returns []', () => {
 })
 
 it('include-resolve-plugin: glob inlines defn blocks from multiple files', () => {
-  const glossary = `=head1 All terms\n=include file:**/term-*.podlite | defn\n`
+  const glossary = `=head1 All terms\n=include file:../**/term-*.podlite | defn\n`
   const state = [
     processFile('00-DayByDay/2026/04/term-adr.podlite', termAdr),
     processFile('00-DayByDay/2026/03/term-defn.podlite', termDefn),
     processFile('00-DayByDay/2026/03/term-article.podlite', termArticle),
     processFile('src/glossary.podlite', glossary),
   ]
-  const config: PluginConfig = {
-    plugin: resolvePlugin(),
-    includePatterns: '.*',
-  }
-  const [res] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   const glossaryRec = res.find(r => r.file === 'src/glossary.podlite')
   const defns = getFromTree(glossaryRec!.node, 'defn')
   expect(defns).toHaveLength(3)
@@ -266,7 +254,7 @@ it('runSelector: *[:applies-nfr~<N004>] matches blocks whose list attr contains 
 })
 
 it('include-resolve-plugin: predicate selector inlines only matching blocks', () => {
-  const index = `=head1 NFR N004 rules\n=include file:./rules/*.podlite | *[:applies-nfr~<N004>]\n`
+  const index = `=head1 NFR N004 rules\n=include file:../rules/*.podlite | *[:applies-nfr~<N004>]\n`
   const state = [
     processFile('rules/a.podlite', ruleN001N004),
     processFile('rules/b.podlite', ruleN002),
@@ -274,11 +262,7 @@ it('include-resolve-plugin: predicate selector inlines only matching blocks', ()
     processFile('rules/d.podlite', ruleNoNfr),
     processFile('src/index.podlite', index),
   ]
-  const config: PluginConfig = {
-    plugin: resolvePlugin(),
-    includePatterns: '.*',
-  }
-  const [res] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   const indexRec = res.find(r => r.file === 'src/index.podlite')
   const defns = getFromTree(indexRec!.node, 'defn')
   const ids = defns.map(d => getNodeId(d, {}))
@@ -297,39 +281,39 @@ it('an include whose operand of in does not resolve is left in place', () => {
 =include doc:File1 | data[ :x(in file:none.podlite | defn) ]
 `
   const state = [processFile('src/file1.podlite', file1), processFile('src/doc.podlite', doc)]
-  const config: PluginConfig = { plugin: resolvePlugin(), includePatterns: '.*' }
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const [res] = processPlugin(config, state, tctx)
+  const [res] = resolve(state)
   warn.mockRestore()
   expect(getFromTree(res[1].node, 'data')).toEqual([])
 })
 
 it('include-resolve-plugin: places a heading inside a found pod once', () => {
   const part = '=begin pod\n=head1 Inside\n=end pod\n'
-  const main = '=head1 Main\n\n=include file:src/part.podlite | pod, head1\n'
+  const main = '=head1 Main\n\n=include file:part.podlite | pod, head1\n'
   const state = [processFile('src/part.podlite', part), processFile('src/main.podlite', main)]
-  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
+  const [res] = resolve(state)
   const placed = res.find(r => r.file === 'src/main.podlite')
   expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Main', 'Inside'])
 })
 
-it('include-resolve-plugin: a source or address that does not resolve is left in place with one warning', () => {
+it('include-resolve-plugin: a source or address that does not resolve says so once, with its file and line', () => {
   const main = '=head1 Main\n\n=include doc:Nope | para\n\n=include doc:File1#nope\n'
   const state = [processFile('src/file1.podlite', file1), processFile('src/main.podlite', main)]
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
-  const said = warn.mock.calls.map(c => String(c[0])).filter(m => !m.startsWith('[include] start'))
+  const [res] = resolve(state)
+  const said = warn.mock.calls.map(c => String(c[0]))
   warn.mockRestore()
   expect(said).toHaveLength(2)
-  expect(said.every(m => m.includes('cannot be read'))).toBe(true)
+  expect(said[0]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:3: .*Nope/)
+  expect(said[1]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:5: .*nope/)
   expect(res.find(r => r.file === 'src/main.podlite')).toBeDefined()
 })
 
 it('include-resolve-plugin: finds an address by the text of a heading', () => {
   const part = '=head1 Overview\n\nText.\n'
-  const main = '=include file:src/part.podlite#Overview\n'
+  const main = '=include file:part.podlite#Overview\n'
   const state = [processFile('src/part.podlite', part), processFile('src/main.podlite', main)]
-  const [res] = processPlugin({ plugin: resolvePlugin(), includePatterns: '.*' }, state, tctx)
+  const [res] = resolve(state)
   const placed = res.find(r => r.file === 'src/main.podlite')
   expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Overview'])
 })
