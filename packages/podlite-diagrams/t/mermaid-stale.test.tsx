@@ -2,6 +2,9 @@
  * @jest-environment jsdom
  */
 
+// a module of its own, so its helpers do not collide with those of the files beside it
+export {}
+
 // While a redraw is in flight the previous diagram must be hidden but still
 // occupy its space. Each case drives the render promise by hand to catch the
 // component mid-flight.

@@ -2,6 +2,9 @@
  * @jest-environment jsdom
  */
 
+// a module of its own, so its helpers do not collide with those of the files beside it
+export {}
+
 // The stub in jest.config.js resolves `mermaid` to a module that renders an
 // empty diagram, so every case puts its own module in front of it. React has to
 // come from the same registry as the component, or its hooks are null.

@@ -2,6 +2,9 @@
  * @jest-environment jsdom
  */
 
+// a module of its own, so its helpers do not collide with those of the files beside it
+export {}
+
 // Each case resets the module registry so a different `mermaid` can be put in
 // front of the loader. React has to come from that same registry, or the
 // component ends up with a second copy of it and its hooks are null.
