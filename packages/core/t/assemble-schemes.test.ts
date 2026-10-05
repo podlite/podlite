@@ -44,7 +44,7 @@ const byName = (files: Record<string, string>) => {
   return { sources, located, reads }
 }
 
-const assembled = (text: string, sources: Sources, self = '/lib/main.podlite') => {
+const assembled = (text: string, sources: Sources, self = '/lib/main.podlite', reportCycles = false) => {
   const problems: IncludeProblem[] = []
   const tree = assembleIncludes(read(text), {
     sources,
@@ -52,6 +52,7 @@ const assembled = (text: string, sources: Sources, self = '/lib/main.podlite') =
     self,
     file: self,
     parse: read,
+    reportCycles,
     onError: problem => problems.push(problem),
     onWarning: problem => problems.push(problem),
   })
@@ -299,6 +300,27 @@ describe('what a provider that names schemes leaves as it was', () => {
     const files = { ...library, '/lib/main.podlite': '=begin pod\n=NAME Main\n\n=include doc:Main\n=end pod\n' }
     const { sources, reads } = byName(files)
     expect([assembled(files['/lib/main.podlite'], sources).problems, reads]).toEqual([[], []])
+  })
+
+  it('reports a cycle that loses no =set when asked to', () => {
+    const main = '=begin pod\n=NAME Main\n\n=include doc:Main\n=end pod\n'
+    const { sources, reads } = byName({ ...library, '/lib/main.podlite': main })
+    const { problems } = assembled(main, sources, '/lib/main.podlite', true)
+    expect([problems.map(problem => problem.kind), reads]).toEqual([['cycle'], []])
+  })
+
+  it('reports a file that includes itself by path when asked to', () => {
+    const main = '=begin pod\n=para Own text.\n\n=include file:./main.podlite\n=end pod\n'
+    const sources = sourcesFromFiles({ ...library, '/lib/main.podlite': main })
+    const { tree, problems } = assembled(main, sources, '/lib/main.podlite', true)
+    expect([problems.map(problem => problem.kind), count('para', tree)]).toEqual([['cycle'], 1])
+  })
+
+  it('passes by the file a mask is written in, even when asked to report cycles', () => {
+    const main = '=begin pod\n=para Own text.\n\n=include file:./main*.podlite\n=end pod\n'
+    const sources = sourcesFromFiles({ ...library, '/lib/main.podlite': main })
+    const { tree, problems } = assembled(main, sources, '/lib/main.podlite', true)
+    expect([problems, count('para', tree)]).toEqual([[], 1])
   })
 })
 

@@ -165,6 +165,8 @@ export type AssembleOptions = {
   onCopy?: (from: object, to: object) => void
   // a text that fails to parse is a source that cannot be had, not an exception
   tolerant?: boolean
+  // a path that names a source already on the way in is reported even when it loses no =set
+  reportCycles?: boolean
 }
 
 export const isWarning = (problem: IncludeProblem): boolean =>
@@ -476,6 +478,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // the message a problem had before assignments were named in it, and the
   // names, so that a second loss joins the first
   const lost = new WeakMap<IncludeProblem, { message: string; set: ConfigItem[] }>()
+  // a mask that finds the file it is written in passes it by, and says so only when =set is lost
+  const maskCycles = new WeakSet<IncludeProblem>()
   const lose = (entries: Held[], set: ConfigItem[]): void => {
     const final = entries[entries.length - 1].problem
     const before = lost.get(final) ?? { message: final.message, set: [] }
@@ -566,7 +570,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           hold([{ problem, shown: false, outside: { step, written: resolved.written, sources: resolved.outside } }])
         }
         if (failure) {
-          const entries = failure.map(problem => ({ problem, shown: problem.kind !== 'cycle' }))
+          const entries = failure.map(problem => ({
+            problem,
+            shown: problem.kind !== 'cycle' || (opts.reportCycles === true && !maskCycles.has(problem)),
+          }))
           if (set.length) lose(entries, set)
           hold(entries)
           failures.push(entries)
@@ -1051,12 +1058,14 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       }
       if (unread.length) return done([], unread)
       if (cyclic) {
-        return fail({
+        const problem: IncludeProblem = {
           kind: 'cycle',
           target: selector,
           message: `include brings nothing: ${parsed.document} is already being included`,
           chain: here,
-        })
+        }
+        if (masked) maskCycles.add(problem)
+        return fail(problem)
       }
       return done([])
     }

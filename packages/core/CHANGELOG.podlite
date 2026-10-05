@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<assembleIncludes> takes C<reportCycles>: an include whose path names a source already on the way in is then reported as C<cycle> even when it loses no C<=set>; a mask that finds the file it is written in still passes it by without a word
+
 =head1 0.0.84
 
 =item a C<=set> before C<=include> reaches a paragraph or code written without a marker that the include brings first, and an include failing after such a paragraph no longer reports the assignment lost
