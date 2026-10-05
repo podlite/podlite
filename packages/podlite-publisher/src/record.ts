@@ -1,7 +1,7 @@
 import { PodliteDocument, PodNode } from '@podlite/schema'
 
-export { recordSource, recordOrigin, isParsedTree } from './source'
-export type { RecordSource } from './source'
+export { recordSource, recordOrigin, isParsedTree, nodeOrigin } from './source'
+export type { RecordSource, NodeOrigin } from './source'
 
 export type pubRecord = {
   type: string

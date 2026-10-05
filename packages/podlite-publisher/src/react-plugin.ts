@@ -74,6 +74,10 @@ export default {}
         return
       },
       React: (node, ctx, interator) => {
+        // the reader of the record has read the body in its place; a body it left
+        // as text, its lines not found in the file, is read here as before
+        const raw = Array.isArray(node.content) && node.content.every(part => part && part.type === 'verbatim')
+        if (!raw) return { ...node, content: interator(node.content, ctx) }
         const text = getTextContentFromNode(node)
         const doc: PodliteDocument = makeAstFromSrc(text)
         return { ...node, content: [interator(doc.content, ctx)] }

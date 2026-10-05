@@ -14,10 +14,10 @@ import path from 'path'
 import glob from 'glob'
 import { getAllArticles, isExistsPubdate, makeAstFromSrc } from './shared'
 import { parseMd } from '@podlite/markdown'
-import { podlite } from 'podlite'
 import matter from 'gray-matter'
 import { pubRecord, publishRecord } from './record'
 import { withSource } from './source'
+import { readRecordText } from './reading'
 
 export const getPathToOpen = (filepath, parentDocPath) => {
   const isRemoteReg = new RegExp(/^(https?|ftp):/)
@@ -217,22 +217,17 @@ export function parseText(filePath: string, text: string, mime?: MimeTypes) {
   // check extension of file and parse it deepnds on mime type
 
   const parser_type = getParserTypeforFile(filePath, mime)
+  // the reader an include reads the texts it brings with, the body of =React read in its place
   const typeToParserMap: { [key: string]: (src: string) => PodliteDocument } = {
-    [PARSER_TYPES.PODLITE]: (src: string) => {
-      const podlite_processor = podlite({ importPlugins: true }).use({})
-      const tree = podlite_processor.parse(src, { skipChain: 0, podMode: 1 })
-      return podlite_processor.toAstResult(tree).interator as PodliteDocument
-    },
+    [PARSER_TYPES.PODLITE]: (src: string) =>
+      readRecordText(src, filePath, undefined, { format: 'podlite' }) as PodliteDocument,
     //@ts-ignore TODO: fix this
     [PARSER_TYPES.MARKDOWN]: (src: string) => {
       const { content } = matter(src)
       return parseMd(content)
     },
-    [PARSER_TYPES.DEFAULT]: (src: string) => {
-      const podlite_processor = podlite({ importPlugins: true }).use({})
-      const tree = podlite_processor.parse(src, { skipChain: 0, podMode: 0 })
-      return podlite_processor.toAstResult(tree).interator as PodliteDocument
-    },
+    [PARSER_TYPES.DEFAULT]: (src: string) =>
+      readRecordText(src, filePath, undefined, { format: 'default' }) as PodliteDocument,
   }
   return typeToParserMap[parser_type](text)
 }

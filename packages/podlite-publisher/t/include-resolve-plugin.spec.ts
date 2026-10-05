@@ -9,7 +9,7 @@ import {
   runSelector,
 } from '../src'
 import { processFile } from '../src/node'
-import resolvePlugin from '../src/include-resolve-plugin'
+import resolvePlugin, { IncludeError } from '../src/include-resolve-plugin'
 
 const file1 = `
 =for NAME  :id<File1>
@@ -33,6 +33,17 @@ const tctx = { testing: true }
 // the records the site read are the catalogue an include looks in
 const resolve = (state: publishRecord[]) =>
   processPlugin({ plugin: resolvePlugin({ catalogue: state }), includePatterns: '.*' }, state, tctx)
+
+// the lines the build stops with
+const stopped = (state: publishRecord[]): string[] => {
+  try {
+    resolve(state)
+  } catch (e) {
+    if (e instanceof IncludeError) return e.problems
+    throw e
+  }
+  throw new Error('the build did not stop')
+}
 
 it('listfiles comp: parse', () => {
   const state = [processFile('src/file1.podlite', file1), processFile('src/file2.podlite', file2)]
@@ -276,15 +287,14 @@ it('runSelector: defn[:!?applies-nfr] picks blocks without the attribute', () =>
   expect(getNodeId(blocks[0], {})).toBe('r4')
 })
 
-it('an include whose operand of in does not resolve is left in place', () => {
+it('an include whose operand of in does not resolve stops the build', () => {
   const doc = `
 =include doc:File1 | data[ :x(in file:none.podlite | defn) ]
 `
   const state = [processFile('src/file1.podlite', file1), processFile('src/doc.podlite', doc)]
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const [res] = resolve(state)
-  warn.mockRestore()
-  expect(getFromTree(res[1].node, 'data')).toEqual([])
+  const problems = stopped(state)
+  expect(problems).toHaveLength(1)
+  expect(problems[0]).toMatch(/^src\/doc\.podlite:2: .*none\.podlite/)
 })
 
 it('include-resolve-plugin: places a heading inside a found pod once', () => {
@@ -296,17 +306,13 @@ it('include-resolve-plugin: places a heading inside a found pod once', () => {
   expect(getFromTree(placed!.node, 'head1').map(h => getTextContentFromNode(h).trim())).toEqual(['Main', 'Inside'])
 })
 
-it('include-resolve-plugin: a source or address that does not resolve says so once, with its file and line', () => {
+it('include-resolve-plugin: a source or address that does not resolve stops the build, each named once with its file and line', () => {
   const main = '=head1 Main\n\n=include doc:Nope | para\n\n=include doc:File1#nope\n'
   const state = [processFile('src/file1.podlite', file1), processFile('src/main.podlite', main)]
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  const [res] = resolve(state)
-  const said = warn.mock.calls.map(c => String(c[0]))
-  warn.mockRestore()
-  expect(said).toHaveLength(2)
-  expect(said[0]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:3: .*Nope/)
-  expect(said[1]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:5: .*nope/)
-  expect(res.find(r => r.file === 'src/main.podlite')).toBeDefined()
+  expect(stopped(state)).toEqual([
+    'src/main.podlite:3: include target not found: Nope',
+    'src/main.podlite:5: include address not found: #nope in File1',
+  ])
 })
 
 it('include-resolve-plugin: finds an address by the text of a heading', () => {

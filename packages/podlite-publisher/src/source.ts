@@ -94,3 +94,27 @@ A tree changed in place still answers yes.
 =end pod
 */
 export const isParsedTree = (record: object): boolean => held(record)[sourceKey]?.parsed(held(record).node) ?? false
+
+// The file a node was written in, when an include brought it into a record: the
+// same key on every copy made by spreading the node, and absent from JSON.
+export const nodeOriginKey: unique symbol = Symbol.for('@podlite/publisher:node-origin/1')
+
+export type NodeOrigin = {
+  readonly file: string
+  // the directives the node came through inside the record, outermost first
+  readonly via?: string
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 nodeOrigin
+
+The file a node of a record was written in, when the include plugin knows it:
+the paths written in the node are resolved from that file. A node without one
+was written in the file of the record.
+
+=end pod
+*/
+export const nodeOrigin = (node: object): NodeOrigin | undefined =>
+  (node as { [nodeOriginKey]?: NodeOrigin })[nodeOriginKey]

@@ -2,7 +2,7 @@ import { getFromTree, getNodeId, getTextContentFromNode, makeAttrs, PodNode } fr
 import { processPlugin, publishRecord } from '../src'
 import { processFile } from '../src/node'
 import { recordOrigin, recordSource } from '../src/record'
-import resolvePlugin from '../src/include-resolve-plugin'
+import resolvePlugin, { IncludeError } from '../src/include-resolve-plugin'
 import pubdatePlugin from '../src/pubdate-plugin'
 
 const resolve = (records: publishRecord[], catalogue: publishRecord[] = records, bounds?: string[]) => {
@@ -11,6 +11,17 @@ const resolve = (records: publishRecord[], catalogue: publishRecord[] = records,
   const said = warn.mock.calls.map(c => String(c[0]))
   warn.mockRestore()
   return { res, said }
+}
+
+// the lines the build stops with
+const stopped = (records: publishRecord[], catalogue: publishRecord[] = records, bounds?: string[]): string[] => {
+  try {
+    resolve(records, catalogue, bounds)
+  } catch (e) {
+    if (e instanceof IncludeError) return e.problems
+    throw e
+  }
+  throw new Error('the build did not stop')
 }
 
 const texts = (node: unknown, name: string): string[] =>
@@ -76,11 +87,9 @@ describe('the catalogue of an include', () => {
       processFile('b/two.podlite', '=begin pod\n=NAME Same\n\n=para Two\n=end pod\n'),
       processFile('pages/main.podlite', '=begin pod\n=include doc:Same | para\n=end pod\n'),
     ]
-    const { res, said } = resolve(items)
-    expect(said).toHaveLength(1)
-    expect(said[0]).toContain('pages/main.podlite:2:')
-    expect(said[0]).toContain('more than one document is named Same: a/one.podlite, b/two.podlite')
-    expect(texts(res[2].node, 'para')).toEqual([])
+    expect(stopped(items)).toEqual([
+      'pages/main.podlite:2: include source cannot be resolved: doc:Same: more than one document is named Same: a/one.podlite, b/two.podlite',
+    ])
   })
 
   it('does not let a path written in a mounted file lead out of its mount', () => {
@@ -90,11 +99,11 @@ describe('the catalogue of an include', () => {
       processFile('site/page.podlite', '=begin pod\n=include file:../mounts/v3/t/a.podlite#case\n=end pod\n'),
       processFile('mounts/v3/t/a.podlite', caseIn('three')),
     ]
-    const { res, said } = resolve(items, items, ['mounts/v3'])
-    expect(texts(res[0].node, 'para')).toEqual([])
-    expect(said).toHaveLength(1)
-    expect(said[0]).toContain('leads out of')
-    expect(texts(res[2].node, 'para')).toEqual(['From three'])
+    expect(stopped(items, items, ['mounts/v3'])).toEqual([
+      'mounts/v3/Specification.pod6:2: include source cannot be resolved: file:../../site/secret.podlite: the path leads out of mounts/v3',
+    ])
+    const { res } = resolve(items.slice(1), items, ['mounts/v3'])
+    expect(texts(res[1].node, 'para')).toEqual(['From three'])
   })
 })
 

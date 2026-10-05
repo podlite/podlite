@@ -1,7 +1,7 @@
 import { getTextContentFromNode, PodNode } from '@podlite/schema'
 import { PluginConfig, processPlugin } from '../src'
 import { processFile } from '../src/node'
-import resolvePlugin from '../src/include-resolve-plugin'
+import resolvePlugin, { IncludeError } from '../src/include-resolve-plugin'
 
 const part = `
 =for NAME :id<Part>
@@ -35,6 +35,17 @@ const headIds = (node: any) =>
 
 const quiet = () => jest.spyOn(console, 'warn').mockImplementation(() => {})
 
+// the lines the build stops with
+const stopped = (...files: Array<[string, string]>): string[] => {
+  try {
+    run(...files)
+  } catch (e) {
+    if (e instanceof IncludeError) return e.problems
+    throw e
+  }
+  throw new Error('the build did not stop')
+}
+
 describe('=set before =include in the publisher', () => {
   it('gives the first placed block the assignment and leaves the source record unchanged', () => {
     const warn = quiet()
@@ -65,24 +76,15 @@ describe('=set before =include in the publisher', () => {
     expect(headIds(res[0].node)).toEqual([['Included', undefined]])
   })
 
-  it('does not pass it on when the include fails, and says so', () => {
-    const warn = quiet()
-    const { res } = run(['src/main.podlite', '=pod\n\n=set :id<x>\n=include doc:Absent | head1\n\n=head1 After\n'])
-    const said = warn.mock.calls.map(c => String(c[0]))
-    warn.mockRestore()
-    expect(headIds(res[0].node)).toEqual([['After', undefined]])
-    expect(said).toHaveLength(1)
-    expect(said[0]).toMatch(/^\[plugin: resolve \] src\/main\.podlite:4: .*Absent; =set assignments not applied: id$/)
+  it('stops the build when the include fails, naming the assignment it lost', () => {
+    expect(stopped(['src/main.podlite', '=pod\n\n=set :id<x>\n=include doc:Absent | head1\n\n=head1 After\n'])).toEqual(
+      ['src/main.podlite:4: include target not found: Absent; =set assignments not applied: id'],
+    )
   })
 
-  it('does not pass it on when the scheme is not one the publisher reads, and says so once', () => {
-    const warn = quiet()
-    const { res } = run(['src/main.podlite', '=pod\n\n=set :id<x>\n=include https:foo\n\n=head1 After\n'])
-    const said = warn.mock.calls.map(c => String(c[0])).filter(s => s.startsWith('[plugin: resolve ]'))
-    warn.mockRestore()
-    expect(headIds(res[0].node)).toEqual([['After', undefined]])
-    expect(said).toEqual([
-      '[plugin: resolve ] src/main.podlite:4: include scheme is not supported: https:; =set assignments not applied: id',
+  it('stops the build when the scheme is not one the publisher reads, and says so once', () => {
+    expect(stopped(['src/main.podlite', '=pod\n\n=set :id<x>\n=include https:foo\n\n=head1 After\n'])).toEqual([
+      'src/main.podlite:4: include scheme is not supported: https:; =set assignments not applied: id',
     ])
   })
 

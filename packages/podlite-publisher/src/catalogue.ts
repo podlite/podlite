@@ -14,7 +14,8 @@ same way. A path written in a C<file:> source is resolved from the directory of
 the file it is written in, a mask is matched against the files of the
 catalogue, and a C<doc:> source is the document whose C<=NAME> or C<=TITLE>
 answers to the name. A name two sources answer to resolves to neither, and the
-answer names both.
+answer names both. A name no document answers to yet, that the host says will be
+made later, is not known yet: an include of it is left for a later pass.
 
 =end pod
 */
@@ -46,6 +47,9 @@ export type CatalogueOptions = {
   bounds?: string[]
   // the tree of a text, for the names a document answers to
   parse?: (text: string, file: string) => unknown
+  // whether a name no document answers to yet is to be waited for: an include of
+  // it is then left in place
+  waits?: (name: string) => boolean
 }
 
 export type Catalogue = {
@@ -54,12 +58,16 @@ export type Catalogue = {
   add: (records: object[]) => void
   // the id of the file a record was read from, or cut out of
   idOf: (record: object) => string | undefined
+  // the ids of the documents that answer to a name
+  named: (name: string) => string[]
+  // the text of a source as an include reads it
+  textOf: (id: string) => string | undefined
 }
 
 export const idOfFile = (file: string): string => path.resolve(file)
 
 // a Markdown text is read without its front matter, as the record was
-const textOf = (source: RecordSource): string =>
+const readable = (source: RecordSource): string =>
   getParserTypeforFile(source.file, source.mime) === PARSER_TYPES.MARKDOWN ? matter(source.text).content : source.text
 
 export const catalogueOf = (records: object[] = [], options: CatalogueOptions = {}): Catalogue => {
@@ -76,8 +84,17 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
       const id = idOfFile(source.file)
       if (entries.has(id)) continue
       const own = recordSource(record) === source && isParsedTree(record)
-      entries.set(id, { id, source, tree: own ? (record as { node?: unknown }).node : undefined })
-      names = undefined
+      const entry = { id, source, tree: own ? (record as { node?: unknown }).node : undefined }
+      entries.set(id, entry)
+      if (names) index(names, entry)
+    }
+  }
+
+  const index = (into: Map<string, string[]>, entry: Entry) => {
+    const tree = entry.tree ?? options.parse?.(readable(entry.source), entry.source.file)
+    if (!tree) return
+    for (const name of new Set(getDocIDs({ file: entry.source.file, node: tree as any }))) {
+      into.set(name, [...(into.get(name) ?? []), entry.id])
     }
   }
 
@@ -85,13 +102,7 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
   const namesOf = (): Map<string, string[]> => {
     if (names) return names
     names = new Map()
-    for (const entry of entries.values()) {
-      const tree = entry.tree ?? options.parse?.(textOf(entry.source), entry.source.file)
-      if (!tree) continue
-      for (const name of new Set(getDocIDs({ file: entry.source.file, node: tree as any }))) {
-        names.set(name, [...(names.get(name) ?? []), entry.id])
-      }
-    }
+    for (const entry of entries.values()) index(names, entry)
     return names
   }
 
@@ -111,7 +122,12 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
     const inside = (id: string) => bound === undefined || isUnder(id, bound)
     if (plain || !isMask(written)) {
       const id = path.resolve(dir, written)
-      if (!inside(id)) return { masked: false, sources: [], failed: `the path leads out of ${bound}` }
+      if (!inside(id))
+        return {
+          masked: false,
+          sources: [],
+          failed: `the path leads out of ${path.relative(process.cwd(), bound) || '.'}`,
+        }
       return { masked: false, sources: [sourceAt(id, written)] }
     }
     const pattern = path.resolve(dir, written)
@@ -123,8 +139,9 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
     }
   }
 
-  const locateDoc = (written: string): Located => {
+  const locateDoc = (written: string): Located | undefined => {
     const ids = namesOf().get(written) ?? []
+    if (!ids.length && options.waits?.(written)) return undefined
     if (ids.length > 1) {
       const files = ids.map(id => entries.get(id)!.source.file).join(', ')
       return { masked: false, sources: [], failed: `more than one document is named ${written}: ${files}` }
@@ -138,7 +155,7 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
       scheme === 'doc' ? locateDoc(written) : locateFile(written, context, plain),
     read: source => {
       const entry = entries.get(source.id)
-      return entry ? textOf(entry.source) : null
+      return entry ? readable(entry.source) : null
     },
   }
 
@@ -147,6 +164,12 @@ export const catalogueOf = (records: object[] = [], options: CatalogueOptions = 
     return source ? idOfFile(source.file) : undefined
   }
 
+  const named = (name: string): string[] => namesOf().get(name) ?? []
+  const textOf = (id: string): string | undefined => {
+    const entry = entries.get(id)
+    return entry ? readable(entry.source) : undefined
+  }
+
   add(records)
-  return { sources, add, idOf }
+  return { sources, add, idOf, named, textOf }
 }

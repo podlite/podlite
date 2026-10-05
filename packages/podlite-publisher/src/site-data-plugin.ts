@@ -14,6 +14,10 @@ export function buildStylesContent(theme: string | undefined, globalStylesPath: 
   return imports.map(i => `\n            ${i}\n        `).join('')
 }
 
+// The document this plugin makes, by the name an include finds it under. It is
+// made after the other plugins ran, so an include of it waits for it.
+export const SITE_DATA_DOCUMENT = 'PLUGIN_DATA'
+
 export interface SiteInfo {
   redirects: { source: string; destination: string; statusCode: number }[]
   postsPerPage: number
@@ -166,7 +170,7 @@ const plugin = ({
 
     const storeFile = `
 =begin pod
-=for NAME  :id<PLUGIN_DATA>
+=for NAME  :id<${SITE_DATA_DOCUMENT}>
 SITE DATA
 =begin data :id<articles>
 ${articlesJSON}
