@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.52
+
 =item a record keeps the text it was read from: C<recordSource> returns the text, the file name and the type given for it, C<recordOrigin> returns the same for a record the pubdate plugin cut out of a file, and C<isParsedTree> tells whether the tree is still the one that was parsed. C<parseText> parses a given text as a file of that name is read. The source is held under a symbol key, so it is absent from JSON and from C<Object.keys>, and present when a record is printed or compared deeply
 
 =item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won

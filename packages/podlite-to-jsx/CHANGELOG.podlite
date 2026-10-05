@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.75
+
 =item an explicit C<=code> block renders its C<:nested>, as in HTML and Markdown
 
 =item a paragraph and code written without a marker render the C<:nested> and C<:masked> that C<=config> or C<=set> gave them, the paragraph of a definition too. An C<:id> given this way is written on the paragraph itself; an explicit C<=para> writes it on an element around the paragraph

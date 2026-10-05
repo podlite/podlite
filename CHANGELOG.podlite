@@ -2,6 +2,285 @@
 
 =head1 Upcoming
 
+=head1 0.0.91
+
+
+=head2 podlite
+
+=item a C<=set> before C<=include> reaches a paragraph or code written without a marker that the include brings first, and an include failing after such a paragraph no longer reports the assignment lost
+
+=item C<podlite test> runs a test under each configuration that reaches a paragraph or code written without a marker in it
+
+=item a file is read in the format its name gives: C<.podlite> and C<.pod6> as Podlite, C<.md> and C<.markdown> as Markdown, any other extension or none in the default mode, where text outside blocks is ambient; the extension is compared without regard to case. This holds for an included file, for the document C<convert>, C<query> and C<podlite test> are given, and for C<lint>; text from the standard input stays Podlite. A C<.md> file brought by C<=include> was read as Podlite, and a C<.txt> file as Podlite paragraphs
+
+=item a C<:mime-type> written on the C<=include> line after the address of the source, before a selection, decides how that file is read: C<text/podlite>, C<text/markdown>, and any other C<text/> type in the default mode; a type that is not text is an error of the new kind C<format>, and the include brings nothing. A configuration that does not read whole leaves the line unread. It was taken as part of the file name
+
+=item an included Markdown file gets the C<=config> of the including file on its blocks
+
+=item C<formatOfFile>, C<formatOfType> and C<writtenTree> are exported; C<ReadFormat> has the value C<default>. A source may carry C<format>; the fourth argument of the reader and of C<parse> in an include assembly may carry C<format> for that one reading
+
+=item C<podlite convert> and C<podlite query> warn when an included file comes from outside the root: the directory of each input file, or the current directory for stdin. C<--root> sets one root for every input. A file is outside by its real path, with links followed. The warning names the directive and the path as written, gives a mask the number of its files that are outside, and is given only when blocks of such a file stand in the assembled document; C<query> gives it only for blocks it prints
+
+=item C<podlite convert> prints the file and line of the directive in front of every include warning
+
+=item a source may carry C<external>, the reason it is external; an include whose blocks from such sources stand in the assembled document is reported once as an C<external> warning, with those sources in C<sources>; a comment counts, as it stands in the document. C<externalMessage> gives the text of such a warning for the sources a host shows. The origin of a node lists the directives it came through in C<steps>. C<resolveIncludes> takes C<root>, and a C<SourceProvider> may give C<real>, the path of a file with links followed
+
+=item a mask of C<sourcesFromFiles> is resolved like a path, its C<.> and C<..> steps taken, and stays in its directory: C<*.podlite> no longer names files in directories below, as on disk; C<**> goes down
+
+=item C<sourcesFromFiles> is a root of its own: a path with or without a leading slash names the same text, so a host can give its files by plain relative paths; a source keeps the identity it had
+
+=item the lint context takes C<sources>, C<context> and C<self>: the C<include-resolves> rule checks a text that is not read from disk against the sources a host gives
+
+=item C<podlite/lib/refresh-tocs> is exported
+
+=item C<readerFor> takes C<body>: a block the host says yes to has its raw body read as Podlite in its place, with the settings in effect where the block stands; the blocks of the body stand at their places in the text, and an include assembly given the same reader brings what an C<=include> written in the body names
+
+=item a provider of include sources names the address schemes it resolves in C<schemes>, C<file> alone when it names none, and C<locate> is given the scheme as its last argument: C<=include doc:Name> and an operand C<in doc:Name> reach a provider that lists C<doc>. A path that is not a mask names one source. When a provider says in C<failed> why it cannot give one, the problem carries the address and that reason and the directive stays in the tree; two sources with different ids for such a path are refused the same way. A source that is not found, with no reason given, is reported as before. A document that includes itself is told from its id before it is read. C<SourceStore.located> takes the scheme as its last argument
+
+=item C<podlite lint> reads an included Podlite file with the Markdown and table of contents plugins and with the settings in effect at the directive: a heading written in a Markdown section of an included file is found by its address; it was reported as not found. A warning a plugin prints while an included file is read stays off the console, and an included file that cannot be read costs one finding and leaves the others in place
+
+=item C<readerFor> makes the reading an include assembly asks for out of a parser, so a host need not write it; its fourth argument hands the parser the lists it fills with recognition events and diagnostics
+
+=item the assembly of includes is exported from C<podlite> as well as from C<podlite/assemble>. C<locate> may say why a mask could not be expanded, in C<failed>; with C<tolerant> a text that fails to parse is a source that cannot be had
+
+=item a table of contents written in an included file lists what that file includes: it is built again over the file once its own includes are in, also when the table alone is brought in by a selector. It listed the file as it was before them
+
+=item C<podlite/assemble> gives C<sourcesFromFiles>, sources over texts held in memory by path, and C<assembleAsync>, which assembles a document whose sources answer through promises: it asks for what is missing and assembles again until nothing is. C<createSourceStore> keeps the answers between assemblies. Sources may answer C<undefined> for what is not known yet; the include then stays in place with its C<=set> assignments and nothing is reported
+
+=item the assembly of includes is given as C<podlite/assemble>, an entry with no module of Node in it: C<assembleIncludes> takes the included text from C<sources> the host gives, where C<locate> finds the sources a written path names and C<read> gives the text of one. C<resolveIncludes> reads the disk through it and is not changed. An include problem that loses C<=set> assignments names them in C<lost>
+
+=item a file an C<=include> brings whole stays in a C<root> block in the assembled document, so its C<=config> and C<=alias> end with it: in HTML and Markdown they acted on the blocks after the include. A selection goes through the block and does not find it
+
+=item C<podlite test> runs a test brought in by several files once for each configuration it is brought in under; it ran it once whatever the configuration
+
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
+=item a C<=config> written before C<=include> reaches the blocks the include places, as it reaches the blocks written after it; an included file kept to its own C<=config>. The nearer file decides an option: the file of the block, then the files including it, nearest first. The included text is read with those settings, so a C<:allow> they give opens its blocks to markup codes. C<convert>, C<query> and C<test> follow the rule
+
+=item the selector of an C<=include> still reads the file without the settings of the including file. A found block those settings read as something else is placed as its file reads on its own, with the warning C<include-reading-differs>
+
+=item C<resolveIncludes> hands C<parse> the settings in effect at the directive as a third argument
+
+=item a C<=set> written before C<=include> reaches the first block the include brings, in C<convert>, C<query> and C<podlite test>; the block after the include received it. When the include brings no block, the assignment goes on to the next block of the same list, and to the end of the list without one it is reported with the kind C<set-target>. When the include fails, it goes nowhere, and the message of the failure names it; an include that brings nothing because its file is already being included says so with the kind C<cycle>, and does so only when it loses an assignment. Both kinds are warnings, and C<isWarning> is exported. An include that fails inside the included content, before any block, stops the search the same way: the assignment goes nowhere and its message names it. C<podlite lint> reads the document without its includes, so a link to an address a C<=set> gives an included block is reported as not found; before, the address landed on the block after the include
+
+=item C<podlite query> reads a file its selector names, relative to the working directory, as it reads a file an operand of C<in> names: C<podlite query 'file:x.podlite | para'> needs no input files, a mask is expanded on disk as C<=include> expands it, and the files and input given are not read, with a warning. A source that does not resolve, and an address no file holds, is reported once and exits with 1; it used to give 0 matches. A file given is no longer taken for a source that only shares its tail, and a C<doc:> source is looked for among the files given
+
+=item an include by a selector places a found block once: a block inside another found block comes with it and is not placed again, so C<=include part.podlite | *> brings a heading inside a C<=pod> once, and one table of contents. With C<*> the include brings no C<=alias> written at the top of the file, and an C<A<>> code that relies on it is left as written; an include without a selector still brings the whole file
+
+=item C<podlite query> selects from the tree C<convert> and C<podlite test> read: a Markdown section is read into blocks, a table from C<data:> into rows and cells, and tables of contents are made again after the includes. A block with no place of its own in the file is given in C<--to podlite> as its Markdown, a row of such a table as one line of cells; in C<--to json> a block of a Markdown section carries the place of the section and C<precision: section>. The root inside a section and a folded section are not counted as found. C<--to md> and C<--to html> hide what the document hides. A query loads the Markdown, image and table of contents plugins when it runs, not the diagram renderer. The rules are shared through the entry C<podlite/lib/query-blocks>
+
+=item tables of contents are made again after the includes inside the block that holds them, and C<podlite test> finds a C<=toc> block
+
+=item C<podlite query>, C<=include> and C<podlite test> read a C<file:> operand of C<in> relative to where the selector is written: the working directory, the file of the directive, the file of the test. An operand that does not resolve is reported: the query exits with 1, the include brings nothing in and C<podlite lint> reports it as an error, and the assertion does not hold
+
+=item podlite test runs the tests written in Podlite files: each C<=test> is reported as passed, failed or skipped, with the assertion that did not hold, the document it read and where a found block is written. C<--against> examines a document with the tests, C<--format json> writes the report as one JSON document, and C<--allow-skipped> lets skipped tests alone pass the run. The exit code is 0 when every test passed, 1 when a test failed or was skipped, no test was found or an include lost tests, and 2 on wrong arguments or a failure of the implementation
+
+=item podlite/test gives the runner to programs: C<runTests> returns the report as data, and C<collectTests>, C<planRuns>, C<inputsFor> and C<evaluateAssertion> are its parts
+
+=item an include whose selector cannot be read, or whose scheme is not C<file:>, is now a warning in podlite convert, podlite query and the include-resolves rule of podlite lint; it used to be left in place without a word
+
+=item podlite --version prints the version of the package
+
+=item podlite convert keeps a table of contents hidden when it is rebuilt after the includes are in
+
+=item podlite convert builds a table of contents of the document after its includes are in, so the table lists the blocks they bring
+
+=item C<:lint-ignore> on a block no longer silences a finding at the first line of the block after it
+
+=item podlite query selects through C<=include>: blocks an include brings in are found, their text and the file in the json output are those of the file they are written in, and a selection of C<include> no longer finds a directive that resolved. An include that is not there is reported with the file and line of the directive, the other matches are still written, and the exit code is 1; the report is not silenced by --quiet
+
+=item podlite convert stops on an include whose address is not in the file, as it already did on a missing file, and on a source that is a directory. The address is found the way a link finds its target: by C<:id>, or by a heading under its name or the form an output gives it
+
+=item when two blocks of an included file share the address, the first is taken and podlite convert warns; the last one used to be taken
+
+=item podlite lint adds the include-resolves rule: an include whose source or address is not there is an error at the directive, a problem inside an included file is reported at the directive that brought it in, and an address that names two blocks is a warning. A selection that finds nothing is not reported. The rule runs on files read from disk only
+
+=head2 @podlite/diagram
+
+=item a hidden diagram shows its source masked and is not drawn, so the drawing cannot show what it hides; its caption is masked too
+
+=head2 @podlite/editor-react
+
+=item C<includeSource> reads included files from a source that answers through promises: the preview shows the document at once and the included content when it has come, with no warning while a file is awaited. C<invalidateIncludes> on the editor ref forgets what was read for a path, or for everything, and asks again
+
+=head2 @podlite/formula
+
+=item a hidden formula shows its source masked and is not typeset; its caption is masked too
+
+=head2 @podlite/highlight
+
+=item hidden text in a code block reaches the highlighter masked, so it stays hidden once the block is highlighted, and a highlight made for draft is dropped when the page switches to production; the caption of a hidden block is masked too
+
+=head2 @podlite/image
+
+=item the alternative text of a hidden picture is masked
+
+=head2 @podlite/mcp
+
+=item a file of C<files> is read in the format its name gives, any other extension than Podlite or Markdown in the default mode, and a C<:mime-type> on the C<=include> line decides how it is read
+
+=item C<podlite_query> reads a source its selector names (C<file:part.podlite | head1>, a mask, or C<input.podlite> for the document itself) and a C<file:> operand from C<files>; each file found is read with its own includes, and the selection runs over each of them, as C<podlite query> does over files on disk. When the files the selection names do not include the document itself, the answer says that C<text> was not used as its document. Under a mask with an address a file without the address is passed over
+
+=item the json answer of C<podlite_query> gives each block the file it comes from, first
+
+=item C<files> and the document are one set: a file of the set that includes C<input.podlite> gets the document itself
+
+=item a mask of an include in C<files> stays in its directory: C<=include file:*.podlite> no longer brings files of directories below, in C<podlite_render>, C<podlite_query> and C<podlite_validate> alike; C<**> goes down
+
+=item C<podlite_render>, C<podlite_query> and C<podlite_validate> take C<files>, the texts a document includes, by path relative to the document; an C<=include> is assembled from them as C<convert> assembles it from disk. In C<podlite_render> and C<podlite_query> a problem the assembly reports as an error makes the answer an error, with the problems first; other problems and the list of the files whose blocks are in the document come after the output. C<podlite_validate> answers with its report alone The document stands in the map as C<input.podlite>, and a key of that name is refused
+
+=item a call without C<files> on a document with an C<=include> now answers with a second part naming the paths the includes ask for; the output is as before. C<podlite_validate> gives the same as an C<info> problem, and the report stays C<ok>
+
+=item C<podlite_query> reports a source or an address in the selector that does not resolve as an error of the tool; it returned no matches
+
+=item the query tool selects from the tree C<convert> reads, so a Markdown section is read into blocks, and gives a found block as C<podlite query> does.
+
+=head2 @podlite/publisher
+
+=item a record keeps the text it was read from: C<recordSource> returns the text, the file name and the type given for it, C<recordOrigin> returns the same for a record the pubdate plugin cut out of a file, and C<isParsedTree> tells whether the tree is still the one that was parsed. C<parseText> parses a given text as a file of that name is read. The source is held under a symbol key, so it is absent from JSON and from C<Object.keys>, and present when a record is printed or compared deeply
+
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
+=item a C<=set> written before C<=include> reaches the first block the include places, and the record the block comes from is left unchanged; the block after the include received it. When the include fails, the warning names the assignment it lost. When it places no block, or its first block is an include inside what was placed, a warning says the assignment has no target. An include whose selector cannot be read, or whose scheme is neither C<doc:> nor C<file:>, says so; it was reported as not found
+
+=item C<=include> whose source or address does not resolve is left in place with one warning; it gave two. An address is found by the text of a heading as well as by C<:id>
+
+=item C<=include> places a found block once: a block inside another found block comes with it and is not placed again
+
+=item an include whose selector has an operand of C<in> that does not resolve is left in place with a warning, rather than stopping the run
+
+=head2 @podlite/schema
+
+=item code written without a marker inside an item, a definition or a C<=nested> block is verbatim unless its own C<:allow> names markup codes, as at the top of a document; it read every markup code, and the C<:allow> of the block around it. A paragraph written without a marker there reads markup codes as an explicit C<=para> in its place does; it read the C<:allow> of the block around it. The text of a cell keeps the codes its table, row and cell allow
+
+=item C<=config para> and C<=config code> reach a paragraph and code written without a marker, in a document, a C<=pod>, an item in every form, a definition, a C<=nested>, a cell, a semantic block and a C<=markdown> block; the text of an explicit C<=para> and of a heading and the term of a definition take none. C<=set> gives its assignments to such a paragraph or code as to the next block. The selection, C<:masked>, C<:allow> and C<:nested> treat them as an explicit C<=para> and C<=code>. Only the explicit block received them
+
+=item the C<Para> and C<Code> nodes carry an optional C<config>, present only when C<=config> or C<=set> gave them settings
+
+=item C<blockNameOf>, C<holderInside> and C<isSetTarget> are exported: which node of a tree is a block and of what name, and where C<=set> assignments stop
+
+=item C<walkConfigScopes> calls a visitor for each block of a tree with the C<=config> settings in effect where the block stands
+
+=item a blank line in the body of an indented C<=begin> block with verbatim content is kept when it is indented less than the block, an empty line among them: an indented C<=begin code> or C<=begin markdown> lost such lines, and paragraphs of Markdown ran together
+
+=item C<runSelector> takes C<readSource>: the host reads the documents an operand with a C<file:> or a C<doc:> source names
+
+=item the body of a C<=markdown> block is read as Markdown whatever C<:allow> it is given, on the block, by a C<=set> before it, by C<=config> or by the settings of an including file; with a code named in C<:allow> the body was read for Podlite markup codes and its headings, lists and paragraphs were lost
+
+=item C<toHtml> writes the blocks of a C<root> block with no warning; it printed the whole document to the error stream as a node left unhandled
+
+=item a C<=config> for C<data-table> reaches the table before it is read: a C<:mime-type> it gives reads an inline body, and an C<:allow> it gives acts in the cells; the table came out empty
+
+=item a C<:mime-type> written on a C<=data-table> with C<:src<data:...>> is the format the data is read in; it was an error. One a C<=config> gives does not replace the format of the data
+
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
+=item a C<=config> or C<=alias> written under a folded heading stays in effect after the section the heading folds; it ended with the section
+
+=item a C<=config> adds its options to an earlier C<=config> for the same block or markup code, and decides the ones both set; it replaced the earlier one whole. HTML and Markdown output follow the same rule
+
+=item C«=config C<> :allow» acts from the line it is written on; it acted on the whole block it was written in
+
+=item C<parse> and C<toAst> take C<config>, the settings in effect where the text is placed; a C<=config> of the text is nearer than they are. C<mergeConfigSettings> joins two lists of settings by that rule
+
+=item a C<toc> node keeps the selector it was built by in C<selector>, unless the selector line holds a markup code; C<mkToc> takes it as its last argument
+
+=item a C<=set> written before C<=include> is kept on the include, in its C<set>, for the first block its content brings; the block after the include no longer receives it. A value a block got from C<=set> is marked C<from: 'set'> in its configuration, a default from C<=config> C<from: 'config'>, and a written one carries no mark. C<applySetToFirst> gives such assignments to the first block of a list, C<mergeSet> joins two lists of them, and C<isSetTransparent> tells a node the search passes
+
+=item C<runSelector> throws C<SelectorError> when the source of a selector does not resolve (C<resolution>) or its address is in no answering document (C<address>); it returned nothing. A mask that no document answers is still an empty source unless it carries an address. An address is found the way a link finds its target, by the text of a heading as well as by C<:id>, and the first of two blocks sharing it answers; the last one used to. C<getDocIDs> is exported
+
+=item a pattern C<item> finds first-level items, as C<item1> does; it found items of every level
+
+=item C<*> finds any block a name would find, a paragraph written without a marker and a code block written by indentation among them. No pattern finds the blocks the tree adds around written ones: the root of a document, the root of a Markdown section and a folded section; the selection goes through them. C<outermost> keeps the found blocks that no other found block holds, in the order given
+
+=item html output writes the C<:id> of a table of contents on its element, so a link to that address finds it
+
+=item a selector source written without a scheme before the bar is read as a file, as in C<=include article.podlite | head1>; it was dropped, and the selection ran over every document given
+
+=item a predicate C<[ :attr ]> holds for a value neither empty nor false by its kind: an empty hash no longer holds, while the number 0 and a list whose first element is empty do. C<[ :!attr ]> holds only for the value C<False>
+
+=item the operation C<in> takes a selector as its operand: the terms of the definitions it finds, or a column of a C<=data> block, as in C<[ :status(in data:statuses#value) ]>. C<runSelector> takes C<SelectorOptions>, the current document and a reader of files, and throws C<SelectorError> when the source of such an operand does not resolve, has a format it cannot read, or lacks the address
+
+=item a selector predicate reads a value in parentheses as a declaration does, as in C<para[ :author('John Doe') ]> and C<para[ :nested(3) ]>, and the operation C<in> with literal operands, as in C<[ :status(in 'draft','issued') ]>. An operation it does not define, C<in> without an operand, and an empty C<~<>> make the selector unreadable. Brackets, bars and whitespace inside a quoted value no longer split the selector
+
+=item a selector C<para> finds a paragraph written without a marker, and C<code> a code block written by indentation. The text of an explicit C<=para>, of a heading and of a C<=defn> term is not taken for another paragraph
+
+=item a selector reads the configuration the parser gave a block: a C<=config> no longer reaches blocks of another file, included or including, nor blocks after the block it is written in. A tree parsed without the plugin chain carries no such configuration, and a selector over it no longer applies its C<=config> directives
+
+=item html output shows the caption of a table of contents, with the markup written in it and a hidden word hidden, and the wrapper of the table is written with C<class> rather than C<className>. C<tocTitleText> gives the caption of a tree that carries only the C<title> string, hidden as a whole when it holds a C<G> code
+
+=item C<=table file:...> is reported with the code C<table-source-deferred>: the tree holds the address of the source and none of its rows
+
+=item a table whose data source was read but holds no rows is reported with the code C<table-source-empty>, apart from a source that could not be had
+
+=item a table of contents node takes an optional C<caption>, a caption block next to C<title>, and C<mkToc> takes it as its last argument; covered content is marked inside such a caption as well
+
+=item C<parse> takes a C<recognition> list and fills it with the lines written as a directive of a block the parser does not know, and with the directive lines it could not read. The tree does not change
+
+=item an C<:id> written without a value is not an address: a link to C<#true> no longer finds such a block
+
+=item C<=test>, C<=fixture>, C<=assert> and C<=resource> are parsed as blocks. The last three keep their body as written, and the body of a fixture is not read as markup even under C<:allow>.
+
+=item html and markdown output show a test open where it stands: its caption, the fixture and each resource as source, and what each assertion must or must not find
+
+=item a heading with hidden text gets an address that is not made of its text, the same in production and draft, and it takes no place in the numbering of repeated headings
+
+=item markdown output writes a named anchor, in lowercase, before a heading whose address it cannot build from the text: a hidden one, or one with an explicit C<:id>. Links to other headings follow the address a markdown reader builds, numbers of numbered headings included
+
+=item a link that names a heading exactly is no longer taken by another heading whose shaped name matches
+
+=item html and markdown output hide the caption of a hidden table, the title of a hidden boundary, the alternative text of a hidden picture, the title and file name written on a link in hidden content, and text in hidden content written with C<< S<> >>, an unresolved C<< A<> >> or C<< E<> >>, and the name a hidden block written in capitals shows as its heading
+
+=head2 @podlite/to-jsx
+
+=item an explicit C<=code> block renders its C<:nested>, as in HTML and Markdown
+
+=item a paragraph and code written without a marker render the C<:nested> and C<:masked> that C<=config> or C<=set> gave them, the paragraph of a definition too. An C<:id> given this way is written on the paragraph itself; an explicit C<=para> writes it on an element around the paragraph
+
+=item an included C<.md> file is rendered as Markdown, and a file of another extension than Podlite or Markdown is read in the default mode; a C<:mime-type> on the C<=include> line decides how a file is read
+
+=item an operand of C<in> in the selector of an C<=include> is read as C<convert> reads it: a file it names is asked of C<includeReader>, and an operand with no source reads the document the include is written in; both were looked for among the included files alone
+
+=item C<includeReader> and C<expandPaths> may return C<undefined> for an answer that is not known yet: the include then brings nothing, its C<=set> waits with it, and no warning is given until every answer is known. A host that returned C<undefined> for a missing file gets no warning now; C<null> says the file is not there
+
+=item includes are assembled by the assembly C<convert> uses, so a preview and C<convert> read a document alike: a C<=config> written before C<=include> reaches the blocks the include places, with C<:allow> and folding among its options; a table of contents of the including file reads those options. C<includeReader> and C<expandPaths> are called as before, with one change: a file included more than once is asked for once. A file of a mask may now be included by another file of the same mask, and a file that includes itself is passed over with no warning unless a C<=set> is lost with it. A C<=set> lost to an include that failed further in is named in the warning of that include; it was a warning of its own
+
+=item on the first block an C<=include> brings, a C<=set> of the included file wins over a C<=set> written before the include for the same key; the one before the include won
+
+=item a C<=config> adds its options to an earlier C<=config> for the same block or markup code, and decides the ones both set; it replaced the earlier one whole
+
+=item with an include reader, the document is assembled before it is rendered: the blocks an include finds take its place, so a table of contents lists them, a link reaches them by their address, and a test groups with the included block above it. An included file takes its own includes first, and its own table of contents lists what they brought. A C<=set> before an include that brings no block reaches the next block; an include that fails, or stands in the way, loses the assignment and says so. A heading brought in under a masked block is hidden in the table of contents as in the text. A wrapper is told the files an included block came through in C<ctx.includeStack>, as before. A table of contents written in an included file still lists only that file
+
+=item a C<=set> written before C<=include> reaches the first block the include brings, also when that block comes from an include inside the included file; the block after the include received it. When the include fails, the warning names the assignment it lost. When the include brings no block, the assignment is not carried on to the next block yet, and a warning says it has no target
+
+=item an include by a selector renders a found block once: a block inside another found block comes with it and is not rendered again
+
+=item a table of contents kept as a C<toc> or C<Toc> block renders its table, with the C<:id> of the block on the element
+
+=item an include whose selector has an operand of C<in> that does not resolve brings nothing in and is reported as a warning, rather than rendering the include as failed
+
+=item the caption of a table of contents renders the markup written in it, and a hidden word in it is hidden while the rest stays open
+
+=item hidden content keeps its captions and titles hidden on the page: table captions, the summary of a folded block, the title of a note, the title of a table of contents, the alternative text of a picture, link titles and file names, text written with C<< S<> >> or C<< E<> >>, the kind of a hidden note, and the name a hidden block written in capitals shows as its heading. A link preview shows hidden text masked, a markdown block's included, except in draft
+
+=item a C<=test> is shown where it stands: a line with its caption that opens the test in place, the fixture and each resource as source, and what each assertion must or must not find. The test is open in server output and folds in the browser unless the author wrote C<:!folded> or the address points at it; a block and the tests under it share a C<test-group> element for the site to lay out
+
+=item a link preview leaves out comments and tests: their text no longer shows up in the preview of a section that holds them. A link to a comment finds nothing; a link to a test is shown the caption of the test
+
+=head2 @podlite/toc
+
+=item C<rebuildToc> builds the table a C<=toc> block holds again over a tree that gained blocks, such as those an include brought, reading the selector from the table and the configuration from the block; a table that keeps no selector is left as it is
+
+=item the first non-blank line of C<=toc> is read as a selector: predicates and C<*> apply, and the lines after it are not read. Patterns are separated by commas. A selector that cannot be read, holds a markup code, names a source or needs a file makes a table without entries and a warning. The table does not list itself, and with C<*> it does not list comments, data or includes it does not name
+
+=item a paragraph or code written without a marker is titled by its text, and a block whose name has no lowercase letter stands as a first-level heading; such a block used to stop the whole document from being built
+
+=item C<=toc> and C<=Toc> stay blocks of the name they were written with, with their configuration and place, and hold the table of contents they make in their content. A selection finds them, C<*> among it, and a block already holding its table is not made again when the tree is built twice
+
+=item the caption of a table of contents is parsed the way a picture caption is: its markup codes become nodes of the new C<caption> field, and a hidden word in it is marked as hidden. C<title> keeps the caption as written
+
+=item an entry of a table of contents hides what its source hides: the text of a hidden heading, picture or table caption, a hidden word inside a heading, and every entry of a hidden table of contents. Open words stay open, and a link, note, alias or definition inside a heading comes into the entry as its text
+
 =head1 0.0.90
 
 

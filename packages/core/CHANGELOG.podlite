@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.84
+
 =item a C<=set> before C<=include> reaches a paragraph or code written without a marker that the include brings first, and an include failing after such a paragraph no longer reports the assignment lost
 
 =item C<podlite test> runs a test under each configuration that reaches a paragraph or code written without a marker in it

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.21
+
 =item a file of C<files> is read in the format its name gives, any other extension than Podlite or Markdown in the default mode, and a C<:mime-type> on the C<=include> line decides how it is read
 
 =item C<podlite_query> reads a source its selector names (C<file:part.podlite | head1>, a mask, or C<input.podlite> for the document itself) and a C<file:> operand from C<files>; each file found is read with its own includes, and the selection runs over each of them, as C<podlite query> does over files on disk. When the files the selection names do not include the document itself, the answer says that C<text> was not used as its document. Under a mask with an address a file without the address is passed over

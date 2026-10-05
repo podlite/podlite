@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.75
+
 =item a hidden diagram shows its source masked and is not drawn, so the drawing cannot show what it hides; its caption is masked too
 
 =head1 0.0.74

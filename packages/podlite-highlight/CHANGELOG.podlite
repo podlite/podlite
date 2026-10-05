@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.5
+
 =item hidden text in a code block reaches the highlighter masked, so it stays hidden once the block is highlighted, and a highlight made for draft is dropped when the page switches to production; the caption of a hidden block is masked too
 
 =head1 0.0.4

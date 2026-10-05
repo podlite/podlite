@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.77
+
 =item C<includeSource> reads included files from a source that answers through promises: the preview shows the document at once and the included content when it has come, with no warning while a file is awaited. C<invalidateIncludes> on the editor ref forgets what was read for a path, or for everything, and asks again
 
 =head1 0.0.76
