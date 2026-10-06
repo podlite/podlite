@@ -1,4 +1,5 @@
 import {
+  AstTree,
   getFromTree,
   getTextContentFromNode,
   makeAttrs,
@@ -32,7 +33,16 @@ export const getPathToOpen = (filepath, parentDocPath) => {
   }
 }
 
-// whether a search engine is told to index the record, as its pod block says
+/*
+=begin pod :kind<export>
+
+=head2 isIndexed
+
+Whether a search engine is told to index the record: its first C<pod> block
+carries no C<:noindex>. A record without a C<pod> block is indexed.
+
+=end pod
+*/
 export const isIndexed = (record: publishRecord): boolean => {
   const [pod] = getFromTree(record.node, 'pod')
   return !pod || !makeAttrs(pod, {}).getFirstValue('noindex')
@@ -50,8 +60,8 @@ its permanent address, kept out of the index, give the first.
 
 =end pod
 */
-export const makeLinksMap = (records: publishRecord[]): { [link: string]: string } => {
-  const linksMap: { [link: string]: string } = {}
+export const makeLinksMap = (records: publishRecord[]): { [link: string]: string | null } => {
+  const linksMap: { [link: string]: string | null } = {}
   const indexed: { [link: string]: boolean } = {}
   for (const record of records) {
     // by the absolute path: a link an include brought is found from the absolute path of its file
@@ -59,7 +69,7 @@ export const makeLinksMap = (records: publishRecord[]): { [link: string]: string
     const own = isIndexed(record)
     if (key in linksMap && indexed[key] && !own) continue
     const { publishUrl = '' } = record
-    linksMap[key] = publishUrl as string
+    linksMap[key] = publishUrl
     indexed[key] = own
   }
   return linksMap
@@ -171,6 +181,16 @@ export function parseFiles(path: string) {
     .filter(Boolean)
   return allFiles as pubRecord[]
 }
+/*
+=begin pod :kind<export>
+
+=head2 PARSER_TYPES
+
+The readings a file can be given by its name or its declared type:
+C<getParserTypeforFile> answers with one of them.
+
+=end pod
+*/
 export const PARSER_TYPES = {
   MARKDOWN: 'markdown' as const,
   PODLITE: 'podlite' as const,
@@ -240,6 +260,10 @@ nothing is read from disk.
 
 =end pod
 */
+// the reader gives a list of nodes only for Markdown, which is read apart here
+const asDocument = (tree: PodliteDocument | AstTree): PodliteDocument =>
+  Array.isArray(tree) ? mkRootBlock({}, tree) : tree
+
 export function parseText(filePath: string, text: string, mime?: MimeTypes) {
   // check extension of file and parse it deepnds on mime type
 
@@ -247,14 +271,14 @@ export function parseText(filePath: string, text: string, mime?: MimeTypes) {
   // the reader an include reads the texts it brings with, the body of =React read in its place
   const typeToParserMap: { [key: string]: (src: string) => PodliteDocument } = {
     [PARSER_TYPES.PODLITE]: (src: string) =>
-      readRecordText(src, filePath, undefined, { format: 'podlite' }) as PodliteDocument,
+      asDocument(readRecordText(src, filePath, undefined, { format: 'podlite' })),
     //@ts-ignore TODO: fix this
     [PARSER_TYPES.MARKDOWN]: (src: string) => {
       const { content } = matter(src)
       return parseMd(content)
     },
     [PARSER_TYPES.DEFAULT]: (src: string) =>
-      readRecordText(src, filePath, undefined, { format: 'default' }) as PodliteDocument,
+      asDocument(readRecordText(src, filePath, undefined, { format: 'default' })),
   }
   return typeToParserMap[parser_type](text)
 }

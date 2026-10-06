@@ -116,5 +116,10 @@ was written in the file of the record.
 
 =end pod
 */
-export const nodeOrigin = (node: object): NodeOrigin | undefined =>
-  (node as { [nodeOriginKey]?: NodeOrigin })[nodeOriginKey]
+const isNodeOrigin = (value: unknown): value is NodeOrigin =>
+  typeof value === 'object' && value !== null && 'file' in value && typeof value.file === 'string'
+
+export const nodeOrigin = (node: object): NodeOrigin | undefined => {
+  const mark: unknown = Reflect.get(node, nodeOriginKey)
+  return isNodeOrigin(mark) ? mark : undefined
+}

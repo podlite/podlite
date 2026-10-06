@@ -1,5 +1,6 @@
 import * as path from 'path'
-import { getFromTree, PodNode } from '@podlite/schema'
+import { getFromTree } from '@podlite/schema'
+import type { Location, PodliteDocument } from '@podlite/schema'
 import { assembleIncludes, podlite, writtenTree } from 'podlite'
 import type { IncludeOrigin, IncludeProblem, ReadFormat } from 'podlite'
 import { refreshTocs } from 'podlite/lib/refresh-tocs'
@@ -12,6 +13,19 @@ import { SITE_DATA_DOCUMENT } from './site-data-plugin'
 import { nodeOriginKey, recordOrigin } from './source'
 import type { NodeOrigin, RecordSource } from './source'
 
+/*
+=begin pod :kind<export>
+
+=head2 IncludeResolveOptions
+
+C<catalogue> is what an include finds its source in: the records the site read
+before the plugins ran, mounted sources among them. Documents plugins make
+later in the chain are added as they come. C<bounds> are directories a path written inside
+one of them may not lead out of. C<late> names documents plugins make later in
+the chain, besides the site data: an include of one waits for the last pass.
+
+=end pod
+*/
 export type IncludeResolveOptions = {
   // the records the site read before the plugins ran, mounted sources among them:
   // what an include can bring
@@ -27,9 +41,14 @@ export type IncludeResolveOptions = {
 
 =head2 IncludeError
 
-An include that does not place what it names stops the build: the source or the
-address is not found, the selector cannot be read, the scheme is not one the
-site reads, a name answers to two documents, or a file is already on the way in.
+The build stops when an include cannot place what it names:
+
+=item the source or the address is not found;
+=item the selector cannot be read;
+=item the scheme is not one the site reads;
+=item a name answers to two documents;
+=item a file includes itself, directly or through other files.
+
 C<problems> holds one line for each, with the file and the line of the directive.
 
 =end pod
@@ -48,9 +67,23 @@ const stopping = new Set<IncludeProblem['kind']>(['unsupported-scheme', 'unparse
 
 const shown = (file: string): string => (path.isAbsolute(file) ? path.relative(process.cwd(), file) : file)
 
-const isToc = (node: any): boolean => node?.type === 'block' && (node.name === 'toc' || node.name === 'Toc')
-const hasToc = (tree: unknown): boolean => getFromTree(tree as PodNode, 'toc', 'Toc').some(isToc)
-const includesIn = (tree: unknown): any[] => getFromTree(tree as PodNode, 'include')
+// a node of a tree as the walks here read it
+type TreeNode = {
+  type?: string
+  name?: string
+  content?: unknown
+  location?: Location
+  [nodeOriginKey]?: NodeOrigin
+}
+
+const isNode = (value: unknown): value is TreeNode =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const nodesOf = (tree: unknown, ...queries: Array<string | ((node: unknown) => boolean)>): TreeNode[] =>
+  getFromTree(tree, ...queries).flatMap(node => (isNode(node) ? [node] : []))
+
+const isToc = (node: TreeNode): boolean => node.type === 'block' && (node.name === 'toc' || node.name === 'Toc')
+const hasToc = (tree: unknown): boolean => nodesOf(tree, 'toc', 'Toc').some(isToc)
 
 // the format a table of contents of the record is built again from; none for Markdown
 const writtenFormat = (source: RecordSource): ReadFormat | undefined => {
@@ -87,13 +120,13 @@ const passes = (options: IncludeResolveOptions) => {
   // The file each node was written in goes onto the node itself, where a copy
   // keeps it; the assembler's own table is lost on the first copy a plugin makes.
   const stamp = (tree: unknown, origin: WeakMap<object, IncludeOrigin>) => {
-    const visit = (node: any) => {
-      if (!node || typeof node !== 'object') return
+    const visit = (node: unknown) => {
       if (Array.isArray(node)) return node.forEach(visit)
+      if (!isNode(node)) return
       const where = origin.get(node)
       if (where && !node[nodeOriginKey]) node[nodeOriginKey] = stampOf(where)
       const file = node[nodeOriginKey]?.file
-      if (file && node.location && typeof node.location === 'object') fileAt.set(node.location, file)
+      if (file && isNode(node.location)) fileAt.set(node.location, file)
       visit(node.content)
     }
     visit(tree)
@@ -102,10 +135,10 @@ const passes = (options: IncludeResolveOptions) => {
   // what the nodes say of themselves is told to the assembler, so that a block an
   // earlier pass brought is not taken for one of the record
   const seed = (tree: unknown, origin: WeakMap<object, IncludeOrigin>) => {
-    const visit = (node: any) => {
-      if (!node || typeof node !== 'object') return
+    const visit = (node: unknown) => {
       if (Array.isArray(node)) return node.forEach(visit)
-      const mark: NodeOrigin | undefined = node[nodeOriginKey]
+      if (!isNode(node)) return
+      const mark = node[nodeOriginKey]
       if (mark) origin.set(node, { file: mark.file, text: '', ...(mark.via ? { via: mark.via } : {}) })
       visit(node.content)
     }
@@ -121,7 +154,7 @@ const passes = (options: IncludeResolveOptions) => {
           '[plugin: resolve ] no catalogue of the site is given; an include is looked for among the records at hand',
         )
       }
-      // a document a plugin made on the way is a source too
+      // a document a plugin made earlier in the chain is a source too
       catalogue.add(recs)
       waiting = pass === 'first'
       const problems: string[] = []
@@ -144,7 +177,7 @@ const passes = (options: IncludeResolveOptions) => {
           for (const id of catalogue.named(name)) {
             lateFiles.add(id)
             const text = catalogue.textOf(id)
-            if (text !== undefined && includesIn(readRecordText(text, id)).length) {
+            if (text !== undefined && nodesOf(readRecordText(text, id), 'include').length) {
               problems.push(`${shown(id)}: ${name} is placed after the other plugins, so it may not hold an include`)
             }
           }
@@ -152,20 +185,18 @@ const passes = (options: IncludeResolveOptions) => {
         if (problems.length) throw new IncludeError(problems)
       }
 
-      const done = new WeakMap<object, unknown>()
       // one field of a record, read from one file
-      const assemble = (tree: any, record: object & { file: string }): any => {
-        if (!tree || typeof tree !== 'object') return tree
-        if (done.has(tree)) return done.get(tree)
+      const assemble = <T>(tree: T, record: { file: string }): T => {
+        if (typeof tree !== 'object' || tree === null) return tree
         // the tables of contents are built again in the passes that place the record's
         // own text; the last one only adds documents plugins made
-        if (!includesIn(tree).length && (pass === 'last' || !hasToc(tree))) return tree
+        if (!nodesOf(tree, 'include').length && (pass === 'last' || !hasToc(tree))) return tree
         const self = catalogue.idOf(record)
         const source = recordOrigin(record)
         const file = self ?? idOfFile(record.file)
         const origin = new WeakMap<object, IncludeOrigin>()
         seed(tree, origin)
-        let node = assembleIncludes(tree, {
+        let node: T = assembleIncludes(tree, {
           sources: catalogue.sources,
           context: path.dirname(file),
           parse: readRecordText,
@@ -183,52 +214,63 @@ const passes = (options: IncludeResolveOptions) => {
           node = refreshTocs(node, writtenTree(parser, source.text, format), file, origin)
         }
         stamp(node, origin)
-        done.set(tree, node)
         return node
       }
 
+      // two records of one reading share their tree, and a template is shared by every page
+      const trees = new WeakMap<PodliteDocument, PodliteDocument>()
+      const templates = new WeakMap<publishRecord, publishRecord>()
+      const assembleTree = (record: publishRecord): PodliteDocument => {
+        const known = trees.get(record.node)
+        if (known) return known
+        const made = assemble(record.node, record)
+        trees.set(record.node, made)
+        return made
+      }
+      const assembleTemplate = (template: publishRecord): publishRecord => {
+        const known = templates.get(template)
+        if (known) return known
+        const node = assembleTree(template)
+        const header = assemble(template.header, template)
+        const footer = assemble(template.footer, template)
+        const same = node === template.node && header === template.header && footer === template.footer
+        const made = same ? template : { ...template, node, header, footer }
+        templates.set(template, made)
+        return made
+      }
+
       const out = recs.map(record => {
-        const fields: Partial<publishRecord> = {}
-        for (const key of ['node', 'description', 'header', 'footer'] as const) {
-          const value = record[key]
-          const made = assemble(value, record)
-          if (made !== value) (fields as any)[key] = made
-        }
-        const template = record.template
-        if (template) {
-          const made = done.get(template) as publishRecord | undefined
-          if (made) fields.template = made
-          else {
-            const node = assemble(template.node, template)
-            const header = assemble(template.header, template)
-            const footer = assemble(template.footer, template)
-            if (node !== template.node || header !== template.header || footer !== template.footer) {
-              fields.template = { ...template, node, header, footer }
-              done.set(template, fields.template)
-            }
-          }
-        }
-        return Object.keys(fields).length ? { ...record, ...fields } : record
+        const node = assembleTree(record)
+        const description = assemble(record.description, record)
+        const header = assemble(record.header, record)
+        const footer = assemble(record.footer, record)
+        const template = record.template ? assembleTemplate(record.template) : record.template
+        const same =
+          node === record.node &&
+          description === record.description &&
+          header === record.header &&
+          footer === record.footer &&
+          template === record.template
+        return same ? record : { ...record, node, description, header, footer, template }
       })
 
       if (pass !== 'first') {
         for (const record of out) {
           for (const tree of [record.node, record.description, record.header, record.footer, record.template?.node]) {
-            if (!tree || typeof tree !== 'object') continue
-            for (const left of includesIn(tree)) {
+            for (const left of nodesOf(tree, 'include')) {
               if (left.location && told.has(left.location)) continue
               const file = left[nodeOriginKey]?.file ?? record.file
               const line = left.location ? `:${left.location.start.line}` : ''
               problems.push(`${shown(file)}${line}: the include is left in place`)
             }
             // a picture or a link placed now comes after the plugins that make them work
-            getFromTree(tree as PodNode, () => true).forEach((node: any) => {
-              const from = node?.[nodeOriginKey]?.file
-              if (!from || !lateFiles.has(from)) return
+            for (const node of nodesOf(tree, () => true)) {
+              const from = node[nodeOriginKey]?.file
+              if (!from || !lateFiles.has(from)) continue
               const what =
                 node.type === 'image' ? 'a picture' : node.type === 'fcode' && node.name === 'L' ? 'a link' : ''
               if (what) problems.push(`${shown(from)}: ${what} is placed after the plugins that handle it`)
-            })
+            }
           }
         }
       }
@@ -245,7 +287,7 @@ const passes = (options: IncludeResolveOptions) => {
 
 =head2 includePasses
 
-The include plugin in two passes over one catalogue. C<first> goes before the
+Gives the include plugin as two passes over one catalogue. C<first> goes before the
 plugins of images, links and React and places all it can; an include of a
 document a plugin makes later in the chain (the site data, and the names in
 C<late>) waits there. C<last> goes after those plugins and places only such

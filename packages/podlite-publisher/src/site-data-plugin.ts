@@ -14,8 +14,16 @@ export function buildStylesContent(theme: string | undefined, globalStylesPath: 
   return imports.map(i => `\n            ${i}\n        `).join('')
 }
 
-// The document this plugin makes, by the name an include finds it under. It is
-// made after the other plugins ran, so an include of it waits for it.
+/*
+=begin pod :kind<export>
+
+=head2 SITE_DATA_DOCUMENT
+
+The name an include finds the document this plugin makes by. The document is
+made after the other plugins ran, so the include plugin waits for it.
+
+=end pod
+*/
 export const SITE_DATA_DOCUMENT = 'PLUGIN_DATA'
 
 export interface SiteInfo {

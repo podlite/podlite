@@ -11,9 +11,11 @@ type NamedNode = { type?: string; name?: string; location?: Violation['location'
 // a name with both cases is a named block for a handler; all upper case is a semantic block
 const isMixedCase = (name: string): boolean => name !== name.toLowerCase() && name !== name.toUpperCase()
 
+const isNamed = (node: unknown): node is NamedNode => typeof node === 'object' && node !== null && 'name' in node
+
 const blocksNamed = (ast: PodliteDocument, test: (name: string) => boolean): NamedNode[] =>
-  (getFromTree(ast, () => true) as NamedNode[]).filter(
-    node => node.type === 'block' && typeof node.name === 'string' && test(node.name),
+  getFromTree(ast, () => true).flatMap(node =>
+    isNamed(node) && node.type === 'block' && typeof node.name === 'string' && test(node.name) ? [node] : [],
   )
 
 export const directiveNamedBlockRule: Rule = {
