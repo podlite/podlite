@@ -1,7 +1,16 @@
 import * as path from 'path'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { getTextContentFromNode, makeAttrs, makeInterator, PodNode, Text, toFragment } from '@podlite/schema'
+import {
+  buildBindingIndex,
+  getTextContentFromNode,
+  indexAnchors,
+  makeAttrs,
+  makeInterator,
+  PodNode,
+  sameDocTarget,
+  Text,
+} from '@podlite/schema'
 import type { Location } from '@podlite/schema'
 import { convertFileLinksToUrl, getPathToOpen, isIndexed } from './node-utils'
 import { nodeOrigin, recordOrigin } from './source'
@@ -74,15 +83,20 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     const problems: string[] = []
     // the title and the address a name links to: of one document, at the place a
     // search engine is told to index when it is published at more than one
-    const resolve = (name: string, at: string): { title: string; url: publishRecord['publishUrl'] } | undefined => {
+    const resolve = (
+      name: string,
+      section: string | undefined,
+      at: string,
+    ): { title: string; url: string } | undefined => {
       // a link has no place of its own; `at` is where the paragraph holding it starts
-      const answering = named.get(name) ?? []
+      const written = section === undefined ? name : `${name}#${section}`
+      const answering = (named.get(name) ?? []).filter(({ record }) => Boolean(record.publishUrl))
       const files = options.documents
         ? options.documents(name).map(file => path.resolve(file))
         : [...new Set(answering.map(({ record }) => fileOf(record)))]
       if (files.length > 1) {
         problems.push(
-          `${at}: a link in the text from this line, doc:${name}: more than one document is named ${name}: ${files
+          `${at}: a link in the text from this line, doc:${written}: more than one document is named ${name}: ${files
             .map(shown)
             .join(', ')}`,
         )
@@ -90,12 +104,23 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       }
       const placed = answering.filter(({ record }) => fileOf(record) === files[0])
       if (!placed.length) {
-        problems.push(`${at}: a link in the text from this line, doc:${name}: no published document is named ${name}`)
+        problems.push(
+          `${at}: a link in the text from this line, doc:${written}: no published document is named ${name}`,
+        )
         return undefined
       }
       const indexed = placed.filter(({ record }) => isIndexed(record))
       const { record, title } = (indexed.length ? indexed : placed)[(indexed.length ? indexed : placed).length - 1]
-      return { title, url: record.publishUrl }
+      const url = record.publishUrl ?? ''
+      if (section === undefined) return { title, url }
+      // a section is the block the page gives that address to, by the rule the page is drawn with
+      const ctx = { __bindings: buildBindingIndex(record.node), __anchors: indexAnchors(record.node) }
+      const anchor = sameDocTarget(`#${section}`, ctx)
+      if (anchor === undefined) {
+        problems.push(`${at}: a link in the text from this line, doc:${written}: ${name} has no section ${section}`)
+        return undefined
+      }
+      return { title, url: `${url}${anchor}` }
     }
 
     const processNode = (node: PodNode, srcfile: string) => {
@@ -125,9 +150,13 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
             const line = lines.get(node)
             // a section of the document is addressed after its name
             const [name, ...section] = docLink.split('#')
-            const found = resolve(name, `${shown(from)}${line !== undefined ? `:${line}` : ''}`)
+            const found = resolve(
+              name,
+              section.length ? section.join('#') : undefined,
+              `${shown(from)}${line !== undefined ? `:${line}` : ''}`,
+            )
             if (!found) return node
-            const url = section.length ? `${found.url}#${toFragment(section.join('#'))}` : found.url
+            const { url } = found
             const newContent: Text = {
               type: 'text',
               value: `${found.title}`,

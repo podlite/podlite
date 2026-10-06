@@ -138,6 +138,32 @@ describe('a doc: link', () => {
     expect(links(res[0].node)).toEqual(['/t#Some-section'])
   })
 
+  it('goes to the address a section of the document was given by :id', () => {
+    const target = processFile(
+      'site/t.podlite',
+      '=begin pod :puburl</t>\n=for NAME :id<Name>\nThe name\n\n=for head1 :id<custom>\nSome section\n=end pod\n',
+    )
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\nSee L<doc:Name#Some section> and L<doc:Name#custom>.\n=end pod\n',
+    )
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [host, target], tctx)
+    expect(links(res[0].node)).toEqual(['/t#custom', '/t#custom'])
+  })
+
+  it('stops the build on a section the document does not have, and on a document without an address', () => {
+    const target = processFile('site/t.podlite', '=begin pod :puburl</t>\n=for NAME :id<Name>\nThe name\n=end pod\n')
+    const unpublished = processFile('site/u.podlite', '=begin pod\n=for NAME :id<Draft>\nThe draft\n=end pod\n')
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\nSee L<doc:Name#Absent>.\n\nAnd L<doc:Draft#Part>.\n=end pod\n',
+    )
+    expect(run([host, target, unpublished])).toEqual([
+      'site/host.podlite:2: a link in the text from this line, doc:Name#Absent: Name has no section Absent',
+      'site/host.podlite:4: a link in the text from this line, doc:Draft#Part: no published document is named Draft',
+    ])
+  })
+
   it('names the line of the paragraph that holds the link', () => {
     const host = processFile('site/host.podlite', '=begin pod\nIntro.\n\nSee L<doc:Absent>.\n=end pod\n')
     expect(run([host])).toEqual([
