@@ -1,10 +1,23 @@
 import * as path from 'path'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { getTextContentFromNode, makeAttrs, makeInterator, PodNode, Text } from '@podlite/schema'
+import { getTextContentFromNode, makeAttrs, makeInterator, PodNode, Text, toFragment } from '@podlite/schema'
+import type { Location } from '@podlite/schema'
 import { convertFileLinksToUrl, getPathToOpen, isIndexed } from './node-utils'
 import { nodeOrigin, recordOrigin } from './source'
 
+/*
+=begin pod :kind<export>
+
+=head2 LinksOptions
+
+C<documents> gives the files of the documents a name is found in, as the include
+plugin finds them (C<includePasses> gives it): a C<doc:> link and an include
+then read a name alike. Without it a name is looked for among the records at
+hand.
+
+=end pod
+*/
 export type LinksOptions = {
   // the files of the documents that answer to a name, as an include finds them;
   // without it, the records at hand that answer to it
@@ -29,6 +42,11 @@ export class LinkError extends Error {
     this.problems = problems
   }
 }
+
+type TreeNode = { type?: string; name?: string; content?: unknown; location?: Location }
+
+const isNode = (value: unknown): value is TreeNode =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const shown = (file: string): string => (path.isAbsolute(file) ? path.relative(process.cwd(), file) : file)
 
@@ -56,32 +74,37 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     const problems: string[] = []
     // the title and the address a name links to: of one document, at the place a
     // search engine is told to index when it is published at more than one
-    const resolve = (name: string, at: string): { title: string; url: string } | undefined => {
+    const resolve = (name: string, at: string): { title: string; url: publishRecord['publishUrl'] } | undefined => {
+      // a link has no place of its own; `at` is where the paragraph holding it starts
       const answering = named.get(name) ?? []
       const files = options.documents
         ? options.documents(name).map(file => path.resolve(file))
         : [...new Set(answering.map(({ record }) => fileOf(record)))]
       if (files.length > 1) {
-        problems.push(`${at}: doc:${name}: more than one document is named ${name}: ${files.map(shown).join(', ')}`)
+        problems.push(
+          `${at}: a link in the text from this line, doc:${name}: more than one document is named ${name}: ${files
+            .map(shown)
+            .join(', ')}`,
+        )
         return undefined
       }
       const placed = answering.filter(({ record }) => fileOf(record) === files[0])
       if (!placed.length) {
-        problems.push(`${at}: doc:${name}: no published document is named ${name}`)
+        problems.push(`${at}: a link in the text from this line, doc:${name}: no published document is named ${name}`)
         return undefined
       }
       const indexed = placed.filter(({ record }) => isIndexed(record))
       const { record, title } = (indexed.length ? indexed : placed)[(indexed.length ? indexed : placed).length - 1]
-      return { title, url: record.publishUrl as string }
+      return { title, url: record.publishUrl }
     }
 
     const processNode = (node: PodNode, srcfile: string) => {
-      // a link has no place of its own: it is told by the line of the block it stands in
+      // the line the paragraph or block holding each link starts at
       const lines = new WeakMap<object, number>()
-      const mark = (tree: any, line?: number) => {
-        if (!tree || typeof tree !== 'object') return
+      const mark = (tree: unknown, line?: number) => {
         if (Array.isArray(tree)) return tree.forEach(child => mark(child, line))
-        const here = tree.type === 'block' && tree.location ? tree.location.start.line : line
+        if (!isNode(tree)) return
+        const here = (tree.type === 'block' || tree.type === 'para') && tree.location ? tree.location.start.line : line
         if (tree.type === 'fcode' && tree.name === 'L' && here !== undefined) lines.set(tree, here)
         mark(tree.content, here)
       }
@@ -100,13 +123,16 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
               return node
             }
             const line = lines.get(node)
-            const found = resolve(docLink, `${shown(from)}${line !== undefined ? `:${line}` : ''}`)
+            // a section of the document is addressed after its name
+            const [name, ...section] = docLink.split('#')
+            const found = resolve(name, `${shown(from)}${line !== undefined ? `:${line}` : ''}`)
             if (!found) return node
+            const url = section.length ? `${found.url}#${toFragment(section.join('#'))}` : found.url
             const newContent: Text = {
               type: 'text',
               value: `${found.title}`,
             }
-            const updated = meta ? { meta: found.url } : { content: newContent, meta: found.url }
+            const updated = meta ? { meta: url } : { content: newContent, meta: url }
 
             return { ...node, ...updated }
           }

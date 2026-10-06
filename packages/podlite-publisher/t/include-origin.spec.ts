@@ -118,12 +118,31 @@ describe('a doc: link', () => {
       page,
     ]
     expect(run(records)).toEqual([
-      'site/page.pod6:2: doc:Same: more than one document is named Same: a/one.pod6, b/two.pod6',
+      'site/page.pod6:2: a link in the text from this line, doc:Same: more than one document is named Same: a/one.pod6, b/two.pod6',
     ])
   })
 
   it('stops the build when no published document answers to it', () => {
-    expect(run([page])).toEqual(['site/page.pod6:2: doc:Same: no published document is named Same'])
+    expect(run([page])).toEqual([
+      'site/page.pod6:2: a link in the text from this line, doc:Same: no published document is named Same',
+    ])
+  })
+
+  it('goes to a section of the document named after the name', () => {
+    const target = processFile(
+      'site/t.podlite',
+      '=begin pod :puburl</t>\n=for NAME :id<Name>\nThe name\n\n=head1 Some section\n=end pod\n',
+    )
+    const host = processFile('site/host.podlite', '=begin pod\nIntro.\n\nSee L<doc:Name#Some section>.\n=end pod\n')
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [host, target], tctx)
+    expect(links(res[0].node)).toEqual(['/t#Some-section'])
+  })
+
+  it('names the line of the paragraph that holds the link', () => {
+    const host = processFile('site/host.podlite', '=begin pod\nIntro.\n\nSee L<doc:Absent>.\n=end pod\n')
+    expect(run([host])).toEqual([
+      'site/host.podlite:4: a link in the text from this line, doc:Absent: no published document is named Absent',
+    ])
   })
 
   it('takes the names the include plugin finds documents by', () => {
@@ -133,7 +152,7 @@ describe('a doc: link', () => {
     const { documents } = includePasses({ catalogue: [one, hidden, page] })
     expect(run([one, page])).toEqual([])
     expect(run([one, page], documents)).toEqual([
-      'site/page.pod6:2: doc:Same: more than one document is named Same: a/one.pod6, b/hidden.pod6',
+      'site/page.pod6:2: a link in the text from this line, doc:Same: more than one document is named Same: a/one.pod6, b/hidden.pod6',
     ])
   })
 })
