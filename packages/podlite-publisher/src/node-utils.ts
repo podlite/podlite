@@ -16,7 +16,7 @@ import { getAllArticles, isExistsPubdate, makeAstFromSrc } from './shared'
 import { parseMd } from '@podlite/markdown'
 import matter from 'gray-matter'
 import { pubRecord, publishRecord } from './record'
-import { withSource } from './source'
+import { nodeOrigin, withSource } from './source'
 import { readRecordText } from './reading'
 
 export const getPathToOpen = (filepath, parentDocPath) => {
@@ -32,9 +32,35 @@ export const getPathToOpen = (filepath, parentDocPath) => {
   }
 }
 
+// whether a search engine is told to index the record, as its pod block says
+export const isIndexed = (record: publishRecord): boolean => {
+  const [pod] = getFromTree(record.node, 'pod')
+  return !pod || !makeAttrs(pod, {}).getFirstValue('noindex')
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 makeLinksMap
+
+The address of each file, by its path. A file placed at more than one address
+gives the address of the last record a search engine is told to index, and of the
+last record when none or all of them are: the current version of a document and
+its permanent address, kept out of the index, give the first.
+
+=end pod
+*/
 export const makeLinksMap = (records: publishRecord[]): { [link: string]: string } => {
-  const linksMap = {
-    ...Object.fromEntries(records.map(({ publishUrl = '', file }) => [getPathToOpen(file, './').path, publishUrl])),
+  const linksMap: { [link: string]: string } = {}
+  const indexed: { [link: string]: boolean } = {}
+  for (const record of records) {
+    // by the absolute path: a link an include brought is found from the absolute path of its file
+    const key = path.resolve(getPathToOpen(record.file, './').path)
+    const own = isIndexed(record)
+    if (key in linksMap && indexed[key] && !own) continue
+    const { publishUrl = '' } = record
+    linksMap[key] = publishUrl as string
+    indexed[key] = own
   }
   return linksMap
 }
@@ -47,8 +73,9 @@ export const convertFileLinksToUrl = (records: publishRecord[], additinalMap = {
         const link = meta ? meta : getTextContentFromNode(content)
         const r = link.match(/file:\s*(?<path>(.+))\s*$/)
         const convertFileToUrl = filePath => {
-          const { isRemote, path } = getPathToOpen(filePath, item.file)
-          return isRemote ? null : linksMap[path]
+          // a link an include brought is found from the file it was written in
+          const { isRemote, path: target } = getPathToOpen(filePath, nodeOrigin(node)?.file ?? item.file)
+          return isRemote ? null : linksMap[path.resolve(target)]
         }
         const newLink = r?.groups?.path ? convertFileToUrl(r.groups.path) : link
         const newContent: Text = {

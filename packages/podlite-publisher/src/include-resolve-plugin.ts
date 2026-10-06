@@ -237,7 +237,7 @@ const passes = (options: IncludeResolveOptions) => {
     }
     return [onProcess, onExit]
   }
-  return run
+  return { run, documents: (name: string) => catalogue.named(name) }
 }
 
 /*
@@ -249,18 +249,20 @@ The include plugin in two passes over one catalogue. C<first> goes before the
 plugins of images, links and React and places all it can; an include of a
 document a plugin makes later in the chain (the site data, and the names in
 C<late>) waits there. C<last> goes after those plugins and places only such
-documents. An include left after it stops the build.
+documents. An include left after it stops the build. C<documents> gives the files
+of the documents that answer to a name, for the links plugin to find a C<doc:>
+link by the same names.
 
 =end pod
 */
 export const includePasses = (
   options: IncludeResolveOptions = {},
-): { first: PodliteWebPlugin; last: PodliteWebPlugin } => {
-  const run = passes(options)
-  return { first: run('first'), last: run('last') }
+): { first: PodliteWebPlugin; last: PodliteWebPlugin; documents: (name: string) => string[] } => {
+  const { run, documents } = passes(options)
+  return { first: run('first'), last: run('last'), documents }
 }
 
 // One pass over the records: nothing waits, and an include that does not place
 // what it names stops the build.
-const plugin = (options: IncludeResolveOptions = {}): PodliteWebPlugin => passes(options)('only')
+const plugin = (options: IncludeResolveOptions = {}): PodliteWebPlugin => passes(options).run('only')
 export default plugin

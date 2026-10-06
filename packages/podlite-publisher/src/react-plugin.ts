@@ -6,6 +6,7 @@ import { getPathToOpen } from './node-utils'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import { makeAstFromSrc } from './shared'
+import { nodeOrigin } from './source'
 
 const plugin = (): PodliteWebPlugin => {
   const componensMap = new Map()
@@ -48,7 +49,9 @@ export default {}
               groups: { component: undefined, source: undefined },
             }
           ).groups
-          const { path } = source.match(/^\.{0,2}\//) ? getPathToOpen(source, file) : { path: source }
+          // an import an include brought is found from the file it was written in
+          const from = nodeOrigin(node)?.file ?? file
+          const { path } = source.match(/^\.{0,2}\//) ? getPathToOpen(source, from) : { path: source }
           // save absolute Component path and Component name
           const notDefaultImport = component.match(/{(.*)}/)
           if (notDefaultImport) {

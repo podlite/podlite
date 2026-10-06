@@ -16,6 +16,12 @@
 
 =item the template, the header, the footer and the description are assembled as well, each from the file it was written in
 
+=item the images, links and React plugins find a path written in a block an include brought from the file the block was written in, not from the file of the record: a picture, a C<file:> link and a component import of an included chapter work as they do in the chapter itself
+
+=item a link to a file placed at more than one address goes to the address a search engine is told to index: the current version of a document, not its permanent address marked C<:noindex>. The map of addresses is keyed by the absolute path of a file
+
+=item B<Breaking:> a C<doc:> link whose name no published document answers to, or that two documents answer to, stops the build with C<LinkError>, naming the file and the line; the link was replaced by the words "not found", and of two documents the last one won. The links plugin takes C<documents>, the files the include plugin finds a name in (C<includePasses> gives it), so that a link and an include read a name alike
+
 =item C<nodeOrigin> gives the file a node of a record was written in, when an include brought it there. The mark is held under a symbol key on the node, so a copy made by spreading the node keeps it and JSON does not carry it
 
 =item C<=Include> is no longer read as C<=include>: by the specification it is a named block. The lint of C<podlite> warns about it

@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import { getPathToOpen } from './node-utils'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
+import { nodeOrigin } from './source'
 const ORIENTATION_TAG = 0x0112
 
 export const readOrientation = (file: string): number | null => {
@@ -80,7 +81,8 @@ export default {}
       ':image': node => {
         // process copy files to assets
         // '../assets/'
-        const { path } = getPathToOpen(node.src, file)
+        // a picture an include brought is found from the file it was written in
+        const { path } = getPathToOpen(node.src, nodeOrigin(node)?.file ?? file)
         const { name, ext, dir } = pathMod.parse(path)
         const variable_name = 'i' + path.split('/').slice(1).join('_').replace(/\W+/g, '_').toLowerCase()
         const newFileName = `${variable_name}${ext}`
