@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<revealTest(id)> opens the test with that C<:id> on the page, with the folded sections above it, and brings its line into view. A click on a link to the address the page already shows fires no C<hashchange>, so a site calls it on such a click
+
 =head1 0.0.75
 
 =item an explicit C<=code> block renders its C<:nested>, as in HTML and Markdown

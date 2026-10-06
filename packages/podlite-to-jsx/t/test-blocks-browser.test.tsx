@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { TestPodlite as Podlite } from '../src/index'
+import { TestPodlite as Podlite, revealTest } from '../src/index'
 import React from 'react'
 import { act } from 'react-dom/test-utils'
 import { renderToString } from 'react-dom/server.node'
@@ -88,6 +88,23 @@ describe('a test in the browser', () => {
       window.dispatchEvent(new HashChangeEvent('hashchange'))
     })
     expect(details().open).toBe(true)
+  })
+
+  it('opens when a site asks for it by its id, as on a click at the address already shown', () => {
+    window.history.replaceState(null, '', '/#t1')
+    hydrate(`=begin pod\n=for head1 :folded\nSection\n\nA rule.\n\n${test()}\n=end pod\n`)
+    details().open = false
+    ;(container.querySelector('details.folded-section') as HTMLDetailsElement).open = false
+    expect(revealTest('t1')).toBe(true)
+    expect(details().open).toBe(true)
+    expect((container.querySelector('details.folded-section') as HTMLDetailsElement).open).toBe(true)
+  })
+
+  it('opens nothing for an id that is not a test', () => {
+    hydrate(`=begin pod\n=for para :id<p1>\nA rule.\n\n${test()}\n=end pod\n`)
+    expect(revealTest('p1')).toBe(false)
+    expect(revealTest('absent')).toBe(false)
+    expect(details().open).toBe(false)
   })
 
   it('keeps what the reader opened across a new render', () => {

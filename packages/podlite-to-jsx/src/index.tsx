@@ -42,6 +42,7 @@ import { applyFoldedSections, testCaption, testFoldedByAuthor, tocTitleText } fr
 import { groupTests } from './test-groups'
 import { assembleIncludes } from './assemble-includes'
 import { TestBlock } from './test-block'
+export { revealTest } from './test-block'
 import { readLinkConfig, codeConfigWithDefaults, mergeConfigSettings } from '@podlite/schema'
 import { decodeHTMLStrict } from 'entities'
 import { HighlightedCode } from '@podlite/highlight'

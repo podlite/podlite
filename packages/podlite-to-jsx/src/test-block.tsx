@@ -28,6 +28,26 @@ const reveal = (details: HTMLDetailsElement): void => {
   details.querySelector('summary')?.scrollIntoView({ block: 'start' })
 }
 
+/*
+=begin pod :kind<export>
+
+=head2 revealTest
+
+Opens the test with that C<:id> on the page, with every folded section above it,
+and brings its line into view; false when no test on the page has that id. A
+link to the address the page is already at changes nothing a test can hear, so a
+site calls this on such a click.
+
+=end pod
+*/
+export const revealTest = (id: string): boolean => {
+  if (typeof document === 'undefined') return false
+  const element = document.getElementById(id)
+  if (!(element instanceof HTMLDetailsElement) || !element.classList.contains('test')) return false
+  reveal(element)
+  return true
+}
+
 type CardPlace = { top: number; left: number }
 
 export const TestBlock = ({ id, caption, folded, children }: TestBlockProps) => {
