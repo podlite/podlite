@@ -164,6 +164,27 @@ describe('a doc: link', () => {
     ])
   })
 
+  it('goes to the page itself for a section the document is named by', () => {
+    const target = processFile(
+      'site/t.podlite',
+      '=begin pod :puburl</t>\n=for NAME :id<Name>\nThe name\n\n=for TITLE :id<Target>\nTitle\n=end pod\n',
+    )
+    const host = processFile('site/host.podlite', '=begin pod\nSee L<doc:Name#Target>.\n=end pod\n')
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [host, target], tctx)
+    expect(links(res[0].node)).toEqual(['/t'])
+  })
+
+  it('goes to the home page, whose address the site gives later', () => {
+    const index = processFile('site/index.pod6', '=begin pod\n=for TITLE :id<Home>\nSite\n\n=head1 About\n=end pod\n')
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod :puburl</h>\nSee L<doc:Home> and L<doc:Home#About>.\n=end pod\n',
+    )
+    const plugin = linksPlugin({ home: 'site/index.pod6' })
+    const [res] = processPlugin({ plugin, includePatterns: '.*' }, [host, index], tctx)
+    expect(links(res[0].node)).toEqual(['/', '/#About'])
+  })
+
   it('names the line of the paragraph that holds the link', () => {
     const host = processFile('site/host.podlite', '=begin pod\nIntro.\n\nSee L<doc:Absent>.\n=end pod\n')
     expect(run([host])).toEqual([

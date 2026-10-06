@@ -2,6 +2,7 @@ import * as path from 'path'
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 import {
+  bindTarget,
   buildBindingIndex,
   getTextContentFromNode,
   indexAnchors,
@@ -23,7 +24,8 @@ import { nodeOrigin, recordOrigin } from './source'
 C<documents> gives the files of the documents a name is found in, as the include
 plugin finds them (C<includePasses> gives it): a C<doc:> link and an include
 then read a name alike. Without it a name is looked for among the records at
-hand.
+hand. C<home> is the file of the home page: its address is C</> before the site
+data plugin gives it.
 
 =end pod
 */
@@ -31,6 +33,8 @@ export type LinksOptions = {
   // the files of the documents that answer to a name, as an include finds them;
   // without it, the records at hand that answer to it
   documents?: (name: string) => string[]
+  // the file of the home page, whose address is given later in the chain
+  home?: string
 }
 
 /*
@@ -81,6 +85,9 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     }
 
     const problems: string[] = []
+    const home = options.home === undefined ? undefined : path.resolve(options.home)
+    const addressOf = (record: publishRecord): string =>
+      record.publishUrl || (home !== undefined && path.resolve(record.file) === home ? '/' : '')
     // the title and the address a name links to: of one document, at the place a
     // search engine is told to index when it is published at more than one
     const resolve = (
@@ -90,7 +97,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     ): { title: string; url: string } | undefined => {
       // a link has no place of its own; `at` is where the paragraph holding it starts
       const written = section === undefined ? name : `${name}#${section}`
-      const answering = (named.get(name) ?? []).filter(({ record }) => Boolean(record.publishUrl))
+      const answering = (named.get(name) ?? []).filter(({ record }) => Boolean(addressOf(record)))
       const files = options.documents
         ? options.documents(name).map(file => path.resolve(file))
         : [...new Set(answering.map(({ record }) => fileOf(record)))]
@@ -111,11 +118,16 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       }
       const indexed = placed.filter(({ record }) => isIndexed(record))
       const { record, title } = (indexed.length ? indexed : placed)[(indexed.length ? indexed : placed).length - 1]
-      const url = record.publishUrl ?? ''
+      const url = addressOf(record)
       if (section === undefined) return { title, url }
       // a section is the block the page gives that address to, by the rule the page is drawn with
-      const ctx = { __bindings: buildBindingIndex(record.node), __anchors: indexAnchors(record.node) }
-      const anchor = sameDocTarget(`#${section}`, ctx)
+      const bindings = buildBindingIndex(record.node)
+      // the block that names the document is the page itself
+      const bound = bindTarget(section, bindings)
+      if (bound.found && isNode(bound.node) && (bound.node.name === 'NAME' || bound.node.name === 'TITLE')) {
+        return { title, url }
+      }
+      const anchor = sameDocTarget(`#${section}`, { __bindings: bindings, __anchors: indexAnchors(record.node) })
       if (anchor === undefined) {
         problems.push(`${at}: a link in the text from this line, doc:${written}: ${name} has no section ${section}`)
         return undefined

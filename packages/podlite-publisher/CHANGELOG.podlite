@@ -20,7 +20,7 @@
 
 =item a link to a file placed at more than one address goes to the address a search engine is told to index: the current version of a document, not its permanent address marked C<:noindex>. The map of addresses is keyed by the absolute path of a file
 
-=item B<Breaking:> a C<doc:> link whose name no published document answers to, or that two documents answer to, stops the build with C<LinkError>, naming the file and the line. So does a link to a section the document does not have; a link to a section goes to the address the page gives that section. The link was replaced by the words "not found", and of two documents the last one won. The links plugin takes C<documents>, the files the include plugin finds a name in (C<includePasses> gives it), so that a link and an include read a name alike
+=item B<Breaking:> a C<doc:> link whose name no published document answers to, or that two documents answer to, stops the build with C<LinkError>, naming the file and the line. So does a link to a section the document does not have; a link to a section goes to the address the page gives that section. The link was replaced by the words "not found", and of two documents the last one won. The links plugin takes C<documents>, the files the include plugin finds a name in (C<includePasses> gives it), so that a link and an include read a name alike, and C<home>, the file of the home page, whose address C</> the site data plugin gives only later. A link to the section a document is named by goes to the page itself
 
 =item C<nodeOrigin> gives the file a node of a record was written in, when an include brought it there. The mark is held under a symbol key on the node, so a copy made by spreading the node keeps it and JSON does not carry it
 
