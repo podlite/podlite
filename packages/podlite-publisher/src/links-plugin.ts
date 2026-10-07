@@ -74,6 +74,9 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     const named = new Map<string, Array<{ record: publishRecord; title: string }>>()
     for (const record of recs) {
       const handler = node => {
+        // a name an include brought belongs to the document it was written in
+        const from = nodeOrigin(node)?.file
+        if (from !== undefined && path.resolve(from) !== fileOf(record)) return
         const conf = makeAttrs(node, {})
         const title = getTextContentFromNode(node).trim()
         const id = conf.exists('id') ? conf.getFirstValue('id') : undefined
@@ -85,6 +88,14 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     }
 
     const problems: string[] = []
+    // the address a page gives a section, by the rule the page is drawn with: empty
+    // for the block that names the document, which is the page itself
+    const addressIn = (record: publishRecord, section: string): string | undefined => {
+      const bindings = buildBindingIndex(record.node)
+      const bound = bindTarget(section, bindings)
+      if (bound.found && isNode(bound.node) && (bound.node.name === 'NAME' || bound.node.name === 'TITLE')) return ''
+      return sameDocTarget(`#${section}`, { __bindings: bindings, __anchors: indexAnchors(record.node) })
+    }
     const home = options.home === undefined ? undefined : path.resolve(options.home)
     const addressOf = (record: publishRecord): string =>
       record.publishUrl || (home !== undefined && path.resolve(record.file) === home ? '/' : '')
@@ -121,13 +132,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       const url = addressOf(record)
       if (section === undefined) return { title, url }
       // a section is the block the page gives that address to, by the rule the page is drawn with
-      const bindings = buildBindingIndex(record.node)
-      // the block that names the document is the page itself
-      const bound = bindTarget(section, bindings)
-      if (bound.found && isNode(bound.node) && (bound.node.name === 'NAME' || bound.node.name === 'TITLE')) {
-        return { title, url }
-      }
-      const anchor = sameDocTarget(`#${section}`, { __bindings: bindings, __anchors: indexAnchors(record.node) })
+      const anchor = addressIn(record, section)
       if (anchor === undefined) {
         problems.push(`${at}: a link in the text from this line, doc:${written}: ${name} has no section ${section}`)
         return undefined
@@ -135,7 +140,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       return { title, url: `${url}${anchor}` }
     }
 
-    const processNode = (node: PodNode, srcfile: string) => {
+    const processNode = (node: PodNode, srcfile: string, page: publishRecord) => {
       // the line the paragraph or block holding each link starts at
       const lines = new WeakMap<object, number>()
       const mark = (tree: unknown, line?: number) => {
@@ -160,13 +165,21 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
               return node
             }
             const line = lines.get(node)
-            // a section of the document is addressed after its name
+            const at = `${shown(from)}${line !== undefined ? `:${line}` : ''}`
+            // a section of the document is addressed after its name, of this page without one
             const [name, ...section] = docLink.split('#')
-            const found = resolve(
-              name,
-              section.length ? section.join('#') : undefined,
-              `${shown(from)}${line !== undefined ? `:${line}` : ''}`,
-            )
+            const local = (written: string) => {
+              const anchor = addressIn(page, written)
+              if (anchor !== undefined) return { title: written, url: anchor || '#' }
+              problems.push(
+                `${at}: a link in the text from this line, doc:#${written}: the page has no section ${written}`,
+              )
+              return undefined
+            }
+            const found =
+              name === '' && section.length
+                ? local(section.join('#'))
+                : resolve(name, section.length ? section.join('#') : undefined, at)
             if (!found) return node
             const { url } = found
             const newContent: Text = {
@@ -184,19 +197,19 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
     }
     // convert all doc: links to file:: links
     const docToFileLinksConverted = recs.map(item => {
-      const node = processNode(item.node, item.file)
+      const node = processNode(item.node, item.file, item)
       // process images inside description
       let extra = {} as { description?: PodNode; footer?: PodNode; header?: PodNode }
       if (item.description) {
-        extra.description = processNode(item.description, item.file)
+        extra.description = processNode(item.description, item.file, item)
       }
       // process file header and footer
       const { footer, header } = item
       if (footer) {
-        extra.footer = processNode(footer, item.file)
+        extra.footer = processNode(footer, item.file, item)
       }
       if (header) {
-        extra.header = processNode(header, item.file)
+        extra.header = processNode(header, item.file, item)
       }
       return { ...item, node, ...extra }
     })

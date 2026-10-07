@@ -95,10 +95,28 @@ A tree changed in place still answers yes.
 */
 export const isParsedTree = (record: object): boolean => held(record)[sourceKey]?.parsed(held(record).node) ?? false
 
-// The file a node was written in, when an include brought it into a record: the
-// same key on every copy made by spreading the node, and absent from JSON.
+/*
+=begin pod :kind<export>
+
+=head2 nodeOriginKey
+
+The key a node holds its C<NodeOrigin> under. Every copy made by spreading the
+node keeps it, and JSON does not carry it. Read it with C<nodeOrigin>.
+
+=end pod
+*/
 export const nodeOriginKey: unique symbol = Symbol.for('@podlite/publisher:node-origin/1')
 
+/*
+=begin pod :kind<export>
+
+=head2 NodeOrigin
+
+The file a node was written in, and the directives it came through inside the
+record, outermost first.
+
+=end pod
+*/
 export type NodeOrigin = {
   readonly file: string
   // the directives the node came through inside the record, outermost first

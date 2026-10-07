@@ -217,9 +217,8 @@ const passes = (options: IncludeResolveOptions) => {
         return node
       }
 
-      // two records of one reading share their tree, and a template is shared by every page
+      // two records of one reading share their tree
       const trees = new WeakMap<PodliteDocument, PodliteDocument>()
-      const templates = new WeakMap<publishRecord, publishRecord>()
       const assembleTree = (record: publishRecord): PodliteDocument => {
         const known = trees.get(record.node)
         if (known) return known
@@ -227,36 +226,24 @@ const passes = (options: IncludeResolveOptions) => {
         trees.set(record.node, made)
         return made
       }
-      const assembleTemplate = (template: publishRecord): publishRecord => {
-        const known = templates.get(template)
-        if (known) return known
-        const node = assembleTree(template)
-        const header = assemble(template.header, template)
-        const footer = assemble(template.footer, template)
-        const same = node === template.node && header === template.header && footer === template.footer
-        const made = same ? template : { ...template, node, header, footer }
-        templates.set(template, made)
-        return made
-      }
-
+      // a template is a record of the chain and is assembled as one; a template a record
+      // carries is left as it is, as the plugins of images and links leave it
       const out = recs.map(record => {
         const node = assembleTree(record)
         const description = assemble(record.description, record)
         const header = assemble(record.header, record)
         const footer = assemble(record.footer, record)
-        const template = record.template ? assembleTemplate(record.template) : record.template
         const same =
           node === record.node &&
           description === record.description &&
           header === record.header &&
-          footer === record.footer &&
-          template === record.template
-        return same ? record : { ...record, node, description, header, footer, template }
+          footer === record.footer
+        return same ? record : { ...record, node, description, header, footer }
       })
 
       if (pass !== 'first') {
         for (const record of out) {
-          for (const tree of [record.node, record.description, record.header, record.footer, record.template?.node]) {
+          for (const tree of [record.node, record.description, record.header, record.footer]) {
             for (const left of nodesOf(tree, 'include')) {
               if (left.location && told.has(left.location)) continue
               const file = left[nodeOriginKey]?.file ?? record.file

@@ -6,7 +6,7 @@ import resolvePlugin, { includePasses } from '../src/include-resolve-plugin'
 import imagesPlugin from '../src/images-plugin'
 import linksPlugin, { LinkError } from '../src/links-plugin'
 import reactPlugin from '../src/react-plugin'
-import siteDataPlugin from '../src/site-data-plugin'
+import siteDataPlugin, { SITE_DATA_DOCUMENT } from '../src/site-data-plugin'
 
 const tctx = { testing: true }
 
@@ -185,6 +185,29 @@ describe('a doc: link', () => {
     expect(links(res[0].node)).toEqual(['/', '/#About'])
   })
 
+  it('goes to a section of its own page when the name is left out', () => {
+    const page = processFile(
+      'site/a.podlite',
+      '=begin pod :puburl</a>\n=TITLE A\n\n=head1 Here\n\nSee L<doc:#Here>.\n=end pod\n',
+    )
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [page], tctx)
+    expect(links(res[0].node)).toEqual(['#Here'])
+    expect(run([processFile('site/b.podlite', '=begin pod :puburl</b>\nSee L<doc:#Absent>.\n=end pod\n')])).toEqual([
+      'site/b.podlite:2: a link in the text from this line, doc:#Absent: the page has no section Absent',
+    ])
+  })
+
+  it('does not take a name an include brought for the name of the including document', () => {
+    const source = processFile('site/source.podlite', '=begin pod :puburl</source>\n=TITLE Source\n=end pod\n')
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod :puburl</host>\n=TITLE Host\n\n=include file:./source.podlite\n\nSee L<doc:Source>.\n=end pod\n',
+    )
+    const records = quietly(() => resolvePlugin({ catalogue: [source, host] })[0]([source, host]))
+    const [, res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, records, tctx)[0]
+    expect(links(res.node)).toEqual(['/source'])
+  })
+
   it('names the line of the paragraph that holds the link', () => {
     const host = processFile('site/host.podlite', '=begin pod\nIntro.\n\nSee L<doc:Absent>.\n=end pod\n')
     expect(run([host])).toEqual([
@@ -213,6 +236,7 @@ describe('the site data', () => {
         '=begin pod :pubdate<2026-10-01> :puburl<post>\n=TITLE Post\n\n=include file:./parts/fig.podlite\n=end pod\n',
       ),
       processFile('site/parts/fig.podlite', '=begin pod\n=picture ./a.png\n=end pod\n'),
+      processFile('site/contents.podlite', `=begin pod\n=include doc:${SITE_DATA_DOCUMENT}#articles\n=end pod\n`),
     ]
     const { first, last } = includePasses({ catalogue: items })
     const chain = [
@@ -229,12 +253,16 @@ describe('the site data', () => {
     const res = quietly(() =>
       chain.reduce(
         (recs, plugin) => processPlugin({ plugin, includePatterns: '.*' }, recs, tctx)[0],
-        items.slice(0, 2),
+        [items[0], items[1], items[3]],
       ),
     )
     const store = res.find(r => r.file === 'virtual/site-data-plugin.podlite')!
     const [data] = getFromTree(store.node, 'data').map(n => String(getTextContentFromNode(n as PodNode)))
     expect(data).toContain('parts_a_png')
     expect(data).not.toContain('"./a.png"')
+    // the last pass places what the site data plugin made in the page that includes it
+    const contents = res.find(r => r.file === 'site/contents.podlite')!
+    expect(getFromTree(contents.node, 'include')).toHaveLength(0)
+    expect(getFromTree(contents.node, 'data').map(n => String(getTextContentFromNode(n as PodNode)))).toEqual([data])
   })
 })

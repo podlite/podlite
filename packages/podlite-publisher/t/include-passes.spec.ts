@@ -245,7 +245,7 @@ describe('the record an include places blocks in', () => {
     expect(JSON.stringify(toc)).not.toContain('Host')
   })
 
-  it('assembles the template, the header, the footer and the description, each from its own file', () => {
+  it('assembles a template, a record of the chain, with its header, and the header, the footer and the description of a page', () => {
     const template = processFile(
       'site/src/template.podlite',
       '=begin pod\n=include file:./versions.podlite\n\n=begin HEADER\n=include file:./versions.podlite\n=end HEADER\n=end pod\n',
@@ -258,11 +258,10 @@ describe('the record an include places blocks in', () => {
       ),
       processFile('site/note.podlite', '=begin pod\n=para Note\n=end pod\n'),
     ]
-    const page = { ...items[1], template }
-    const [made] = only([page], [...items, template])
+    const [made, page] = only([template, items[1]], [...items, template])
     // the header is written inside the template, so the tree of the template holds it too
-    expect(texts(made.template!.node, 'para')).toEqual(['Versions', 'Versions'])
-    expect(texts(made.template!.header, 'para')).toEqual(['Versions'])
-    for (const field of [made.description, made.header, made.footer]) expect(texts(field, 'para')).toEqual(['Note'])
+    expect(texts(made.node, 'para')).toEqual(['Versions', 'Versions'])
+    expect(texts(made.header, 'para')).toEqual(['Versions'])
+    for (const field of [page.description, page.header, page.footer]) expect(texts(field, 'para')).toEqual(['Note'])
   })
 })
