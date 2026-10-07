@@ -50,6 +50,9 @@ export const revealTest = (id: string): boolean => {
 
 type CardPlace = { top: number; left: number }
 
+// the gap a card keeps from the right edge of the window
+const EDGE = 12
+
 export const TestBlock = ({ id, caption, folded, children }: TestBlockProps) => {
   const details = React.useRef<HTMLDetailsElement>(null)
   const [card, setCard] = React.useState<CardPlace | null>(null)
@@ -77,6 +80,15 @@ export const TestBlock = ({ id, caption, folded, children }: TestBlockProps) => 
     const box = event.currentTarget.getBoundingClientRect()
     setCard({ top: window.scrollY + box.bottom + 6, left: Math.max(8, window.scrollX + box.left) })
   }
+  // a card under a line in the right margin would run past the window: it moves left
+  // by as much as it overhangs, never past the left edge
+  const keepInside = (element: HTMLDivElement | null) => {
+    const width = document.documentElement.clientWidth
+    if (!card || !element || !width) return
+    const over = element.getBoundingClientRect().right - (width - EDGE)
+    if (over > 0.5) setCard({ ...card, left: Math.max(8, card.left - over) })
+  }
+
   const hideCard = () => {
     hideTimer.current = setTimeout(() => setCard(null), 150)
   }
@@ -105,6 +117,7 @@ export const TestBlock = ({ id, caption, folded, children }: TestBlockProps) => 
         createPortal(
           <div
             className="test-card"
+            ref={keepInside}
             role="tooltip"
             style={{ top: card.top, left: card.left }}
             onMouseEnter={() => clearTimeout(hideTimer.current)}

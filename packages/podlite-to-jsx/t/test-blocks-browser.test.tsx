@@ -114,6 +114,27 @@ describe('a test in the browser', () => {
     expect(details().open).toBe(true)
   })
 
+  it('keeps the card inside the window when its line stands at the right edge', () => {
+    hydrate(`=begin pod\nA rule.\n\n${test()}\n=end pod\n`)
+    Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 1000 })
+    const summary = container.querySelector('summary.test-summary') as HTMLElement
+    summary.getBoundingClientRect = () => ({ left: 900, right: 1000, top: 0, bottom: 20 } as DOMRect)
+    const box = jest
+      .spyOn(HTMLDivElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLDivElement) {
+        const left = parseFloat(this.style.left) || 0
+        return { left, right: left + 400, top: 0, bottom: 100 } as DOMRect
+      })
+    act(() => {
+      summary.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    })
+    const card = document.body.querySelector('.test-card') as HTMLElement
+    box.mockRestore()
+    delete (document.documentElement as { clientWidth?: number }).clientWidth
+    expect(parseFloat(card.style.left) + 400).toBeLessThanOrEqual(1000 - 12)
+    expect(parseFloat(card.style.left)).toBeGreaterThanOrEqual(8)
+  })
+
   it('shows a card with the test while its line is pointed at', () => {
     hydrate(`=begin pod\nA rule.\n\n${test()}\n=end pod\n`)
     act(() => {
