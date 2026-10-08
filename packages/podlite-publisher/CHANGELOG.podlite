@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.53
+
 =item B<Breaking:> the include plugin assembles C<=include> with the assembler of C<podlite>. The blocks an include finds take the place of the directive, and no C<include> node is left around them. They are read from the text of their source, with the settings in effect where the directive stands, and the includes inside them are assembled as well. The plugin takes C<catalogue>, the records the site read before the plugins ran: an include finds its source there, as well as among the documents plugins make later in the chain. Without it the plugin says so and looks among the records at hand. A relative path in a C<file:> source is resolved from the file the directive is written in; before, the source was the record whose path ended with the written one. A C<doc:> name that two documents answer to resolves to neither, and the refusal names both. With C<bounds>, a path written in one of those directories does not lead out of it
 
 =item a C<=set> before an include that brings no block reaches the next block

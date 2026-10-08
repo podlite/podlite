@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.76
+
 =item the card of a test stays inside the window: a line of a test at the right edge of the window opened its card past the edge
 
 =item C<revealTest(id)> opens the test with that C<:id> on the page, with the folded sections above it, and brings its line into view. A click on a link to the address the page already shows fires no C<hashchange>, so a site calls it on such a click

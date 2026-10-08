@@ -2,6 +2,47 @@
 
 =head1 Upcoming
 
+=head1 0.0.92
+
+
+=head2 podlite
+
+=item C<lint> warns about a block named C<=Include>, C<=Set>, C<=Config> or C<=Alias>, which is a named block and not the directive (rule C<directive-named-block>), and about C<=Image>, which the specification writes as C<=picture> (rule C<image-named-block>); each rule can be turned off on its own
+
+=item C<assembleIncludes> takes C<reportCycles>: an include whose path names a source already on the way in is then reported as C<cycle> even when it loses no C<=set>; a mask that finds the file it is written in still passes it by without a word
+
+=head2 @podlite/publisher
+
+=item B<Breaking:> the include plugin assembles C<=include> with the assembler of C<podlite>. The blocks an include finds take the place of the directive, and no C<include> node is left around them. They are read from the text of their source, with the settings in effect where the directive stands, and the includes inside them are assembled as well. The plugin takes C<catalogue>, the records the site read before the plugins ran: an include finds its source there, as well as among the documents plugins make later in the chain. Without it the plugin says so and looks among the records at hand. A relative path in a C<file:> source is resolved from the file the directive is written in; before, the source was the record whose path ended with the written one. A C<doc:> name that two documents answer to resolves to neither, and the refusal names both. With C<bounds>, a path written in one of those directories does not lead out of it
+
+=item a C<=set> before an include that brings no block reaches the next block
+
+=item B<Breaking:> an include that does not place what it names stops the build with C<IncludeError>, one line for each such include, with the file and the line of the directive and the files it came through. It stops on a missing source or address; a selector that cannot be read; a scheme the site does not read; a name that answers to two documents; a file that includes itself. It was a warning, and the page was published without the included text
+
+=item C<includePasses> gives the include plugin in two passes over one catalogue. C<first> goes before the plugins of images, links and React and places what it can; an include of a document a plugin makes later in the chain, the site data or a name given in C<late>, waits there. C<last> goes after them and places only such documents; one that holds an include, or brings a picture or a link, stops the build. The site data plugin exports the name of its document as C<SITE_DATA_DOCUMENT>
+
+=item a record is read with the body of C<=React> as Podlite in its place, by the reader an include reads the texts it brings with: an include inside the body is assembled, and the React plugin keeps the blocks of the body as the content of the block rather than reading the body again into a nested list
+
+=item the tables of contents written in a record are built again once the includes are in, and take in the headings of a C<=React> body; a table an include brought stays as its own file built it
+
+=item the header, the footer and the description of a record are assembled as well, each from the file it was written in. A template is assembled as a record of the chain; a template a record carries is left as it is
+
+=item the images, links and React plugins find a path written in a block an include brought from the file the block was written in, not from the file of the record: a picture, a C<file:> link and a component import of an included chapter work as they do in the chapter itself
+
+=item a link to a file placed at more than one address goes to the address a search engine is told to index: the current version of a document, not its permanent address marked C<:noindex>. The map of addresses is keyed by the absolute path of a file
+
+=item B<Breaking:> a C<doc:> link whose name no published document answers to, or that two documents answer to, stops the build with C<LinkError>, naming the file and the line. So does a link to a section the document does not have; a link to a section goes to the address the page gives that section. The link was replaced by the words "not found", and of two documents the last one won. The links plugin takes C<documents>, the files the include plugin finds a name in (C<includePasses> gives it), so that a link and an include read a name alike, and C<home>, the file of the home page, whose address C</> the site data plugin gives only later. A link to the section a document is named by goes to the page itself. C<doc:#section> goes to a section of the page the link is on. A name an include brought into a document is not a name of that document
+
+=item C<nodeOrigin> gives the file a node of a record was written in, when an include brought it there. The mark is held under a symbol key on the node, so a copy made by spreading the node keeps it and JSON does not carry it
+
+=item C<=Include> is no longer read as C<=include>: by the specification it is a named block. The lint of C<podlite> warns about it
+
+=head2 @podlite/to-jsx
+
+=item the card of a test stays inside the window: a line of a test at the right edge of the window opened its card past the edge
+
+=item C<revealTest(id)> opens the test with that C<:id> on the page, with the folded sections above it, and brings its line into view. A click on a link to the address the page already shows fires no C<hashchange>, so a site calls it on such a click
+
 =head1 0.0.91
 
 
