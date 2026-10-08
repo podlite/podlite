@@ -479,11 +479,12 @@ function peg$parse(input, options) {
                     // the document is a pod: a chunk whose first line is set in from the margin is code
                     const indent = text().match(/^[ \u00a0\u2001\t\u000C\u2008]*/)[0]
                     if (indent.length > 0 && text().trim() !== '') {
+                      const body = text().slice(indent.length)
                       return {
-                              text: text(),
+                              text: body,
                               type: 'code',
                               margin: indent,
-                              content: [{ type: 'verbatim', value: text() }],
+                              content: [{ type: 'verbatim', value: body }],
                               location: location(),
                             }
                     }

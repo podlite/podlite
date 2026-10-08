@@ -15,7 +15,7 @@ import { isSemanticBlock } from './makeTransformer'
 // text of the block around it: of an explicit =para, of a heading.
 const IMPLICIT_HOLDERS = new Set(['root', 'pod', 'item', 'defn', 'nested', 'cell'])
 
-export type Walked = { type?: string; name?: string; content?: unknown }
+export type Walked = { type?: string; name?: string; content?: unknown; text?: unknown }
 
 // A node outside any block is in the document, and a document is a pod.
 const holdsImplicit = (holder: Walked | undefined): boolean =>
@@ -48,7 +48,8 @@ of a C<=defn> is its heading, not a paragraph.
 export const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
   if (node.type === 'block') return isWrapper(node) ? undefined : node.name
   if (node.type === 'code') return 'code'
-  if (node.type === 'ambient') return 'ambient'
+  // blank lines outside any block are not material
+  if (node.type === 'ambient') return String(node.text ?? '').trim() === '' ? undefined : 'ambient'
   if (node.type === 'para' && node.name !== 'term' && holdsImplicit(holder)) return 'para'
   return undefined
 }

@@ -357,7 +357,7 @@ Which, as we all know...
         "content": Array [
           Object {
             "type": "verbatim",
-            "value": "    =begin bar
+            "value": "=begin bar
     Dragon Tears!
     ",
           },
@@ -387,7 +387,7 @@ Which, as we all know...
         "content": Array [
           Object {
             "type": "verbatim",
-            "value": "    =end bar
+            "value": "=end bar
     ",
           },
         ],
@@ -440,7 +440,7 @@ Which, as we all know...
         "content": Array [
           Object {
             "type": "verbatim",
-            "value": "    =begin bar
+            "value": "=begin bar
         Turn into Jelly Beans!
         =end bar
     =end foo

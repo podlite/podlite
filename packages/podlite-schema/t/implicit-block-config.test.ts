@@ -239,3 +239,20 @@ describe('a virtual margin ends with its block', () => {
     expect(codes('=begin pod\n    =head2 Heading\n\ntext\n=end pod\n')).toHaveLength(0)
   })
 })
+
+describe('code at the top level of a document reads as inside =pod', () => {
+  it('its text loses the margin of its first line', () => {
+    expect(html('    x\n')).toEqual(html('=begin pod\n    x\n=end pod\n'))
+  })
+
+  it('in Markdown its fence closes on a line of its own at the end of input', () => {
+    expect(markdown('    x')).toEqual('```\nx\n```\n')
+  })
+
+  it('a blank line outside any block does not take =set assignments', () => {
+    const tree = p.toAst(p.parse('=set :title<X>\n\n=head1 H\n', { podMode: 0 }))
+    expect(findAll(tree, n => n.type === 'block' && n.name === 'head')[0].config.map((c: any) => c.name)).toEqual([
+      'title',
+    ])
+  })
+})

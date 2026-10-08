@@ -234,17 +234,22 @@ const rules = {
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
     const masked = isCovered(node, ctx)
+    let last = '\n'
     if (node.content) {
       node.content.forEach(child => {
         if (typeof child === 'string') {
           writer.writeRaw(masked ? maskText(child) : child)
+          last = child
         } else if (child.type === 'verbatim') {
           writer.writeRaw(masked ? maskText(child.value) : child.value)
+          last = child.value
         } else {
           interator([child], ctx)
         }
       })
     }
+    // code at the end of input may lack its final line break
+    if (last !== '' && !last.endsWith('\n')) writer.writeRaw('\n')
     writer.writeRaw('```\n')
   }),
   code: handleNested((writer, processor) => (node, ctx, interator) => {

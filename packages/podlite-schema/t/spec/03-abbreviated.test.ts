@@ -500,7 +500,7 @@ Which, as we all know...
         "content": Array [
           Object {
             "type": "verbatim",
-            "value": "    =bold Dragon Tears!
+            "value": "=bold Dragon Tears!
     ",
           },
         ],
@@ -553,7 +553,7 @@ Which, as we all know...
         "content": Array [
           Object {
             "type": "verbatim",
-            "value": "    =bold Turn
+            "value": "=bold Turn
               into
               Jelly
               Beans!
