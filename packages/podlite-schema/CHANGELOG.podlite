@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item text at the top level of a document whose first line is set in from the margin is code, as inside C<=pod>; it was a paragraph. A line of spaces alone stays as it was
+
 =item the selector C<ambient> finds text outside any block in the default mode, and C<*> finds it with the blocks; it found nothing. The C<Ambient> node carries an optional C<config>, as C<Para> and C<Code> do
 
 =head1 0.0.71

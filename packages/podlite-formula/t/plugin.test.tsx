@@ -135,8 +135,8 @@ it.skip('F<>: Error handle', () => {
 
 it('F<>: JSX handle', () => {
   const pod = `
-    test F<FORMULA>
-    `
+test F<FORMULA>
+`
   render(<Podlite plugins={plugins}>{pod}</Podlite>)
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <p>

@@ -355,9 +355,12 @@ Which, as we all know...
       },
       Object {
         "content": Array [
-          "    =begin bar
+          Object {
+            "type": "verbatim",
+            "value": "    =begin bar
     Dragon Tears!
     ",
+          },
         ],
         "location": Object {
           "end": Object {
@@ -371,19 +374,22 @@ Which, as we all know...
             "offset": 201,
           },
         },
-        "margin": "",
-        "text": "    =begin bar
+        "margin": "    ",
+        "text": "=begin bar
     Dragon Tears!
     ",
-        "type": "para",
+        "type": "code",
       },
       Object {
         "type": "blankline",
       },
       Object {
         "content": Array [
-          "    =end bar
+          Object {
+            "type": "verbatim",
+            "value": "    =end bar
     ",
+          },
         ],
         "location": Object {
           "end": Object {
@@ -397,10 +403,10 @@ Which, as we all know...
             "offset": 231,
           },
         },
-        "margin": "",
-        "text": "    =end bar
+        "margin": "    ",
+        "text": "=end bar
     ",
-        "type": "para",
+        "type": "code",
       },
       Object {
         "type": "blankline",
@@ -432,11 +438,14 @@ Which, as we all know...
       },
       Object {
         "content": Array [
-          "    =begin bar
+          Object {
+            "type": "verbatim",
+            "value": "    =begin bar
         Turn into Jelly Beans!
         =end bar
     =end foo
     ",
+          },
         ],
         "location": Object {
           "end": Object {
@@ -450,13 +459,13 @@ Which, as we all know...
             "offset": 271,
           },
         },
-        "margin": "",
-        "text": "    =begin bar
-        Turn into Jelly Beans!
-        =end bar
+        "margin": "    ",
+        "text": "=begin bar
+    Turn into Jelly Beans!
+    =end bar
     =end foo
     ",
-        "type": "para",
+        "type": "code",
       },
       Object {
         "type": "blankline",

@@ -498,8 +498,11 @@ Which, as we all know...
       },
       Object {
         "content": Array [
-          "    =bold Dragon Tears!
+          Object {
+            "type": "verbatim",
+            "value": "    =bold Dragon Tears!
     ",
+          },
         ],
         "location": Object {
           "end": Object {
@@ -513,10 +516,10 @@ Which, as we all know...
             "offset": 201,
           },
         },
-        "margin": "",
-        "text": "    =bold Dragon Tears!
+        "margin": "    ",
+        "text": "=bold Dragon Tears!
     ",
-        "type": "para",
+        "type": "code",
       },
       Object {
         "type": "blankline",
@@ -548,12 +551,15 @@ Which, as we all know...
       },
       Object {
         "content": Array [
-          "    =bold Turn
+          Object {
+            "type": "verbatim",
+            "value": "    =bold Turn
               into
               Jelly
               Beans!
     =end foo
     ",
+          },
         ],
         "location": Object {
           "end": Object {
@@ -567,14 +573,14 @@ Which, as we all know...
             "offset": 252,
           },
         },
-        "margin": "",
-        "text": "    =bold Turn
-              into
-              Jelly
-              Beans!
+        "margin": "    ",
+        "text": "=bold Turn
+          into
+          Jelly
+          Beans!
     =end foo
     ",
-        "type": "para",
+        "type": "code",
       },
       Object {
         "type": "blankline",

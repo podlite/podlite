@@ -207,3 +207,23 @@ describe('text outside any block in the default mode is an ambient block', () =>
     expect(found.map(n => n.type)).toEqual(['ambient', 'block'])
   })
 })
+
+describe('a document is read as a pod: text set in from the margin at its top level is code', () => {
+  const top = (src: string) => p.parse(src, { podMode: 1 }).content.map((n: any) => n.type)
+
+  it('a chunk whose first line is indented is code', () => {
+    expect(top('Text.\n\n    indented\n')).toEqual(['para', 'blankline', 'code'])
+  })
+
+  it('a line at the margin continues code its first line began', () => {
+    expect(top('    my $x = 1;\nsay $x;\n')).toEqual(['code'])
+  })
+
+  it('an indented line continues a paragraph its first line began', () => {
+    expect(top('Text\n    continued\n')).toEqual(['para'])
+  })
+
+  it('a line of spaces alone is not code', () => {
+    expect(top('Text.\n\n  ')).not.toContain('code')
+  })
+})

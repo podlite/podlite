@@ -476,6 +476,17 @@ function peg$parse(input, options) {
                           }
                 },
       peg$c175 = function() {
+                    // the document is a pod: a chunk whose first line is set in from the margin is code
+                    const indent = text().match(/^[ \u00a0\u2001\t\u000C\u2008]*/)[0]
+                    if (indent.length > 0 && text().trim() !== '') {
+                      return {
+                              text: text(),
+                              type: 'code',
+                              margin: indent,
+                              content: [{ type: 'verbatim', value: text() }],
+                              location: location(),
+                            }
+                    }
                     return { 
                             text: text(),
                             type:'para',
