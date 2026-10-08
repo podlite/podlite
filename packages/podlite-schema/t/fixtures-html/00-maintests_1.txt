@@ -6,4 +6,4 @@
   jjj
 =end pod
 ~~~~~~~
-"<pre><code>twest\n</code></pre><p>  sdsdsdsd\n</p><p>jjj\n</p>"
+"<pre><code>twest\n</code></pre><p>  sdsdsdsd\n</p><pre><code>jjj\n</code></pre>"

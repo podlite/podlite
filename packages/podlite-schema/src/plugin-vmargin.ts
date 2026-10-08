@@ -15,11 +15,11 @@ const middle: ParserPlugin = () => tree => {
     }
 
     if (node.type === 'block') {
-      context.margin = typeof node.margin !== 'string' ? '' : node.margin
-      let newctx = { ...context }
-      newctx.nest = (newctx.nest || 0) + 1
+      // a block's margin holds for its own content and ends with the block
+      const inner = { ...context, margin: typeof node.margin !== 'string' ? '' : node.margin }
+      inner.nest = (inner.nest || 0) + 1
       node.content.map(n => {
-        visit_node(n, context)
+        visit_node(n, inner)
       })
     }
   }

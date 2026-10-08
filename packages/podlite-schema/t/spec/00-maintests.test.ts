@@ -209,8 +209,11 @@ it('spec: 00-maintests 1', () => {
           },
           Object {
             "content": Array [
-              "jjj
+              Object {
+                "type": "verbatim",
+                "value": "jjj
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -227,7 +230,7 @@ it('spec: 00-maintests 1', () => {
             "margin": "  ",
             "text": "jjj
     ",
-            "type": "para",
+            "type": "code",
           },
         ],
         "location": Object {

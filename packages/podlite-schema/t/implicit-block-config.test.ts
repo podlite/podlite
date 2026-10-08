@@ -227,3 +227,15 @@ describe('a document is read as a pod: text set in from the margin at its top le
     expect(top('Text.\n\n  ')).not.toContain('code')
   })
 })
+
+describe('a virtual margin ends with its block', () => {
+  const codes = (src: string) => findAll(p.parse(src, { podMode: 1 }), n => n.type === 'code')
+
+  it('text indented as an ended heading is code in the enclosing pod', () => {
+    expect(codes('=begin pod\n    =head2 Heading\n\n    text\n=end pod\n')).toHaveLength(1)
+  })
+
+  it('text at the margin of the enclosing pod is not code', () => {
+    expect(codes('=begin pod\n    =head2 Heading\n\ntext\n=end pod\n')).toHaveLength(0)
+  })
+})

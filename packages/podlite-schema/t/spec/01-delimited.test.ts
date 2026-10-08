@@ -846,11 +846,14 @@ it('spec: 01-delimited 9', () => {
           },
           Object {
             "content": Array [
-              "This is an ordinary paragraph.
+              Object {
+                "type": "verbatim",
+                "value": "This is an ordinary paragraph.
         Its text  will   be     squeezed     and
         short lines filled. It is terminated by
         the first blank line.
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -866,22 +869,25 @@ it('spec: 01-delimited 9', () => {
             },
             "margin": "    ",
             "text": "This is an ordinary paragraph.
-        Its text  will   be     squeezed     and
-        short lines filled. It is terminated by
-        the first blank line.
+    Its text  will   be     squeezed     and
+    short lines filled. It is terminated by
+    the first blank line.
     ",
-            "type": "para",
+            "type": "code",
           },
           Object {
             "type": "blankline",
           },
           Object {
             "content": Array [
-              "This is another ordinary paragraph.
+              Object {
+                "type": "verbatim",
+                "value": "This is another ordinary paragraph.
         Its     text    will  also be squeezed and
         short lines filled. It is terminated by
         the trailing directive on the next line.
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -897,11 +903,11 @@ it('spec: 01-delimited 9', () => {
             },
             "margin": "    ",
             "text": "This is another ordinary paragraph.
-        Its     text    will  also be squeezed and
-        short lines filled. It is terminated by
-        the trailing directive on the next line.
+    Its     text    will  also be squeezed and
+    short lines filled. It is terminated by
+    the trailing directive on the next line.
     ",
-            "type": "para",
+            "type": "code",
           },
           Object {
             "content": Array [
@@ -950,10 +956,13 @@ it('spec: 01-delimited 9', () => {
           },
           Object {
             "content": Array [
-              "This is yet another ordinary paragraph,
+              Object {
+                "type": "verbatim",
+                "value": "This is yet another ordinary paragraph,
             at the first virtual column set by the
             previous directive
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -969,10 +978,10 @@ it('spec: 01-delimited 9', () => {
             },
             "margin": "        ",
             "text": "This is yet another ordinary paragraph,
-            at the first virtual column set by the
-            previous directive
+    at the first virtual column set by the
+    previous directive
     ",
-            "type": "para",
+            "type": "code",
           },
         ],
         "location": Object {

@@ -262,9 +262,12 @@ But this is just a text. Again
           },
           Object {
             "content": Array [
-              "Suprisingly, this is not a code block
+              Object {
+                "type": "verbatim",
+                "value": "Suprisingly, this is not a code block
             (with fancy indentation too)
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -280,9 +283,9 @@ But this is just a text. Again
             },
             "margin": "    ",
             "text": "Suprisingly, this is not a code block
-            (with fancy indentation too)
+        (with fancy indentation too)
     ",
-            "type": "para",
+            "type": "code",
           },
           Object {
             "type": "blankline",
@@ -813,8 +816,11 @@ it('spec: 04-code 5', () => {
           },
           Object {
             "content": Array [
-              "this is not code either
+              Object {
+                "type": "verbatim",
+                "value": "this is not code either
     ",
+              },
             ],
             "location": Object {
               "end": Object {
@@ -831,7 +837,7 @@ it('spec: 04-code 5', () => {
             "margin": "    ",
             "text": "this is not code either
     ",
-            "type": "para",
+            "type": "code",
           },
           Object {
             "type": "blankline",
