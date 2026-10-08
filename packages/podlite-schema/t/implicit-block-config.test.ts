@@ -191,3 +191,19 @@ describe('a paragraph and code written without a marker render with their settin
     expect(html(pod('Plain.\n\n    my $x = 1;'))).toBe('<p>Plain.\n</p><pre><code>my $x = 1;\n</code></pre>')
   })
 })
+
+describe('text outside any block in the default mode is an ambient block', () => {
+  const ambient = (src: string) => p.toAst(p.parse(src, { podMode: 0 }))
+  const selectIn = (selector: string, src: string): any[] =>
+    runSelector(selector, [{ file: 'a.txt', node: ambient(src) }])
+
+  it('the selector ambient finds it', () => {
+    const found = selectIn('ambient', 'Text outside any block.\n=head1 Heading\n')
+    expect(found.map(n => n.type)).toEqual(['ambient'])
+  })
+
+  it('the universal pattern finds it with the blocks', () => {
+    const found = selectIn('*', 'Text outside any block.\n=head1 Heading\n')
+    expect(found.map(n => n.type)).toEqual(['ambient', 'block'])
+  })
+})

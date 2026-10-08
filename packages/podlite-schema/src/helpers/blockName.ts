@@ -36,7 +36,8 @@ export const isWrapper = (node: Walked): boolean => node.type === 'block' && WRA
 =head2 blockNameOf
 
 The name of the block a node stands for: the name of a block written with a
-directive, C<para> or C<code> for one written without, none for anything else.
+directive, C<para> or C<code> for one written without, C<ambient> for text
+outside any block in the default mode, none for anything else.
 C<holder> is the block whose content holds the node; none means the document.
 A paragraph node is a block only where text without a marker is a paragraph:
 inside an explicit C<=para> or a heading it is that block's own text. The term
@@ -47,6 +48,7 @@ of a C<=defn> is its heading, not a paragraph.
 export const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
   if (node.type === 'block') return isWrapper(node) ? undefined : node.name
   if (node.type === 'code') return 'code'
+  if (node.type === 'ambient') return 'ambient'
   if (node.type === 'para' && node.name !== 'term' && holdsImplicit(holder)) return 'para'
   return undefined
 }

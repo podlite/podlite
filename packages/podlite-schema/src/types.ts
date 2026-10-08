@@ -349,6 +349,8 @@ export interface Ambient {
   type: 'ambient'
   text: string // TODO: change type name to 'value'
   location: Location
+  // the settings =config and =set gave text outside any block
+  config?: ConfigItem[]
 }
 
 export interface Verbatim {

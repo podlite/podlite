@@ -170,6 +170,12 @@
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
+                },
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
                 }
             },
             "required": [
@@ -211,6 +217,76 @@
                 "line",
                 "offset"
             ]
+        },
+        "ConfigItem": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/ConfigItemKV"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                ]
+                            }
+                        },
+                        {
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                            ]
+                        }
+                    ]
+                },
+                "type": {
+                    "$ref": "#/definitions/ConfigItemType"
+                },
+                "isFalse": {
+                    "type": "boolean"
+                },
+                "from": {
+                    "enum": [
+                        "config",
+                        "set"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "value"
+            ]
+        },
+        "ConfigItemKV": {
+            "type": "object",
+            "additionalProperties": {
+                "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                ]
+            }
+        },
+        "ConfigItemType": {
+            "enum": [
+                "array",
+                "boolean",
+                "map",
+                "number",
+                "string"
+            ],
+            "type": "string"
         },
         "BlockPod": {
             "type": "object",
@@ -314,76 +390,6 @@
                 "name",
                 "value"
             ]
-        },
-        "ConfigItemKV": {
-            "type": "object",
-            "additionalProperties": {
-                "type": [
-                    "string",
-                    "number",
-                    "boolean"
-                ]
-            }
-        },
-        "ConfigItem": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/ConfigItemKV"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": [
-                                    "string",
-                                    "number",
-                                    "boolean"
-                                ]
-                            }
-                        },
-                        {
-                            "type": [
-                                "string",
-                                "number",
-                                "boolean"
-                            ]
-                        }
-                    ]
-                },
-                "type": {
-                    "$ref": "#/definitions/ConfigItemType"
-                },
-                "isFalse": {
-                    "type": "boolean"
-                },
-                "from": {
-                    "enum": [
-                        "config",
-                        "set"
-                    ],
-                    "type": "string"
-                }
-            },
-            "required": [
-                "name",
-                "type",
-                "value"
-            ]
-        },
-        "ConfigItemType": {
-            "enum": [
-                "array",
-                "boolean",
-                "map",
-                "number",
-                "string"
-            ],
-            "type": "string"
         },
         "BlockData": {
             "type": "object",

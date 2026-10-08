@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the selector C<ambient> finds text outside any block in the default mode, and C<*> finds it with the blocks; it found nothing. The C<Ambient> node carries an optional C<config>, as C<Para> and C<Code> do
+
 =head1 0.0.71
 
 =item code written without a marker inside an item, a definition or a C<=nested> block is verbatim unless its own C<:allow> names markup codes, as at the top of a document; it read every markup code, and the C<:allow> of the block around it. A paragraph written without a marker there reads markup codes as an explicit C<=para> in its place does; it read the C<:allow> of the block around it. The text of a cell keeps the codes its table, row and cell allow
