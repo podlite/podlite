@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { getFromTree, getTextContentFromNode, PodNode } from '@podlite/schema'
+import { bindTarget, buildBindingIndex, getFromTree, getTextContentFromNode, PodNode } from '@podlite/schema'
 import { processPlugin, publishRecord } from '../src'
 import { processFile } from '../src/node'
 import resolvePlugin, { includePasses } from '../src/include-resolve-plugin'
@@ -7,6 +7,7 @@ import imagesPlugin from '../src/images-plugin'
 import linksPlugin, { LinkError } from '../src/links-plugin'
 import reactPlugin from '../src/react-plugin'
 import siteDataPlugin, { SITE_DATA_DOCUMENT } from '../src/site-data-plugin'
+import { podlite } from 'podlite'
 
 const tctx = { testing: true }
 
@@ -430,5 +431,51 @@ describe('the site data', () => {
     const contents = res.find(r => r.file === 'site/contents.podlite')!
     expect(getFromTree(contents.node, 'include')).toHaveLength(0)
     expect(getFromTree(contents.node, 'data').map(n => String(getTextContentFromNode(n as PodNode)))).toEqual([data])
+  })
+})
+
+describe('a table of contents entry for a heading that holds a doc: link', () => {
+  // the table of contents is built before the links plugin changes the heading's text
+  const entriesReach = (records: publishRecord[], options = {}) => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const [res] = processPlugin({ plugin: linksPlugin(options), includePatterns: '.*' }, records, tctx)
+      const host = res.find(record => record.file === 'site/host.podlite')!
+      const index = buildBindingIndex(host.node)
+      const heads = getFromTree(host.node, 'head')
+      const links = getFromTree(host.node, 'L').filter((link: any) => String(link.meta).startsWith('#'))
+      // and on the page: the entry's address against the heading's anchor
+      const html = String(podlite({ importPlugins: true }).toHtml(host.node))
+      const entries = [...html.matchAll(/<li class="toc-item"><p><a([^>]*)>/g)].map(
+        m => (m[1].match(/href="([^"]*)"/) || [])[1],
+      )
+      const anchors = [...html.matchAll(/<h1 id="([^"]*)"/g)].map(m => `#${m[1]}`)
+      return { heads, reached: links.map((link: any) => bindTarget(link.meta.slice(1), index)), entries, anchors }
+    } finally {
+      warn.mockRestore()
+    }
+  }
+  const target = () => processFile('site/target.podlite', '=begin pod :puburl</target>\n=TITLE Target\n=end pod\n')
+
+  it('reaches the heading when the link resolves', () => {
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\n=toc head1\n\n=head1 About L<doc:Target> here\n\nA.\n=end pod\n',
+    )
+    const { heads, reached, entries, anchors } = entriesReach([target(), host])
+    expect(reached).toHaveLength(1)
+    expect(reached[0].found && reached[0].node).toBe(heads[0])
+    expect(entries).toEqual(anchors)
+  })
+
+  it('reaches the heading when the link does not resolve and the site asks for warnings', () => {
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\n=toc head1\n\n=head1 Using L<doc:Missing> in practice\n\nA.\n=end pod\n',
+    )
+    const { heads, reached, entries, anchors } = entriesReach([target(), host], { unresolved: 'warning' })
+    expect(reached).toHaveLength(1)
+    expect(reached[0].found && reached[0].node).toBe(heads[0])
+    expect(entries).toEqual(anchors)
   })
 })

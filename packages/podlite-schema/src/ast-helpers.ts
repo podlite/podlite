@@ -467,6 +467,16 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
   for (const layer of [written, handedOut, shapedForms]) {
     for (const [key, node, via] of layer) put(key, node, via)
   }
+  // A heading also answers to the name it was parsed with. A plugin that runs later may
+  // change what the heading says, while a table of contents built before it still links
+  // to that name, and the anchor is still shaped from it. This only fills keys nobody
+  // holds: a link that resolves today keeps its target and its ambiguity. Two headings
+  // parsed with one name share that name, and a link to it reaches the first.
+  walkNodes(tree, node => {
+    if (node.type !== 'block' || node.name !== 'head' || typeof node.id !== 'string') return
+    const key = node.id.normalize('NFC').trim()
+    if (key && !byKey.has(key)) byKey.set(key, { node, via: 'heading' })
+  })
   return { byKey, ambiguous }
 }
 
