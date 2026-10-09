@@ -252,6 +252,147 @@ describe('a doc: link', () => {
   })
 })
 
+describe('a doc: link that does not resolve, when the site asks for warnings', () => {
+  // the plugin and what it printed, with the console kept quiet
+  const warned = (records: publishRecord[]) => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const [res, ctx] = processPlugin(
+        { plugin: linksPlugin({ unresolved: 'warning' }), includePatterns: '.*' },
+        records,
+        tctx,
+      )
+      return { res, ctx, printed: warn.mock.calls.map(call => call.join(' ')) }
+    } finally {
+      warn.mockRestore()
+    }
+  }
+  const words = (node: unknown): string => getTextContentFromNode(node as PodNode)
+
+  it('lets the build go on and names every link in one warning', () => {
+    const target = processFile('site/t.podlite', '=begin pod :puburl</t>\n=for NAME :id<Name>\nThe name\n=end pod\n')
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\nSee L<doc:Absent> and L<doc:Absent>.\n\nAnd L<doc:Name#Part>.\n\nAnd L<doc:#Here>.\n=end pod\n',
+    )
+    const { ctx, printed } = warned([host, target])
+    const lines = [
+      'site/host.podlite:2: a link in the text from this line, doc:Absent: no published document is named Absent',
+      'site/host.podlite:4: a link in the text from this line, doc:Name#Part: Name has no section Part',
+      'site/host.podlite:6: a link in the text from this line, doc:#Here: the page has no section Here',
+    ]
+    expect(printed).toEqual([`[links] a link does not resolve:\n${lines.map(line => `  ${line}`).join('\n')}`])
+    expect(ctx.unresolvedLinks).toEqual(lines)
+  })
+
+  it('names two documents that answer to the name, and links to neither', () => {
+    const records = [
+      processFile('a/one.pod6', '=begin pod :puburl</one>\n=TITLE Same\n=end pod\n'),
+      processFile('b/two.pod6', '=begin pod :puburl</two>\n=TITLE Same\n=end pod\n'),
+      processFile('site/page.pod6', '=begin pod :puburl</page>\n=para L<doc:Same>\n=end pod\n'),
+    ]
+    const { res, ctx } = warned(records)
+    expect(ctx.unresolvedLinks).toEqual([
+      'site/page.pod6:2: a link in the text from this line, doc:Same: more than one document is named Same: a/one.pod6, b/two.pod6',
+    ])
+    expect(links(res[2].node)).toEqual([])
+  })
+
+  it('writes a link with its own text as that text, formatting kept', () => {
+    const host = processFile('site/host.podlite', '=begin pod\nSee L<the B<manual>|doc:Missing> now.\n=end pod\n')
+    const { res } = warned([host])
+    expect(links(res[0].node)).toEqual([])
+    expect(getFromTree(res[0].node, 'B').map(words)).toEqual(['manual'])
+    expect(words(res[0].node)).toContain('See the manual now.')
+  })
+
+  it('writes a link without text of its own as what follows doc:', () => {
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\nSee L<doc:Test::Async::Manual>, L<doc:Name#Part> and L<doc:#Here>.\n=end pod\n',
+    )
+    const { res } = warned([host])
+    expect(links(res[0].node)).toEqual([])
+    expect(words(res[0].node)).toContain('See Test::Async::Manual, Name#Part and #Here.')
+  })
+
+  it('writes the link as text in the description, the header and the footer of a record', () => {
+    const record = processFile('site/host.podlite', '=begin pod\n=DESCRIPTION See L<doc:Missing>.\n=end pod\n')
+    const extra = processFile('site/extra.podlite', '=begin pod\nOn L<doc:Missing>.\n=end pod\n').node
+    const { res } = warned([{ ...record, header: extra, footer: extra }])
+    expect(words(res[0].description).trim()).toBe('See Missing.')
+    expect(links(res[0].header)).toEqual([])
+    expect(words(res[0].header)).toContain('On Missing.')
+    expect(words(res[0].footer)).toContain('On Missing.')
+  })
+
+  it('keeps the words of a hidden link hidden', () => {
+    const host = processFile('site/host.podlite', '=begin pod\n=for para :masked\nSee L<doc:Missing>.\n=end pod\n')
+    const { res } = warned([host])
+    const text = getFromTree(res[0].node, (n: any) => n.type === 'text' && n.value === 'Missing') as any[]
+    expect(text.map(n => n.guarded)).toEqual([true])
+  })
+
+  it('takes doc: off the address when a code holds it', () => {
+    const host = processFile('site/host.podlite', '=begin pod\nSee L<B<doc:Missing>> now.\n=end pod\n')
+    const { res } = warned([host])
+    expect(links(res[0].node)).toEqual([])
+    expect(getFromTree(res[0].node, 'B').map(words)).toEqual(['Missing'])
+  })
+
+  it('takes doc: off the address when its letters are spread over codes', () => {
+    const host = processFile(
+      'site/host.podlite',
+      '=begin pod\nSee L<doB<c:>Missing> and L<B< >doc:Other> now.\n=end pod\n',
+    )
+    const { res } = warned([host])
+    expect(links(res[0].node)).toEqual([])
+    expect(words(res[0].node)).toContain('See Missing and Other now.')
+  })
+
+  it('keeps hidden the words a link without text of its own hides in its address', () => {
+    const host = processFile('site/host.podlite', '=begin pod\nSee L<doc:G<Secret>> now.\n=end pod\n')
+    const { res } = warned([host])
+    expect(links(res[0].node)).toEqual([])
+    expect(getFromTree(res[0].node, 'G').map(words)).toEqual(['Secret'])
+    const text = getFromTree(res[0].node, (n: any) => n.type === 'text' && n.value === 'Secret') as any[]
+    expect(text.map(n => n.guarded)).toEqual([true])
+  })
+
+  it('keeps the table of contents link written for a heading whose doc: link does not resolve', () => {
+    const host = processFile(
+      'site/host.pod6',
+      '=begin pod :puburl</host>\n=TITLE Host\n\n=toc head1\n\n=head1 Using L<doc:Missing> in practice\n\nText.\n=end pod\n',
+    )
+    const records = quietly(() => includePasses({ catalogue: [host] }).first[0]([host]))
+    const { res } = warned(records)
+    expect(links(res[0].node)).toEqual(['#Using doc:Missing in practice'])
+  })
+
+  it('prints nothing when every link resolves', () => {
+    const target = processFile('site/t.podlite', '=begin pod :puburl</t>\n=TITLE Target\n=end pod\n')
+    const host = processFile('site/host.podlite', '=begin pod\nSee L<doc:Target>.\n=end pod\n')
+    const { res, ctx, printed } = warned([host, target])
+    expect(printed).toEqual([])
+    expect(ctx.unresolvedLinks).toEqual([])
+    expect(links(res[0].node)).toEqual(['/t'])
+  })
+
+  it('clears the list of a call before when the next call has no problems', () => {
+    const plugin = linksPlugin({ unresolved: 'warning' })
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const broken = processFile('site/host.podlite', '=begin pod\nSee L<doc:Absent>.\n=end pod\n')
+      const clean = processFile('site/clean.podlite', '=begin pod\nNo links.\n=end pod\n')
+      processPlugin({ plugin, includePatterns: '.*' }, [broken], tctx)
+      const [, ctx] = processPlugin({ plugin, includePatterns: '.*' }, [clean], tctx)
+      expect(ctx.unresolvedLinks).toEqual([])
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})
+
 describe('the site data', () => {
   it('holds a picture of an included fragment of an article as the images plugin made it', () => {
     const items = [

@@ -27,6 +27,11 @@ then read a name alike. Without it a name is looked for among the records at
 hand. C<home> is the file of the home page: its address is C</> before the site
 data plugin gives it.
 
+C<unresolved> says what a C<doc:> link that does not resolve does to the build.
+C<'error'>, the default, stops it with C<LinkError>. C<'warning'> lets it go on:
+the link is written as its text without the link, or as what follows C<doc:>
+when it has no text of its own, and one warning names every such link.
+
 =end pod
 */
 export type LinksOptions = {
@@ -35,7 +40,12 @@ export type LinksOptions = {
   documents?: (name: string) => string[]
   // the file of the home page, whose address is given later in the chain
   home?: string
+  // whether a link that does not resolve stops the build or is reported and written as text
+  unresolved?: 'error' | 'warning'
 }
+
+const unresolvedReport = (problems: string[]): string =>
+  `a link does not resolve:\n${problems.map(line => `  ${line}`).join('\n')}`
 
 /*
 =begin pod :kind<export>
@@ -43,23 +53,69 @@ export type LinksOptions = {
 =head2 LinkError
 
 A C<doc:> link whose name no published document answers to, or that two
-documents answer to, stops the build. C<problems> holds one line for each.
+documents answer to, stops the build when C<unresolved> is C<'error'>, as it is
+by default. C<problems> holds one line for each.
 
 =end pod
 */
 export class LinkError extends Error {
   readonly problems: string[]
   constructor(problems: string[]) {
-    super(`a link does not resolve:\n${problems.map(line => `  ${line}`).join('\n')}`)
+    super(unresolvedReport(problems))
     this.name = 'LinkError'
     this.problems = problems
   }
 }
 
-type TreeNode = { type?: string; name?: string; content?: unknown; location?: Location }
+type TreeNode = { type?: string; name?: string; content?: unknown; location?: Location; value?: unknown }
 
 const isNode = (value: unknown): value is TreeNode =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+// the text of the parts of an address, leaf by leaf
+const textOf = (part: unknown): string => {
+  if (typeof part === 'string') return part
+  if (!isNode(part)) return ''
+  if (part.type === 'text' && typeof part.value === 'string') return part.value
+  return Array.isArray(part.content) ? part.content.map(textOf).join('') : ''
+}
+
+// the address without its scheme: the letters of doc: come off the texts that hold them, however
+// deep a code holds them or however many texts they are spread over
+const withoutScheme = (parts: unknown[]): unknown[] => {
+  let left = (parts
+    .map(textOf)
+    .join('')
+    .match(/^\s*doc:\s*/) ?? [''])[0].length
+  const strip = (part: unknown): unknown => {
+    if (left === 0) return part
+    const text = typeof part === 'string' ? part : isNode(part) && part.type === 'text' ? part.value : undefined
+    if (typeof text === 'string') {
+      const cut = Math.min(left, text.length)
+      left -= cut
+      return typeof part === 'string' ? text.slice(cut) : { ...(isNode(part) ? part : {}), value: text.slice(cut) }
+    }
+    return isNode(part) && Array.isArray(part.content) ? { ...part, content: part.content.map(strip) } : part
+  }
+  return parts.map(strip)
+}
+
+// a link that does not resolve gives way to its text, or to its address without doc: when
+// it has no text; the words keep the codes and the hidden mark they were written with
+const asText = (node: TreeNode & { meta?: unknown; guarded?: boolean }): unknown[] => {
+  const parts = Array.isArray(node.content) ? node.content : [node.content]
+  const words = (node.meta ? parts : withoutScheme(parts)).map(part =>
+    typeof part === 'string' || (isNode(part) && part.type === 'text')
+      ? {
+          ...(isNode(part) ? part : {}),
+          type: 'text',
+          value: typeof part === 'string' ? part : part.value,
+          ...(node.guarded ? { guarded: true } : {}),
+        }
+      : part,
+  )
+  return words.filter(word => !(isNode(word) && word.type === 'text' && word.value === ''))
+}
 
 const shown = (file: string): string => (path.isAbsolute(file) ? path.relative(process.cwd(), file) : file)
 
@@ -180,7 +236,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
               name === '' && section.length
                 ? local(section.join('#'))
                 : resolve(name, section.length ? section.join('#') : undefined, at)
-            if (!found) return node
+            if (!found) return options.unresolved === 'warning' ? asText(node) : node
             const { url } = found
             const newContent: Text = {
               type: 'text',
@@ -213,7 +269,13 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       }
       return { ...item, node, ...extra }
     })
-    if (problems.length) throw new LinkError([...new Set(problems)])
+    const unresolved = [...new Set(problems)]
+    if (unresolved.length && options.unresolved !== 'warning') throw new LinkError(unresolved)
+    if (options.unresolved === 'warning') {
+      // the context outlives a call, so a call without problems clears the list of the last one
+      outCtx.unresolvedLinks = unresolved
+      if (unresolved.length) console.warn(`[links] ${unresolvedReport(unresolved)}`)
+    }
 
     return convertFileLinksToUrl(docToFileLinksConverted)
   }
