@@ -31,7 +31,7 @@ describe('text the page writes from a hidden block is hidden with it', () => {
   })
 
   it('hides the title of a note block', () => {
-    hidden("=begin nested :notify<note> :caption('Sarn') :masked\nbody\n=end nested", ['Sarn'])
+    hidden("=begin nested :notice<note> :caption('Sarn') :masked\nbody\n=end nested", ['Sarn'])
   })
 
   it('hides the title of a table of contents', () => {
@@ -73,7 +73,7 @@ describe('text the page writes from a hidden block is hidden with it', () => {
   })
 
   it('hides the kind of a note when it serves as the title', () => {
-    const out = hidden('=begin nested :masked :notify<Zecret>\nBody\n=end nested', ['Zecret'])
+    const out = hidden('=begin nested :masked :notice<warning>\nBody\n=end nested', ['Warning'])
     expect(out).toContain('class="notify"')
   })
 

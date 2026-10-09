@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> a notification block is drawn by C<:notice>, the name the specification gives the attribute. A C<=nested> block written with C<:notify> is drawn as a plain nested block, without a title and without folding. The classes of the output keep their names C<notify> and C<notify-title>
+
 =head1 0.0.76
 
 =item the card of a test stays inside the window: a line of a test at the right edge of the window opened its card past the edge

@@ -341,20 +341,21 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const defaultHandlerInited = defaultHandler(writer, processor)
       return (node, ctx, interator) => {
         const conf = makeAttrs(node, ctx)
-        const notify = conf.getFirstValue('notify')
+        const notice = conf.getFirstValue('notice')
         const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
         const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
         const children = defaultHandlerInited(node, ctx, interator)
-        // if no notify attribute - simply return children
-        if (!notify) {
+        // if no notice attribute - simply return children
+        if (!notice) {
           return children
         }
 
         // Determine the title for the notification. In hidden content the kind the
         // author wrote is hidden with the rest, in the title and in the class.
         const hidden = isCovered(node, ctx)
-        const title = caption || covered(node, ctx, notify.charAt(0).toUpperCase() + notify.slice(1))
-        const kind = hidden ? '' : ` ${notify.toLowerCase()}`
+        const title = caption || covered(node, ctx, notice.charAt(0).toUpperCase() + notice.slice(1))
+        // the class keeps its earlier name notify, which the style sheets are written for
+        const kind = hidden ? '' : ` ${notice.toLowerCase()}`
 
         // :folded or :folded(1) = collapsed by default
         // :!folded or :folded(0) = expanded by default

@@ -763,11 +763,11 @@ it('id for headers', () => {
   `)
 })
 
-it('notification blocks =nested :notify<tip>', () => {
+it('notification blocks =nested :notice<tip>', () => {
   render(
     <Podlite>
       {`
-      =begin nested :notify<tip>
+      =begin nested :notice<tip>
       Remember to always use oven mitts when handling hot bakeware
       to prevent burns.
       =end nested`}
@@ -786,6 +786,51 @@ it('notification blocks =nested :notify<tip>', () => {
       </blockquote>
     </aside>
   `)
+})
+
+it('draws =nested :notify<tip> as a plain nested block', () => {
+  render(
+    <Podlite>
+      {`
+      =begin nested :notify<tip>
+      Keep the lid on.
+      =end nested`}
+    </Podlite>,
+  )
+  expect(root.innerHTML).not.toContain('<aside')
+  expect(root.innerHTML).not.toContain('Tip')
+  expect(root.innerHTML).toContain('<blockquote>')
+})
+
+it('draws a nested block as a notification when =config gives it :notice', () => {
+  render(
+    <Podlite>
+      {`=begin pod
+=config nested :notice<warning>
+
+=begin nested
+Mind the step.
+=end nested
+=end pod`}
+    </Podlite>,
+  )
+  expect(root.innerHTML).toContain('<aside class="notify warning">')
+  expect(root.innerHTML).toContain('Warning')
+})
+
+it('draws a nested block as a notification when =set gives it :notice', () => {
+  render(
+    <Podlite>
+      {`=begin pod
+=set :notice<tip>
+=begin nested
+Keep the lid on.
+=end nested
+=end pod`}
+    </Podlite>,
+  )
+  expect(root.innerHTML).toContain('<aside class="notify tip">')
+  expect(root.innerHTML).toContain('Tip')
 })
 
 it.skip('accepts =Mermaid', () => {
@@ -896,7 +941,7 @@ describe(':folded attribute', () => {
     render(
       <Podlite>
         {`=begin pod
-=begin nested :notify<tip> :folded :caption('Pro Tip')
+=begin nested :notice<tip> :folded :caption('Pro Tip')
 This is a tip that is collapsed by default.
 =end nested
 =end pod`}
@@ -924,7 +969,7 @@ This is a tip that is collapsed by default.
     render(
       <Podlite>
         {`=begin pod
-=begin nested :notify<warning> :!folded :caption('Important Warning')
+=begin nested :notice<warning> :!folded :caption('Important Warning')
 This warning is expanded by default.
 =end nested
 =end pod`}
@@ -954,7 +999,7 @@ This warning is expanded by default.
     render(
       <Podlite>
         {`=begin pod
-=begin nested :notify<note> :folded(0)
+=begin nested :notice<note> :folded(0)
 Expanded note.
 =end nested
 =end pod`}
