@@ -11,6 +11,7 @@ import { tableShapeRule } from './table-shape'
 import { deadDefinitionsRule } from './dead-definitions'
 import { includeResolvesRule } from './include-resolves'
 import { directiveNamedBlockRule, imageNamedBlockRule } from './named-blocks'
+import { notifyAttributeRule } from './notify-attribute'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -26,4 +27,5 @@ export const DEFAULT_RULES: Rule[] = [
   includeResolvesRule,
   directiveNamedBlockRule,
   imageNamedBlockRule,
+  notifyAttributeRule,
 ]

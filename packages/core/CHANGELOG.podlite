@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<lint> warns about C<:notify> on a C<=nested> block, written on the block or given by C<=set> or C<=config>; the specification writes the notification attribute C<:notice>, and a block with C<:notify> is drawn as a plain nested block (rule C<notify-attribute>)
+
 =head1 0.0.85
 
 =item C<lint> warns about a block named C<=Include>, C<=Set>, C<=Config> or C<=Alias>, which is a named block and not the directive (rule C<directive-named-block>), and about C<=Image>, which the specification writes as C<=picture> (rule C<image-named-block>); each rule can be turned off on its own
