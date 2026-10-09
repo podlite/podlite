@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.74
+
 =item the list of attribute names holds C<notice>, the name of the notification attribute, in place of C<notify>
 
 =head1 0.0.73

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.87
+
 =item C<lint> warns about C<:notify> on a C<=nested> block, written on the block or given by C<=set> or C<=config>; the specification writes the notification attribute C<:notice>, and a block with C<:notify> and without C<:notice> is drawn as a plain nested block (rule C<notify-attribute>)
 
 =head1 0.0.85
