@@ -249,6 +249,10 @@ describe('code at the top level of a document reads as inside =pod', () => {
     expect(markdown('    x')).toEqual('```\nx\n```\n')
   })
 
+  it('in Markdown the fence closes on its own line after a last line of spaces', () => {
+    expect(markdown('    x\n    ').endsWith('\n```\n')).toBe(true)
+  })
+
   it('in Markdown the fence closes on its own line when the code reads markup codes', () => {
     expect(markdown('=config code :allow<B>\n    B<x>')).toEqual('```\n**x**\n```\n')
   })

@@ -11,6 +11,8 @@ class Writer extends Events.EventEmitter {
   errors: any
   out: any
   ons: any[]
+  // the last piece written, to tell whether output stands at the start of a line
+  lastWritten = ''
   // write: (p: any) => void;
   // getStr: () => { errors: any; toString: () => any; valueOf: () => any; };
   // errors: any;
@@ -39,6 +41,7 @@ class Writer extends Events.EventEmitter {
   }
   // raw write as is
   writeRaw(str) {
+    if (typeof str === 'string' && str !== '') this.lastWritten = str
     if ('function' === typeof this.output) {
       this.output(str)
     } else {

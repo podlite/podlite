@@ -246,7 +246,7 @@ const rules = {
       })
     }
     // code at the end of input may lack its final line break
-    if (typeof node.text === 'string' && node.text !== '' && !node.text.endsWith('\n')) writer.writeRaw('\n')
+    if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
     writer.writeRaw('```\n')
   }),
   code: handleNested((writer, processor) => (node, ctx, interator) => {
