@@ -27,7 +27,7 @@ export const BLOCK_ATTRIBUTE_NAMES = [
   'key',
   'masked',
   'mime-type',
-  'notify',
+  'notice',
   'rename',
   'rowspan',
   'src',

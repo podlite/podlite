@@ -54,6 +54,11 @@ describe('the names offered', () => {
     }
   })
 
+  it('offers notice as the notification attribute and not notify', () => {
+    expect(ATTRIBUTE_NAMES).toContain('notice')
+    expect(ATTRIBUTE_NAMES).not.toContain('notify')
+  })
+
   it('collects the names already written in the document', () => {
     const state = stateOf('=for para :id<a> :caption<x>\ntext\n\n=for para :summary<y>\nmore\n')
     const found = attributeNamesInDocument(state)

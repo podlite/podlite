@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the list of attribute names holds C<notice>, the name of the notification attribute, in place of C<notify>
+
 =head1 0.0.73
 
 =item the virtual margin of a block ends with the block: text indented under an ended heading or paragraph block is read against the margin of the block around it, and is code when set in from that margin; it took the margin of the ended block and was a paragraph
