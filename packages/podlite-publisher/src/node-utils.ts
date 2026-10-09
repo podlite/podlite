@@ -81,7 +81,7 @@ export const convertFileLinksToUrl = (records: publishRecord[], additinalMap = {
       'L<>': (node, ctx, interator) => {
         const { content, meta } = node
         const link = meta ? meta : getTextContentFromNode(content)
-        const r = link.match(/file:\s*(?<path>(.+))\s*$/)
+        const r = link.match(/^\s*file:\s*(?<path>(.+))\s*$/)
         const convertFileToUrl = filePath => {
           // a link an include brought is found from the file it was written in
           const { isRemote, path: target } = getPathToOpen(filePath, nodeOrigin(node)?.file ?? item.file)

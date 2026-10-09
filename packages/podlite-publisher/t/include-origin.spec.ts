@@ -225,6 +225,31 @@ describe('a doc: link', () => {
       'site/page.pod6:2: a link in the text from this line, doc:Same: more than one document is named Same: a/one.pod6, b/hidden.pod6',
     ])
   })
+
+  it('leaves the table of contents link to a heading that holds a doc: link a link to the heading', () => {
+    const target = processFile('site/target.pod6', '=begin pod :puburl</target>\n=TITLE Target\n=end pod\n')
+    const host = processFile(
+      'site/host.pod6',
+      '=begin pod :puburl</host>\n=TITLE Host\n\n=toc head1\n\n=head1 Using L<doc:Target> in practice\n\nText.\n=end pod\n',
+    )
+    const records = quietly(() => includePasses({ catalogue: [target, host] }).first[0]([target, host]))
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, records, tctx)
+    expect(links(res[1].node)).toEqual(['#Using doc:Target in practice', '/target'])
+  })
+
+  it('does not read a link to another scheme with doc: in its address as a doc: link', () => {
+    const host = processFile('site/host.pod6', '=begin pod\n=para L<https://example.org/doc:Missing>\n=end pod\n')
+    expect(run([host])).toEqual([])
+  })
+
+  it('keeps the address of a link to another scheme with file: in it', () => {
+    const host = processFile(
+      'site/host.pod6',
+      '=begin pod :puburl</host>\n=para L<x|https://example.org/file:x>\n=end pod\n',
+    )
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [host], tctx)
+    expect(links(res[0].node)).toEqual(['https://example.org/file:x'])
+  })
 })
 
 describe('the site data', () => {

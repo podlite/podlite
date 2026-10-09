@@ -156,7 +156,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
           const { content, meta } = node
           const link = meta ? meta : getTextContentFromNode(content)
 
-          const r = link.match(/doc:\s*(?<path>(.+))\s*$/)
+          const r = link.match(/^\s*doc:\s*(?<path>(.+))\s*$/)
           if (r?.groups?.path) {
             const docLink = r.groups.path
             const from = nodeOrigin(node)?.file ?? srcfile
