@@ -14,9 +14,10 @@ const isNested = (node: unknown): node is NestedNode =>
 
 // The parser already puts on a block what =set and =config give it, marked by
 // where it came from, so one reading of the block covers all three sources and
-// gives one warning. A =config or =set of an including file reaches an included
-// block only when the files are assembled; the tree of either file does not
-// hold it, and such a loss is not reported.
+// gives one warning. A =set or =config written before =include reaches its block
+// only when the files are assembled: a block of the included file, or the next
+// block of the including file when the included one gives none. The tree of
+// either file does not hold it, and such a loss is not reported.
 export const notifyAttributeRule: Rule = {
   id: NOTIFY_ATTRIBUTE_RULE_ID,
   severity: 'warning',
