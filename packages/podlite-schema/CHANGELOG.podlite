@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.73
+
 =item the virtual margin of a block ends with the block: text indented under an ended heading or paragraph block is read against the margin of the block around it, and is code when set in from that margin; it took the margin of the ended block and was a paragraph
 
 =item text at the top level of a document whose first line is set in from the margin is code, as inside C<=pod>; it was a paragraph. A line of spaces alone stays as it was
