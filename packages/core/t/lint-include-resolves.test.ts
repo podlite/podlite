@@ -158,6 +158,18 @@ describe('include-resolves rule', () => {
     expect(violation.message).toContain('(in part.podlite:3)')
   })
 
+  it('names a file of the given set from the root when the host gives no context', () => {
+    const src = '=pod\n\n=include file:lib/part.podlite\n'
+    const [violation] = includeResolvesRule.check(parseContent(src, 'podlite'), {
+      filePath: 'input.podlite',
+      fileType: 'podlite',
+      config: {},
+      sources: sourcesFromFiles({ 'lib/part.podlite': '=pod\n\n=include file:absent.podlite\n' }),
+      self: '/input.podlite',
+    })
+    expect(violation.message).toContain('(in lib/part.podlite:3)')
+  })
+
   it('names a nested file of the given set from the context it is resolved from', () => {
     const src = '=pod\n\n=include file:part.podlite\n'
     const [violation] = includeResolvesRule.check(parseContent(src, 'podlite'), {
@@ -173,4 +185,3 @@ describe('include-resolves rule', () => {
     expect(violation.message).toContain('(in sub/leaf.podlite:3)')
   })
 })
-

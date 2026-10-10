@@ -22,12 +22,25 @@ export const INCLUDE_RESOLVES_RULE_ID = 'include-resolves'
 // it came through, so the report and lint-ignore read offsets of this file only.
 // A file of a host's own set is named as the host named it: from the root the
 // paths of the document are resolved from.
-export const includedName = (file: string, ctx: LintContext): string =>
-  ctx.fromDisk && !ctx.sources
+/*
+=begin pod :kind<export>
+
+=head2 includedName
+
+The name a lint message gives a file an include brought in: from the directory
+of the document when it was read from disk, from the context the paths are
+resolved from when a host gives the files, or as the host named it.
+
+=end pod
+*/
+export const includedName = (file: string, ctx: LintContext): string => {
+  const context = ctx.context ?? ''
+  return ctx.fromDisk && !ctx.sources
     ? relative(dirname(resolve(ctx.filePath)), file)
-    : typeof ctx.context === 'string'
-    ? posix.relative(posix.join('/', ctx.context), posix.join('/', file))
+    : typeof context === 'string'
+    ? posix.relative(posix.join('/', context), posix.join('/', file))
     : file
+}
 
 const toViolation = (problem: IncludeProblem, ctx: LintContext): Violation => {
   const first = problem.chain[0]
@@ -46,31 +59,56 @@ const toViolation = (problem: IncludeProblem, ctx: LintContext): Violation => {
   }
 }
 
-export type Assembled = { tree: PodliteDocument; origin: WeakMap<object, IncludeOrigin>; problems: IncludeProblem[] }
+/*
+=begin pod :kind<export>
 
-// One assembly per file and run: the context is made anew for each file, and the
-// same tree read against another set of files assembles differently.
-const assembledIn = new WeakMap<LintContext, { ast: PodliteDocument; result: Assembled | Error | undefined }>()
+=head2 Assembled
+
+What C<assembleForLint> gives: the assembled tree, the file and the directives
+each placed node came through, and the problems met on the way.
+
+=end pod
+*/
+export type Assembled = { tree: PodliteDocument; origin: WeakMap<object, IncludeOrigin>; problems: IncludeProblem[] }
 
 /*
 =begin pod :kind<export>
 
 =head2 assembleForLint
 
-The document as its includes assemble it, the file each placed node came from,
-and the problems met on the way, for the rules of one lint run. Undefined where
-includes are not assembled: a Markdown document, and text handed in by name with
-no files given next to it. An assembly that fails is returned as the error.
+The document as its includes assemble it, for a rule that checks the whole
+document. Undefined where includes are not assembled: a Markdown document, and
+text handed in by name with no files given next to it. An assembly that fails is
+returned as the error. The rules of one check share one assembly; a context
+checked again with other files, another document or other settings is
+assembled anew.
 
 =end pod
 */
 export const assembleForLint = (ast: PodliteDocument, ctx: LintContext): Assembled | Error | undefined => {
   const known = assembledIn.get(ctx)
-  if (known && known.ast === ast) return known.result
+  if (known && sameReading(known.reading, ast, ctx)) return known.result
   const result = assemble(ast, ctx)
-  assembledIn.set(ctx, { ast, result })
+  assembledIn.set(ctx, { reading: readingOf(ast, ctx), result })
   return result
 }
+
+// what an assembly depends on, besides the text of the files
+const readingOf = (ast: PodliteDocument, ctx: LintContext) => ({
+  ast,
+  sources: ctx.sources,
+  context: ctx.context,
+  self: ctx.self,
+  filePath: ctx.filePath,
+  fileType: ctx.fileType,
+  fromDisk: ctx.fromDisk,
+})
+type Reading = ReturnType<typeof readingOf>
+const sameReading = (known: Reading, ast: PodliteDocument, ctx: LintContext): boolean => {
+  const now = readingOf(ast, ctx)
+  return (Object.keys(now) as Array<keyof Reading>).every(key => known[key] === now[key])
+}
+const assembledIn = new WeakMap<LintContext, { reading: Reading; result: Assembled | Error | undefined }>()
 
 const assemble = (ast: PodliteDocument, ctx: LintContext): Assembled | Error | undefined => {
   // A markdown document has no directives: an =include line there is text.
