@@ -1,4 +1,5 @@
 import makeAttrs from './helpers/config'
+import { maskText } from './helpers/handlers'
 
 // Covered content is marked on the node, not decided at render time. A block
 // carrying :masked or a G<> code can be lifted out of its document by =include,
@@ -47,3 +48,58 @@ export const markGuarded = <T>(node: T, inherited = false): T => {
   if ('caption' in target && isCaptionNode(target.caption)) markGuarded(target.caption, covered)
   return node
 }
+
+/*
+=begin pod :kind<export>
+
+=head2 guardedTextLeaves
+
+The text of a node as the pieces it is made of, in order, each with whether it is
+hidden. It reads what C<getTextContentFromNode> reads: text and verbatim leaves and
+plain strings, through content held as an array or as a single node, and not a
+caption. A leaf is hidden when it or any node above it is a C<G<>> code or carries
+the mark of hidden content, so a leaf the mark did not reach is still reported
+hidden.
+
+=end pod
+*/
+export const guardedTextLeaves = (node: unknown): Array<{ value: string; guarded: boolean }> => {
+  const leaves: Array<{ value: string; guarded: boolean }> = []
+  const walk = (value: unknown, covered: boolean): void => {
+    if (Array.isArray(value)) {
+      value.forEach(item => walk(item, covered))
+      return
+    }
+    if (typeof value === 'string') {
+      leaves.push({ value, guarded: covered })
+      return
+    }
+    if (!value || typeof value !== 'object') return
+    const target = value as { type?: string; name?: string; value?: unknown; content?: unknown; guarded?: boolean }
+    const hidden = covered || target.guarded === true || isGuardCode(target) || isMaskedBlock(target)
+    if (target.type === 'text' || target.type === 'verbatim') {
+      if (typeof target.value === 'string') leaves.push({ value: target.value, guarded: hidden })
+      return
+    }
+    if ('content' in target) walk(target.content, hidden)
+  }
+  walk(node, false)
+  return leaves
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 getMaskedTextContent
+
+The text C<getTextContentFromNode> gives, with each hidden piece under the mask.
+Whitespace keeps its place. For a node with nothing hidden in it the two return
+the same string. Meant for text a host writes out itself, past the renderer: a
+page title, an index entry, a site name.
+
+=end pod
+*/
+export const getMaskedTextContent = (node: unknown): string =>
+  guardedTextLeaves(node)
+    .map(leaf => (leaf.guarded ? maskText(leaf.value) : leaf.value))
+    .join('')

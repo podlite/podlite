@@ -1,4 +1,12 @@
-import { toAnyRules, toHtml, toMarkdown } from '../src'
+import {
+  getFromTree,
+  getMaskedTextContent,
+  getTextContentFromNode,
+  guardedTextLeaves,
+  toAnyRules,
+  toHtml,
+  toMarkdown,
+} from '../src'
 import { podlite } from '../../core/src'
 
 type Mode = 'production' | 'draft'
@@ -68,5 +76,36 @@ describe('text a renderer writes from a hidden block is hidden with it', () => {
     const doc = '=for para :masked\nE<81> E<alpha>'
     hiddenIn(html, doc, ['Q', 'α'])
     expect(html(doc)).toContain('█ █')
+  })
+})
+
+describe('text taken out of a node keeps its hidden parts hidden', () => {
+  const firstPara = (body: string) => getFromTree(tree(body), 'para')[0]
+  const masked = (body: string) => getMaskedTextContent(firstPara(body)).trimEnd()
+
+  it('masks a word in a guard code and keeps the spaces', () => {
+    expect(masked('=for para\nProject G<Aurora> notes')).toBe('Project ██████ notes')
+  })
+
+  it('masks the whole text of a masked block', () => {
+    expect(masked('=for para :masked\nAll of it')).toBe('███ ██ ██')
+  })
+
+  it('masks a guard code that holds a single code', () => {
+    expect(masked('=for para\nProject G<S<secret>>')).toBe('Project ██████')
+    expect(masked('=for para\nProject G<V<secret>>')).toBe('Project ██████')
+  })
+
+  it('gives the leaves in order with their marks', () => {
+    expect(guardedTextLeaves(firstPara('=for para\nOne G<two> three'))).toEqual([
+      { value: 'One ', guarded: false },
+      { value: 'two', guarded: true },
+      { value: ' three\n', guarded: false },
+    ])
+  })
+
+  it('gives the same text as before when nothing is hidden', () => {
+    const para = firstPara('=for para\nPlain B<bold> C<code> I<it> L<link|https://example.org>')
+    expect(getMaskedTextContent(para)).toBe(getTextContentFromNode(para))
   })
 })
