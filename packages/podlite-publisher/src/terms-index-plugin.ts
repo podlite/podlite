@@ -4,7 +4,9 @@ import {
   emptyContent,
   FormattingCodeX,
   getTextContentFromNode,
+  indexAnchors,
   makeInterator,
+  maskText,
   PodNode,
   setContext,
   setFn,
@@ -14,6 +16,24 @@ import {
 } from '@podlite/schema'
 import { BUILT_PATH } from './constants'
 import * as fs from 'fs'
+
+// the index entry as the site gets it: hidden words under the mask, the tree untouched
+const maskedCopy = (value: unknown, covered = false): unknown => {
+  if (Array.isArray(value)) return value.map(item => maskedCopy(item, covered))
+  if (typeof value === 'string') return covered ? maskText(value) : value
+  if (!value || typeof value !== 'object') return value
+  const node = value as { type?: string; name?: string; value?: unknown; content?: unknown; guarded?: boolean }
+  const hidden = covered || node.guarded === true || (node.type === 'fcode' && node.name === 'G')
+  if ((node.type === 'text' || node.type === 'verbatim') && typeof node.value === 'string')
+    return { ...node, value: hidden ? maskText(node.value) : node.value }
+  return 'content' in node ? { ...node, content: maskedCopy(node.content, hidden) } : { ...node }
+}
+
+const publishedEntry = (xnode: FormattingCodeX): FormattingCodeX => {
+  const copy = maskedCopy(xnode) as FormattingCodeX
+  const hidden = (xnode as { guarded?: boolean }).guarded === true
+  return hidden && copy.entry ? { ...copy, entry: copy.entry.map(maskText) } : copy
+}
 
 const plugin = ({ built_path = BUILT_PATH }): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
@@ -106,14 +126,20 @@ const plugin = ({ built_path = BUILT_PATH }): PodliteWebPlugin => {
   const onProcess = (recs: publishRecord[]) => {
     const res = recs.map(item => {
       const terms = processNode(item.node)
+      let anchors: ReturnType<typeof indexAnchors> | undefined
       const termWithUrl = terms.map(({ xnode, parent }) => {
         const urlParts = [item.publishUrl]
-        if (parent && typeof parent !== 'string' && 'id' in parent) {
+        if (parent && typeof parent !== 'string' && parent.type === 'block' && parent.name === 'head') {
+          // the anchor the page gives the heading, not one made of its text
+          anchors = anchors ?? indexAnchors(item.node)
+          const anchor = anchors.byNode.get(parent)
+          if (anchor) urlParts.push(anchor)
+        } else if (parent && typeof parent !== 'string' && 'id' in parent) {
           // the tree keeps the heading name; an anchor needs it shaped for a url
           urlParts.push(toFragment(String(parent.id)))
         }
         return {
-          xnode,
+          xnode: publishedEntry(xnode),
           url: urlParts.join('#'),
           title: item.title,
           subtitle: item.subtitle,
