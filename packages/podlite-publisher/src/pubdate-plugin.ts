@@ -1,6 +1,6 @@
 import { publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
-import { getFromTree, getTextContentFromNode, makeAttrs, mkRootBlock, PodNode } from '@podlite/schema'
+import { getFromTree, getMaskedTextContent, makeAttrs, mkRootBlock, PodNode } from '@podlite/schema'
 import { getPublishAttributes } from './node-utils'
 import { addUrl } from './shared'
 import { withOrigin } from './source'
@@ -39,7 +39,7 @@ export function getArticles(item: publishRecord) {
             withOrigin(
               {
                 pubdate,
-                title: getTextContentFromNode(nodePublished).trim(),
+                title: getMaskedTextContent(nodePublished).trim(),
                 type: 'page',
                 isPage: false,
                 publishUrl: '',

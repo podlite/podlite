@@ -1,4 +1,4 @@
-import { parseSources, processFile } from '../src/node-utils'
+import { getPublishAttributes, parseSources, processFile } from '../src/node-utils'
 import { PluginConfig, processPlugin } from '../src'
 import pubdatePlugin, { getArticles, getNotes, getPages } from '../src/pubdate-plugin'
 
@@ -168,4 +168,49 @@ This is a test para
     ]
   `)
   expect(ctx).toHaveProperty('nextPublishTime')
+})
+
+describe('a title with hidden words', () => {
+  const published = (source: string) => {
+    const item = processFile('virtual/hidden.podlite', source)
+    const [res] = processPlugin({ plugin: pubdatePlugin(), includePatterns: '.*' }, [item], {})
+    return res
+  }
+
+  it('masks the hidden word of an article and leaves it out of the address', () => {
+    const [article] = published(
+      "=begin pod\n=for head1 :pubdate('2024-01-01T12:00:00Z')\nPlan G<Zeta>\n=para Text of the article.\n=end pod\n",
+    )
+    expect(article.title).toBe('Plan ████')
+    expect(article.publishUrl).toBe('/2024/1/1/1/plan')
+  })
+
+  it('gives an article with a fully hidden title an address without a name', () => {
+    const [article] = published(
+      "=begin pod\n=for head1 :pubdate('2024-01-02T12:00:00Z')\nG<All hidden>\n=para Text of the article.\n=end pod\n",
+    )
+    expect(article.title).toBe('███ ██████')
+    expect(article.publishUrl).toBe('/2024/1/2/1')
+  })
+
+  it('masks the title of a document published without an address of its own', () => {
+    const [page] = published("=begin pod :pubdate('2024-01-03T12:00:00Z')\n=TITLE Plan G<Zeta>\n\nText.\n=end pod\n")
+    expect(page.title.trim()).toBe('Plan ████')
+    expect(page.publishUrl).toBe('/2024/1/3/1/plan')
+  })
+
+  it('masks the title and the subtitle a page is given', () => {
+    const item = processFile(
+      'virtual/page.podlite',
+      '=begin pod\n=TITLE Site G<Internal>\n=SUBTITLE Notes on G<Bastion>\n=end pod\n',
+    )
+    const { title, subtitle } = getPublishAttributes(item.node)
+    expect(title.trim()).toBe('Site ████████')
+    expect(subtitle.trim()).toBe('Notes on ███████')
+  })
+
+  it('masks the title a record is read with', () => {
+    const item = processFile('virtual/record.podlite', '=begin pod\n=TITLE Project G<Aurora>\n=end pod\n')
+    expect(item.title.trim()).toBe('Project ██████')
+  })
 })

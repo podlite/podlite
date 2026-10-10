@@ -5,6 +5,7 @@ import {
   bindTarget,
   buildBindingIndex,
   getTextContentFromNode,
+  guardedTextLeaves,
   indexAnchors,
   makeAttrs,
   makeInterator,
@@ -117,6 +118,29 @@ const asText = (node: TreeNode & { meta?: unknown; guarded?: boolean }): unknown
   return words.filter(word => !(isNode(word) && word.type === 'text' && word.value === ''))
 }
 
+type Leaf = { value: string; guarded: boolean }
+
+// the name a link takes from a document, cut at both ends as the name is, with each
+// hidden piece marked so the renderer covers it; one plain node when nothing is hidden
+const titleContent = (leaves: Leaf[]): Text | Text[] => {
+  const pieces = leaves.map(leaf => ({ ...leaf }))
+  while (pieces.length) {
+    pieces[0].value = pieces[0].value.trimStart()
+    if (pieces[0].value) break
+    pieces.shift()
+  }
+  while (pieces.length) {
+    const last = pieces[pieces.length - 1]
+    last.value = last.value.trimEnd()
+    if (last.value) break
+    pieces.pop()
+  }
+  if (!pieces.some(piece => piece.guarded)) return { type: 'text', value: pieces.map(piece => piece.value).join('') }
+  return pieces
+    .filter(piece => piece.value !== '')
+    .map(piece => ({ type: 'text', value: piece.value, ...(piece.guarded ? { guarded: true } : {}) }))
+}
+
 const shown = (file: string): string => (path.isAbsolute(file) ? path.relative(process.cwd(), file) : file)
 
 // the file a record was read from, or cut out of
@@ -127,7 +151,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
   const onExit = ctx => ({ ...ctx, ...outCtx })
   const onProcess = (recs: publishRecord[]) => {
     // the records that answer to each name, with the text of the block that names them
-    const named = new Map<string, Array<{ record: publishRecord; title: string }>>()
+    const named = new Map<string, Array<{ record: publishRecord; title: string; leaves: Leaf[] }>>()
     for (const record of recs) {
       const handler = node => {
         // a name an include brought belongs to the document it was written in
@@ -135,9 +159,10 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
         if (from !== undefined && path.resolve(from) !== fileOf(record)) return
         const conf = makeAttrs(node, {})
         const title = getTextContentFromNode(node).trim()
+        const leaves = guardedTextLeaves(node)
         const id = conf.exists('id') ? conf.getFirstValue('id') : undefined
         for (const name of new Set([id, title].filter(Boolean))) {
-          named.set(name, [...(named.get(name) ?? []), { record, title }])
+          named.set(name, [...(named.get(name) ?? []), { record, title, leaves }])
         }
       }
       makeInterator({ NAME: handler, TITLE: handler })(record.node, {})
@@ -161,7 +186,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
       name: string,
       section: string | undefined,
       at: string,
-    ): { title: string; url: string } | undefined => {
+    ): { title: string; url: string; leaves?: Leaf[] } | undefined => {
       // a link has no place of its own; `at` is where the paragraph holding it starts
       const written = section === undefined ? name : `${name}#${section}`
       const answering = (named.get(name) ?? []).filter(({ record }) => Boolean(addressOf(record)))
@@ -184,16 +209,18 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
         return undefined
       }
       const indexed = placed.filter(({ record }) => isIndexed(record))
-      const { record, title } = (indexed.length ? indexed : placed)[(indexed.length ? indexed : placed).length - 1]
+      const { record, title, leaves } = (indexed.length ? indexed : placed)[
+        (indexed.length ? indexed : placed).length - 1
+      ]
       const url = addressOf(record)
-      if (section === undefined) return { title, url }
+      if (section === undefined) return { title, url, leaves }
       // a section is the block the page gives that address to, by the rule the page is drawn with
       const anchor = addressIn(record, section)
       if (anchor === undefined) {
         problems.push(`${at}: a link in the text from this line, doc:${written}: ${name} has no section ${section}`)
         return undefined
       }
-      return { title, url: `${url}${anchor}` }
+      return { title, url: `${url}${anchor}`, leaves }
     }
 
     const processNode = (node: PodNode, srcfile: string, page: publishRecord) => {
@@ -224,7 +251,7 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
             const at = `${shown(from)}${line !== undefined ? `:${line}` : ''}`
             // a section of the document is addressed after its name, of this page without one
             const [name, ...section] = docLink.split('#')
-            const local = (written: string) => {
+            const local = (written: string): { title: string; url: string; leaves?: Leaf[] } | undefined => {
               const anchor = addressIn(page, written)
               if (anchor !== undefined) return { title: written, url: anchor || '#' }
               problems.push(
@@ -238,10 +265,9 @@ const plugin = (options: LinksOptions = {}): PodliteWebPlugin => {
                 : resolve(name, section.length ? section.join('#') : undefined, at)
             if (!found) return options.unresolved === 'warning' ? asText(node) : node
             const { url } = found
-            const newContent: Text = {
-              type: 'text',
-              value: `${found.title}`,
-            }
+            const newContent: Text | Text[] = found.leaves
+              ? titleContent(found.leaves)
+              : { type: 'text', value: `${found.title}` }
             const updated = meta ? { meta: url } : { content: newContent, meta: url }
 
             return { ...node, ...updated }

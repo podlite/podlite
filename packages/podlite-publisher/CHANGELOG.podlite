@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a hidden word in the title or subtitle of a document, an article, a page or the site is masked in the title the publisher gives out, and is left out of the address built from that title; the text a C<doc:> link takes from the document it names keeps its hidden words marked, so the page shows them masked
+
 =head1 0.0.56
 
 =item the links plugin takes C<unresolved>: with C<'warning'> a C<doc:> link that does not resolve no longer stops the build; it is written as its text without the link, or as what follows C<doc:> when it has none, and one warning, the same lines as C<LinkError>, names every such link. The default, C<'error'>, stops the build as before

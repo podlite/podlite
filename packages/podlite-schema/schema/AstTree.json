@@ -2783,13 +2783,9 @@
                         },
                         {
                             "type": "array",
-                            "items": [
-                                {
-                                    "$ref": "#/definitions/Text"
-                                }
-                            ],
-                            "minItems": 1,
-                            "maxItems": 1
+                            "items": {
+                                "$ref": "#/definitions/Text"
+                            }
                         },
                         {
                             "type": "string"

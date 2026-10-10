@@ -139,3 +139,20 @@ it('buildStylesContent: theme + globalStyles — theme first then globalStyles',
 it('buildStylesContent: neither theme nor globalStyles — fallback to default', () => {
   expect(buildStylesContent(undefined, undefined)).toMatch(/@import '@Styles\/default';/)
 })
+
+it('siteDataPlugin: a hidden word in the site title is masked', () => {
+  const index =
+    '=begin pod\n= :favicon<./logo.png>\n= :puburl<http://example.com>\n\n=TITLE Site G<Internal>\n=end pod\n'
+  const state = [processFile('virtual/index.podlite', index)]
+  const config: PluginConfig = {
+    plugin: siteDataPlugin({
+      public_path: '/tmp/public',
+      indexFilePath: 'virtual/index.podlite',
+      built_path: '/built',
+      site_url: 'http://example.com',
+    }),
+    includePatterns: '.*',
+  }
+  const [, context] = processPlugin(config, state, tctx)
+  expect(context.siteData.title.trim()).toBe('Site ████████')
+})

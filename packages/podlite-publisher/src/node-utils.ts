@@ -1,6 +1,7 @@
 import {
   AstTree,
   getFromTree,
+  getMaskedTextContent,
   getTextContentFromNode,
   makeAttrs,
   makeInterator,
@@ -318,16 +319,16 @@ export function getDocumentAttributes(node: PodliteDocument, filePath?: string) 
   let header = null
   makeInterator({
     NAME: (node, ctx, interator) => {
-      title = getTextContentFromNode(node)
+      title = getMaskedTextContent(node)
     },
     TITLE: (node, ctx, interator) => {
-      title = getTextContentFromNode(node)
+      title = getMaskedTextContent(node)
     },
     DESCRIPTION: (node, ctx, interator) => {
       description = node.content
     },
     SUBTITLE: (node, ctx, interator) => {
-      subtitle = getTextContentFromNode(node)
+      subtitle = getMaskedTextContent(node)
     },
     AUTHOR: (node, ctx, interator) => {
       const attr = makeAttrs(node, ctx)
@@ -376,16 +377,16 @@ export function getPublishAttributes(node: PodNode, filePath?: string) {
   let footer = ''
   makeInterator({
     NAME: (node, ctx, interator) => {
-      title = getTextContentFromNode(node)
+      title = getMaskedTextContent(node)
     },
     TITLE: (node, ctx, interator) => {
-      title = getTextContentFromNode(node)
+      title = getMaskedTextContent(node)
     },
     DESCRIPTION: (node, ctx, interator) => {
       description = node.content
     },
     SUBTITLE: (node, ctx, interator) => {
-      subtitle = getTextContentFromNode(node)
+      subtitle = getMaskedTextContent(node)
     },
     AUTHOR: (node, ctx, interator) => {
       const attr = makeAttrs(node, ctx)

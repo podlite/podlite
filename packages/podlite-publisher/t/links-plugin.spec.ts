@@ -1,7 +1,7 @@
 import { processFile } from '../src/node-utils'
 import { PluginConfig, processPlugin } from '../src'
 import linksPlugin from '../src/links-plugin'
-import { frozenIds, makeInterator } from '@podlite/schema'
+import { frozenIds, makeInterator, PodNode, toHtml, toMarkdown } from '@podlite/schema'
 
 const tctx = { testing: true }
 const file1 = `
@@ -108,3 +108,60 @@ it('linksPlugin: linking1', () => {
 
 //     // expect(links).toMatchInlineSnapshot()
 //   })
+
+describe('the text a doc: link takes from the document it names', () => {
+  const linked = (name: string, body = 'L<doc:aurora>') => {
+    const src = `=begin pod\n${body}\n=end pod\n`
+    const dst = `=begin pod :puburl("/secret")\n=for NAME :id<aurora>\n${name}\n=end pod\n`
+    const files = [processFile('virtual/src.podlite', src), processFile('virtual/dst.podlite', dst)]
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, files, tctx)
+    const links: PodNode[] = []
+    makeInterator({ 'L<>': node => void links.push(node) })(res[0].node)
+    const tree = res[0].node
+    return {
+      link: links[0] as { meta: string; content: any },
+      html: String(toHtml({}).run(tree)),
+      md: String(toMarkdown({}).run(tree)),
+    }
+  }
+
+  it('marks the hidden word and the page shows it masked', () => {
+    const { link, html, md } = linked('Project G<Aurora>')
+    expect(link.meta).toBe('/secret')
+    expect(link.content).toEqual([
+      { type: 'text', value: 'Project ' },
+      { type: 'text', value: 'Aurora', guarded: true },
+    ])
+    expect(html).toContain('Project ██████')
+    expect(html).not.toContain('Aurora')
+    expect(md).not.toContain('Aurora')
+  })
+
+  it('keeps one plain text node when nothing is hidden', () => {
+    expect(linked('Project Aurora').link.content).toEqual({ type: 'text', value: 'Project Aurora' })
+  })
+
+  it('marks a hidden word held in a single code', () => {
+    const { link, html } = linked('Project G<S<secret>>')
+    expect(link.content[1]).toEqual({ type: 'text', value: 'secret', guarded: true })
+    expect(html).toContain('>Project ██████</a>')
+  })
+
+  it('cuts the name at both ends and keeps the inner spaces', () => {
+    const { link, html, md } = linked('G<Hidden> middle G<end>')
+    expect(link.content.map((leaf: { value: string }) => leaf.value).join('')).toBe('Hidden middle end')
+    expect(link.content[link.content.length - 1]).toEqual({ type: 'text', value: 'end', guarded: true })
+    expect(html).toContain('██████ middle ███')
+    expect(md).toContain('██████ middle ███')
+  })
+
+  it('leaves a backlink to a hidden section as written', () => {
+    const body = 'W<related discussion|file:./internal.podlite#sec-secret>'
+    const before = processFile('virtual/w.podlite', `=begin pod\n${body}\n=end pod\n`)
+    const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, [before], tctx)
+    const backlinks: PodNode[] = []
+    makeInterator({ 'W<>': node => void backlinks.push(node) })(res[0].node)
+    expect(backlinks).toHaveLength(1)
+    expect(String(toHtml({}).run(res[0].node))).toContain('related discussion')
+  })
+})

@@ -1,4 +1,4 @@
-import { getFromTree, getTextContentFromNode, makeAttrs, makeInterator } from '@podlite/schema'
+import { getFromTree, getMaskedTextContent, makeAttrs, makeInterator } from '@podlite/schema'
 import { BUILT_PATH, INDEX_PATH, POSTS_PATH, PUBLIC_PATH } from './constants'
 import * as fs from 'fs'
 import { isEntry, publishRecord } from './record'
@@ -81,10 +81,10 @@ const plugin = ({
 
     const pageNode = makeInterator({
       TITLE: (node, ctx, interator) => {
-        title = getTextContentFromNode(node)
+        title = getMaskedTextContent(node)
       },
       SUBTITLE: (node, ctx, interator) => {
-        subtitle = getTextContentFromNode(node)
+        subtitle = getMaskedTextContent(node)
       },
       AUTHOR: (node, ctx, interator) => {
         const attr = makeAttrs(node, ctx)
