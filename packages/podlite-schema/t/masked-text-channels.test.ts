@@ -109,3 +109,40 @@ describe('text taken out of a node keeps its hidden parts hidden', () => {
     expect(getMaskedTextContent(para)).toBe(getTextContentFromNode(para))
   })
 })
+
+describe('the html export names a node it cannot render without printing it', () => {
+  const root = (node: object) => ({ type: 'block', name: 'root', margin: '', content: [node] })
+  const hidden = { type: 'text', value: 'SECRET656', guarded: true }
+  const messages = (channel: 'warn' | 'error', node: object) => {
+    const spy = jest.spyOn(console, channel).mockImplementation(() => {})
+    try {
+      toHtml({}).run(root(node) as never)
+      return spy.mock.calls.map(call => call.join(' '))
+    } finally {
+      spy.mockRestore()
+    }
+  }
+
+  it('names an unhandled node by name, type and line', () => {
+    const node = { type: 'block', name: 'widget', margin: '', location: { start: { line: 12 } }, content: [hidden] }
+    expect(messages('warn', node)).toEqual(['[podlite] unhandled node widget (block) at line 12'])
+  })
+
+  it('names an unhandled node without a place by name and type', () => {
+    const node = { type: 'block', name: 'widget', margin: '', content: [hidden] }
+    expect(messages('warn', node)).toEqual(['[podlite] unhandled node widget (block)'])
+  })
+
+  it('names an item whose content is not a list without printing it', () => {
+    const node = {
+      type: 'block',
+      name: 'item',
+      margin: '',
+      level: 1,
+      location: { start: { line: 4 } },
+      config: [{ name: 'masked', value: 1 }],
+      content: 'SECRET656',
+    }
+    expect(messages('error', node)).toEqual(['[podlite] item:block: content is not a list at line 4'])
+  })
+})

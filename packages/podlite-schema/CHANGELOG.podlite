@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the html export names a node it has no rule for, and an item whose content is not a list, by name and line, instead of printing the node with its content, hidden text included, to the error stream
+
 =item the content of a link may be a list of text nodes, as the parser already gives for a link that holds formatting codes
 
 =item C<getMaskedTextContent> gives the text of a node with its hidden parts under the mask, and C<guardedTextLeaves> gives the same text as pieces marked hidden or not, for text a host writes out past the renderer

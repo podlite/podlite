@@ -67,6 +67,9 @@ const anchorOf = (node, ctx): string | null => {
 }
 
 // the words a test is shown by are hidden with the content they stand beside
+// where a node stands, for a message that must not print what the node holds
+const atLine = (node): string => (node?.location?.start?.line ? ` at line ${node.location.start.line}` : '')
+
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
 
 const openTag = (tag: string, node, ctx, attrs = '') => {
@@ -327,7 +330,7 @@ const rules = {
   'item:block': (writer, processor) => (node, ctx, interator) => {
     // make text from first para
     if (!(node.content instanceof Array)) {
-      console.error('[pod6] item:block : Error in content of ' + JSON.stringify(node))
+      console.error(`[podlite] item:block: content is not a list${atLine(node)}`)
     }
     const isTask = node.checked !== undefined
 
@@ -537,7 +540,7 @@ const toHtml = opt =>
           writer.write(covered(node, ctx, String(name)))
           writer.writeRaw('</h1>')
         } else {
-          console.warn('[podlite] Unhandled node' + JSON.stringify(node, null, 2))
+          console.warn(`[podlite] unhandled node ${node.name} (${node.type})${atLine(node)}`)
         }
         if (node.hasOwnProperty('content')) {
           interator(node.content, ctx)
