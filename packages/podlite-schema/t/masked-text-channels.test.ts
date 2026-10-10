@@ -133,6 +133,17 @@ describe('the html export names a node it cannot render without printing it', ()
     expect(messages('warn', node)).toEqual(['[podlite] unhandled node widget (block)'])
   })
 
+  it('prints only a number as the line and only a string as the type', () => {
+    const node = {
+      type: Symbol('t'),
+      name: 'widget',
+      margin: '',
+      location: { start: { line: '12 SECRET656' } },
+      content: [hidden],
+    }
+    expect(messages('warn', node)).toEqual(['[podlite] unhandled node widget (?)'])
+  })
+
   it('names an item whose content is not a list without printing it', () => {
     const node = {
       type: 'block',

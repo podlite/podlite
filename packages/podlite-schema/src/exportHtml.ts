@@ -67,8 +67,12 @@ const anchorOf = (node, ctx): string | null => {
 }
 
 // the words a test is shown by are hidden with the content they stand beside
-// where a node stands, for a message that must not print what the node holds
-const atLine = (node): string => (node?.location?.start?.line ? ` at line ${node.location.start.line}` : '')
+// where a node stands and what it is, for a message that must not print what the node holds
+const atLine = (node): string => {
+  const line = node?.location?.start?.line
+  return Number.isInteger(line) ? ` at line ${line}` : ''
+}
+const label = (value: unknown): string => (typeof value === 'string' ? value : '?')
 
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
 
@@ -540,7 +544,7 @@ const toHtml = opt =>
           writer.write(covered(node, ctx, String(name)))
           writer.writeRaw('</h1>')
         } else {
-          console.warn(`[podlite] unhandled node ${node.name} (${node.type})${atLine(node)}`)
+          console.warn(`[podlite] unhandled node ${label(node?.name)} (${label(node?.type)})${atLine(node)}`)
         }
         if (node.hasOwnProperty('content')) {
           interator(node.content, ctx)
