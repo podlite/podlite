@@ -2,6 +2,19 @@
 
 =head1 Upcoming
 
+=head1 0.0.95
+
+
+=head2 @podlite/publisher
+
+=item the links plugin takes C<unresolved>: with C<'warning'> a C<doc:> link that does not resolve no longer stops the build; it is written as its text without the link, or as what follows C<doc:> when it has none, and one warning, the same lines as C<LinkError>, names every such link. The default, C<'error'>, stops the build as before
+
+=item a C<doc:> or C<file:> link is read as such only when its address starts with the scheme: a table of contents link to a heading that holds a C<doc:> link no longer stops the build, and an address of another scheme with C<doc:> or C<file:> in it keeps its address
+
+=head2 @podlite/schema
+
+=item a heading also answers to the name it was parsed with when no other block holds that address: a table of contents entry for a heading whose text a plugin changed later, such as a heading with a C<doc:> link, links to the heading; it was rendered without an address. A link that resolved before keeps its target
+
 =head1 0.0.94
 
 

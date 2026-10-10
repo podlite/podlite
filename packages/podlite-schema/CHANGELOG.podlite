@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.75
+
 =item a heading also answers to the name it was parsed with when no other block holds that address: a table of contents entry for a heading whose text a plugin changed later, such as a heading with a C<doc:> link, links to the heading; it was rendered without an address. A link that resolved before keeps its target
 
 =head1 0.0.74
