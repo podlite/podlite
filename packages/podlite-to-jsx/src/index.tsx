@@ -217,6 +217,13 @@ const hrefOf = (node, ctx): string | undefined => {
 // initialised separately. Keyed by the tree so the walk happens once; weak so a
 // document that is done with is not held here.
 const previewIndexes = new WeakMap<object, Map<string, Map<string, LinkPreviewTarget>>>()
+// where a node stands and what it is, for a message that must not print what the node holds
+const atLine = (node): string => {
+  const line = node?.location?.start?.line
+  return Number.isInteger(line) ? ` at line ${line}` : ''
+}
+const label = (value: unknown): string => (typeof value === 'string' ? value : '?')
+
 const previewIndexFor = (tree: unknown, renderMode?: string): Map<string, LinkPreviewTarget> => {
   if (!tree || typeof tree !== 'object') return new Map()
   const mode = renderMode === 'draft' ? 'draft' : 'production'
@@ -234,7 +241,6 @@ const previewOf = (node, ctx, index: Map<string, LinkPreviewTarget>): LinkPrevie
   if (href === undefined || !href.startsWith('#') || href === '#') return undefined
   return index.get(href.slice(1))
 }
-
 
 // the words a test is shown by are hidden with the content they stand beside
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
@@ -941,7 +947,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       // make text from first para
       if (!(node.content instanceof Array)) {
-        console.error(node)
+        console.error(`[to-jsx] item: content is not a list${atLine(node)}`)
       }
       const id = getSafeNodeId(node, ctx)
       const isTask = node.checked !== undefined
@@ -1158,8 +1164,9 @@ function podlite(
             interator(node.content, { ...ctx }),
           )
         }
-        console.warn('[to-jsx] Not supported: ' + JSON.stringify(node, null, 2))
-        return createElement('code', { key: ++i_key_i }, `not supported node:${JSON.stringify(node, null, 2)}`)
+        const what = `not supported node ${label(node?.name)} (${label(node?.type)})${atLine(node)}`
+        console.warn(`[to-jsx] ${what}`)
+        return createElement('code', { key: ++i_key_i }, what)
       },
     })
     .use(rules)

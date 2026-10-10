@@ -101,3 +101,55 @@ describe('text the page writes from a hidden block is hidden with it', () => {
     })
   })
 })
+
+describe('a node the page cannot render is named without its content', () => {
+  const capture = (channel: 'warn' | 'error', render: () => string) => {
+    const spy = jest.spyOn(console, channel).mockImplementation(() => {})
+    try {
+      const html = render()
+      return { html, log: spy.mock.calls.map(call => call.join(' ')) }
+    } finally {
+      spy.mockRestore()
+    }
+  }
+  const fromTree = (node: object) => () =>
+    renderToStaticMarkup(
+      <Podlite tree={{ interator: { type: 'block', name: 'root', margin: '', content: [node] } } as never} />,
+    )
+  const secret = { type: 'text', value: 'SECRET743', guarded: true }
+
+  it('names a block of a document that has no rule, on the page and in the log', () => {
+    const { html, log } = capture('warn', () => page('=begin set :masked\nG<SECRET743>\n=end set'))
+    expect(html).not.toContain('SECRET743')
+    expect(html).not.toContain('"type"')
+    expect(html).toContain('<code>not supported node set (block) at line 3</code>')
+    expect(log).toEqual(['[to-jsx] not supported node set (block) at line 3'])
+  })
+
+  it('names a block of a given tree by name, type and line', () => {
+    const node = { type: 'block', name: 'widget', margin: '', location: { start: { line: 12 } }, content: [secret] }
+    const { html, log } = capture('warn', fromTree(node))
+    expect(html).toBe('<code>not supported node widget (block) at line 12</code>')
+    expect(log).toEqual(['[to-jsx] not supported node widget (block) at line 12'])
+  })
+
+  it('leaves out a place that is missing or not a number', () => {
+    const plain = { type: 'block', name: 'widget', margin: '', content: [secret] }
+    const odd = { ...plain, location: { start: { line: '12 SECRET743' } } }
+    expect(capture('warn', fromTree(plain)).log).toEqual(['[to-jsx] not supported node widget (block)'])
+    expect(capture('warn', fromTree(odd)).log).toEqual(['[to-jsx] not supported node widget (block)'])
+  })
+
+  it('names an item whose content is not a list without printing it', () => {
+    const item = {
+      type: 'block',
+      name: 'item',
+      margin: '',
+      level: 1,
+      location: { start: { line: 4 } },
+      config: [{ name: 'masked', value: 1 }],
+      content: 'SECRET743',
+    }
+    expect(capture('error', fromTree(item)).log).toEqual(['[to-jsx] item: content is not a list at line 4'])
+  })
+})
