@@ -160,6 +160,23 @@ describe('id-unique over the document its includes assemble', () => {
     })
     expect(v.map(x => x.message)).toEqual(['Duplicate :id<dup> (in lib/part.podlite:3); first at line 3'])
   })
+  it('sees a file the host changed in place when a rule is checked again', () => {
+    const ast = parseContent(doc('=include file:part.podlite'), 'podlite')
+    let part = doc('=for para :id<x>\nOne.')
+    const sources = { ...sourcesFromFiles({ 'part.podlite': '' }), read: () => part }
+    const host = {
+      filePath: 'input.podlite',
+      fileType: 'podlite' as const,
+      config: {},
+      context: '',
+      self: '/input.podlite',
+      sources,
+    }
+    expect(idUniqueRule.check(ast, host)).toEqual([])
+    part = doc('=for para :id<x>\nOne.\n\n=for para :id<x>\nTwo.')
+    expect(idUniqueRule.check(ast, host)).toHaveLength(1)
+  })
+
   it('reads the given files anew when one context is checked again', () => {
     const src = doc('=include file:part.podlite')
     const ast = parseContent(src, 'podlite')

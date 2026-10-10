@@ -8,6 +8,7 @@ import { resolveIncludes, IncludeProblem } from '../../resolve-includes'
 import { assembleIncludes, silently } from '../../assemble'
 import type { IncludeOrigin } from '../../assemble'
 import { readerFor } from '../../reader'
+import { isOnePass } from '../engine'
 import type { ReadFormat } from '../../file-format'
 
 // The plugins that change what an include can select or address. The registry
@@ -79,36 +80,21 @@ export type Assembled = { tree: PodliteDocument; origin: WeakMap<object, Include
 The document as its includes assemble it, for a rule that checks the whole
 document. Undefined where includes are not assembled: a Markdown document, and
 text handed in by name with no files given next to it. An assembly that fails is
-returned as the error. The rules of one check share one assembly; a context
-checked again with other files, another document or other settings is
-assembled anew.
+returned as the error. The rules of one pass over a file share one assembly;
+a rule checked on its own assembles anew each time.
 
 =end pod
 */
 export const assembleForLint = (ast: PodliteDocument, ctx: LintContext): Assembled | Error | undefined => {
+  if (!isOnePass(ctx)) return assemble(ast, ctx)
   const known = assembledIn.get(ctx)
-  if (known && sameReading(known.reading, ast, ctx)) return known.result
+  if (known && known.ast === ast) return known.result
   const result = assemble(ast, ctx)
-  assembledIn.set(ctx, { reading: readingOf(ast, ctx), result })
+  assembledIn.set(ctx, { ast, result })
   return result
 }
 
-// what an assembly depends on, besides the text of the files
-const readingOf = (ast: PodliteDocument, ctx: LintContext) => ({
-  ast,
-  sources: ctx.sources,
-  context: ctx.context,
-  self: ctx.self,
-  filePath: ctx.filePath,
-  fileType: ctx.fileType,
-  fromDisk: ctx.fromDisk,
-})
-type Reading = ReturnType<typeof readingOf>
-const sameReading = (known: Reading, ast: PodliteDocument, ctx: LintContext): boolean => {
-  const now = readingOf(ast, ctx)
-  return (Object.keys(now) as Array<keyof Reading>).every(key => known[key] === now[key])
-}
-const assembledIn = new WeakMap<LintContext, { reading: Reading; result: Assembled | Error | undefined }>()
+const assembledIn = new WeakMap<LintContext, { ast: PodliteDocument; result: Assembled | Error | undefined }>()
 
 const assemble = (ast: PodliteDocument, ctx: LintContext): Assembled | Error | undefined => {
   // A markdown document has no directives: an =include line there is text.
