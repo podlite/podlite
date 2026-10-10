@@ -2,6 +2,7 @@ import * as path from 'path'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { lintFile, runLint } from '../src/lint'
+import { runRules } from '../src/lint/engine'
 import { sourcesFromFiles } from '../src/assemble'
 import { parseContent, readFile } from '../src/lint/loader'
 import { idUniqueRule, ID_UNIQUE_RULE_ID, collectExplicitIds } from '../src/lint/rules/id-unique'
@@ -175,6 +176,25 @@ describe('id-unique over the document its includes assemble', () => {
     expect(idUniqueRule.check(ast, host)).toEqual([])
     part = doc('=for para :id<x>\nOne.\n\n=for para :id<x>\nTwo.')
     expect(idUniqueRule.check(ast, host)).toHaveLength(1)
+  })
+
+  it('reads the files anew for a context kept from a finished pass', () => {
+    const ast = parseContent(doc('=include file:part.podlite'), 'podlite')
+    let part = doc('=for para :id<x>\nOne.')
+    const sources = { ...sourcesFromFiles({ 'part.podlite': '' }), read: () => part }
+    const host = {
+      filePath: 'input.podlite',
+      fileType: 'podlite' as const,
+      config: {},
+      context: '',
+      self: '/input.podlite',
+      sources,
+    }
+    let kept: LintContext | undefined
+    const keeper = { id: 'keeper', severity: 'info' as const, check: (_: unknown, c: LintContext) => ((kept = c), []) }
+    expect(runRules(ast, [idUniqueRule, keeper], host)).toEqual([])
+    part = doc('=for para :id<x>\nOne.\n\n=for para :id<x>\nTwo.')
+    expect(idUniqueRule.check(ast, kept as LintContext)).toHaveLength(1)
   })
 
   it('reads the given files anew when one context is checked again', () => {
