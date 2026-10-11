@@ -1,6 +1,7 @@
 import {
   applySetToFirst,
   holderInside,
+  isDirectiveNode,
   isSetTarget,
   isSetTransparent,
   markGuarded,
@@ -11,6 +12,7 @@ import {
   propagateConfigDefaults,
   buildBindingIndex,
   getTextContentFromNode,
+  isWrapper,
   Location,
   mergeSet,
   outermost,
@@ -762,6 +764,24 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // files read with the settings at the directive do not hold it.
   const readAlone = new WeakMap<object, { node: object; roots: any[] }>()
 
+  // An inclusion brings blocks: a directive that stands among them, outside
+  // every block it brings, stays behind. Only the wrappers the tree adds are
+  // walked; a block keeps what is written in it.
+  const withoutLooseDirectives = (nodes: any[]): any[] =>
+    nodes.flatMap(node => {
+      if (isDirectiveNode(node)) return []
+      if (!isWrapper(node) || !Array.isArray(node.content)) return [node]
+      const content = withoutLooseDirectives(node.content)
+      if (content.length === node.content.length && content.every((n, i) => n === node.content[i])) return [node]
+      const copy = { ...node, content }
+      const known = origin.get(node)
+      if (known) origin.set(copy, known)
+      const alone = readAlone.get(node)
+      if (alone) readAlone.set(copy, alone)
+      opts.onCopy?.(node, copy)
+      return [copy]
+    })
+
   const isToc = (node: any): boolean =>
     node && typeof node === 'object' && node.type === 'block' && (node.name === 'toc' || node.name === 'Toc')
   // A table of contents is built while its file is parsed, before the includes
@@ -1136,7 +1156,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readSource })),
       )
       if (operandWaits) return wait()
-      return done(placedFor(found))
+      return done(withoutLooseDirectives(placedFor(found)))
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
       if (operandWaits) return wait()

@@ -88,6 +88,12 @@ describe('a file an include brings whole', () => {
     expect(out).toContain('Part A&lt;X&gt; <a href="https://p.example">p</a>')
   })
 
+  it('keeps its =alias to its blocks and leaves its =boundary between them behind', () => {
+    write('ch.podlite', '=alias X Inner\n\n=para One A<X>\n\n=boundary\n\n=para Two A<X>\n')
+    const out = html(write('book.podlite', '=include file:./ch.podlite\n'))
+    expect([out.includes('One Inner'), out.includes('Two Inner'), out.includes('<hr')]).toEqual([true, true, false])
+  })
+
   it('is written to html with no warning about a node left unhandled', () => {
     write('ch.podlite', chapter)
     const book = write('book.podlite', '=include file:./ch.podlite\n')
