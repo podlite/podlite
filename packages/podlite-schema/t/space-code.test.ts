@@ -16,4 +16,24 @@ describe('the space-preserving code', () => {
     expect(() => asMarkdown('=pod\nS<>\n')).not.toThrow()
     expect(() => asHtml('=pod\nS<>\n')).not.toThrow()
   })
+
+  it('writes a line break in html as <br>', () => {
+    const html = asHtml('=pod\nS<one\ntwo>\n')
+    expect(html).toContain('one<br>two')
+    expect(html).not.toContain('</br>')
+  })
+
+  it('escapes its text in html', () => {
+    const html = asHtml('=pod\nS« a < b & c »\n')
+    expect(html).toContain('a&nbsp;&lt;&nbsp;b&nbsp;&amp;&nbsp;c')
+  })
+
+  it('escapes its text in markdown', () => {
+    expect(asMarkdown('=pod\nS<*word*>\n')).toContain('\\*word\\*')
+  })
+
+  it('keeps a masked one hidden', () => {
+    const html = asHtml('=pod\n=for para :masked\nS<secret word>\n')
+    expect(html).not.toContain('secret')
+  })
 })

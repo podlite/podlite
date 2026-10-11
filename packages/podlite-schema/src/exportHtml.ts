@@ -225,9 +225,9 @@ const rules = {
     }
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
-    const spaces = covered(node, ctx, collectText(node.content)).replace(/ /g, '&nbsp;')
-    const newFeed = spaces.replace(/\n/g, '</br>')
-    writer.writeRaw(newFeed)
+    // escaped before the entities and tags below are put in
+    const text = writer.escape(covered(node, ctx, collectText(node.content)))
+    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
   },
   'T<>': wrapContent('<samp>', '</samp>'),
   'U<>': wrapContent('<u>', '</u>'),

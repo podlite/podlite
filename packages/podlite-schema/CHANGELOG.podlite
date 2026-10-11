@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the text of C<S<>> is escaped in the html and markdown exports, and a line break in it is written in html as C<< <br> >> instead of C<< </br> >>
+
 =item an item is numbered for a C<#> only when the C<#> alone is its first word: C<#Hashtag> and C<##> stay as written; C<:!numbered> written on the item keeps the C<#> as text, and an item numbered by the C<#> over a C<=set :!numbered> carries one C<:numbered>
 
 =item a heading whose first word is a single C<#> is numbered, in the abbreviated, C<=for> and C<=begin> forms, and drawn without the C<#>; C<:!numbered> written on the heading keeps the C<#> as text. A heading with a C<#> elsewhere keeps its text, C<:id> and C<:numbered>
