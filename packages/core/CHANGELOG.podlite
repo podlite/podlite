@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite query> and an C<=include> whose selector cannot be read name an empty operand of C<~<>> in the message
+
 =item C<podlite lint> rule C<id-unique> checks the document as its includes assemble it: an C<:id> repeated between the document and an included file, in a file included twice, or given by C<=config> to blocks an include places is an error naming both files. A C<=config> directive itself is no longer counted as an occurrence of the C<:id> it gives
 
 =item an C<=include> no longer brings a directive that stands outside every brought block — a C<=boundary> between top-level blocks, or an C<=include> left in the included file because it could not be read

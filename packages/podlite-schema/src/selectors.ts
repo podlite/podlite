@@ -249,9 +249,10 @@ const parseCondition = (raw: string): Condition | undefined => {
   if (s[i] === '~' && s[i + 1] === '<') {
     const read = readAngleValue(s, i + 1)
     if (!read || read.end !== s.length) return undefined
-    // an empty list occurs among any values, so the condition would test nothing
     const operand = readOperand(read.value)
-    if (!operand || valuesOf(operand).length === 0) return undefined
+    if (!operand) return undefined
+    // an empty list occurs among any values, so the condition would test nothing
+    if (valuesOf(operand).length === 0) throw new SelectorError('syntax', `the operand of :${attrName}~<> is empty`)
     return { modifier, attrName, valueSpec: { kind: 'contains', value: read.value } }
   }
 
@@ -354,7 +355,7 @@ const parsePatternList = (filterPart: string): Pattern[] | undefined => {
   return patterns
 }
 
-export const parseSelector = (selector: string): ParsedSelector | undefined => {
+const readParsed = (selector: string): ParsedSelector | undefined => {
   const trimmed = selector.trim()
   if (!trimmed) return undefined
 
@@ -408,6 +409,33 @@ export const parseSelector = (selector: string): ParsedSelector | undefined => {
   }
 
   return undefined
+}
+
+export const parseSelector = (selector: string): ParsedSelector | undefined => {
+  try {
+    return readParsed(selector)
+  } catch (e) {
+    if (e instanceof SelectorError && e.kind === 'syntax') return undefined
+    throw e
+  }
+}
+
+/*
+=begin pod :kind<export>
+
+=head2 readSelector
+
+Reads a selector as C<parseSelector> does, and throws a C<SelectorError> of the
+kind C<syntax> instead of returning nothing when the selector cannot be read.
+The message names an empty operand of C<~<>>; for any other reason it is
+C<the selector cannot be read>.
+
+=end pod
+*/
+export const readSelector = (selector: string): ParsedSelector => {
+  const parsed = readParsed(selector)
+  if (!parsed) throw new SelectorError('syntax', 'the selector cannot be read')
+  return parsed
 }
 
 // --- predicate matcher --------------------------------------------------
@@ -656,13 +684,14 @@ C<in>, cannot be read: its source does not resolve (C<resolution>), the format o
 the source is not known (C<format>), or the address is not in it (C<address>).
 Such a selection neither matches nor fails to match, so it returns nothing at all.
 A mask that no document answers is an empty source, not an error, unless it
-carries an address.
+carries an address. C<readSelector> throws it with the kind C<syntax> when the
+text of a selector cannot be read.
 
 =end pod
 */
 export class SelectorError extends Error {
-  readonly kind: 'resolution' | 'format' | 'address'
-  constructor(kind: 'resolution' | 'format' | 'address', message: string) {
+  readonly kind: 'resolution' | 'format' | 'address' | 'syntax'
+  constructor(kind: 'resolution' | 'format' | 'address' | 'syntax', message: string) {
     super(message)
     this.name = 'SelectorError'
     this.kind = kind

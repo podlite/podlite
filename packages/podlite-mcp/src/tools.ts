@@ -1,14 +1,14 @@
 import {
   filePathMatches,
   parse,
-  parseSelector,
+  readSelector,
   runSelector,
   SelectorError,
   toHtml,
   toMarkdown,
   validatePodliteAst,
 } from '@podlite/schema'
-import type { ConfigScope, PodNode, SelectorDoc } from '@podlite/schema'
+import type { ConfigScope, ParsedSelector, PodNode, SelectorDoc } from '@podlite/schema'
 import { podlite, readerFor } from 'podlite'
 import { assembleIncludes, sourcesFromFiles } from 'podlite'
 import type { IncludeOrigin, IncludeProblem, ReadFormat, Sources } from 'podlite'
@@ -210,9 +210,11 @@ const withSourcePath = (selector: string, written: string, path: string): string
 }
 
 export const querySource = (selector: string, text: string, format: QueryFormat, files?: Files): QueryReport => {
-  const parsed = parseSelector(selector)
-  if (!parsed) {
-    throw new Error(`Invalid selector: ${selector}`)
+  let parsed: ParsedSelector
+  try {
+    parsed = readSelector(selector)
+  } catch (e) {
+    throw new Error(`Invalid selector: ${selector}: ${(e as Error).message}`)
   }
   const reading = openReading(text, files)
   const { texts, origin, sections } = reading

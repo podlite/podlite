@@ -376,6 +376,19 @@ describe('include address and problems', () => {
     expect(tree.content.some((n: any) => n.name === 'include')).toBe(true)
   })
 
+  it('names an empty membership operand in an include selector', () => {
+    write('guide.podlite', guide)
+    const main = write('notes.podlite', '=pod\n\n=include file:./guide.podlite | para[ :tags~<> ]\n')
+    const warnings: IncludeProblem[] = []
+    resolve(main, { onError: () => undefined, onWarning: p => warnings.push(p) })
+    expect(warnings.map(w => [w.kind, w.message])).toEqual([
+      [
+        'unparsed-selector',
+        'include selector cannot be read: file:./guide.podlite | para[ :tags~<> ]: the operand of :tags~<> is empty',
+      ],
+    ])
+  })
+
   it('warns about an include of a scheme it does not read', () => {
     const main = write('notes.podlite', '=pod\n\n=include nosuch:./guide.podlite | head1\n')
     const warnings: IncludeProblem[] = []

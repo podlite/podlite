@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<readSelector> reads a selector or throws a C<SelectorError> of the new kind C<syntax> that says why it cannot be read; an empty operand of C<~<>> is named. C<parseSelector> returns C<undefined> for the same selectors as before
+
 =item the html export names a node it has no rule for, and an item whose content is not a list, by name and line, instead of printing the node with its content, hidden text included, to the error stream
 
 =item the content of a link may be a list of text nodes, as the parser already gives for a link that holds formatting codes

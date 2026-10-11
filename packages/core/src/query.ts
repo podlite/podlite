@@ -4,6 +4,7 @@ import {
   getDocIDs,
   podlitePluggable,
   parseSelector,
+  readSelector,
   runSelector,
   toHtml,
   toMarkdown,
@@ -11,7 +12,7 @@ import {
   SelectorError,
   PodNode,
 } from '@podlite/schema'
-import type { ConfigScope } from '@podlite/schema'
+import type { ConfigScope, ParsedSelector } from '@podlite/schema'
 import {
   describeProblem,
   diskProvider,
@@ -115,9 +116,11 @@ export type QueryResult = {
 }
 
 export const runQuery = (opts: QueryOptions): QueryResult => {
-  const parsed = parseSelector(opts.selector)
-  if (!parsed) {
-    throw new Error(`Invalid selector: ${opts.selector}`)
+  let parsed: ParsedSelector
+  try {
+    parsed = readSelector(opts.selector)
+  } catch (e) {
+    throw new Error(`Invalid selector: ${opts.selector}: ${(e as Error).message}`)
   }
 
   const sources: Source[] = []

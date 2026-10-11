@@ -17,7 +17,8 @@ import {
   mergeSet,
   outermost,
   ParseDiagnostic,
-  parseSelector,
+  ParsedSelector,
+  readSelector,
   podlitePluggable,
   runSelector,
   SelectorDoc,
@@ -882,7 +883,16 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const line = getTextContentFromNode(node.content)?.toString().trim() ?? ''
     const split = splitDirective(line)
     const selector = split.selector
-    const parsed = selector && !split.unread ? parseSelector(selector) : undefined
+    let parsed: ParsedSelector | undefined
+    let reason = ''
+    if (selector && !split.unread) {
+      try {
+        parsed = readSelector(selector)
+      } catch (e) {
+        if (!(e instanceof SelectorError)) throw e
+        reason = `: ${e.message}`
+      }
+    }
     if (parsed?.anchor) reached[reached.length - 1] = true
     // The directive stays in the tree as before when its selector is not read;
     // what it would have brought in is missing, and a reader of the tree cannot
@@ -893,7 +903,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         {
           kind: 'unparsed-selector',
           target: line,
-          message: `include selector cannot be read: ${line || '(empty)'}`,
+          message: `include selector cannot be read: ${line || '(empty)'}${reason}`,
           chain: here,
         },
         true,

@@ -1,5 +1,5 @@
 import { applyFoldedSections, toTree } from '..'
-import { outermost, parseSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
+import { outermost, parseSelector, readSelector, runSelector, SelectorDoc, SelectorError } from '../src/selectors'
 import { getTextContentFromNode } from '..'
 
 const makeDoc = (file: string, source: string): SelectorDoc => {
@@ -444,6 +444,82 @@ describe('parseSelector — values and operations in parentheses', () => {
 
   it('rejects an empty membership operand', () => {
     expect(parseSelector('para[ :tags~<> ]')).toBeUndefined()
+  })
+})
+
+describe('readSelector', () => {
+  const reason = (selector: string) => {
+    try {
+      readSelector(selector)
+    } catch (e) {
+      return [e instanceof SelectorError && e.kind, (e as Error).message]
+    }
+    return 'read'
+  }
+
+  it('names an empty membership operand', () => {
+    expect(reason('para[ :tags~<> ]')).toEqual(['syntax', 'the operand of :tags~<> is empty'])
+  })
+
+  it('names an empty membership operand in a pattern list after a source', () => {
+    expect(reason('file:x.podlite | para[ :tags~<> ]')).toEqual(['syntax', 'the operand of :tags~<> is empty'])
+  })
+
+  it('names an operand of whitespace only as empty', () => {
+    expect(reason('para[ :tags~<   > ]')).toEqual(['syntax', 'the operand of :tags~<> is empty'])
+  })
+
+  it('gives the general reason for an operand that cannot be read', () => {
+    expect(reason('para[ :tags~<<>> ]')).toEqual(['syntax', 'the selector cannot be read'])
+  })
+
+  it('gives the general reason for a selector in an in operand that has an empty membership operand', () => {
+    expect(reason('para[ :k(in file:x.podlite | para[ :tags~<> ]) ]')).toEqual([
+      'syntax',
+      'the selector cannot be read',
+    ])
+  })
+
+  it('reads an operand that holds an empty string', () => {
+    expect(reason("para[ :tags~<''> ]")).toBe('read')
+  })
+
+  it('reads a selector parseSelector reads', () => {
+    expect(readSelector('para[ :tags~<draft> ]')).toEqual(parseSelector('para[ :tags~<draft> ]'))
+  })
+})
+
+describe('parseSelector keeps its answer where the operand is empty', () => {
+  it('reads the same selectors as before', () => {
+    const read = [
+      'para[ :tags~<x> ]',
+      "para[ :tags~<''> ]",
+      'para[ :x<~<>> ]',
+      'file:para[ :tags~<> ]',
+      'file:x.podlite | para[ :tags~<x> ]',
+      'x.podlite | para',
+      'head1, para[ :tags~<x> ]',
+      'para[ :tags~<> ] | para',
+      'para[ :k(in file:x.podlite | para) ]',
+    ]
+    expect(read.filter(s => parseSelector(s) === undefined)).toEqual([])
+    expect(parseSelector('file:para[ :tags~<> ]')).toEqual({
+      scheme: 'file',
+      document: 'para[ :tags~<> ]',
+      anchor: undefined,
+      patterns: [],
+    })
+  })
+
+  it('does not read the selectors it did not read before', () => {
+    const rejected = [
+      'para[ :tags~<> ]',
+      'x.podlite | para[ :tags~<> ]',
+      'para[ :k(in file:x.podlite | para[ :tags~<> ]) ]',
+      'para[ :tags~<<>> ]',
+      'para[ :tags~<   > ]',
+    ]
+    expect(rejected.filter(s => parseSelector(s) !== undefined)).toEqual([])
   })
 })
 

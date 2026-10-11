@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_query> names an empty operand of C<~<>> when the selector cannot be read
+
 =item C<podlite_query> finds no C<=boundary>, and no C<=include> left in a document whose files were not given: a selector pattern does not find a directive
 
 =head1 0.0.21

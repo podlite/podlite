@@ -111,6 +111,12 @@ const x = 1
     expect(() => querySource('[[', doc, 'podlite')).toThrow('Invalid selector')
   })
 
+  it('names an empty membership operand', () => {
+    expect(() => querySource('para[ :tags~<> ]', doc, 'podlite')).toThrow(
+      'Invalid selector: para[ :tags~<> ]: the operand of :tags~<> is empty',
+    )
+  })
+
   const section = '=pod\n\n=begin markdown\n# Title\n\nMd text.\n=end markdown\n'
 
   it('finds the blocks of a Markdown section and gives them as Markdown', () => {

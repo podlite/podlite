@@ -28,6 +28,14 @@ describe('podlite query with a selector that names a file', () => {
     expect(r.stderr).toContain('the selector names its own source; not read: absent.podlite')
   })
 
+  it('exits with 1 and names an empty membership operand', () => {
+    const r = query(['para[ :tags~<> ]', 'x.podlite'])
+    expect([r.status, r.stderr]).toEqual([
+      1,
+      expect.stringContaining('Invalid selector: para[ :tags~<> ]: the operand of :tags~<> is empty'),
+    ])
+  })
+
   it('exits with 1 when the file is not there', () => {
     const r = query(['file:none.podlite | para'])
     expect([r.status, r.stderr]).toEqual([1, expect.stringContaining('the source does not resolve: file:none.podlite')])

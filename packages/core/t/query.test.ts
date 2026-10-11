@@ -212,6 +212,13 @@ describe('runQuery errors', () => {
     ).toThrow(/Invalid selector/)
   })
 
+  it('names an empty membership operand', () => {
+    const f = write('x.podlite', `=begin pod\n=for para :tags<draft>\nhi\n=end pod\n`)
+    expect(() =>
+      runQuery({ selector: 'para[ :tags~<> ]', files: [f], format: 'podlite', failOnEmpty: false, quiet: true }),
+    ).toThrow('Invalid selector: para[ :tags~<> ]: the operand of :tags~<> is empty')
+  })
+
   it('throws on no inputs', () => {
     expect(() =>
       runQuery({ selector: 'head1', files: [], format: 'podlite', failOnEmpty: false, quiet: true }),
