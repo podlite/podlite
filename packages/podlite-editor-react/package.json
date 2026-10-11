@@ -18,7 +18,6 @@
     "./podlite-vars.css": "./lib/podlite-vars.css",
     "./lib/Editor.css": "./lib/Editor.css",
     "./lib/podlite-vars.css": "./lib/podlite-vars.css",
-    "./lib/Editor.old.css": "./lib/Editor.old.css",
     "./demo/Components": "./demo/Components",
     "./package.json": "./package.json",
     "./lib/*": {
