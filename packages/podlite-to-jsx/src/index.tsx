@@ -307,37 +307,36 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }
   }
   // Handle :folded attribute - wraps content in collapsible <details> element
+  const foldedContent = (node, ctx, children) => {
+    const conf = makeAttrs(node, ctx)
+    const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
+    // if :folded not specified - return children as is
+    if (folded === null) {
+      return children
+    }
+    const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
+
+    // :folded or :folded(1) = collapsed by default (no open attribute)
+    // :!folded or :folded(0) = expanded by default (open attribute present)
+    const isExpanded = folded === false || folded === 0 || folded === '0'
+
+    return makeComponent(
+      ({ children, key }) => (
+        <details className="folded" key={key} open={isExpanded || undefined}>
+          {caption && <summary className="folded-summary">{caption}</summary>}
+          <div className="folded-content">{children}</div>
+        </details>
+      ),
+      node,
+      children,
+      {},
+      ctx,
+    )
+  }
   const handleFolded = defaultHandler => {
     return (writer, processor) => {
       const defaultHandlerInited = defaultHandler(writer, processor)
-      return (node, ctx, interator) => {
-        const conf = makeAttrs(node, ctx)
-        const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
-        const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
-        const children = defaultHandlerInited(node, ctx, interator)
-
-        // if :folded not specified - return children as is
-        if (folded === null) {
-          return children
-        }
-
-        // :folded or :folded(1) = collapsed by default (no open attribute)
-        // :!folded or :folded(0) = expanded by default (open attribute present)
-        const isExpanded = folded === false || folded === 0 || folded === '0'
-
-        return makeComponent(
-          ({ children, key }) => (
-            <details className="folded" key={key} open={isExpanded || undefined}>
-              {caption && <summary className="folded-summary">{caption}</summary>}
-              <div className="folded-content">{children}</div>
-            </details>
-          ),
-          node,
-          children,
-          {},
-          ctx,
-        )
-      }
+      return (node, ctx, interator) => foldedContent(node, ctx, defaultHandlerInited(node, ctx, interator))
     }
   }
 
@@ -351,9 +350,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
         const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
         const children = defaultHandlerInited(node, ctx, interator)
-        // if no notice attribute - simply return children
+        // without a notice the block folds like any other
         if (!notice) {
-          return children
+          return foldedContent(node, ctx, children)
         }
 
         // Determine the title for the notification. In hidden content the kind the
@@ -421,25 +420,29 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     root: nodeContent,
     data: emptyContent(),
     ':ambient': emptyContent(),
-    ':code': handleNested(
-      setFn((node, ctx) => {
-        const id = getSafeNodeId(node, ctx)
-        return mkComponent(({ children, key }) => (
-          <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="pre-code">
-            {children}
-          </HighlightedCode>
-        ))
-      }),
+    ':code': handleFolded(
+      handleNested(
+        setFn((node, ctx) => {
+          const id = getSafeNodeId(node, ctx)
+          return mkComponent(({ children, key }) => (
+            <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="pre-code">
+              {children}
+            </HighlightedCode>
+          ))
+        }),
+      ),
     ),
-    code: handleNested(
-      setFn((node, ctx) => {
-        const id = getSafeNodeId(node, ctx)
-        return mkComponent(({ children, key }) => (
-          <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="block">
-            {children}
-          </HighlightedCode>
-        ))
-      }),
+    code: handleFolded(
+      handleNested(
+        setFn((node, ctx) => {
+          const id = getSafeNodeId(node, ctx)
+          return mkComponent(({ children, key }) => (
+            <HighlightedCode node={node} ctx={ctx} keyProp={key} id={id} wrap="block">
+              {children}
+            </HighlightedCode>
+          ))
+        }),
+      ),
     ),
     image: nodeContent,
     ':image': setFn((node, ctx) => {
@@ -483,8 +486,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     ),
 
     ':blankline': emptyContent(),
-    ':para': handleNested(mkComponent('p')),
-    para: handleNested(mkComponent('div')),
+    ':para': handleFolded(handleNested(mkComponent('p'))),
+    para: handleFolded(handleNested(mkComponent('div'))),
     'comment:block': emptyContent(),
     _test_group: (writer, processor) => (node: any, ctx, interator) =>
       (
@@ -546,9 +549,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         // to avoid overlap para blocks handlers
         // define general :para at first
         {
-          // the nesting goes inside the description, so the list keeps its terms and descriptions
+          // nesting and folding go inside the description, so the list keeps its terms and descriptions
           ':para': (writer, processor) => {
-            const inner = handleNested(nodeContent)(writer, processor)
+            const inner = handleFolded(handleNested(nodeContent))(writer, processor)
             return (node, ctx, interator) =>
               makeComponent('dd', node, inner(node, ctx, interator), { id: getSafeNodeId(node, ctx) }, ctx)
           },
