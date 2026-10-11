@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_query> finds no C<=boundary>, and no C<=include> left in a document whose files were not given: a selector pattern does not find a directive
+
 =head1 0.0.21
 
 =item a file of C<files> is read in the format its name gives, any other extension than Podlite or Markdown in the default mode, and a C<:mime-type> on the C<=include> line decides how it is read

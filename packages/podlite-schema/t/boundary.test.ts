@@ -54,6 +54,27 @@ describe('=boundary directive', () => {
     expect(html).toContain('<hr title="Part Two">')
   })
 
+  it('HTML takes nothing from =config boundary, only what is written on the =boundary', () => {
+    const html = renderHtml(`=config boundary :caption<Cfg> :id<cfg>
+
+=for head1 :id<heading>
+One
+
+=boundary
+
+=head1 Two
+
+=boundary :caption('Own')
+
+=head1 Three
+`)
+    expect([html.match(/<hr[^>]*>/g), html.includes('id="cfg"'), html.includes('id="heading"')]).toEqual([
+      ['<hr>', '<hr title="Own">'],
+      false,
+      true,
+    ])
+  })
+
   it('Markdown renders =boundary as thematic break', () => {
     const md = renderMd('=pod\n=boundary\n')
     expect(md).toContain('---')

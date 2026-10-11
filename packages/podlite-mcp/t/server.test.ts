@@ -55,7 +55,7 @@ describe('podlite mcp server', () => {
     const { isError, texts } = await call('podlite_query', { selector: 'include', text: doc, format: 'podlite' })
     expect([isError, texts]).toEqual([
       false,
-      ['=include file:part.podlite', 'files were not given; includes not assembled: part.podlite'],
+      ['No matches.', 'files were not given; includes not assembled: part.podlite'],
     ])
   })
 

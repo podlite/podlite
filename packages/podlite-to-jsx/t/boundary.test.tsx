@@ -51,3 +51,22 @@ describe('=boundary block renders as void <hr>', () => {
     expect(root.innerHTML).toContain('<hr')
   })
 })
+
+describe('=config boundary', () => {
+  it('gives a =boundary no :id, while a heading keeps its own', () => {
+    render(
+      <Podlite>
+        {`=config boundary :id<cfg>
+
+=for head1 :id<heading>
+One
+
+=boundary
+
+=head1 Two
+`}
+      </Podlite>,
+    )
+    expect([root.innerHTML.includes('id="cfg"'), root.innerHTML.includes('id="heading"')]).toEqual([false, true])
+  })
+})

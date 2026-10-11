@@ -538,7 +538,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         </div>
       ))
     }),
-    'boundary:block': mkVoidComponent('hr'),
+    // =config does not reach a =boundary: only what is written on it counts
+    'boundary:block': (writer, processor) => (node, ctx, interator) =>
+      mkVoidComponent('hr')(writer, processor)(node, { ...ctx, config: {} }, interator),
     defn: subUse(
       [
         // to avoid overlap para blocks handlers

@@ -120,6 +120,36 @@ Not folded
   })
 })
 
+describe('=config and the =boundary directive', () => {
+  it('gives a =boundary nothing: only what is written on it counts', () => {
+    const ast = parseToAst(`
+=config boundary :caption<Cfg>
+
+=head1 One
+
+=boundary
+
+=head1 Two
+
+=boundary :caption('Own')
+
+=head1 Three
+`)
+    const marks: any[] = []
+    const walk = (node: any) => {
+      if (Array.isArray(node)) return node.forEach(walk)
+      if (node?.type === 'block' && node.name === 'boundary') marks.push(node)
+      if (node?.content) walk(node.content)
+    }
+    walk(ast)
+    expect(marks.length).toBe(2)
+    expect([makeAttrs(marks[0]).exists('caption'), makeAttrs(marks[1]).getAllValues('caption')]).toEqual([
+      false,
+      ['Own'],
+    ])
+  })
+})
+
 describe('=config settings in effect where the text is placed', () => {
   const inherited = {
     head2: [

@@ -140,6 +140,11 @@ describe('the selector of a table of contents', () => {
     expect(labels(tree)[0]).toEqual(['H', 'Text.'])
   })
 
+  it('lists no =boundary with *', () => {
+    const tree = toAst("=toc *\n\n=head1 One\n\n=boundary :caption('Part two')\n\n=head1 Two\n")
+    expect(labels(tree)).toEqual([['One', 'Two']])
+  })
+
   it('lists a comment it names', () => {
     expect(labels(toAst('=toc comment\n\n=comment Named note\n'))[0]).toEqual(['Named note'])
   })

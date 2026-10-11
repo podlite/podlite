@@ -684,6 +684,31 @@ describe('blocks the tree adds around what was written', () => {
   })
 })
 
+describe('a directive between blocks', () => {
+  const names = (selector: string, source: string) =>
+    (runSelector(selector, [makeDoc('x.podlite', source)]) as any[]).map(b => b.name ?? b.type)
+  const holds = (node: any, name: string): boolean =>
+    Array.isArray(node)
+      ? node.some(n => holds(n, name))
+      : node?.name === name || (Array.isArray(node?.content) && holds(node.content, name))
+
+  it('=boundary is found by no pattern, and the blocks around it are', () => {
+    const source = '=head1 One\n\n=boundary\n\n=head1 Two\n'
+    expect(holds(makeDoc('x.podlite', source).node, 'boundary')).toBe(true)
+    expect([names('boundary', source), names('*', source), names('head1', source)]).toEqual([
+      [],
+      ['head', 'head'],
+      ['head', 'head'],
+    ])
+  })
+
+  it('an =include left in a tree that was not assembled is found by no pattern', () => {
+    const source = '=head1 One\n\n=include file:part.podlite\n\n=head1 Two\n'
+    expect(holds(makeDoc('x.podlite', source).node, 'include')).toBe(true)
+    expect([names('include', source), names('*', source)]).toEqual([[], ['head', 'head']])
+  })
+})
+
 describe('outermost', () => {
   const doc = (source: string) => makeDoc('x.podlite', source)
 

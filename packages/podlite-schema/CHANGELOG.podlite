@@ -8,6 +8,10 @@
 
 =item C<getMaskedTextContent> gives the text of a node with its hidden parts under the mask, and C<guardedTextLeaves> gives the same text as pieces marked hidden or not, for text a host writes out past the renderer
 
+=item a selector pattern, by name or C<*>, does not find the C<=boundary> directive, nor an C<=include> left in a tree that was not assembled; C<=config boundary> no longer applies to C<=boundary>, in the tree and in HTML
+
+=item C<isDirectiveNode> tells a directive the tree keeps as a block node, and C<isWrapper> a block the tree adds around written blocks
+
 =head1 0.0.75
 
 =item a heading also answers to the name it was parsed with when no other block holds that address: a table of contents entry for a heading whose text a plugin changed later, such as a heading with a C<doc:> link, links to the heading; it was rendered without an address. A link that resolved before keeps its target

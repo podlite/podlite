@@ -28,7 +28,34 @@ const holdsImplicit = (holder: Walked | undefined): boolean =>
 // them, so no pattern finds them; the walk goes through.
 const WRAPPERS = new Set(['root', '_folded_section'])
 
+/*
+=begin pod :kind<export>
+
+=head2 isWrapper
+
+Whether a node is a block the tree adds around written blocks, such as the
+document or a heading folded together with its text, rather than one an author
+wrote.
+
+=end pod
+*/
 export const isWrapper = (node: Walked): boolean => node.type === 'block' && WRAPPERS.has(node.name ?? '')
+
+const DIRECTIVES = new Set(['boundary', 'include'])
+
+/*
+=begin pod :kind<export>
+
+=head2 isDirectiveNode
+
+Whether a node is a directive the tree keeps as a node of type C<block>: a
+C<=boundary>, or an C<=include> left in a tree that was not assembled or that
+could not be read. A directive stands between blocks and is not one, so no
+pattern finds it.
+
+=end pod
+*/
+export const isDirectiveNode = (node: Walked): boolean => node.type === 'block' && DIRECTIVES.has(node.name ?? '')
 
 /*
 =begin pod :kind<export>
@@ -37,7 +64,8 @@ export const isWrapper = (node: Walked): boolean => node.type === 'block' && WRA
 
 The name of the block a node stands for: the name of a block written with a
 directive, C<para> or C<code> for one written without, C<ambient> for text
-outside any block in the default mode, none for anything else.
+outside any block in the default mode, none for a directive and for anything
+else.
 C<holder> is the block whose content holds the node; none means the document.
 A paragraph node is a block only where text without a marker is a paragraph:
 inside an explicit C<=para> or a heading it is that block's own text. The term
@@ -46,7 +74,7 @@ of a C<=defn> is its heading, not a paragraph.
 =end pod
 */
 export const blockNameOf = (node: Walked, holder: Walked | undefined): string | undefined => {
-  if (node.type === 'block') return isWrapper(node) ? undefined : node.name
+  if (node.type === 'block') return isWrapper(node) || isDirectiveNode(node) ? undefined : node.name
   if (node.type === 'code') return 'code'
   // blank lines outside any block are not material
   if (node.type === 'ambient') return String(node.text ?? '').trim() === '' ? undefined : 'ambient'

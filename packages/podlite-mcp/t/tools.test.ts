@@ -231,9 +231,9 @@ describe('includes with the files the caller gives', () => {
     expect(report.output).toContain('Md text.')
   })
 
-  it('finds no include directive once the include is assembled, and finds it without files', () => {
+  it('finds no include directive, whether the include is assembled or not', () => {
     expect(querySource('include', doc, 'podlite', { 'part.podlite': part }).matchCount).toBe(0)
-    expect(querySource('include', doc, 'podlite').matchCount).toBe(1)
+    expect(querySource('include', doc, 'podlite').matchCount).toBe(0)
   })
 
   it('validates an include against the files given', () => {

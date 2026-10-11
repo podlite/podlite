@@ -390,8 +390,10 @@ const rules = {
     writer.writeRaw('</code></pre></div>')
   },
   'boundary:block': (writer, processor) => (node, ctx) => {
-    const conf = makeAttrs(node, ctx)
-    const id = anchorOf(node, ctx)
+    // =config does not reach a =boundary: only what is written on it counts
+    const own = { ...ctx, config: {} }
+    const conf = makeAttrs(node, own)
+    const id = anchorOf(node, own)
     const idAttr = id ? ` id="${id}"` : ''
     if (conf.exists('caption')) {
       writer.writeRaw(`<hr${idAttr} title="`)

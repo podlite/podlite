@@ -66,7 +66,8 @@ const walk = (
   if (anyNode.type === 'config' && typeof anyNode.name === 'string' && Array.isArray(anyNode.config)) {
     config[anyNode.name] = mergeConfigSettings(anyNode.config, config[anyNode.name])
   } else if (anyNode.type === 'block') {
-    visit(anyNode, config)
+    // a =boundary keeps only what is written on it
+    if (anyNode.name !== 'boundary') visit(anyNode, config)
   } else if (implicit) {
     const name = blockNameOf(anyNode, holder)
     if (name !== undefined) implicit(anyNode, name, config)
