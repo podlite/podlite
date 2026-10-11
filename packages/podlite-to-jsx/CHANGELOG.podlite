@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item a block the renderer has no rule for is shown and logged by name, type and line, and an item whose content is not a list is logged the same way, instead of printing the node with its content, hidden text included, on the page and in the log
+=item a block the renderer has no rule for is shown and logged by name, type and line, and an item whose content is not a list is logged by its line, instead of printing the node with its content, hidden text included, on the page and in the log
 
 =head1 0.0.78
 
