@@ -1,3 +1,4 @@
+import { applyNumberedShorthand } from './helpers/numberedShorthand'
 import { stripMarker } from './helpers/stripMarker'
 
 export default () => tree => {
@@ -38,17 +39,7 @@ export default () => tree => {
                 }
               }
 
-              let re = /^(\s*#\s*)/
-              const match = re.exec(startText.text)
-              if (match) {
-                stripMarker(startText, re)
-                node.config = node.config || []
-                node.config.push({
-                  name: 'numbered',
-                  value: true,
-                  type: 'boolean',
-                })
-              }
+              applyNumberedShorthand(node)
             }
           }
         }
