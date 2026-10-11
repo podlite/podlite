@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the C<./demo/Components> subpath is no longer exported: it named a directory the package does not ship
+
 =item B<Breaking:> the unused stylesheet C<lib/Editor.old.css> and its export path are removed
 
 =head1 0.0.77
