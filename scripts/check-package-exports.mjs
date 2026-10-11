@@ -33,7 +33,8 @@ const patternMatches = (target, files) => {
     .split('*')
     .map(escapeRegExp)
     .reduce((acc, part) => {
-      const star = first ? '(.+)' : '\\1'
+      // a later star refers back to the first; the group keeps a digit after it from joining the number
+      const star = first ? '(.+)' : '(?:\\1)'
       first = false
       return `${acc}${star}${part}`
     })
@@ -69,7 +70,12 @@ function checkTargets(exp, files) {
 
 function checkPackage(dir) {
   const manifestPath = join(PACKAGES, dir, 'package.json')
-  const raw = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  let raw
+  try {
+    raw = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  } catch (e) {
+    return { name: dir, dir, errors: [`package.json cannot be read: ${e.message}`] }
+  }
   if (raw.private) return null
   const m = effectiveManifest(raw)
   const errors = []
@@ -103,7 +109,19 @@ function checkPackage(dir) {
   }
 
   if (exp && typeof exp === 'object') {
-    errors.push(...checkTargets(exp, shippedFiles(dir)))
+    let files
+    try {
+      files = shippedFiles(dir)
+    } catch (e) {
+      errors.push(
+        `npm pack cannot list the package: ${
+          String(e.stderr || e.message)
+            .trim()
+            .split('\n')[0]
+        }`,
+      )
+    }
+    if (files) errors.push(...checkTargets(exp, files))
   }
 
   return { name: raw.name, dir, errors }

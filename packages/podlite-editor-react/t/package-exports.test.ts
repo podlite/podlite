@@ -119,6 +119,21 @@ describe('the export target check', () => {
     expect(code).toBe(1)
   })
 
+  it('reads a digit after a repeated * as text', () => {
+    const files = { ...built, 'out/a/a1.js': '' }
+    const { code } = run(packageWith({ ...main, './out/*': './out/*/*1.js' }, files, { files: ['lib', 'out'] }))
+    expect(code).toBe(0)
+  })
+
+  it('names the package whose manifest cannot be read', () => {
+    fixture = mkdtempSync(join(tmpdir(), 'package-exports-'))
+    mkdirSync(join(fixture, 'broken'))
+    writeFileSync(join(fixture, 'broken', 'package.json'), '{ not json')
+    const { code, out } = run(fixture)
+    expect(out).toContain('broken')
+    expect(code).toBe(1)
+  })
+
   it('lets a * stand for a path with directories', () => {
     const files = { ...built, 'lib/deep/inner/file.js': '' }
     const { code } = run(packageWith({ ...main, './deep/*': './lib/deep/*.js' }, files, { files: ['lib'] }))
