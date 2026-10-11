@@ -767,10 +767,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
 
   // An inclusion brings blocks: a directive that stands among them, outside
   // every block it brings, stays behind. Only the wrappers the tree adds are
-  // walked; a block keeps what is written in it.
+  // walked; a block keeps what is written in it. An include that waits for a
+  // later pass is not yet a directive left behind: it stays to be resolved.
   const withoutLooseDirectives = (nodes: any[]): any[] =>
     nodes.flatMap(node => {
-      if (isDirectiveNode(node)) return []
+      if (isDirectiveNode(node) && (node.name !== 'include' || failedAt.has(node))) return []
       if (!isWrapper(node) || !Array.isArray(node.content)) return [node]
       const content = withoutLooseDirectives(node.content)
       if (content.length === node.content.length && content.every((n, i) => n === node.content[i])) return [node]

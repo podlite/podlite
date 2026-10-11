@@ -99,6 +99,30 @@ describe('a directive in an included file', () => {
     ]).toEqual([true, false, ['head', 'head'], ['unsupported-scheme'], []])
   })
 
+  it('keeps an include in the included file that waits for a later pass', () => {
+    const files = {
+      '/b/book.podlite': '=include file:./part.podlite\n',
+      '/b/part.podlite': '=head1 Before\n\n=include doc:Later\n\n=head1 After\n',
+    }
+    const base = sourcesFromFiles(files)
+    const sources = {
+      ...base,
+      schemes: ['file', 'doc'],
+      locate: (path: string, ...rest: any[]) => (path === 'Later' ? undefined : (base.locate as any)(path, ...rest)),
+    }
+    const errors: IncludeProblem[] = []
+    const tree = assembleIncludes(read(files['/b/book.podlite']), {
+      sources: sources as any,
+      context: '/b',
+      self: '/b/book.podlite',
+      file: '/b/book.podlite',
+      parse: read,
+      onError: problem => errors.push(problem),
+      onWarning: problem => errors.push(problem),
+    })
+    expect([names(tree), errors]).toEqual([['head', 'include', 'head'], []])
+  })
+
   it('leaves no <hr> between the parts of a book in html', () => {
     const { tree } = assembled({
       '/b/book.podlite': '=include file:./a.podlite\n\n=include file:./b.podlite\n',
