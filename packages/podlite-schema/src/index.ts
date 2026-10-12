@@ -258,7 +258,7 @@ export {
 } from './selectors'
 export { applySetToFirst, mergeSet, isSetTransparent, isSetTarget } from './set-assign'
 export type { SetOutcome } from './set-assign'
-export { markGuarded, isCovered, guardedTextLeaves, getMaskedTextContent } from './guard'
+export { markGuarded, isCovered, guardedTextLeaves, getMaskedTextContent, renderCodeText } from './guard'
 export { applyFoldedSections } from './folded-sections'
 export { testCaption, testFoldedByAuthor } from './test-display'
 export { tocTitleText } from './toc-caption'

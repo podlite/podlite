@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<S«…»> holding other codes is drawn as its text instead of C<[object Object]>, with a C<G<>> code inside hidden in production and a C<Z<>> comment inside left out
+
 =item a block the renderer has no rule for is shown and logged by name, type and line, and an item whose content is not a list is logged by its line, instead of printing the node with its content, hidden text included, on the page and in the log
 
 =item C<=config boundary> no longer gives a C<=boundary> its C<:id>

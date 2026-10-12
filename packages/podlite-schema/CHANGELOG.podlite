@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<renderCodeText> gives the text of a code such as C<S<>> with each hidden piece masked as the context requires and no C<Z<>> comment; the html and markdown exports write C<S<>> through it, so a C<G<>> code inside C<S«…»> is hidden in production and a comment inside it is not written
+
 =item the text of C<S<>> is escaped in the html and markdown exports, and a line break in it is written in html as C<< <br> >> instead of C<< </br> >>
 
 =item an item is numbered for a C<#> only when the C<#> alone is its first word: C<#Hashtag> and C<##> stay as written; C<:!numbered> written on the item keeps the C<#> as text, and an item numbered by the C<#> over a C<=set :!numbered> carries one C<:numbered>

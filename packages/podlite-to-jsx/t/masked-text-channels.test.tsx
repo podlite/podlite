@@ -153,3 +153,18 @@ describe('a node the page cannot render is named without its content', () => {
     expect(capture('error', fromTree(item)).log).toEqual(['[to-jsx] item: content is not a list at line 4'])
   })
 })
+
+describe('text inside S<> in guillemets', () => {
+  it('is drawn as text, with a guarded word hidden', () => {
+    const production = page('S«a G<secret> b»')
+    expect(production).not.toContain('[object Object]')
+    expect(production).not.toContain('secret')
+    expect(production).toContain('a\u00a0██████\u00a0b')
+    expect(page('S«a G<secret> b»', 'draft')).toContain('a\u00a0secret\u00a0b')
+  })
+
+  it('draws no comment', () => {
+    expect(page('S«a Z<cmt> b»')).toContain('a\u00a0\u00a0b')
+    expect(page('S«a Z<cmt> b»', 'draft')).toContain('a\u00a0\u00a0b')
+  })
+})

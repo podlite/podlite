@@ -3,6 +3,7 @@ import {
   getMaskedTextContent,
   getTextContentFromNode,
   guardedTextLeaves,
+  renderCodeText,
   toAnyRules,
   toHtml,
   toMarkdown,
@@ -12,6 +13,18 @@ import { podlite } from '../../core/src'
 type Mode = 'production' | 'draft'
 
 const p = podlite({ importPlugins: true })
+const findS = (node: any): any => {
+  if (Array.isArray(node)) {
+    for (const n of node) {
+      const f = findS(n)
+      if (f) return f
+    }
+    return undefined
+  }
+  if (!node || typeof node !== 'object') return undefined
+  if (node.type === 'fcode' && node.name === 'S') return node
+  return findS(node.content)
+}
 const tree = (body: string) => p.toAst(p.parse(`=begin pod\n\n${body}\n\n=end pod\n`, { podMode: 1 }))
 const html = (body: string, mode: Mode = 'production') =>
   String(toHtml({ renderMode: mode }).use(toAnyRules('toHtml', p.getPlugins())).run(tree(body)))
@@ -155,5 +168,49 @@ describe('the html export names a node it cannot render without printing it', ()
       content: 'SECRET656',
     }
     expect(messages('error', node)).toEqual(['[podlite] item:block: content is not a list at line 4'])
+  })
+})
+
+describe('text inside S<> in guillemets', () => {
+  for (const [name, render] of [
+    ['html', html],
+    ['markdown', markdown],
+  ] as const) {
+    it(`hides a guarded word in ${name} and keeps the spaces`, () => {
+      hiddenIn(render, 'S«a G<secret> b»', ['secret'])
+      expect(render('S«a G<secret> b»')).toContain('a&nbsp;██████&nbsp;b')
+    })
+
+    it(`writes no comment in ${name}`, () => {
+      expect(render('S«a Z<cmt> b»')).not.toContain('cmt')
+      expect(render('S«a Z<cmt> b»', 'draft')).not.toContain('cmt')
+    })
+
+    it(`hides S<> inside a guarded code inside S<> in ${name}`, () => {
+      hiddenIn(render, 'S«a G<S<x y>> b»', ['x'])
+      expect(render('S«a G<S<x y>> b»')).toContain('a&nbsp;█&nbsp;█&nbsp;b')
+    })
+
+    it(`keeps the space inside a guarded phrase in ${name}`, () => {
+      expect(render('S«x G<one two> y»')).toContain('x&nbsp;███&nbsp;███&nbsp;y')
+    })
+  }
+})
+
+describe('a heading with S<> in guillemets in a table of contents', () => {
+  const doc = '=toc head1\n\n=head1 S«a G<secret> b»'
+  it('hides the guarded word in the label and in the heading', () => {
+    const out = html(doc)
+    expect(out).toMatch(/<a href="[^"]*">a&nbsp;██████&nbsp;b/)
+    expect(out).toMatch(/<h1[^>]*>a&nbsp;██████&nbsp;b/)
+    expect(html(doc, 'draft')).toMatch(/<a href="[^"]*">a&nbsp;secret&nbsp;b/)
+  })
+})
+
+describe('renderCodeText', () => {
+  it('masks everything under a forced mask, draft or not, and drops comments', () => {
+    const node = findS(tree('S«a Z<cmt> b»'))
+    expect(renderCodeText(node, { maskMode: true, renderMode: 'draft' })).toBe('█  █')
+    expect(renderCodeText(node, { renderMode: 'draft' })).toBe('a  b')
   })
 })

@@ -103,3 +103,45 @@ export const getMaskedTextContent = (node: unknown): string =>
   guardedTextLeaves(node)
     .map(leaf => (leaf.guarded ? maskText(leaf.value) : leaf.value))
     .join('')
+
+/*
+=begin pod :kind<export>
+
+=head2 renderCodeText
+
+The text a code such as C<S<>> shows, ready for an output to write: its pieces in
+order, each hidden piece under the mask when the context covers it, and nothing of
+a C<Z<>> comment. The cover is inherited from the code itself and from every
+C<G<>> code or hidden mark above a piece, so a piece the mark did not reach is
+still hidden. A forced mask covers everything and draft covers nothing, as
+C<isCovered> decides. The text is not escaped.
+
+=end pod
+*/
+export const renderCodeText = (node: unknown, ctx?: { maskMode?: boolean; renderMode?: string }): string => {
+  const pieces: string[] = []
+  const walk = (value: unknown, hidden: boolean): void => {
+    if (Array.isArray(value)) {
+      value.forEach(item => walk(item, hidden))
+      return
+    }
+    if (typeof value === 'string') {
+      pieces.push(hidden ? maskText(value) : value)
+      return
+    }
+    if (!value || typeof value !== 'object') return
+    const target = value as { type?: string; name?: string; value?: unknown; content?: unknown; guarded?: boolean }
+    if (target.type === 'fcode' && target.name === 'Z') return
+    const covered =
+      ctx?.maskMode === true ||
+      (ctx?.renderMode !== 'draft' &&
+        (hidden || target.guarded === true || isGuardCode(target) || isMaskedBlock(target)))
+    if (target.type === 'text' || target.type === 'verbatim') {
+      if (typeof target.value === 'string') pieces.push(covered ? maskText(target.value) : target.value)
+      return
+    }
+    if ('content' in target) walk(target.content, covered)
+  }
+  walk(node, false)
+  return pieces.join('')
+}

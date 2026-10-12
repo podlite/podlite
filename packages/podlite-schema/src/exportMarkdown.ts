@@ -1,5 +1,5 @@
 import toAny from './exportAny'
-import { isCovered } from './guard'
+import { isCovered, renderCodeText } from './guard'
 import {
   subUse,
   wrapContent,
@@ -206,7 +206,7 @@ const rules = {
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
     // escaped before the spaces and line breaks below are put in
-    const text = writer.escape(covered(node, ctx, collectText(node.content)))
+    const text = writer.escape(renderCodeText(node, ctx))
     writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
   },
   'T<>': wrapContent('`', '`'),

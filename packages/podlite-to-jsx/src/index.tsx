@@ -33,6 +33,7 @@ import {
   maskText,
   collectText,
   isCovered,
+  renderCodeText,
   writtenValue,
   ConfigItem,
 } from '@podlite/schema'
@@ -766,16 +767,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     'L<>': linkRule(),
     'W<>': linkRule('backlink'),
     'S<>': (writer, processor) => (node, ctx, interator) => {
-      let content = node.content || ''
-      if (typeof content !== 'string' && 'value' in content) {
-        content = content.value
-      }
-      content = covered(node, ctx, String(content))
-      const Content = content.split('').map((symbol, index) => {
-        if (symbol === ' ') return '\u00a0'
-        if (symbol === '\n') return <br key={index} />
-        return symbol
-      })
+      const Content = renderCodeText(node, ctx)
+        .split('')
+        .map((symbol, index) => {
+          if (symbol === ' ') return '\u00a0'
+          if (symbol === '\n') return <br key={index} />
+          return symbol
+        })
       return makeComponent(({ children, key }) => children, {}, Content)
     },
     'V<>': nodeContent,

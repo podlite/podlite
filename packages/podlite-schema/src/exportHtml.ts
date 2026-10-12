@@ -13,7 +13,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
-import { isCovered } from './guard'
+import { isCovered, renderCodeText } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import {
@@ -226,7 +226,7 @@ const rules = {
   },
   'S<>': (writer, processor) => (node, ctx, interator) => {
     // escaped before the entities and tags below are put in
-    const text = writer.escape(covered(node, ctx, collectText(node.content)))
+    const text = writer.escape(renderCodeText(node, ctx))
     writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
   },
   'T<>': wrapContent('<samp>', '</samp>'),
