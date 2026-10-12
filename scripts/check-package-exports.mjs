@@ -113,18 +113,17 @@ function checkPackage(dir) {
     try {
       files = shippedFiles(dir)
     } catch (e) {
-      errors.push(
-        `npm pack cannot list the package: ${
-          String(e.stderr || e.message)
-            .trim()
-            .split('\n')[0]
-        }`,
-      )
+      // npm writes warnings before the error; the error line is the one to show
+      const lines = String(e.stderr || e.message)
+        .trim()
+        .split('\n')
+      const reason = lines.find(l => /\berror\b|ERR!/i.test(l)) ?? lines[0]
+      errors.push(`npm pack cannot list the package: ${reason}`)
     }
     if (files) errors.push(...checkTargets(exp, files))
   }
 
-  return { name: raw.name, dir, errors }
+  return { name: raw.name ?? dir, dir, errors }
 }
 
 const packages = readdirSync(PACKAGES).filter(d => {
