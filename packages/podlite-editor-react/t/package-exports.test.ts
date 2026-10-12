@@ -143,6 +143,15 @@ describe('the export target check', () => {
     expect(code).toBe(1)
   })
 
+  it('names the package whose manifest holds no object', () => {
+    fixture = mkdtempSync(join(tmpdir(), 'package-exports-'))
+    mkdirSync(join(fixture, 'empty'))
+    writeFileSync(join(fixture, 'empty', 'package.json'), 'null')
+    const { code, out } = run(fixture)
+    expect(out).toContain('empty')
+    expect(code).toBe(1)
+  })
+
   it('lets a * stand for a path with directories', () => {
     const files = { ...built, 'lib/deep/inner/file.js': '' }
     const { code } = run(packageWith({ ...main, './deep/*': './lib/deep/*.js' }, files, { files: ['lib'] }))

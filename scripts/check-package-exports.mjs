@@ -76,6 +76,7 @@ function checkPackage(dir) {
   } catch (e) {
     return { name: dir, dir, errors: [`package.json cannot be read: ${e.message}`] }
   }
+  if (!raw || typeof raw !== 'object') return { name: dir, dir, errors: ['package.json does not hold an object'] }
   if (raw.private) return null
   const m = effectiveManifest(raw)
   const errors = []
@@ -117,7 +118,7 @@ function checkPackage(dir) {
       const lines = String(e.stderr || e.message)
         .trim()
         .split('\n')
-      const reason = lines.find(l => /\berror\b|ERR!/i.test(l)) ?? lines[0]
+      const reason = lines.find(l => /^npm (error|ERR!)/.test(l)) ?? lines[0]
       errors.push(`npm pack cannot list the package: ${reason}`)
     }
     if (files) errors.push(...checkTargets(exp, files))
