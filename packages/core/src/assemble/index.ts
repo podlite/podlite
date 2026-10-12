@@ -402,8 +402,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // the tree is known by its node, one that left nothing by a mark put in its
   // place and taken out when the walk ends.
   const failedAt = new WeakMap<object, Held[]>()
-  // An include left to wait for a later pass, as it stands in the tree.
-  const waitingAt = new WeakSet<object>()
+  // An include left to wait for a later pass carries this mark on itself, so a
+  // copy of it, wherever it is made, waits as well. The mark is this call's own:
+  // a later pass does not read it.
+  const WAITING = Symbol('waiting include')
   const FAILED = 'include-failed'
   const isMark = (node: any): boolean => node && typeof node === 'object' && node.type === FAILED
   const firstStop = (nodes: any[], holder: any): Held[] | undefined => {
@@ -563,10 +565,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           reached.length = at
         }
         if (resolved.waiting) {
-          const kept = set.length ? { ...n, set } : n
+          const kept = { ...n, ...(set.length ? { set } : {}), [WAITING]: true }
           const known = origin.get(n)
-          if (kept !== n && known) origin.set(kept, known)
-          waitingAt.add(kept)
+          if (known) origin.set(kept, known)
           out.push(kept)
           return
         }
@@ -1181,7 +1182,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         if (!node || typeof node !== 'object') return
         if (Array.isArray(node)) return node.forEach(n => visit(n, open))
         if (chosen.has(node)) return void merged.push(node)
-        if (waitingAt.has(node)) {
+        if (node[WAITING]) {
           short = true
           if (open) merged.push(node)
           return

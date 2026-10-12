@@ -186,6 +186,37 @@ describe('an include that waits for a later pass, under a selection', () => {
     expect([names(tree), includes(tree), warnings]).toEqual([['pod'], 1, []])
   })
 
+  it('keeps waiting when a =set before it makes a copy of it', () => {
+    const run = (patterns: string) => {
+      const files = {
+        '/b/book.podlite': `=include file:./part.podlite | ${patterns}\n`,
+        '/b/part.podlite': '=set :caption<Assigned>\n=include file:./inner.podlite\n',
+        '/b/inner.podlite': '=include doc:Later\n\n=head1 After\n',
+      }
+      const base = sourcesFromFiles(files)
+      const sources = {
+        ...base,
+        schemes: ['file', 'doc'],
+        locate: (path: string, ...rest: any[]) => (path === 'Later' ? undefined : (base.locate as any)(path, ...rest)),
+      }
+      const warnings: string[] = []
+      const tree = assembleIncludes(read(files['/b/book.podlite']), {
+        sources: sources as any,
+        context: '/b',
+        self: '/b/book.podlite',
+        file: '/b/book.podlite',
+        parse: read,
+        onError: problem => warnings.push(`error ${problem.kind}`),
+        onWarning: problem => warnings.push(problem.kind),
+      })
+      return [includes(tree), warnings]
+    }
+    expect([run('*'), run('head1')]).toEqual([
+      [1, []],
+      [0, ['incomplete-selection']],
+    ])
+  })
+
   it('is said to leave a selection by other patterns possibly short', () => {
     const cases = ['head1', '*[ :x<1> ]', 'head1, *', 'pod'].map(patterns => {
       const source = patterns === 'pod' ? '=begin pod\n' + part + '=end pod\n' : part
