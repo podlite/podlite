@@ -22,10 +22,50 @@ describe('delimited-block-balance rule', () => {
     expect(v[0].message).toMatch(/=end table without matching =begin/)
   })
 
-  it('flags mismatched =end name', () => {
+  it('flags mismatched =end name and leaves the open block open', () => {
     const v = scanSourceRules('=begin nested\nbody\n=end para\n')
+    expect(v.map(d => d.message)).toEqual([
+      expect.stringMatching(/=end para does not match =begin nested/),
+      expect.stringMatching(/=begin nested is not closed before end of file/),
+    ])
+  })
+
+  it('reports an =end with no open block of its name once', () => {
+    const src = [
+      '=begin pod',
+      '=begin test',
+      '=begin assert',
+      'x',
+      '=end assert',
+      '=end test',
+      '=begin test',
+      '=for assert',
+      'y',
+      '=end assert',
+      '=end test',
+      '=end pod',
+      '',
+    ].join('\n')
+    const v = scanSourceRules(src).filter(d => d.rule === DELIMITED_BLOCK_BALANCE_RULE_ID)
     expect(v).toHaveLength(1)
-    expect(v[0].message).toMatch(/=end para does not match =begin nested/)
+    expect(v[0].location.start.line).toBe(10)
+  })
+
+  it('closes the nearest block of the name', () => {
+    const src = '=begin pod\n=begin pod\n=begin nested\n=end pod\n=end pod\n'
+    const v = scanSourceRules(src).filter(d => d.rule === DELIMITED_BLOCK_BALANCE_RULE_ID)
+    expect(v.map(d => [d.location.start.line, d.message])).toEqual([
+      [4, expect.stringMatching(/=begin nested \(opened at line 3\) is not closed before =end pod/)],
+    ])
+  })
+
+  it('names each block an =end closes early', () => {
+    const src = '=begin pod\n=begin nested\n=begin item\ntext\n=end pod\n'
+    const v = scanSourceRules(src).filter(d => d.rule === DELIMITED_BLOCK_BALANCE_RULE_ID)
+    expect(v.map(d => [d.location.start.line, d.message])).toEqual([
+      [5, expect.stringMatching(/=begin item \(opened at line 3\) is not closed before =end pod/)],
+      [5, expect.stringMatching(/=begin nested \(opened at line 2\) is not closed before =end pod/)],
+    ])
   })
 
   it('markers of another block inside a verbatim block are content', () => {
@@ -157,7 +197,9 @@ describe('a named block keeps its body as content', () => {
 
   it('keeps reading an all-uppercase block as structure', () => {
     const src = '=begin DESCRIPTION\n\n=begin pod\nno end here\n\n=end DESCRIPTION\n'
-    expect(balance(src).length).toBeGreaterThan(0)
+    expect(balance(src).map(d => [d.location.start.line, d.message])).toEqual([
+      [6, expect.stringMatching(/=begin pod \(opened at line 3\) is not closed before =end DESCRIPTION/)],
+    ])
   })
 
   it('leaves an ordinary lowercase block alone', () => {

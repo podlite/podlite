@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<delimited-block-balance> reports an C<=end> with no open block of its name once and leaves the open blocks open, instead of closing the block above it and reporting every C<=end> after; an C<=end> that closes a block further down reports each block left open above it
+
 =item C<podlite query> and an C<=include> whose selector cannot be read name an empty operand of C<~<>> in the message
 
 =item C<podlite lint> rule C<id-unique> checks the document as its includes assemble it: an C<:id> repeated between the document and an included file, in a file included twice, or given by C<=config> to blocks an include places is an error naming both files. A C<=config> directive itself is no longer counted as an occurrence of the C<:id> it gives

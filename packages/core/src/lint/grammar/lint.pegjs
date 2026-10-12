@@ -93,13 +93,30 @@ delim_end
           location: location()
         });
       } else if (top.name !== name) {
-        options.diagnostics.push({
-          rule: 'delimited-block-balance',
-          severity: 'error',
-          message: "=end " + name + " does not match =begin " + top.name + " (opened at line " + top.location.start.line + ")",
-          location: location()
-        });
-        options._blockStack.pop();
+        // the nearest open block of the name is the one this marker closes
+        let at = options._blockStack.length - 1;
+        while (at >= 0 && options._blockStack[at].name !== name) at--;
+        if (at === -1) {
+          // nothing open has the name: the marker is stray and the blocks stay open
+          options.diagnostics.push({
+            rule: 'delimited-block-balance',
+            severity: 'error',
+            message: "=end " + name + " does not match =begin " + top.name + " (opened at line " + top.location.start.line + ")",
+            location: location()
+          });
+        } else {
+          const here = location();
+          for (let i = options._blockStack.length - 1; i > at; i--) {
+            const open = options._blockStack[i];
+            options.diagnostics.push({
+              rule: 'delimited-block-balance',
+              severity: 'error',
+              message: "=begin " + open.name + " (opened at line " + open.location.start.line + ") is not closed before =end " + name,
+              location: here
+            });
+          }
+          options._blockStack.length = at;
+        }
       } else {
         options._blockStack.pop();
       }
