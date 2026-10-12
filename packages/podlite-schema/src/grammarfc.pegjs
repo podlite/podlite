@@ -65,8 +65,14 @@ FCodeSimple<Letter, Content>
     &{ return end_tag === get_pair_tag(begin_tag) }
     { return { content, type: 'fcode', name } }
 
-fcode_content_verbatim = $(!end_code .)*
+// a code start is read as written, so a pair after its letter does not hide the code
+// from the rule that reads codes inside S<> and Z<>
+fcode_content_verbatim = $([^<>«»A-Z]+ / start_code_2 / pair / !end_code .)*
+// an unbalanced angle inside: read up to the first closing one, as before
+fcode_content_verbatim_plain = $(!end_code .)*
 fcode_content_V = $(text_C)+
+// inside guillemets angles are text: only a nested pair of guillemets is balanced
+fcode_content_guillemets = $( '«' fcode_content_guillemets '»' / [^«»] )*
 fcode_content_D = ( text_L )+
 fcode_content_X = ( text_L )*
 
@@ -82,15 +88,17 @@ FCodeWithArray<Letter, ContentRule>
 
 code_A = FCodeSimple<"A", text_L>
 code_V = &{ return inner_allowed(options, 'V').length > 0 } v:FCodeSimple<"V", fcode_content_V_mixed> { return v }
+       / name:$"V" &{ return !(options.allowed || []).length || (options.allowed || []).includes(name) } '«' content:fcode_content_guillemets '»' &{ return content.length > 0 }
+         { return { content, type: 'fcode', name } }
        / FCodeSimple<"V", fcode_content_V>
 
 inner_code_C = node:( allowed_rules / code_2 ) &{ return inner_allowed(options, 'C').includes(node.name) } { return node }
 inner_code_V = node:( allowed_rules / code_2 ) &{ return inner_allowed(options, 'V').includes(node.name) } { return node }
 inner_start_C = name:$(allpossible_codes) ('<' / '«') &{ return inner_allowed(options, 'C').includes(name) }
 inner_start_V = name:$(allpossible_codes) ('<' / '«') &{ return inner_allowed(options, 'V').includes(name) }
-fcode_content_V_mixed = ( inner_code_V / $((!end_code !inner_start_V .)+) )+
-code_S = FCodeSimple<"S", fcode_content_verbatim>
-code_Z = FCodeSimple<"Z", fcode_content_verbatim>
+fcode_content_V_mixed = ( inner_code_V / $((pair / !end_code !inner_start_V .)+) )+
+code_S = FCodeSimple<"S", fcode_content_verbatim> / FCodeSimple<"S", fcode_content_verbatim_plain>
+code_Z = FCodeSimple<"Z", fcode_content_verbatim> / FCodeSimple<"Z", fcode_content_verbatim_plain>
 
 code_D = r:FCodeWithArray<"D", fcode_content_D>
          { return { content: r.content, type: 'fcode', name: r.name, synonyms: r.items } }
@@ -98,21 +106,19 @@ code_X = r:FCodeWithArray<"X", fcode_content_X>
          { return { content: r.content, type: 'fcode', name: r.name, entry: r.items } }
 
 allowed_code_C =('B')
-looks_like_code_C =(!allowed_code_C .)  '<' not_code '>'  {return text()}  
-     /
-     (!allowed_code_C .)  '«' not_code '»'  {return text()}  
+looks_like_code_C =(!allowed_code_C ![>»] .)  pair  {return text()}  
 text_C = text:$( (!'<' .)? '<' text_C? '>'/ (!'«' .)? '«' text_C? '»' / looks_like_code_C / not_code )+ {return text}
 // longest run first, so a doubled opening is not read as a single one
 code_open  = $('<<<' / '<<' / '<' / '«')
 
 CodeCRun
   = name:$(allowed_code) &{ return name === "C" } open:code_open
-    content:(
+    content:( &{ return open === '<<<' } t:$tail_3 { return [t] } / (
         code_E
         /
         inner_code_C
         /
-        text:$( (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ (!'«' !inner_start_C .)? '«' text_C? '»' / (!start_code_E !inner_start_C looks_like_code_C) / text:$(!{ return closeAt(input, location().start.offset, open) } !start_code_2 !looks_like_code .)+ {return text} )+ {return text} )+
+        text:$( &{ return open.length === 1 } (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ &{ return open.length === 1 } (!'«' !inner_start_C .)? '«' text_C? '»' / &{ return open.length === 1 } (!start_code_E !inner_start_C looks_like_code_C) / &{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 ) / text:$(!{ return closeAt(input, location().start.offset, open) } !(&{ return open === '<' } start_code_2) !(&{ return open !== '<' } (start_code_E / inner_start_C)) !(&{ return open.length === 1 } looks_like_code) !(&{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 )) .)+ {return text} )+ {return text} )+ )
     // the check sits inside the choice: a longer run matched first must be able to
     // give way to a shorter one, and after the choice there is nothing to give way to
     ( '>>>' &{ return open === '<<<' }
@@ -130,7 +136,7 @@ CodeCRun
 code_C = CodeCRun
 separator = '|'
 text_L = text:$(
-        (!'<' !allowed_code .) '<' text_L '>'
+        (!'<' !allowed_code .) '<' text_L? '>'
     / 
         (!'«' !allowed_code .)? '«' text_L? '»'
     / 
@@ -138,8 +144,8 @@ text_L = text:$(
 
 // the configuration region opens at the first whitespace that a colon follows
 // straight away; colons inside a URL carry no whitespace before them
-link_spec = $( ( !( hs ':' ) !end_code . )* )
-link_spec_filled = $( ( !( hs ':' ) !end_code . )+ )
+link_spec = $( ( !( hs ':' ) [^<>«»] / pair / [<«] )* )
+link_spec_filled = $( ( !( hs ':' ) [^<>«»] / pair / [<«] )+ )
 link_config =
     hs+ t:$(
         ( ['] [^'\n\r]* ['] / ["] [^"\n\r]* ["] / '<' (!'>' .)* '>' / !end_code . )*
@@ -186,7 +192,7 @@ code_L =
              )+
 
      meta:(
-            separator t:$(!end_code .)*  { return t }
+            separator t:$([^<>«»] / pair / [<«])*  { return t }
            )?
      end_tag:end_code &{ return  end_tag === name.end_tag}
      {
@@ -197,7 +203,7 @@ code_L =
                 meta
              }
     }
-item = $(!';' !end_code .)+
+item = $([^<>«»;] / pair / [<«])+
 hs = [ \u00a0\u2001\t\u000C\u2008]
 array_items = 
           code:item hs*  ';' hs* codes:array_items 
@@ -277,12 +283,12 @@ end_code = '>' / '»'
 // length and a shorter run inside stays part of the content.
 CodeRun
       = name:$(allowed_code) &{ return name !== 'C' } open:code_open
-        content:(
+        content:( &{ return open === '<<<' } t:$tail_3 { return [t] } / (
                   allowed_rules / code_2 /
-                  text:$( '<' text '>' / '«' text '»' / looks_like_code /
-                    ( text:$(!{ return closeAt(input, location().start.offset, open) } !start_code_2 !looks_like_code .)+ {return text})
+                  text:$( &{ return open.length === 1 } '<' text? '>' / &{ return open.length === 1 } '«' text? '»' / &{ return open.length === 1 } looks_like_code / &{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 ) /
+                    ( text:$(!{ return closeAt(input, location().start.offset, open) } !start_code_2 !(&{ return open.length === 1 } looks_like_code) !(&{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 )) .)+ {return text})
                                                                          )+ {return text}
-           )*
+           )* )
         ( '>>>' &{ return open === '<<<' }
         / '>>'  &{ return open === '<<'  }
         / '>'   &{ return open === '<'   }
@@ -294,9 +300,21 @@ code_2 = CodeRun
 
 empty =  $(!end_code .)*
 //  text = text:$( '<' text '>' / looks_like_code / not_code )+ {return text}
-text = text:$( '<' text '>' / '«' text '»' / looks_like_code / not_code  )+ {return text}
+text = text:$( '<' text? '>' / '«' text? '»' / looks_like_code / not_code  )+ {return text}
 
 not_code = text:$(!end_code !start_code_2 !looks_like_code .)+ {return text}
-looks_like_code =(!allowed_code .)  '<' not_code '>'  {return text()}  
-     /
-     (!allowed_code .)  '«' not_code '»'  {return text()}  
+looks_like_code =(!allowed_code ![>»] .)  pair  {return text()}  
+
+// an angle pair inside a code, empty or holding further pairs, is part of its content;
+// a code started inside it leaves it to the code rules
+pair = '<' ( pair / !start_code_2 !'<' !'>' !'»' . )* '>' / '«' ( pair / !start_code_2 !'«' !'»' !'>' . )* '»'
+
+// inside a code opened by a longer run only a run of the same length nests, and it has
+// to be balanced; shorter angles are plain text
+pair_2 = '<<' ( pair_2 / !'>>' !'<<' . )* '>>'
+pair_3 = '<<<' ( pair_3 / !'>>>' !'<<<' . )* '>>>'
+
+// the opening run is taken from the left, so a run longer than three leaves its first
+// angles to the content (only <<< can be followed by one more angle); a single pair standing there, with the closing run right after it,
+// is the whole content: the closing run is taken from the right
+tail_3 = '<' (!start_code_2 !'<' !'>' !'»' .)+ '>' &'>>>'

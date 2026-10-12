@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an empty or balanced pair of angles inside a markup code no longer closes it: C<< B<x<>y> >> is bold C<< x<>y >>, and the same holds in a link address, a synonym and an index entry; a code delimited by two or three angles reads a shorter angle inside as text, so C<<< C<< a < b >> >>> and C«C<<< <<END_MARKER >>>» are codes. Text with many unpaired angles is read in milliseconds instead of seconds or minutes. A link, definition or index entry with an unpaired angle after its bar inside one-angle delimiters is now left as text, as other codes already were
+
 =item C<renderCodeText> gives the text of a code such as C<S<>> with each hidden piece masked as the context requires and no C<Z<>> comment; the html and markdown exports write C<S<>> through it, so a C<G<>> code inside C<S«…»> is hidden in production and a comment inside it is not written
 
 =item the text of C<S<>> is escaped in the html and markdown exports, and a line break in it is written in html as C<< <br> >> instead of C<< </br> >>
