@@ -132,7 +132,8 @@ const isLosing = (problem: IncludeProblem): boolean =>
   problem.kind !== 'set-target' &&
   problem.kind !== 'cycle' &&
   problem.kind !== 'include-reading-differs' &&
-  problem.kind !== 'external'
+  problem.kind !== 'external' &&
+  problem.kind !== 'incomplete-selection'
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 

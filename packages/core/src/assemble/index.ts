@@ -55,6 +55,8 @@ export type IncludeProblem = {
     | 'external'
     // the directive declares a type there is no reader for
     | 'format'
+    // a selection over a source holding an include that waits for a later pass
+    | 'incomplete-selection'
   target: string
   message: string
   // the =set assignments the problem lost, by name
@@ -179,7 +181,8 @@ export const isWarning = (problem: IncludeProblem): boolean =>
   problem.kind === 'cycle' ||
   problem.kind === 'set-target' ||
   problem.kind === 'include-reading-differs' ||
-  problem.kind === 'external'
+  problem.kind === 'external' ||
+  problem.kind === 'incomplete-selection'
 
 // The configuration as the parser reads it on a block, when it reads the text
 // whole: no value is dropped and nothing spills into the body.
@@ -399,6 +402,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // the tree is known by its node, one that left nothing by a mark put in its
   // place and taken out when the walk ends.
   const failedAt = new WeakMap<object, Held[]>()
+  // An include left to wait for a later pass, as it stands in the tree.
+  const waitingAt = new WeakSet<object>()
   const FAILED = 'include-failed'
   const isMark = (node: any): boolean => node && typeof node === 'object' && node.type === FAILED
   const firstStop = (nodes: any[], holder: any): Held[] | undefined => {
@@ -561,6 +566,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           const kept = set.length ? { ...n, set } : n
           const known = origin.get(n)
           if (kept !== n && known) origin.set(kept, known)
+          waitingAt.add(kept)
           out.push(kept)
           return
         }
@@ -1162,12 +1168,45 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         },
       ]
     }
+    // An include that waits for a later pass stands for blocks not yet known. The
+    // universal pattern without a predicate would find every one of them, so the
+    // include stays where it is written, among the found blocks; under other
+    // patterns the selection may come out short of what it brings, and that is
+    // said. One inside a found block comes with that block.
+    const withWaiting = (found: any[]): any[] => {
+      const chosen = new Set<any>(found)
+      const merged: any[] = []
+      let short = false
+      const visit = (node: any, open: boolean): void => {
+        if (!node || typeof node !== 'object') return
+        if (Array.isArray(node)) return node.forEach(n => visit(n, open))
+        if (chosen.has(node)) return void merged.push(node)
+        if (waitingAt.has(node)) {
+          short = true
+          if (open) merged.push(node)
+          return
+        }
+        if (node.content !== undefined) visit(node.content, open && isWrapper(node))
+      }
+      docs.forEach(doc => visit(doc.node, true))
+      if (!short) return found
+      if (!parsed.patterns.some(pattern => pattern.blockType === '*' && !pattern.predicate)) {
+        report({
+          kind: 'incomplete-selection',
+          target: selector,
+          message: `include selection may be incomplete until an include in its source resolves: ${selector}`,
+          chain: here,
+        })
+        return found
+      }
+      return merged.filter(node => chosen.has(node)).length === found.length ? merged : found
+    }
     try {
       const found = outermost(
         keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readSource })),
       )
       if (operandWaits) return wait()
-      return done(withoutLooseDirectives(placedFor(found)))
+      return done(withoutLooseDirectives(placedFor(withWaiting(found))))
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
       if (operandWaits) return wait()

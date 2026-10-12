@@ -85,6 +85,24 @@ describe('two passes of the include plugin', () => {
     ])
   })
 
+  it('keeps an include that waits in a file selected by the universal pattern, for the last pass', () => {
+    const page = processFile('site/page.podlite', '=begin pod\n=include file:./part.podlite | *\n=end pod\n')
+    const part = processFile('site/part.podlite', '=head1 Before\n\n=include doc:Versions\n\n=head1 After\n')
+    const versions = processFile(
+      'virtual/versions.podlite',
+      '=begin pod\n=NAME Versions\n\n=para RELEASE DATA\n=end pod\n',
+    )
+    const { first, last } = includePasses({ catalogue: [page, part], late: ['Versions'] })
+    const early = quietly(() => first[0]([page]))
+    const [done] = quietly(() => last[0]([...early, versions]))
+    expect(String(getTextContentFromNode(done.node)).split('\n').filter(Boolean)).toEqual([
+      'Before',
+      'Versions',
+      'RELEASE DATA',
+      'After',
+    ])
+  })
+
   it('refuses in the last pass a late document that was not made', () => {
     const { first, last } = includePasses({ catalogue: [contents] })
     const early = quietly(() => first[0]([contents]))

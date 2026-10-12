@@ -132,3 +132,65 @@ describe('a directive in an included file', () => {
     expect(toHtml({}).run(tree).toString()).not.toContain('<hr')
   })
 })
+
+describe('an include that waits for a later pass, under a selection', () => {
+  const waiting = (book: string, part: string) => {
+    const files = { '/b/book.podlite': book, '/b/part.podlite': part }
+    const base = sourcesFromFiles(files)
+    const sources = {
+      ...base,
+      schemes: ['file', 'doc'],
+      locate: (path: string, ...rest: any[]) => (path === 'Later' ? undefined : (base.locate as any)(path, ...rest)),
+    }
+    const errors: IncludeProblem[] = []
+    const warnings: IncludeProblem[] = []
+    const tree = assembleIncludes(read(book), {
+      sources: sources as any,
+      context: '/b',
+      self: '/b/book.podlite',
+      file: '/b/book.podlite',
+      parse: read,
+      onError: problem => errors.push(problem),
+      onWarning: problem => warnings.push(problem),
+    })
+    return { tree, errors, warnings: warnings.map(w => w.kind) }
+  }
+  const part = '=head1 Before\n\n=include doc:Later\n\n=head1 After\n'
+  const includes = (node: any): number =>
+    Array.isArray(node)
+      ? node.reduce((n, x) => n + includes(x), 0)
+      : (node?.name === 'include' ? 1 : 0) + (Array.isArray(node?.content) ? includes(node.content) : 0)
+
+  it('stays in place under the universal pattern, as when the file is included whole', () => {
+    const whole = waiting('=include file:./part.podlite\n', part)
+    const all = waiting('=include file:./part.podlite | *\n', part)
+    expect([names(whole.tree), names(all.tree), all.warnings, all.errors]).toEqual([
+      ['head', 'include', 'head'],
+      ['head', 'include', 'head'],
+      [],
+      [],
+    ])
+  })
+
+  it('stays in place under a folded heading and under the settings at the directive', () => {
+    const folded = waiting(
+      '=include file:./part.podlite | *\n',
+      '=for head1 :folded\nBefore\n\n=include doc:Later\n\n=head1 After\n',
+    )
+    const scoped = waiting('=config head1 :numbered\n\n=include file:./part.podlite | *\n', part)
+    expect([includes(folded.tree), names(scoped.tree)]).toEqual([1, ['head', 'include', 'head']])
+  })
+
+  it('comes once, with the found block that holds it', () => {
+    const { tree, warnings } = waiting('=include file:./part.podlite | *\n', '=begin pod\n' + part + '=end pod\n')
+    expect([names(tree), includes(tree), warnings]).toEqual([['pod'], 1, []])
+  })
+
+  it('is said to leave a selection by other patterns possibly short', () => {
+    const cases = ['head1', '*[ :x<1> ]', 'head1, *', 'pod'].map(patterns => {
+      const source = patterns === 'pod' ? '=begin pod\n' + part + '=end pod\n' : part
+      return waiting(`=include file:./part.podlite | ${patterns}\n`, source).warnings
+    })
+    expect(cases).toEqual([['incomplete-selection'], ['incomplete-selection'], [], []])
+  })
+})
