@@ -217,6 +217,46 @@ describe('an include that waits for a later pass, under a selection', () => {
     ])
   })
 
+  it('tells onCopy of the copy it makes of a waiting include', () => {
+    const tree = read('=head1 Before\n\n=include doc:Later\n\n=head1 After\n')
+    const original = blocks(tree).find(b => b.name === 'include')
+    const copies: [any, any][] = []
+    const result = assembleIncludes(tree, {
+      sources: { schemes: ['file', 'doc'], locate: () => undefined, read: () => undefined } as any,
+      context: '/b',
+      file: '/b/book.podlite',
+      parse: read,
+      onCopy: (from, to) => copies.push([from, to]),
+    })
+    const kept = blocks(result).find(b => b.name === 'include')
+    expect([kept !== original, copies.some(([from, to]) => from === original && to === kept)]).toEqual([true, true])
+  })
+
+  it('keeps waiting through a block placed as its file reads on its own', () => {
+    const files = {
+      '/b/book.podlite': '=include file:./mid.podlite | head1\n',
+      '/b/mid.podlite': '=config defn :lang<en>\n\n=include file:./part.podlite | pod\n',
+      '/b/part.podlite': '=defn fr\nFrench.\n\n=include file:./leaf.podlite | pod[ :lang(in defn[ :!?lang ]) ]\n',
+      '/b/leaf.podlite': '=begin pod :lang<fr>\n=head1 Before\n\n=include doc:Later\n\n=head1 After\n=end pod\n',
+    }
+    const base = sourcesFromFiles(files)
+    const sources = {
+      ...base,
+      schemes: ['file', 'doc'],
+      locate: (path: string, ...rest: any[]) => (path === 'Later' ? undefined : (base.locate as any)(path, ...rest)),
+    }
+    const warnings: string[] = []
+    assembleIncludes(read(files['/b/book.podlite']), {
+      sources: sources as any,
+      context: '/b',
+      self: '/b/book.podlite',
+      file: '/b/book.podlite',
+      parse: read,
+      onWarning: problem => problem.kind === 'incomplete-selection' && warnings.push(problem.target),
+    })
+    expect(warnings).toContain('file:./mid.podlite | head1')
+  })
+
   it('is said to leave a selection by other patterns possibly short', () => {
     const cases = ['head1', '*[ :x<1> ]', 'head1, *', 'pod'].map(patterns => {
       const source = patterns === 'pod' ? '=begin pod\n' + part + '=end pod\n' : part

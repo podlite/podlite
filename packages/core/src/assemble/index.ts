@@ -568,6 +568,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           const kept = { ...n, ...(set.length ? { set } : {}), [WAITING]: true }
           const known = origin.get(n)
           if (known) origin.set(kept, known)
+          opts.onCopy?.(n, kept)
           out.push(kept)
           return
         }
@@ -762,6 +763,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     if (!node || typeof node !== 'object') return node
     const copy: any = {}
     for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyDeep(node[key])
+    if (node[WAITING]) copy[WAITING] = true
     const known = origin.get(node)
     if (known) origin.set(copy, known)
     opts.onCopy?.(node, copy)
