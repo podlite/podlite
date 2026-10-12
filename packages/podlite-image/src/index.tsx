@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  getExplicitNodeId,
   getNodeId,
   mkCaption,
   mkImage,
@@ -16,6 +17,7 @@ import {
   writtenValue,
   isCovered,
   maskText,
+  toFragment,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -105,13 +107,15 @@ const Image: Plugin = {
       caption: wrapContent('<div class="caption">', '</div>'),
     },
     setFn((node, ctx) => {
-      const { level } = node
-      const id = getNodeId(node, ctx)
+      // html carries only the id the author wrote, in the form a link to it takes;
+      // the generated one changes on every run and nothing in the page points to it
+      const written = getExplicitNodeId(node, ctx)
+      const id = written === null ? null : (ctx?.__anchors?.shape || toFragment)(written)
       const conf = makeAttrs(node, ctx)
       if (conf.exists('link')) {
         ctx.link = conf.getFirstValue('link')
       }
-      return wrapContent(`<div class="image_block" ${id ? ` id="${id}"` : ''}>`, `</div>`)
+      return wrapContent(`<div class="image_block"${id ? ` id="${id}"` : ''}>`, `</div>`)
     }),
   ),
   toJSX: helper => {

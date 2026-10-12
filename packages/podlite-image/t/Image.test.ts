@@ -41,9 +41,7 @@ it('=picture minimal', () => {
 test`
   const html = parseToHtml(pod)
   expect(html).toMatchInlineSnapshot(`
-    <div class="image_block"
-         id="id"
-    >
+    <div class="image_block">
       <img src="test">
     </div>
   `)
@@ -80,4 +78,30 @@ it('Image block wrapping an inline image node keeps the src', () => {
   ])
   const html = podlite.toHtml(frozenIds()(podlite.toAst(tree))).toString()
   expect(html).toContain('src="https://example.org/badge.svg"')
+})
+
+const renderHtml = (str: string): string => {
+  const podlite = podlitePluggable().use({ Image, picture: Image })
+  return podlite.toHtml(podlite.toAst(podlite.parse(str))).toString()
+}
+
+describe('the html of an image block', () => {
+  it('is the same on every run and has no id the author did not write', () => {
+    const pod = '=begin pod\n=for picture :caption<One>\nx.png\n=end pod\n'
+    const first = renderHtml(pod)
+    expect(renderHtml(pod)).toBe(first)
+    expect(first).toContain('<div class="image_block"><img src="x.png"/>')
+  })
+
+  it('writes an id the author gave in the form a link to it takes', () => {
+    const html = renderHtml("=begin pod\n=for picture :id('Fig one')\nx.png\n\nSee L<the figure|#Fig one>.\n=end pod\n")
+    expect(html).toContain('<div class="image_block" id="Fig-one">')
+    expect(html).toContain('<a href="#Fig-one">the figure</a>')
+  })
+
+  it('shapes an id the author gave as a link to it does', () => {
+    const html = renderHtml('=begin pod\n=for picture :id<v1.2>\nx.png\n\nSee L<the figure|#v1.2>.\n=end pod\n')
+    expect(html).toContain('<div class="image_block" id="v12">')
+    expect(html).toContain('<a href="#v12">the figure</a>')
+  })
 })

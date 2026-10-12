@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the html of an image block carries an C<id> only when the author wrote C<:id>, in the form a link to it takes; the generated one, which changed on every run, is no longer written
+
 =head1 0.0.70
 
 =item the alternative text of a hidden picture is masked
