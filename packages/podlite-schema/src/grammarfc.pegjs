@@ -315,8 +315,10 @@ pair = '<' ( pair / !start_code_2 !'<' !'>' !'»' . )* '>' / '«' ( pair / !star
 pair_2 = '<<' ( pair_2 / !start_code_2 !'>>' !'<<' . )* '>>'
 pair_3 = '<<<' ( pair_3 / !start_code_2 !'>>>' !'<<<' . )* '>>>'
 // inside C<> only E<> and the codes a declaration allows there are codes
-pair_2c = '<<' ( pair_2c / !start_code_E !inner_start_C !'>>' !'<<' . )* '>>'
-pair_3c = '<<<' ( pair_3c / !start_code_E !inner_start_C !'>>>' !'<<<' . )* '>>>'
+pair_2c = '<<' ( pair_2c / !active_code_E !inner_start_C !'>>' !'<<' . )* '>>'
+pair_3c = '<<<' ( pair_3c / !active_code_E !inner_start_C !'>>>' !'<<<' . )* '>>>'
+// E<> as a code where the context lets it act
+active_code_E = name:$(allowed_code) &{ return name === 'E' } ('<' / '«')
 
 // the opening run is taken from the left, so a run longer than three leaves its first
 // angles to the content (only <<< can be followed by one more angle); a single pair standing there, with the closing run right after it,
