@@ -35,7 +35,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "clean": "rm -rf dist lib esm tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist lib esm *.tsbuildinfo",
     "test": "yarn g:jest  --passWithNoTests",
     "build": "run-p build:cjs  build:esm",
     "build:cjs": "ts-node ./scripts/build.ts && tsc  --declaration --emitDeclarationOnly",

@@ -71,7 +71,7 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rm -rf dist lib tsconfig.tsbuildinfo esm",
+    "clean": "rm -rf dist lib esm *.tsbuildinfo",
     "build": "yarn g:build && yarn g:copy_assets",
     "test": "yarn g:jest  --passWithNoTests"
   },

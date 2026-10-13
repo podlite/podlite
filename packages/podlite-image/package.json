@@ -40,7 +40,7 @@
     "url": "https://opencollective.com/podlite"
   },
   "scripts": {
-    "clean": "rm -rf dist lib tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist lib esm *.tsbuildinfo",
     "build": "yarn g:build",
     "test": "yarn g:jest  --passWithNoTests",
     "watch:update": " yarn build && yarn test",

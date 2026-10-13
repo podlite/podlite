@@ -16,9 +16,7 @@ const ts = require('typescript')
 // argument it walks them all, which is what a one-off run wants.
 const ROOTS = process.argv[2]
   ? [path.resolve(process.argv[2])]
-  : fs
-      .readdirSync(path.join(__dirname, '..', 'packages'))
-      .map(name => path.join(__dirname, '..', 'packages', name))
+  : fs.readdirSync(path.join(__dirname, '..', 'packages')).map(name => path.join(__dirname, '..', 'packages', name))
 
 const resolveTarget = (fromFile, spec) => {
   if (/\.(js|json|mjs|cjs|css)$/.test(spec)) return null
@@ -59,11 +57,47 @@ const jsFiles = dir =>
     return entry.isDirectory() ? jsFiles(full) : entry.name.endsWith('.js') ? [full] : []
   })
 
+// tsc decides from *.tsbuildinfo whether to emit, so a file taken out of esm/ after a
+// build is not written again: the build info says the output is fresh. The files the
+// esm configuration has to produce are listed by TypeScript itself; a package missing
+// any of them is refused here, by name, with the command that rebuilds it.
+const REPO = path.join(__dirname, '..')
+const shellQuote = text => `'${text.replace(/'/g, `'\\''`)}'`
+const missingOutput = root => {
+  const config = path.join(root, 'tsconfig.esm.json')
+  if (!fs.existsSync(config)) return null
+  const parsed = ts.getParsedCommandLineOfConfigFile(
+    config,
+    {},
+    { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} },
+  )
+  if (!parsed) return null
+  const ignoreCase = !ts.sys.useCaseSensitiveFileNames
+  return parsed.fileNames
+    .flatMap(file => ts.getOutputFileNames(parsed, file, ignoreCase))
+    .filter(out => out.endsWith('.js') || out.endsWith('.d.ts'))
+    .filter(out => !fs.existsSync(out))
+}
+
 let rewritten = 0
 let touched = 0
 const orphans = []
+const incomplete = []
 
 for (const root of ROOTS) {
+  const missing = missingOutput(root)
+  if (missing && missing.length) {
+    const name = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).name
+    const info = path.join(root, 'tsconfig.esm.tsbuildinfo')
+    incomplete.push({
+      root,
+      name,
+      missing,
+      repair: `cd ${shellQuote(REPO)} && rm -f ${shellQuote(info)} && yarn workspace ${name} build`,
+    })
+    // the output is not what the build should have made; rewriting part of it would hide that
+    continue
+  }
   const esm = path.join(root, 'esm')
   if (!fs.existsSync(esm)) continue
   for (const file of jsFiles(esm)) {
@@ -94,6 +128,12 @@ console.log(`fix-esm-specifiers: rewrote ${rewritten} specifiers in ${touched} f
 if (unchecked.length) {
   console.log(`fix-esm-specifiers: ${unchecked.length} computed specifiers could not be checked:`)
   for (const line of unchecked.slice(0, 10)) console.log(`  ${line}`)
+}
+for (const { root, name, missing, repair } of incomplete) {
+  console.log(`fix-esm-specifiers: ${name}: esm is incomplete, ${missing.length} files missing:`)
+  for (const file of missing.slice(0, 10)) console.log(`  ${path.relative(root, file)}`)
+  console.log(`  rebuild with: ${repair}`)
+  process.exitCode = 1
 }
 if (orphans.length) {
   console.log(`fix-esm-specifiers: ${orphans.length} specifiers point at nothing and were left alone:`)

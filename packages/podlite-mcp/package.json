@@ -48,7 +48,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "clean": "rm -rf lib *.tsbuildinfo",
     "build": "yarn g:tsc",
     "test": "yarn g:jest --passWithNoTests"
   },
