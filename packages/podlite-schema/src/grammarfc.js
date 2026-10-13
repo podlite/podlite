@@ -12388,15 +12388,6 @@ function peg$parse(input, options) {
           s3 = peg$FAILED;
           if (peg$silentFails === 0) { peg$fail(peg$c69); }
         }
-        if (s3 === peg$FAILED) {
-          if (input.charCodeAt(peg$currPos) === 171) {
-            s3 = peg$c54;
-            peg$currPos++;
-          } else {
-            s3 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c55); }
-          }
-        }
         if (s3 !== peg$FAILED) {
           s1 = [s1, s2, s3];
           s0 = s1;

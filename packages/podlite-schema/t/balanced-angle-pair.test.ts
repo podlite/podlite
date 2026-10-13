@@ -132,6 +132,11 @@ describe('angles inside a code delimited by a run of angles', () => {
     expect(read(src)).toBe(expected)
   })
 
+  // the entity code takes angles only, so E«…» inside a run is text
+  it('reads a run holding E«…» in C<> as text', () => {
+    expect(read('C<<a <<E«lt» x>> b>>')).toBe('C[a <<E«lt» x>> b]')
+  })
+
   it('reads a run as text in C<> where E<> does not act', () => {
     const t = tree('=begin code :allow<C>\nC<<a <<E<lt> x>> b>>\n=end code\n')
     expect(shape(firstCode(t))).toBe('C[a <<E<lt> x>> b]')
