@@ -1,9 +1,12 @@
-import { getFromTree, getNodeId, getTextContentFromNode, makeInterator, PodNode } from '@podlite/schema'
+import { getFromTree, getNodeId, getTextContentFromNode, indexAnchors, makeInterator, PodNode } from '@podlite/schema'
 import { publishRecord } from '../src'
 import { processFile } from '../src/node'
 import { nodeOrigin } from '../src/record'
 import resolvePlugin, { includePasses, IncludeError } from '../src/include-resolve-plugin'
 import { SITE_DATA_DOCUMENT } from '../src/site-data-plugin'
+import { podlite } from 'podlite'
+
+const podliteParser = podlite({ importPlugins: true })
 
 const quietly = <T>(fn: () => T): T => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
@@ -300,5 +303,50 @@ describe('the record an include places blocks in', () => {
     expect(texts(made.node, 'para')).toEqual(['Versions', 'Versions'])
     expect(texts(made.header, 'para')).toEqual(['Versions'])
     for (const field of [page.description, page.header, page.footer]) expect(texts(field, 'para')).toEqual(['Note'])
+  })
+})
+
+describe('a table of contents entry through the two passes', () => {
+  // the entries of the page's own table and the anchors its headings got, in order
+  const entriesAndAnchors = (node: unknown) => {
+    const html = String(podliteParser.toHtml(node as any))
+    const entries = [...html.matchAll(/<li class="toc-item"><p><a href="([^"]*)"/g)].map(m => m[1])
+    const anchors = [...html.matchAll(/<h1 id="([^"]*)"/g)].map(m => `#${m[1]}`)
+    return { entries, anchors }
+  }
+
+  it('leads each entry to its own heading when the page and its parts repeat a heading', () => {
+    const host = processFile(
+      'site/host.podlite',
+      `=begin pod\n=toc head1\n\n=head1 Same\n\n=include file:./part.podlite\n\n=include doc:${SITE_DATA_DOCUMENT}#articles\n=end pod\n`,
+    )
+    const part = processFile('site/part.podlite', '=begin pod\n=head1 Same\n=end pod\n')
+    const { first, last } = includePasses({ catalogue: [host, part] })
+    const early = quietly(() => first[0]([host]))
+    const [made] = quietly(() => last[0]([...early, siteData()]))
+    const { entries, anchors } = entriesAndAnchors(made.node)
+    expect(entries).toEqual(['#Same', '#Same-2'])
+    expect(entries).toEqual(anchors)
+  })
+
+  it('leads an entry to a heading in the body of =React read in its place', () => {
+    const host = processFile(
+      'site/host.podlite',
+      `=begin pod\n=toc head1\n\n=head1 Same\n\n=begin React :component<Box>\n=head1 Same\n=end React\n\n=include doc:${SITE_DATA_DOCUMENT}#articles\n=end pod\n`,
+    )
+    const { first, last } = includePasses({ catalogue: [host] })
+    const early = quietly(() => first[0]([host]))
+    const [made] = quietly(() => last[0]([...early, siteData()]))
+    // the body is read by a parse of its own: its heading gets a key apart from the page's
+    const keys = getFromTree(made.node, 'head').map((h: any) => h.headingKey)
+    expect(keys).toHaveLength(2)
+    expect(keys[0]).not.toBe(keys[1])
+    // each entry leads to the anchor its heading was given; the body of =React is drawn
+    // by its component, so the anchors are read from the assignment, not from the html
+    const anchors = indexAnchors(made.node)
+    const given = getFromTree(made.node, 'head').map((h: any) => `#${anchors.byNode.get(h)}`)
+    const { entries } = entriesAndAnchors(made.node)
+    expect(given).toEqual(['#Same', '#Same-2'])
+    expect(entries).toEqual(given)
   })
 })

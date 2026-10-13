@@ -952,6 +952,9 @@
                         "number"
                     ]
                 },
+                "headingKey": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "const": "block"
@@ -2775,6 +2778,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "headingRef": {
+                    "type": "string"
                 },
                 "content": {
                     "anyOf": [

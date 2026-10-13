@@ -89,7 +89,7 @@ Test head1
 })
 
 it('[check default list]=toc', () => {
-  const pod = `=toc
+  const pod = `=toc head1, head2, head3, head4, head5, head6
 =head1 head
 =head2 head
 =head3 head
@@ -110,7 +110,7 @@ it('[check default list]=toc', () => {
         <ul class="toc-list listlevel2">
           <li class="toc-item">
             <p>
-              <a href="#id">
+              <a href="#id-2">
                 head
               </a>
             </p>
@@ -118,7 +118,7 @@ it('[check default list]=toc', () => {
           <ul class="toc-list listlevel3">
             <li class="toc-item">
               <p>
-                <a href="#id">
+                <a href="#id-3">
                   head
                 </a>
               </p>
@@ -126,7 +126,7 @@ it('[check default list]=toc', () => {
             <ul class="toc-list listlevel4">
               <li class="toc-item">
                 <p>
-                  <a href="#id">
+                  <a href="#id-4">
                     head
                   </a>
                 </p>
@@ -134,7 +134,7 @@ it('[check default list]=toc', () => {
               <ul class="toc-list listlevel5">
                 <li class="toc-item">
                   <p>
-                    <a href="#id">
+                    <a href="#id-5">
                       head
                     </a>
                   </p>
@@ -142,7 +142,7 @@ it('[check default list]=toc', () => {
                 <ul class="toc-list listlevel6">
                   <li class="toc-item">
                     <p>
-                      <a href="#id">
+                      <a href="#id-6">
                         head
                       </a>
                     </p>

@@ -78,6 +78,7 @@ comments, given a root file as a path`
           "content": Array [
             "build",
           ],
+          "headingKey": "h1.1287ce3ef01d56",
           "id": "id",
           "level": 2,
           "location": Object {
@@ -263,6 +264,7 @@ it('[markdown]: parse refs', () => {
           "content": Array [
             "Table of Contents",
           ],
+          "headingKey": "h1.1f4b3fc3d58922",
           "id": "id",
           "level": 3,
           "location": Object {
@@ -423,6 +425,7 @@ it('[markdown]: broken_refs', () => {
           "content": Array [
             "Parameters",
           ],
+          "headingKey": "h1.00d07d3ea47d5a",
           "id": "id",
           "level": 3,
           "location": Object {

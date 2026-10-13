@@ -322,6 +322,9 @@ export interface FormattingCodeL {
   name: 'L'
   meta: string | null
   config?: ConfigItem[]
+  // a link the tree generated, such as a table of contents entry: the key of the
+  // heading it leads to, bound apart from the names authors write
+  headingRef?: string
   content: string | Text | Text[] // TODO: link content can contain other formatting codes
 }
 
@@ -514,6 +517,9 @@ export interface BlockNested extends Block {
 export interface BlockHead extends Block {
   name: 'head'
   level: number | string //TODO: must be only number
+  // set by the parse that read the heading, not taken from its text; a generated link
+  // such as a table of contents entry finds the heading by it
+  headingKey?: string
 }
 export interface BlockTable extends Omit<Block, 'content'> {
   name: 'table'

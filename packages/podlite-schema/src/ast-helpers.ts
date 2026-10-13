@@ -360,7 +360,16 @@ export const sameDocTarget = <T>(
   target: T,
   ctx,
   index: AnchorIndex | undefined = ctx?.__anchors,
+  link?: unknown,
 ): T | string | undefined => {
+  // A generated link names its heading by key, apart from the names authors write: a
+  // key nobody holds, or a heading this output gave no anchor, is no address at all
+  const ref = link && typeof link === 'object' ? (link as { headingRef?: unknown }).headingRef : undefined
+  if (typeof ref === 'string') {
+    const node = (ctx?.__bindings as BindingIndex | undefined)?.byHeadingKey.get(ref)
+    const anchor = node === undefined ? undefined : index?.byNode.get(node)
+    return anchor === undefined ? undefined : `#${anchor}`
+  }
   if (typeof target !== 'string' || !target.startsWith('#') || target === '#') return target
   const shape = index?.shape || toFragment
   const bindings: BindingIndex | undefined = ctx?.__bindings
@@ -406,6 +415,8 @@ export type LinkBinding =
 export type BindingIndex = {
   byKey: Map<string, { node: object; via: 'heading' | 'explicit-id' }>
   ambiguous: Set<string>
+  // the keys parses gave headings; only generated links are bound here
+  byHeadingKey: Map<string, object>
 }
 
 // Both forms the specification describes: a section addressed by its name, and a
@@ -477,7 +488,14 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
     const key = node.id.normalize('NFC').trim()
     if (key && !byKey.has(key)) byKey.set(key, { node, via: 'heading' })
   })
-  return { byKey, ambiguous }
+  // Two parses of one text give one set of keys; the first heading in the document
+  // keeps the key, as the first claimant keeps a name
+  const byHeadingKey = new Map<string, object>()
+  walkNodes(tree, node => {
+    if (node.type !== 'block' || node.name !== 'head' || typeof node.headingKey !== 'string') return
+    if (!byHeadingKey.has(node.headingKey)) byHeadingKey.set(node.headingKey, node)
+  })
+  return { byKey, ambiguous, byHeadingKey }
 }
 
 // Matching is exact: level one has to keep apart everything the tree keeps apart,

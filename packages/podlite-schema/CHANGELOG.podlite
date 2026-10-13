@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a parse gives each heading a C<headingKey>: its number among the headings of the tree that parse made, with a fingerprint of the text it read (C<assignHeadingKeys>, C<fingerprint>). A link that carries C<headingRef>, such as a table of contents entry, is bound by that key to its heading and written with the anchor the output gave it; C<sameDocTarget> takes the link as a fourth argument for this, and a key no heading holds gives no address. Two parses of the same text give the same keys, so a file included twice still leads its entries to the first copy
+
 =item an empty or balanced pair of angles inside a markup code no longer closes it: C<< B<x<>y> >> is bold C<< x<>y >>, and the same holds in a link address, a synonym and an index entry; a code delimited by two or three angles reads a shorter angle inside as text, so C<<< C<< a < b >> >>> and C«C<<< <<END_MARKER >>>» are codes. Text with many unpaired angles is read in milliseconds instead of seconds or minutes. A link, definition or index entry with an unpaired angle after its bar inside one-angle delimiters is now left as text, as other codes already were
 
 =item C<renderCodeText> gives the text of a code such as C<S<>> with each hidden piece masked as the context requires and no C<Z<>> comment; the html and markdown exports write C<S<>> through it, so a C<G<>> code inside C<S«…»> is hidden in production and a comment inside it is not written

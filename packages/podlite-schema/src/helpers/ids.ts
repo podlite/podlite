@@ -69,7 +69,7 @@ export const setAllLinksToAnchor =
           if ('content' in node) {
             node.content = visiter(node.content, ctx)
           }
-          const { id, ...rest } = node
+          const { id, headingRef, ...rest } = node
           return { ...rest, meta: '#' }
         }
         return node

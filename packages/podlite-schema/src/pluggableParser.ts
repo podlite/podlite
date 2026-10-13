@@ -7,6 +7,7 @@ import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
 import { applyFoldedSections } from './folded-sections'
+import { assignHeadingKeys } from './helpers/headingKeys'
 export { cleanIds, frozenIds, headingId } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -70,6 +71,8 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     )
     diagnostics.splice(0, diagnostics.length, ...innermost)
     const root = mkRootBlock({ margin: '' }, rawTree)
+    // the parse is the one place that has the text the keys are fingerprinted from
+    assignHeadingKeys(root, text)
     return diagnostics.length ? { ...root, diagnostics } : root
   }
 

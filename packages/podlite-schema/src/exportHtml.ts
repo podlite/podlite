@@ -39,7 +39,7 @@ import { quoteAttribute as quoteValue } from './helpers/html-attr'
 const hrefAttr = (node, ctx): string => {
   const target = linkTarget(node)
   if (target === undefined) return ''
-  const address = sameDocTarget(target, ctx)
+  const address = sameDocTarget(target, ctx, ctx?.__anchors, node)
   // A link level one refused points at nothing, and an anchor with no href is what
   // html gives that case. An address shaped from a target that was never there only
   // looks like a working link.

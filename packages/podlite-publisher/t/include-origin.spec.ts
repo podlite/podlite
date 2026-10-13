@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { bindTarget, buildBindingIndex, getFromTree, getTextContentFromNode, PodNode } from '@podlite/schema'
+import { buildBindingIndex, getFromTree, getTextContentFromNode, PodNode } from '@podlite/schema'
 import { processPlugin, publishRecord } from '../src'
 import { processFile } from '../src/node'
 import resolvePlugin, { includePasses } from '../src/include-resolve-plugin'
@@ -235,7 +235,7 @@ describe('a doc: link', () => {
     )
     const records = quietly(() => includePasses({ catalogue: [target, host] }).first[0]([target, host]))
     const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, records, tctx)
-    expect(links(res[1].node)).toEqual(['#Using doc:Target in practice', '/target'])
+    expect(links(res[1].node)).toEqual([expect.stringMatching(/^#h1\./), '/target'])
   })
 
   it('does not read a link to another scheme with doc: in its address as a doc: link', () => {
@@ -367,7 +367,7 @@ describe('a doc: link that does not resolve, when the site asks for warnings', (
     )
     const records = quietly(() => includePasses({ catalogue: [host] }).first[0]([host]))
     const { res } = warned(records)
-    expect(links(res[0].node)).toEqual(['#Using doc:Missing in practice'])
+    expect(links(res[0].node)).toEqual([expect.stringMatching(/^#h1\./)])
   })
 
   it('prints nothing when every link resolves', () => {
@@ -450,7 +450,8 @@ describe('a table of contents entry for a heading that holds a doc: link', () =>
         m => (m[1].match(/href="([^"]*)"/) || [])[1],
       )
       const anchors = [...html.matchAll(/<h1 id="([^"]*)"/g)].map(m => `#${m[1]}`)
-      return { heads, reached: links.map((link: any) => bindTarget(link.meta.slice(1), index)), entries, anchors }
+      // an entry names its heading by the key the parse gave it
+      return { heads, reached: links.map((link: any) => index.byHeadingKey.get(link.headingRef)), entries, anchors }
     } finally {
       warn.mockRestore()
     }
@@ -464,7 +465,7 @@ describe('a table of contents entry for a heading that holds a doc: link', () =>
     )
     const { heads, reached, entries, anchors } = entriesReach([target(), host])
     expect(reached).toHaveLength(1)
-    expect(reached[0].found && reached[0].node).toBe(heads[0])
+    expect(reached[0]).toBe(heads[0])
     expect(entries).toEqual(anchors)
   })
 
@@ -475,7 +476,7 @@ describe('a table of contents entry for a heading that holds a doc: link', () =>
     )
     const { heads, reached, entries, anchors } = entriesReach([target(), host], { unresolved: 'warning' })
     expect(reached).toHaveLength(1)
-    expect(reached[0].found && reached[0].node).toBe(heads[0])
+    expect(reached[0]).toBe(heads[0])
     expect(entries).toEqual(anchors)
   })
 })

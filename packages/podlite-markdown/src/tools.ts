@@ -19,6 +19,7 @@ import {
   getTextContentFromNode,
 } from '@podlite/schema'
 import { mkRootBlock } from '@podlite/schema'
+import { assignHeadingKeys } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
 import { mkCaption } from '@podlite/schema'
 import { mkFomattingCodeO } from '@podlite/schema'
@@ -228,5 +229,7 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
     })
     .run(md_tree)
-  return res.interator
+  // a =markdown block hands over its verbatim node: the keys are fingerprinted from the
+  // text the reader parsed
+  return assignHeadingKeys(res.interator, typeof src === 'string' ? src : (src as { value?: string })?.value ?? '')
 }

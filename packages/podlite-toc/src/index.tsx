@@ -243,6 +243,18 @@ const entriesFor = (
   )
 }
 
+// An entry leads to a heading by the key its parse gave it, not by the heading's text:
+// two headings may say the same thing, and the text may hide words. A heading the author
+// named with :id, written or set, keeps that name, as do blocks that are not headings and
+// headings no parse gave a key.
+const entryTarget = (node: any): { meta: string; headingRef?: string } => {
+  const named = makeAttrs(node, {}).exists('id')
+  if (!named && node?.name === 'head' && typeof node.headingKey === 'string') {
+    return { meta: `#${node.headingKey}`, headingRef: node.headingKey }
+  }
+  return { meta: `#${getNodeId(node, {})}` }
+}
+
 // The directive with a table made over the tree: the selector is given, since a
 // table built again reads it from the table it made before.
 const buildToc = (node: any, ctx: any, fulltree: any, self: unknown, read: { selector: string; coded: boolean }) => {
@@ -259,7 +271,7 @@ const buildToc = (node: any, ctx: any, fulltree: any, self: unknown, read: { sel
       //TODO: 2. refactor linking for blocks
       const para = mkNode({
         type: 'para',
-        content: [mkFomattingCodeL({ meta: `#${getNodeId(node, {})}` }, entryContent(node, text, tocHidden))],
+        content: [mkFomattingCodeL(entryTarget(node), entryContent(node, text, tocHidden))],
       }) as PodNode
       const tocNode = para
       resultList.push(mkTocItem(tocNode))

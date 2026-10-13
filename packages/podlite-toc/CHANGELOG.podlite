@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an entry for a heading leads to that heading, not to the first heading with the same text: two C<=head1 Intro> get entries to C<#Intro> and C<#Intro-2>, and so do a heading of the page and one of an included file. The entry carries the heading's key instead of its text, so the address of an entry for a heading with hidden text holds none of it. A heading named with C<:id>, written or set, keeps that name
+
 =head1 0.0.64
 
 =item C<rebuildToc> builds the table a C<=toc> block holds again over a tree that gained blocks, such as those an include brought, reading the selector from the table and the configuration from the block; a table that keeps no selector is left as it is

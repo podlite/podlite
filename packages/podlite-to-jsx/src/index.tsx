@@ -210,7 +210,7 @@ const linkConfigProps = (config: any, conceal: (text: string) => string = text =
 const hrefOf = (node, ctx): string | undefined => {
   const target = linkTarget(node)
   if (target === undefined) return undefined
-  const address = sameDocTarget(target, ctx)
+  const address = sameDocTarget(target, ctx, ctx?.__anchors, node)
   return address === undefined ? undefined : String(address)
 }
 
