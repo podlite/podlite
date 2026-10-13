@@ -51,6 +51,25 @@ describe('the export target check', () => {
     fixture = undefined
   })
 
+  // a style the package ships has to be one the export map opens, or nobody can take it
+  it('fails on a shipped style that no export target opens', () => {
+    const files = { ...built, 'lib/style.css': '', 'esm/style.css': '' }
+    const exports = { ...main, './style.css': './lib/style.css' }
+    const { code, out } = run(packageWith(exports, files, { files: ['lib', 'esm'] }))
+    expect(out).toContain('FAIL')
+    expect(out).toContain('esm/style.css')
+    expect(out).not.toContain('lib/style.css is')
+    expect(code).toBe(1)
+  })
+
+  it('passes a shipped style opened by an exact target or by a pattern', () => {
+    const files = { ...built, 'lib/style.css': '', 'lib/themes/dark.css': '' }
+    const exports = { ...main, './style.css': './lib/style.css', './lib/*': './lib/*' }
+    const { code, out } = run(packageWith(exports, files, { files: ['lib'] }))
+    expect(out).not.toContain('FAIL')
+    expect(code).toBe(0)
+  })
+
   it('fails on a target that is not in the package', () => {
     const { code, out } = run(packageWith({ ...main, './example': './demo/Components' }, built, { files: ['lib'] }))
     expect(out).toContain('FAIL')

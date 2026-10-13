@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the package no longer ships C<esm/Editor.css> and C<esm/podlite-vars.css>, which the export map never opened; the styles are taken by the short paths C<@podlite/editor-react/Editor.css> and C<@podlite/editor-react/podlite-vars.css>, or under C<lib/>. The package check fails a package that ships a style no export target opens
+
 =item the C<./demo/Components> subpath is no longer exported: its target is not in the package, which does not ship the C<demo> directory
 
 =item B<Breaking:> the unused stylesheet C<lib/Editor.old.css> and its export path are removed

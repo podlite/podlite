@@ -51,6 +51,19 @@ const targetsOf = (value, path = []) => {
   return []
 }
 
+// The other way round, for styles: a style the package ships and no target opens is a
+// file the consumer has but cannot take. Scripts are reached through the entry, so only
+// styles are public by themselves.
+function checkStyles(exp, files) {
+  const opens = Object.entries(exp).flatMap(([key, value]) =>
+    targetsOf(value).map(({ target }) => ({ pattern: key.includes('*') && target.includes('*'), target })),
+  )
+  return files
+    .filter(f => f.endsWith('.css'))
+    .filter(f => !opens.some(({ pattern, target }) => (pattern ? patternMatches(target, [f]) : target === `./${f}`)))
+    .map(f => `shipped style ${f} is not opened by any export target`)
+}
+
 function checkTargets(exp, files) {
   const errors = []
   for (const [key, value] of Object.entries(exp)) {
@@ -121,7 +134,7 @@ function checkPackage(dir) {
       const reason = lines.find(l => /^npm (error|ERR!)/.test(l)) ?? lines[0]
       errors.push(`npm pack cannot list the package: ${reason}`)
     }
-    if (files) errors.push(...checkTargets(exp, files))
+    if (files) errors.push(...checkTargets(exp, files), ...checkStyles(exp, files))
   }
 
   return { name: raw.name ?? dir, dir, errors }

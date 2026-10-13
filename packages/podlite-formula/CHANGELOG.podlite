@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the package no longer ships C<esm/default.css>, which the export map never opened; the style is taken as C<@podlite/formula/default.css> or C<@podlite/formula/lib/default.css>
+
 =head1 0.0.53
 
 =item a hidden formula shows its source masked and is not typeset; its caption is masked too
