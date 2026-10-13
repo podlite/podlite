@@ -96,6 +96,11 @@ describe('a key an author happens to write as an id', () => {
       { 'p.podlite': part },
     )
     expect(hrefs(html)).toEqual(['#Same', '#Same-2'])
+    // the author's link reaches the block named with that text, not a heading
+    const authored = html.match(/<a href="([^"]*)">to the named<\/a>/)?.[1]
+    const named = html.match(/<div id="([^"]*)"><p>named/)?.[1]
+    expect(named).toBeDefined()
+    expect(authored).toBe(`#${named}`)
   })
 })
 
