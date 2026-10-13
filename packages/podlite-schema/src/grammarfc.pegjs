@@ -118,7 +118,7 @@ CodeCRun
         /
         inner_code_C
         /
-        text:$( &{ return open.length === 1 } (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ &{ return open.length === 1 } (!'«' !inner_start_C .)? '«' text_C? '»' / &{ return open.length === 1 } (!start_code_E !inner_start_C looks_like_code_C) / &{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 ) / text:$(!{ return closeAt(input, location().start.offset, open) } !(&{ return open === '<' } start_code_2) !(&{ return open !== '<' } (start_code_E / inner_start_C)) !(&{ return open.length === 1 } looks_like_code) !(&{ return open.length > 1 } ( &{ return open === '<<' } pair_2 / &{ return open === '<<<' } pair_3 )) .)+ {return text} )+ {return text} )+ )
+        text:$( &{ return open.length === 1 } (!'<' !start_code_E !inner_start_C .)? '<' text_C? '>'/ &{ return open.length === 1 } (!'«' !inner_start_C .)? '«' text_C? '»' / &{ return open.length === 1 } (!start_code_E !inner_start_C looks_like_code_C) / &{ return open.length > 1 } ( &{ return open === '<<' } pair_2c / &{ return open === '<<<' } pair_3c ) / text:$(!{ return closeAt(input, location().start.offset, open) } !(&{ return open === '<' } start_code_2) !(&{ return open !== '<' } (start_code_E / inner_start_C)) !(&{ return open.length === 1 } looks_like_code) !(&{ return open.length > 1 } ( &{ return open === '<<' } pair_2c / &{ return open === '<<<' } pair_3c )) .)+ {return text} )+ {return text} )+ )
     // the check sits inside the choice: a longer run matched first must be able to
     // give way to a shorter one, and after the choice there is nothing to give way to
     ( '>>>' &{ return open === '<<<' }
@@ -310,9 +310,13 @@ looks_like_code =(!allowed_code ![>»] .)  pair  {return text()}
 pair = '<' ( pair / !start_code_2 !'<' !'>' !'»' . )* '>' / '«' ( pair / !start_code_2 !'«' !'»' !'>' . )* '»'
 
 // inside a code opened by a longer run only a run of the same length nests, and it has
-// to be balanced; shorter angles are plain text
-pair_2 = '<<' ( pair_2 / !'>>' !'<<' . )* '>>'
-pair_3 = '<<<' ( pair_3 / !'>>>' !'<<<' . )* '>>>'
+// to be balanced; shorter angles are plain text. A run with a code inside is left to the
+// code rules, as a single pair is
+pair_2 = '<<' ( pair_2 / !start_code_2 !'>>' !'<<' . )* '>>'
+pair_3 = '<<<' ( pair_3 / !start_code_2 !'>>>' !'<<<' . )* '>>>'
+// inside C<> only E<> and the codes a declaration allows there are codes
+pair_2c = '<<' ( pair_2c / !start_code_E !inner_start_C !'>>' !'<<' . )* '>>'
+pair_3c = '<<<' ( pair_3c / !start_code_E !inner_start_C !'>>>' !'<<<' . )* '>>>'
 
 // the opening run is taken from the left, so a run longer than three leaves its first
 // angles to the content (only <<< can be followed by one more angle); a single pair standing there, with the closing run right after it,

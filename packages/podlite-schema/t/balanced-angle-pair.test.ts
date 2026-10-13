@@ -104,6 +104,7 @@ describe('angles inside a code delimited by a run of angles', () => {
 
   it.each([
     ['C<< $foo<<bar>> >>', 'C[ $foo<<bar>> ]'],
+    ['C<< C<<xB«y»z>> >>', 'C[ C<<xB«y»z>> ]'],
     ['C<  $foo<bar>   >', 'C[  $foo<bar>   ]'],
     ['B<< <<x>> >>', 'B[ <<x>> ]'],
     ['B<<< a <<>> >>>', 'B[ a <<>> ]'],
@@ -139,7 +140,12 @@ describe('angles inside a code delimited by a run of angles', () => {
   })
 
   it('keeps a hidden word inside an inner run hidden', () => {
-    for (const src of ['I<B<<a <G«secret»>>>', 'I<B<<<a <G«secret»>>>>']) {
+    for (const src of [
+      'I<B<<a <G«secret»>>>',
+      'I<B<<<a <G«secret»>>>>',
+      'B<<x <<G«secret»>> y>>',
+      'B<<<x <<<G«secret»>>> y>>>',
+    ]) {
       const out = String(toHtml({ renderMode: 'production' }).run(tree(`=para\n${src}\n`)))
       expect(out).not.toContain('secret')
       expect(out).toContain('██████')
