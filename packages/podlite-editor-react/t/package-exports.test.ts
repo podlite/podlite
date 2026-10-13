@@ -71,6 +71,14 @@ describe('the export target check', () => {
     expect(code).toBe(1)
   })
 
+  it('fails on a shipped style a null key closes when the pattern target repeats its star', () => {
+    const files = { ...built, 'lib/private/private.css': '' }
+    const exports = { ...main, './theme/*': './lib/*/*.css', './theme/private': null }
+    const { code, out } = run(packageWith(exports, files, { files: ['lib'] }))
+    expect(out).toContain('lib/private/private.css')
+    expect(code).toBe(1)
+  })
+
   it('passes a shipped style opened by an exact target or by a pattern', () => {
     const files = { ...built, 'lib/style.css': '', 'lib/themes/dark.css': '' }
     const exports = { ...main, './style.css': './lib/style.css', './lib/*': './lib/*' }

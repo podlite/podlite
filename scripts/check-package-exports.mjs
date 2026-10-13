@@ -25,8 +25,8 @@ function shippedFiles(dir) {
 const escapeRegExp = s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
 
 // Every * of a pattern target stands for the one text the * of its key matched,
-// and that text may hold a slash
-const patternMatches = (target, files) => {
+// and that text may hold a slash; the first group holds it
+const patternRegExp = target => {
   let first = true
   const source = target
     .slice(2)
@@ -38,7 +38,11 @@ const patternMatches = (target, files) => {
       first = false
       return `${acc}${star}${part}`
     })
-  const re = new RegExp(`^${source}$`)
+  return new RegExp(`^${source}$`)
+}
+
+const patternMatches = (target, files) => {
+  const re = patternRegExp(target)
   return files.some(f => re.test(f))
 }
 
@@ -55,18 +59,11 @@ const targetsOf = (value, path = []) => {
 // file the consumer has but cannot take. Scripts are reached through the entry, so only
 // styles are public by themselves.
 function checkStyles(exp, files) {
+  // the subpath that reaches the file through this key and target, or null
   const opens = (f, key, target) => {
     if (!(key.includes('*') && target.includes('*'))) return target === `./${f}` ? key : null
-    // the subpath that reaches the file through this pattern
-    const [pre, post] = target.slice(2).split('*')
-    if (
-      target.split('*').length !== 2 ||
-      !f.startsWith(pre) ||
-      !f.endsWith(post) ||
-      f.length < pre.length + post.length
-    )
-      return patternMatches(target, [f]) ? key : null
-    return key.replace('*', f.slice(pre.length, f.length - post.length))
+    const captured = f.match(patternRegExp(target))
+    return captured ? key.replace('*', captured[1]) : null
   }
   // A subpath goes to the key Node picks for it, and a more specific key holding null
   // closes what a broader pattern opens. Each condition counts: a consumer with that
