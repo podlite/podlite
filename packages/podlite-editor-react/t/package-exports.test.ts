@@ -62,6 +62,15 @@ describe('the export target check', () => {
     expect(code).toBe(1)
   })
 
+  it('fails on a shipped style a more specific null key closes', () => {
+    const files = { ...built, 'lib/style.css': '', 'lib/private/secret.css': '' }
+    const exports = { ...main, './lib/*': './lib/*', './lib/private/*': null }
+    const { code, out } = run(packageWith(exports, files, { files: ['lib'] }))
+    expect(out).toContain('lib/private/secret.css')
+    expect(out).not.toContain('lib/style.css is')
+    expect(code).toBe(1)
+  })
+
   it('passes a shipped style opened by an exact target or by a pattern', () => {
     const files = { ...built, 'lib/style.css': '', 'lib/themes/dark.css': '' }
     const exports = { ...main, './style.css': './lib/style.css', './lib/*': './lib/*' }

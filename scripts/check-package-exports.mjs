@@ -55,13 +55,49 @@ const targetsOf = (value, path = []) => {
 // file the consumer has but cannot take. Scripts are reached through the entry, so only
 // styles are public by themselves.
 function checkStyles(exp, files) {
-  const opens = Object.entries(exp).flatMap(([key, value]) =>
-    targetsOf(value).map(({ target }) => ({ pattern: key.includes('*') && target.includes('*'), target })),
-  )
+  const opens = (f, key, target) => {
+    if (!(key.includes('*') && target.includes('*'))) return target === `./${f}` ? key : null
+    // the subpath that reaches the file through this pattern
+    const [pre, post] = target.slice(2).split('*')
+    if (
+      target.split('*').length !== 2 ||
+      !f.startsWith(pre) ||
+      !f.endsWith(post) ||
+      f.length < pre.length + post.length
+    )
+      return patternMatches(target, [f]) ? key : null
+    return key.replace('*', f.slice(pre.length, f.length - post.length))
+  }
+  // A subpath goes to the key Node picks for it, and a more specific key holding null
+  // closes what a broader pattern opens. Each condition counts: a consumer with that
+  // condition takes its branch.
+  const reachable = f =>
+    Object.entries(exp).some(([key, value]) =>
+      targetsOf(value).some(({ target }) => {
+        const subpath = opens(f, key, target)
+        return subpath !== null && pickedKey(exp, subpath) === key
+      }),
+    )
   return files
     .filter(f => f.endsWith('.css'))
-    .filter(f => !opens.some(({ pattern, target }) => (pattern ? patternMatches(target, [f]) : target === `./${f}`)))
+    .filter(f => !reachable(f))
     .map(f => `shipped style ${f} is not opened by any export target`)
+}
+
+// The key Node resolves a subpath through: an exact key, else the pattern with the
+// longest part before its star, then the longest key
+// (https://nodejs.org/api/packages.html#subpath-patterns)
+function pickedKey(exp, subpath) {
+  if (Object.prototype.hasOwnProperty.call(exp, subpath) && !subpath.includes('*')) return subpath
+  const fits = Object.keys(exp).filter(key => {
+    const star = key.indexOf('*')
+    if (star === -1 || key.indexOf('*', star + 1) !== -1) return false
+    const pre = key.slice(0, star)
+    const post = key.slice(star + 1)
+    return subpath.startsWith(pre) && subpath.endsWith(post) && subpath.length >= key.length
+  })
+  fits.sort((a, b) => b.indexOf('*') - a.indexOf('*') || b.length - a.length)
+  return fits[0]
 }
 
 function checkTargets(exp, files) {
