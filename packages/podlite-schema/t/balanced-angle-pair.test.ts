@@ -164,6 +164,25 @@ describe('angles inside a code delimited by a run of angles', () => {
 })
 
 describe('delimiters of the other kind', () => {
+  const production = (doc: string) => String(toHtml({ renderMode: 'production' }).run(tree(doc)))
+
+  it('keeps a hidden code inside S«…» hidden when it holds a pair', () => {
+    const out = production('=para\nS«a G«<secret>» b»\n')
+    expect(out).not.toContain('secret')
+    expect(out).not.toContain('»')
+  })
+
+  it('writes nothing of a comment inside Z«…» that holds a code with a pair', () => {
+    const out = production('=para\nZ«G«<x>» secret»\n')
+    expect(out).not.toContain('secret')
+  })
+
+  it('keeps a hidden code inside V«…» that a declaration lets hold it', () => {
+    const out = production('=config V<> :allow<G>\n=para\nV«a > G<secret> c»\n')
+    expect(out).not.toContain('secret')
+    expect(out).toContain('██████')
+  })
+
   it.each([
     ['B«a<b»c>', 'B[a<b]c>'],
     ['B<a«b>c»', 'B[a«b]c»'],

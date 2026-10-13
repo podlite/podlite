@@ -65,9 +65,9 @@ FCodeSimple<Letter, Content>
     &{ return end_tag === get_pair_tag(begin_tag) }
     { return { content, type: 'fcode', name } }
 
-// a code start is read as written, so a pair after its letter does not hide the code
-// from the rule that reads codes inside S<> and Z<>
-fcode_content_verbatim = $([^<>«»A-Z]+ / start_code_2 / pair / !end_code .)*
+// the body stops at a code: S<> and Z<> holding a code are left to the rule that reads
+// codes, so a pair after the code letter cannot hide the code or close on its delimiter
+fcode_content_verbatim = $([^<>«»A-Z]+ / !start_code_2 pair / !start_code_2 !end_code .)*
 // an unbalanced angle inside: read up to the first closing one, as before
 fcode_content_verbatim_plain = $(!end_code .)*
 fcode_content_V = $(text_C)+
@@ -88,7 +88,7 @@ FCodeWithArray<Letter, ContentRule>
 
 code_A = FCodeSimple<"A", text_L>
 code_V = &{ return inner_allowed(options, 'V').length > 0 } v:FCodeSimple<"V", fcode_content_V_mixed> { return v }
-       / name:$"V" &{ return !(options.allowed || []).length || (options.allowed || []).includes(name) } '«' content:fcode_content_guillemets '»' &{ return content.length > 0 }
+       / name:$"V" &{ return !inner_allowed(options, 'V').length && (!(options.allowed || []).length || (options.allowed || []).includes(name)) } '«' content:fcode_content_guillemets '»' &{ return content.length > 0 }
          { return { content, type: 'fcode', name } }
        / FCodeSimple<"V", fcode_content_V>
 
