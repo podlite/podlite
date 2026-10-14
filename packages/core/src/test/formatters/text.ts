@@ -89,9 +89,9 @@ const describeProblem = (p: CollectionProblem, cwd: string): string => {
     case 'include': {
       const step = p.problem.chain[p.problem.chain.length - 1]
       const where = step ? at({ file: step.file, location: step.location }, cwd) : shown(p.source, cwd)
-      // the failure may sit in a resource the fixture includes: name the test it belongs to
-      const owner = FIXTURE_OWNER.test(p.source) ? ` (fixture of the test at ${shown(p.source, cwd)})` : ''
-      return `${p.severity}: ${where}: ${p.problem.message}${owner}`
+      // the failure may sit in a resource the fixture includes: the test it belongs to comes first
+      const owner = FIXTURE_OWNER.test(p.source) ? `${shown(p.source, cwd)}: ` : ''
+      return `${p.severity}: ${owner}${where}: ${p.problem.message}`
     }
   }
 }

@@ -66,9 +66,12 @@ describe('the document an assertion is resolved against', () => {
     const doc = write('doc.podlite', '=pod\n\n=head1 From supplied\n')
     const collection = collect(main)
     const [test] = collection.tests
-    expect(headings(inputOf(test, 0, { kind: 'supplied', document: 0 }, envOf(collection, [doc])))).toEqual([
-      'From supplied',
-    ])
+    const read: number[] = []
+    const supplied = inputsFor(test, { kind: 'supplied', document: 0 }, envOf(collection, [doc]), ({ fixture }) =>
+      read.push(fixture.index),
+    )
+    expect(headings(supplied(test.asserts[0]))).toEqual(['From supplied'])
+    expect(read).toEqual([])
     expect(headings(inputOf(test, 0, fixtureContext, envOf(collection)))).toEqual([])
   })
 

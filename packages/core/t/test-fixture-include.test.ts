@@ -49,9 +49,7 @@ describe('a fixture whose include fails to resolve', () => {
     expect(rest).toEqual([])
     expect(warning.kind === 'include' && warning.source).toMatch(/rules\.podlite:\d+#fixture-0$/)
     expect(warning.kind === 'include' && warning.problem.message).toContain('missing.podlite')
-    expect(formatText(report, dir)).toMatch(
-      /^warning: .*missing\.podlite.*\(fixture of the test at rules\.podlite:\d+#fixture-0\)$/m,
-    )
+    expect(formatText(report, dir)).toMatch(/^warning: rules\.podlite:\d+#fixture-0: .*missing\.podlite/m)
   })
 
   it('fails an assertion that does not hold by the assertion, and still reports the include', () => {
@@ -85,9 +83,7 @@ describe('a fixture whose include fails to resolve', () => {
     expect(report.tests[0].status).toBe('passed')
     const [warning] = includeWarnings(report)
     expect(warning.kind === 'include' && warning.problem.chain.length).toBe(2)
-    expect(formatText(report, dir)).toMatch(
-      /part\.podlite:\d+: .*\(fixture of the test at rules\.podlite:\d+#fixture-0\)$/m,
-    )
+    expect(formatText(report, dir)).toMatch(/^warning: rules\.podlite:\d+#fixture-0: .*part\.podlite:\d+: /m)
   })
 
   it('reports the fixtures of two tests apart, whatever they share', () => {
@@ -101,7 +97,7 @@ describe('a fixture whose include fails to resolve', () => {
     expect(owners).toHaveLength(2)
     expect(new Set(owners).size).toBe(2)
     const text = formatText(report, dir)
-    for (const owner of owners) expect(text).toContain(`fixture of the test at ${path.relative(dir, String(owner))}`)
+    for (const owner of owners) expect(text).toContain(`warning: ${path.relative(dir, String(owner))}: `)
   })
 
   it('reports each include that failed', () => {
