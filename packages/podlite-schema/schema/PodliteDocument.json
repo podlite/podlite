@@ -148,6 +148,15 @@
                     "$ref": "#/definitions/FormattingCodeS"
                 },
                 {
+                    "$ref": "#/definitions/FormattingCodeM"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeP"
+                },
+                {
+                    "$ref": "#/definitions/FormattingCodeReserved"
+                },
+                {
                     "$ref": "#/definitions/FormattingCodeAny"
                 },
                 {
@@ -1291,6 +1300,15 @@
                                 "$ref": "#/definitions/FormattingCodeS"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeM"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeP"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeReserved"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeAny"
                             },
                             {
@@ -1474,6 +1492,15 @@
                                 "$ref": "#/definitions/FormattingCodeS"
                             },
                             {
+                                "$ref": "#/definitions/FormattingCodeM"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeP"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeReserved"
+                            },
+                            {
                                 "$ref": "#/definitions/FormattingCodeAny"
                             },
                             {
@@ -1647,6 +1674,15 @@
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeS"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeM"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeP"
+                            },
+                            {
+                                "$ref": "#/definitions/FormattingCodeReserved"
                             },
                             {
                                 "$ref": "#/definitions/FormattingCodeAny"
@@ -1864,6 +1900,12 @@
                 "code": {
                     "enum": [
                         "directive-unreadable",
+                        "markup-code-entity-in-code",
+                        "markup-code-longer-run",
+                        "markup-code-reserved",
+                        "markup-code-unclosed",
+                        "markup-code-unreadable",
+                        "markup-code-unsupported",
                         "table-cell-outside-row",
                         "table-mixed-separators",
                         "table-row-cells",
@@ -2915,14 +2957,10 @@
                     "const": "Z"
                 },
                 "content": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/Text"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
@@ -2942,14 +2980,10 @@
                     "const": "V"
                 },
                 "content": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/Text"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
@@ -2969,19 +3003,129 @@
                     "const": "S"
                 },
                 "content": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/Text"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
                 }
             },
             "required": [
                 "name",
                 "type"
+            ]
+        },
+        "FormattingCodeM": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "fcode"
+                },
+                "name": {
+                    "type": "string",
+                    "const": "M"
+                },
+                "module": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "config": {},
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                }
+            },
+            "required": [
+                "config",
+                "content",
+                "module",
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeP": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "fcode"
+                },
+                "name": {
+                    "type": "string",
+                    "const": "P"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "image"
+                            },
+                            "src": {
+                                "type": "string"
+                            },
+                            "alt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "src",
+                            "type"
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
+        "FormattingCodeReserved": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "fcode"
+                },
+                "name": {
+                    "enum": [
+                        "Q",
+                        "Y"
+                    ],
+                    "type": "string"
+                },
+                "written": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type",
+                "written"
             ]
         },
         "FormattingCodeAny": {

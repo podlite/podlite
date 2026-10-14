@@ -96,9 +96,10 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   const runFrom = (i: number): number => runEnd[i] - i
 
   const fragmentAllows = (name: string): boolean => !scope.allowed?.length || scope.allowed.includes(name)
-  const codeAllows = (outer: string | null, name: string): boolean => {
+  const codeAllows = (outer: string | null, name: string, bracket: string): boolean => {
     if (outer === null || !VERBATIM_CODES.includes(outer)) return true
-    if (outer === 'C' && name === 'E' && scope.entityInCode) return true
+    // the transition reads what the earlier reader read: E<…> with angles, not E«…»
+    if (outer === 'C' && name === 'E' && scope.entityInCode && bracket === '<') return true
     return (scope.allowedIn?.[outer] || []).includes(name)
   }
   const openerAt = (i: number, outer: string | null): { name: string; bracket: Bracket; length: number } | null => {
@@ -106,7 +107,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
     if (!isLetter(name) || i + 1 >= n) return null
     const next = text[i + 1]
     if (next !== '<' && next !== '«') return null
-    if (!fragmentAllows(name) || !codeAllows(outer, name)) return null
+    if (!fragmentAllows(name) || !codeAllows(outer, name, next)) return null
     return { name, bracket: next, length: next === '«' ? 1 : runFrom(i + 1) }
   }
 

@@ -204,6 +204,12 @@ export interface ParseDiagnostic {
     | 'table-source-unreadable'
     | 'table-source-empty'
     | 'table-source-deferred'
+    | 'markup-code-unclosed'
+    | 'markup-code-longer-run'
+    | 'markup-code-reserved'
+    | 'markup-code-unsupported'
+    | 'markup-code-unreadable'
+    | 'markup-code-entity-in-code'
   message: string
   location: Location
 }
@@ -289,19 +295,43 @@ export interface FormattingCodeX {
 export interface FormattingCodeZ {
   type: 'fcode'
   name: 'Z'
-  content?: string | Text
+  content?: Array<Node>
 }
 
 export interface FormattingCodeV {
   type: 'fcode'
   name: 'V'
-  content?: string | Text
+  content?: Array<Node>
 }
 
 export interface FormattingCodeS {
   type: 'fcode'
   name: 'S'
-  content?: string | Text
+  content?: Array<Node>
+}
+
+// M<text|Module :config>: the module is named after the bar; a renderer that cannot run it shows the text
+export interface FormattingCodeM {
+  type: 'fcode'
+  name: 'M'
+  module: string | null
+  config: unknown
+  content: Array<Node>
+}
+
+// P<text|source>: an inline picture; the node holds the picture node
+export interface FormattingCodeP {
+  type: 'fcode'
+  name: 'P'
+  content: Array<{ type: 'image'; src: string; alt?: string }>
+}
+
+// Q<> and Y<> are reserved: shown as written, with the delimiters they were written with
+export interface FormattingCodeReserved {
+  type: 'fcode'
+  name: 'Q' | 'Y'
+  written: [string, string]
+  content: Array<Node>
 }
 
 export interface FormattingCodeA {
@@ -592,6 +622,9 @@ export type FormattingCodes =
   | FormattingCodeZ
   | FormattingCodeV
   | FormattingCodeS
+  | FormattingCodeM
+  | FormattingCodeP
+  | FormattingCodeReserved
   | FormattingCodeAny
 
 export type PodNode =

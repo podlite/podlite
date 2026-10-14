@@ -8,6 +8,7 @@ import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
 import { applyFoldedSections } from './folded-sections'
 import { assignHeadingKeys } from './helpers/headingKeys'
+import { placeInSource } from './codes/place'
 export { cleanIds, frozenIds, headingId } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -58,15 +59,36 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     const rawTree = toTree()
       .use(idMiddleware)
       .parse(text, { ...opt, diagnostics })
+    // a warning about a markup code knows its place in the text it was read from;
+    // the source turns that into a place a reader can go to
+    const placed = new Set<string>()
+    for (let k = 0; k < diagnostics.length; k++) {
+      const d = diagnostics[k] as any
+      if (!d.pending) continue
+      d.location = placeInSource(text, d.location, d.pending)
+      delete d.pending
+      // the same text read twice reports one warning for one place
+      const key = `${d.code}@${d.location.start.offset}`
+      if (placed.has(key)) diagnostics.splice(k--, 1)
+      else placed.add(key)
+    }
     // one mistake inside a value reports twice: for the value and for the whole
-    // attribute around it. The narrower report names the place to fix
+    // attribute around it. The narrower report names the place to fix. Two reports of
+    // one place keep the first; a warning about a markup code is about the code, not
+    // a value, and stays
+    const isCodeWarning = (d: { code: string }) => d.code.startsWith('markup-code-')
     const innermost = diagnostics.filter(
-      d =>
+      (d, k) =>
+        isCodeWarning(d) ||
         !diagnostics.some(
-          other =>
+          (other, j) =>
             other !== d &&
+            !isCodeWarning(other) &&
             other.location.start.offset >= d.location.start.offset &&
-            other.location.end.offset <= d.location.end.offset,
+            other.location.end.offset <= d.location.end.offset &&
+            (other.location.start.offset !== d.location.start.offset ||
+              other.location.end.offset !== d.location.end.offset ||
+              j < k),
         ),
     )
     diagnostics.splice(0, diagnostics.length, ...innermost)

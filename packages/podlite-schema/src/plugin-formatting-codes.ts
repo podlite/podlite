@@ -1,4 +1,4 @@
-import * as fcparser from './grammarfc'
+import { readCodes, CodeIssue } from './codes/read'
 import makeTransformer from './helpers/makeTransformer'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
@@ -45,17 +45,30 @@ const allowOf = (node: unknown): string[] | undefined => {
 }
 
 const middle: ParserPlugin = opt => tree => {
+  // the codes of one piece of text; a warning keeps the block it came from and its
+  // place in the text, and the parser turns that into a place in the source
+  const read = (text: string, allowed: string[] | undefined, allowedIn: AllowedIn, block: any) => {
+    const issues: CodeIssue[] = []
+    const content = readCodes(text, { allowed, allowedIn, parseAttributes, entityInCode: true, issues })
+    const location = block && block.location
+    if (Array.isArray(opt.diagnostics) && location)
+      for (const issue of issues)
+        opt.diagnostics.push({
+          severity: 'warning',
+          code: issue.code,
+          message: issue.message,
+          location,
+          pending: { text, start: issue.start, end: issue.end },
+        } as any)
+    return content
+  }
   const transformerBlocks = makeTransformer({
     ':para': (n, ctx, visiter) => {
       const allowedIn = ctx.allowedIn
       const allowed = allowOf(n)
       return makeTransformer({
-        ':text': (n: nText, ctx) => {
-          return fcparser.parse(n.value, { allowed, allowedIn, parseAttributes })
-        },
-        ':verbatim': (n: nVerbatim, ctx) => {
-          return fcparser.parse(n.value, { allowed, allowedIn, parseAttributes })
-        },
+        ':text': (node: nText, ctx) => read(node.value, allowed, allowedIn, n),
+        ':verbatim': (node: nVerbatim, ctx) => read(node.value, allowed, allowedIn, n),
       })(n, { ...ctx })
       return n
     },
@@ -65,7 +78,7 @@ const middle: ParserPlugin = opt => tree => {
       if (allowed.length === 0) return n
       const allowedIn = ctx.allowedIn
       return makeTransformer({
-        ':verbatim': (node: nVerbatim) => fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':verbatim': (node: nVerbatim) => read(node.value, allowed, allowedIn, n),
       })(n, { ...ctx })
     },
     ':config': (n, ctx) => {
@@ -117,13 +130,11 @@ const middle: ParserPlugin = opt => tree => {
       // codes of the block they belong to
       const ownPara = (node, ctx) =>
         blockNameOf(node, n) !== 'para' || (inheritsAllow && allowOf(node) === undefined)
-          ? { ...node, content: transformer(node.content, ctx) }
+          ? { ...node, content: transformer(node.content, { ...ctx, block: node.location ? node : ctx.block }) }
           : transformerBlocks(node, { ...ctx, allowedIn })
       const transformer = makeTransformer({
-        ':verbatim': (node: nVerbatim, ctx) =>
-          literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
-        ':text': (node: nText, ctx) =>
-          literal ? node : fcparser.parse(node.value, { allowed, allowedIn, parseAttributes }),
+        ':verbatim': (node: nVerbatim, ctx) => (literal ? node : read(node.value, allowed, allowedIn, ctx.block || n)),
+        ':text': (node: nText, ctx) => (literal ? node : read(node.value, allowed, allowedIn, ctx.block || n)),
         ':para': ownPara,
         ':code': ownCode,
         ':config': (node, ctx) => {

@@ -29,7 +29,7 @@ export { toAnyRules } from './helpers/plugins'
 export { podlitePluggable, Podlite, PodliteExport, cleanIds, frozenIds, headingId } from './pluggableParser'
 
 import * as parser from './grammar'
-import { parse as parseFcodes } from './grammarfc'
+import { readCodes } from './codes/read'
 import { parseAttributes } from './helpers/parseAttributes'
 import vmargin_plug from './plugin-vmargin'
 import formattingCodes_plug from './plugin-formatting-codes'
@@ -243,8 +243,8 @@ function makeTree() {
 export { makeTree as toTree }
 const parse: Function = makeTree().parse
 export { parse as parse }
-export const parseFormattingCodes = (text: string, options: { [key: string]: any } = {}) =>
-  parseFcodes(text, { parseAttributes, ...options })
+export const parseFormattingCodes = (text: string, options: { [key: string]: any } = {}): any =>
+  readCodes(text, { parseAttributes, entityInCode: true, ...options })
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'
