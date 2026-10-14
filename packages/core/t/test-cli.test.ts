@@ -55,6 +55,17 @@ describe('podlite test', () => {
     expect(codes).toEqual([0, 1, 1, 0, 1, 1, 2, 2, 2])
   })
 
+  it('passes a fixture whose include failed and prints the failure as a warning', () => {
+    const fixture = block('fixture', '=for head1 :id<before>\nBefore\n\n=include file:./missing.podlite\n')
+    write('rules.podlite', `=pod\n\n${aTest('lost', [fixture, block('assert', 'head1[ :id<before> ]')])}`)
+    const text = run(['test', 'rules.podlite'], dir)
+    expect(text.code).toBe(0)
+    expect(text.stdout).toMatch(/^warning: .*missing\.podlite/m)
+    const json = run(['test', 'rules.podlite', '--format', 'json'], dir)
+    expect(json.code).toBe(0)
+    expect(JSON.parse(json.stdout).problems).toHaveLength(1)
+  })
+
   it('checks a document given with --against and writes json that parses whole', () => {
     write('rules.podlite', `=pod\n\n${aTest('has-heading', [block('assert', 'head1')])}`)
     write('doc.podlite', '=pod\n\n=head1 Here\n')

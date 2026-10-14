@@ -58,7 +58,7 @@ const fixture = '=head1 From fixture'
 const fixtureContext: RunContext = { kind: 'fixture-or-named' }
 
 describe('the document an assertion is resolved against', () => {
-  it('is the supplied document, and a fixture that would not read is left unread', () => {
+  it('is the supplied document, and a fixture whose include failed is read as what was read', () => {
     const main = write(
       'rules.podlite',
       `=pod\n\n${aTest([block('fixture', '=include file:./absent.podlite'), block('assert', 'head1')])}`,
@@ -69,7 +69,7 @@ describe('the document an assertion is resolved against', () => {
     expect(headings(inputOf(test, 0, { kind: 'supplied', document: 0 }, envOf(collection, [doc])))).toEqual([
       'From supplied',
     ])
-    expect(headings(inputOf(test, 0, fixtureContext, envOf(collection)))).toEqual(['failed: input-error'])
+    expect(headings(inputOf(test, 0, fixtureContext, envOf(collection)))).toEqual([])
   })
 
   it('is a named source before a supplied one, and the file of the tests does not stand for a supplied document', () => {
@@ -131,7 +131,7 @@ describe('the document an assertion is resolved against', () => {
     expect(input.ok === false && input.error.kind).toBe('source-unavailable')
   })
 
-  it('tells a fixture that cannot be read from one with nothing in it, and reads only the fixture in use', () => {
+  it('reads a fixture whose include failed as what was read, and reads only the fixture in use', () => {
     const main = write(
       'rules.podlite',
       `=pod\n\n${aTest([
@@ -144,8 +144,15 @@ describe('the document an assertion is resolved against', () => {
     const collection = collect(main)
     const [test] = collection.tests
     const env = envOf(collection)
-    expect(headings(inputOf(test, 1, fixtureContext, env))).toEqual([])
-    expect(headings(inputOf(test, 0, fixtureContext, env))).toEqual(['failed: input-error'])
+    const read: number[] = []
+    const input = inputsFor(test, fixtureContext, env, ({ fixture }) => read.push(fixture.index))
+    const second = input(test.asserts[1])
+    expect(second.ok && second.value.document.errors).toEqual([])
+    expect(read).toEqual([1])
+    const first = input(test.asserts[0])
+    expect(headings(first)).toEqual([])
+    expect(first.ok && first.value.document.errors.length).toBe(1)
+    expect(read).toEqual([1, 0])
   })
 })
 

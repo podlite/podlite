@@ -74,11 +74,18 @@ describe('the resources of a test', () => {
     )
     const collection = collect(main)
     const env = envOf(collection)
-    expect(collection.tests.map(test => headings(test, 0, env))).toEqual([
-      ['failed: input-error'],
-      ['failed: input-error'],
-      ['failed: input-error'],
-    ])
+    expect(collection.tests.map(test => headings(test, 0, env))).toEqual([[], [], []])
+    const lost = collection.tests.map(test => {
+      let errors = 0
+      inputsFor(
+        test,
+        { kind: 'fixture-or-named' },
+        env,
+        ({ document }) => (errors = document.errors.length),
+      )(test.asserts[0])
+      return errors
+    })
+    expect(lost).toEqual([1, 1, 1])
   })
 
   it('belong to one test: two tests with a resource of one name each read their own', () => {

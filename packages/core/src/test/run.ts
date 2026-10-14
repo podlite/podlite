@@ -4,6 +4,7 @@ import type { Profile } from './documents'
 import { evaluateAssertion } from './evaluate'
 import type { AssertionResult } from './evaluate'
 import { inputsFor, prepareSupplied } from './sources'
+import type { FixtureRead } from './sources'
 import type { CollectedTest, CollectionProblem, Place, PlannedRun, TestSource } from './types'
 
 /*
@@ -55,8 +56,9 @@ export type TestResult = {
 =head2 RunReport
 
 Everything a run found, as plain data: the tests, the problems met while collecting
-them, the counts, and the exit code the command would give. C<version> changes when
-the shape does.
+them and the includes a fixture lost, the counts, and the exit code the command would
+give. A fixture that lost an include is reported as a warning: its assertions still
+read what was read. C<version> changes when the shape does.
 
 =end pod
 */
@@ -150,9 +152,23 @@ export const runTests = (opts: RunOptions): RunReport => {
   }
   const sourceName = (index: number): string => collection.sources.find(s => s.index === index)?.name ?? String(index)
 
+  // the same fixture read again for another run of its test is reported once
+  const fixtureProblems: CollectionProblem[] = []
+  const reported = new Set<string>()
+  const onFixture = ({ test, fixture, document }: FixtureRead): void => {
+    const line = test.place.location ? `:${test.place.location.start.line}` : ''
+    const owner = `${test.place.file}${line}#fixture-${fixture.index}`
+    for (const problem of document.errors) {
+      const key = JSON.stringify([test.key, fixture.index, problem])
+      if (reported.has(key)) continue
+      reported.add(key)
+      fixtureProblems.push({ kind: 'include', severity: 'warning', source: owner, problem })
+    }
+  }
+
   const results = planRuns(collection.tests, against.length).map((run: PlannedRun): TestResult => {
     const { test, context } = run
-    const input = inputsFor(test, context, env)
+    const input = inputsFor(test, context, env, onFixture)
     const asserts = test.shape.kind === 'runnable' ? test.asserts.map(a => evaluateAssertion(a, input(a), profile)) : []
     return {
       id: test.id,
@@ -171,13 +187,14 @@ export const runTests = (opts: RunOptions): RunReport => {
     failed: results.filter(t => t.status === 'failed').length,
     skipped: results.filter(t => t.status === 'skipped').length,
   }
+  const problems = [...collection.problems, ...fixtureProblems]
   return {
     format: 'podlite-test-report',
     version: 1,
     profile: profile.name,
     tests: results,
-    problems: collection.problems,
+    problems,
     counts,
-    exitCode: exitCodeOf(results, collection.problems, opts.allowSkipped === true),
+    exitCode: exitCodeOf(results, problems, opts.allowSkipped === true),
   }
 }

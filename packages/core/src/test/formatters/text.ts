@@ -78,6 +78,8 @@ const describeTest = (t: TestResult, cwd: string): string[] => {
   return [head, ...reason, ...t.asserts.filter(a => !a.held).flatMap(a => describeAssertion(a, cwd))]
 }
 
+const FIXTURE_OWNER = /#fixture-\d+$/
+
 const describeProblem = (p: CollectionProblem, cwd: string): string => {
   switch (p.kind) {
     case 'unreadable-source':
@@ -87,7 +89,9 @@ const describeProblem = (p: CollectionProblem, cwd: string): string => {
     case 'include': {
       const step = p.problem.chain[p.problem.chain.length - 1]
       const where = step ? at({ file: step.file, location: step.location }, cwd) : shown(p.source, cwd)
-      return `${p.severity}: ${where}: ${p.problem.message}`
+      // the failure may sit in a resource the fixture includes: name the test it belongs to
+      const owner = FIXTURE_OWNER.test(p.source) ? ` (fixture of the test at ${shown(p.source, cwd)})` : ''
+      return `${p.severity}: ${where}: ${p.problem.message}${owner}`
     }
   }
 }

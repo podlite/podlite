@@ -36,6 +36,9 @@ export type InputFailure =
 
 export type SuppliedDocument = Result<PreparedDocument, InputFailure>
 
+// a fixture as it was read for one test, with the includes it lost
+export type FixtureRead = { test: CollectedTest; fixture: FixtureDecl; document: PreparedDocument }
+
 export type InputEnvironment = {
   profile: Profile
   supplied: SuppliedDocument[]
@@ -70,8 +73,18 @@ const whole = (document: PreparedDocument, input: InputKind): Result<PreparedDoc
   return ok(document)
 }
 
-// A document with an include that lost content is not the document the author
-// wrote; nothing it lacks may pass for nothing having matched.
+// A fixture whose include failed remains a document: its assertions read what
+// was read, and the failure is reported apart. A table source it cannot read
+// still keeps it from them.
+const readable = (document: PreparedDocument, input: InputKind): Result<PreparedDocument, InputFailure> => {
+  const [unread] = document.unread
+  if (unread) return err({ kind: 'source-unsupported', input, source: unread.source, message: unread.message })
+  return ok(document)
+}
+
+// A supplied, named or containing document with an include that lost content is
+// not the document the author wrote; nothing it lacks may pass for nothing having
+// matched.
 const complete = (
   prepared: Result<PreparedDocument, string>,
   input: InputKind,
@@ -128,10 +141,17 @@ The document each assertion of one test run is read against: the source it names
 else the supplied document, else the fixture nearest before it, else the document the
 test is in. A fixture is read the first time it is needed, and the resources of the
 test are seen by that fixture only.
+C<onFixture> is told of each fixture read, with what it lost to an include: a
+fixture whose include failed is still read by its assertions.
 
 =end pod
 */
-export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEnvironment) => {
+export const inputsFor = (
+  test: CollectedTest,
+  context: RunContext,
+  env: InputEnvironment,
+  onFixture?: (read: FixtureRead) => void,
+) => {
   const fixtures = new Map<number, Result<PreparedDocument, InputFailure>>()
   const named = new Map<string, Result<PreparedDocument, InputFailure>>()
   const provider = resourceProvider(test.resources)
@@ -140,12 +160,17 @@ export const inputsFor = (test: CollectedTest, context: RunContext, env: InputEn
     const known = fixtures.get(fixture.index)
     if (known) return known
     const name = `${test.place.file}#fixture-${fixture.index}`
-    const prepared = complete(
-      prepareDocument({ name, text: fixture.body, baseDir: RESOURCE_ROOT }, { profile: env.profile, provider }),
-      'fixture',
+    const prepared = prepareDocument(
+      { name, text: fixture.body, baseDir: RESOURCE_ROOT },
+      { profile: env.profile, provider },
     )
-    fixtures.set(fixture.index, prepared)
-    return prepared
+    if (prepared.ok) onFixture?.({ test, fixture, document: prepared.value })
+    const admitted =
+      prepared.ok === false
+        ? err<InputFailure>({ kind: 'implementation-error', input: 'fixture', message: prepared.error })
+        : readable(prepared.value, 'fixture')
+    fixtures.set(fixture.index, admitted)
+    return admitted
   }
 
   const readNamed = (document: string, source: string, base: string): Result<PreparedDocument, InputFailure> => {

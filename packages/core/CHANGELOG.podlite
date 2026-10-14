@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite test> reads a fixture whose C<=include> fails to resolve: its assertions are checked against what was read, and the failure is reported apart as a warning that names the test and the fixture
+
 =item C<podlite lint> rule C<delimited-block-balance> reports an C<=end> with no open block of its name once and leaves the open blocks open, instead of closing the block above it and reporting every C<=end> after; an C<=end> that closes a block further down reports each block left open above it
 
 =item C<podlite query> and an C<=include> whose selector cannot be read name an empty operand of C<~<>> in the message
