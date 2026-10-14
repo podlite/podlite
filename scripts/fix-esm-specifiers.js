@@ -71,11 +71,20 @@ const missingOutput = root => {
     {},
     { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} },
   )
-  if (!parsed) return null
+  // a configuration TypeScript cannot read lists no inputs, which would pass as complete
+  if (!parsed || parsed.errors.length)
+    return [
+      `${path.basename(config)}: ${
+        parsed
+          ? parsed.errors.map(e => ts.flattenDiagnosticMessageText(e.messageText, ' ')).join('; ')
+          : 'cannot be read'
+      }`,
+    ]
   const ignoreCase = !ts.sys.useCaseSensitiveFileNames
+  // every output but the source maps: .js, .jsx, .mjs, .cjs and their declarations
   return parsed.fileNames
     .flatMap(file => ts.getOutputFileNames(parsed, file, ignoreCase))
-    .filter(out => out.endsWith('.js') || out.endsWith('.d.ts'))
+    .filter(out => !out.endsWith('.map'))
     .filter(out => !fs.existsSync(out))
 }
 

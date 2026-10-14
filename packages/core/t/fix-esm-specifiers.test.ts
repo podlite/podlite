@@ -92,6 +92,17 @@ describe('the esm output of a package', () => {
     expect(readFileSync(join(dir, 'esm/index.js'), 'utf8')).toBe("export * from './a.js'\n")
   })
 
+  it('is refused when its esm configuration cannot be read', () => {
+    const dir = packageWith(complete)
+    writeFileSync(
+      join(dir, 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { outDir: 'lib' }, include: ['nowhere'] }),
+    )
+    const { code, out } = run(dir)
+    expect(code).toBe(1)
+    expect(out).toContain('tsconfig.esm.json')
+  })
+
   it('is not checked in a package that has no esm configuration', () => {
     const dir = packageWith({})
     rmSync(join(dir, 'tsconfig.esm.json'))
