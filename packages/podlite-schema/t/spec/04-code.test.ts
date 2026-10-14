@@ -53,7 +53,7 @@ This ordinary paragraph introduces a code block:
               Object {
                 "type": "verbatim",
                 "value": "$this = 1 * code('block');
-        $which.is_specified(:by<indenting>);
+    $which.is_specified(:by<indenting>);
     ",
               },
             ],
@@ -190,7 +190,7 @@ But this is just a text. Again
               Object {
                 "type": "verbatim",
                 "value": "While this is not
-        This is a code block
+    This is a code block
     ",
               },
             ],
@@ -265,7 +265,7 @@ But this is just a text. Again
               Object {
                 "type": "verbatim",
                 "value": "Suprisingly, this is not a code block
-            (with fancy indentation too)
+        (with fancy indentation too)
     ",
               },
             ],
@@ -492,7 +492,7 @@ Fun comes
               Object {
                 "type": "verbatim",
                 "value": "This is code
-      Ha, what now?
+    Ha, what now?
     ",
               },
             ],
@@ -522,8 +522,8 @@ Fun comes
               Object {
                 "type": "verbatim",
                 "value": "one more block of code
-     just to make sure it works
-      or better: maybe it'll break!
+    just to make sure it works
+     or better: maybe it'll break!
     ",
               },
             ],

@@ -441,8 +441,8 @@ Which, as we all know...
           Object {
             "type": "verbatim",
             "value": "=begin bar
-        Turn into Jelly Beans!
-        =end bar
+    Turn into Jelly Beans!
+    =end bar
     =end foo
     ",
           },
@@ -849,9 +849,9 @@ it('spec: 01-delimited 9', () => {
               Object {
                 "type": "verbatim",
                 "value": "This is an ordinary paragraph.
-        Its text  will   be     squeezed     and
-        short lines filled. It is terminated by
-        the first blank line.
+    Its text  will   be     squeezed     and
+    short lines filled. It is terminated by
+    the first blank line.
     ",
               },
             ],
@@ -883,9 +883,9 @@ it('spec: 01-delimited 9', () => {
               Object {
                 "type": "verbatim",
                 "value": "This is another ordinary paragraph.
-        Its     text    will  also be squeezed and
-        short lines filled. It is terminated by
-        the trailing directive on the next line.
+    Its     text    will  also be squeezed and
+    short lines filled. It is terminated by
+    the trailing directive on the next line.
     ",
               },
             ],
@@ -959,8 +959,8 @@ it('spec: 01-delimited 9', () => {
               Object {
                 "type": "verbatim",
                 "value": "This is yet another ordinary paragraph,
-            at the first virtual column set by the
-            previous directive
+    at the first virtual column set by the
+    previous directive
     ",
               },
             ],

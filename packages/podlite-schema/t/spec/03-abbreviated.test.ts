@@ -281,12 +281,12 @@ it('spec: 03-abbreviated 4', () => {
               Object {
                 "type": "verbatim",
                 "value": "=begin one
-        one, delimited block
-        =end one
-        =two two,
-        paragraph block
-        =for three
-        three, still a parablock
+    one, delimited block
+    =end one
+    =two two,
+    paragraph block
+    =for three
+    three, still a parablock
     ",
               },
             ],
@@ -321,8 +321,8 @@ it('spec: 03-abbreviated 4', () => {
               Object {
                 "type": "verbatim",
                 "value": "=begin four
-        four, another delimited one
-        =end four
+    four, another delimited one
+    =end four
     ",
               },
             ],
@@ -554,9 +554,9 @@ Which, as we all know...
           Object {
             "type": "verbatim",
             "value": "=bold Turn
-              into
-              Jelly
-              Beans!
+          into
+          Jelly
+          Beans!
     =end foo
     ",
           },
