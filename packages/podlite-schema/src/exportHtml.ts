@@ -13,7 +13,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
-import { isCovered, renderCodeText } from './guard'
+import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import {
@@ -81,10 +81,21 @@ const openTag = (tag: string, node, ctx, attrs = '') => {
   return `<${tag}${id ? ` id="${id}"` : ''}${attrs}>`
 }
 
+const writtenCode = (writer, node, ctx, interator) => {
+  const [open, close] = node.written || [`${node.name}<`, '>']
+  writer.write(open)
+  interator(node.content, ctx)
+  writer.write(close)
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     // handle text with content
-    if (node.value) {
+    if (node.value && ctx.keepSpaces) {
+      // inside S<>: every space stays and does not break, a line break stays a line break
+      const text = writer.escape(isCovered(node, ctx) ? maskText(node.value) : node.value)
+      writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
+    } else if (node.value) {
       writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
@@ -153,7 +164,10 @@ const rules = {
       return
     }
     writer.writeRaw('<span class="masked">')
-    writer.write(maskText(collectText(node.content)))
+    const masked = maskText(collectText(node.content))
+    // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
+    if (ctx.keepSpaces) writer.writeRaw(writer.escape(masked).replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
+    else writer.write(masked)
     writer.writeRaw('</span>')
   },
   'H<>': wrapContent('<sup>', '</sup>'),
@@ -224,11 +238,15 @@ const rules = {
       })
     }
   },
-  'S<>': (writer, processor) => (node, ctx, interator) => {
-    // escaped before the entities and tags below are put in
-    const text = writer.escape(renderCodeText(node, ctx))
-    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
-  },
+  // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
+  'S<>': (writer, processor) => (node, ctx, interator) => interator(node.content, { ...ctx, keepSpaces: true }),
+  // a module this renderer cannot run shows its text (Specification, M<>)
+  'M<>': content,
+  // an inline picture is the picture node it holds
+  'P<>': content,
+  // a reserved code is shown as written: its letter and brackets around what it holds
+  'Q<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
+  'Y<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
   'T<>': wrapContent('<samp>', '</samp>'),
   'U<>': wrapContent('<u>', '</u>'),
   'V<>': content,

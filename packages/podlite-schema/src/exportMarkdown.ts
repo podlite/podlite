@@ -1,5 +1,5 @@
 import toAny from './exportAny'
-import { isCovered, renderCodeText } from './guard'
+import { isCovered } from './guard'
 import {
   subUse,
   wrapContent,
@@ -114,9 +114,20 @@ const termPara = (writer, processor) => (node, ctx, interator) => {
   writer.writeRaw(':** ')
 }
 
+const writtenCode = (writer, node, ctx, interator) => {
+  const [open, close] = node.written || [`${node.name}<`, '>']
+  writer.write(open)
+  interator(node.content, ctx)
+  writer.write(close)
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
-    if (node.value) {
+    if (node.value && ctx.keepSpaces) {
+      // inside S<>: every space stays and does not break, a line break stays a line break
+      const text = writer.escape(isCovered(node, ctx) ? maskText(node.value) : node.value)
+      writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+    } else if (node.value) {
       writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
     } else {
       interator(node.content, ctx)
@@ -159,7 +170,10 @@ const rules = {
       interator(node.content, ctx)
       return
     }
-    writer.write(maskText(collectText(node.content)))
+    const masked = maskText(collectText(node.content))
+    // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
+    if (ctx.keepSpaces) writer.writeRaw(writer.escape(masked).replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+    else writer.write(masked)
   },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
@@ -204,11 +218,15 @@ const rules = {
       })
     }
   },
-  'S<>': (writer, processor) => (node, ctx, interator) => {
-    // escaped before the spaces and line breaks below are put in
-    const text = writer.escape(renderCodeText(node, ctx))
-    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
-  },
+  // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
+  'S<>': (writer, processor) => (node, ctx, interator) => interator(node.content, { ...ctx, keepSpaces: true }),
+  // a module this renderer cannot run shows its text (Specification, M<>)
+  'M<>': content,
+  // an inline picture is the picture node it holds
+  'P<>': content,
+  // a reserved code is shown as written: its letter and brackets around what it holds
+  'Q<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
+  'Y<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
   'T<>': wrapContent('`', '`'),
   'U<>': wrapContent('', ''),
   'V<>': content,

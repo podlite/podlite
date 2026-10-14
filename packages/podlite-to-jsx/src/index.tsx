@@ -33,7 +33,6 @@ import {
   maskText,
   collectText,
   isCovered,
-  renderCodeText,
   writtenValue,
   ConfigItem,
 } from '@podlite/schema'
@@ -459,7 +458,14 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {
-      return isCovered(node, ctx) ? maskText(node.value) : node.value
+      const text = isCovered(node, ctx) ? maskText(node.value) : node.value
+      if (!ctx.keepSpaces || typeof text !== 'string') return text
+      // inside S<>: every space stays and does not break, a line break stays a line break
+      return text.split('').map((symbol, index) => {
+        if (symbol === ' ') return '\u00a0'
+        if (symbol === '\n') return <br key={index} />
+        return symbol
+      })
     },
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
       return isCovered(node, ctx) ? maskText(node.value) : node.value
@@ -766,15 +772,21 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     },
     'L<>': linkRule(),
     'W<>': linkRule('backlink'),
-    'S<>': (writer, processor) => (node, ctx, interator) => {
-      const Content = renderCodeText(node, ctx)
-        .split('')
-        .map((symbol, index) => {
-          if (symbol === ' ') return '\u00a0'
-          if (symbol === '\n') return <br key={index} />
-          return symbol
-        })
-      return makeComponent(({ children, key }) => children, {}, Content)
+    // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
+    'S<>': (writer, processor) => (node, ctx, interator) =>
+      makeComponent(({ children, key }) => children, {}, interator(node.content, { ...ctx, keepSpaces: true })),
+    // a module this renderer cannot run shows its text (Specification, M<>)
+    'M<>': nodeContent,
+    // an inline picture is the picture node it holds
+    'P<>': nodeContent,
+    // a reserved code is shown as written: its letter and brackets around what it holds
+    'Q<>': (writer, processor) => (node, ctx, interator) => {
+      const [open, close] = node.written || [`${node.name}<`, '>']
+      return makeComponent(({ children, key }) => children, {}, [open, interator(node.content, ctx), close])
+    },
+    'Y<>': (writer, processor) => (node, ctx, interator) => {
+      const [open, close] = node.written || [`${node.name}<`, '>']
+      return makeComponent(({ children, key }) => children, {}, [open, interator(node.content, ctx), close])
     },
     'V<>': nodeContent,
     'Z<>': emptyContent(),
@@ -807,7 +819,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
           interator(node.content, ctx),
         )
       }
-      const masked = maskText(collectText(node.content))
+      const hidden = maskText(collectText(node.content))
+      // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
+      const masked = ctx.keepSpaces ? hidden.replace(/ /g, '\u00a0') : hidden
       return makeComponent(
         ({ key }) => (
           <span key={key} className="masked">

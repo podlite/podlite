@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<M<>> shows its text, C<P<>> is drawn as a picture, and C<Q<>> and C<Y<>> with their letter and brackets, a C<G<>> or C<Z<>> inside staying hidden; they were drawn as plain text or as a node it could not draw
+
+=item the codes inside C<S<>> are drawn as anywhere else, its whitespace kept and not breaking, inside a hidden phrase too
+
 =item the package no longer ships C<esm/podlite.css>, which the export map never opened; the style is taken as C<@podlite/to-jsx/podlite.css> or C<@podlite/to-jsx/lib/podlite.css>
 
 =item a link the tree generated, such as a table of contents entry, is drawn with the anchor of the heading its key names; the link preview callback gets that key, not the heading's text, as the target of such a link
