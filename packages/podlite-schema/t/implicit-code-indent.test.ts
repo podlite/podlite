@@ -133,5 +133,8 @@ describe('an implicit code block keeps as before', () => {
   it('indented text of a =for item, which is a paragraph', () => {
     const tree = read(['=begin pod', '', '=for item', '    Install the package first.', '', '=end pod', ''].join('\n'))
     expect(getFromTree(tree, (n: any) => n && n.type === 'code')).toEqual([])
+    const [item] = getFromTree(tree, 'item') as any[]
+    expect(JSON.stringify(item.content)).toContain('Install the package first.')
+    expect(getFromTree(item, (n: any) => n && n.type === 'para')).toHaveLength(1)
   })
 })
