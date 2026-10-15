@@ -204,9 +204,10 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     const bar = topLevel(code, '|')[0]
     const specFrom = bar === undefined ? code.bodyStart : bar + 1
     const spec = text.slice(specFrom, code.bodyEnd)
-    const configAt = spec.search(/[   \t\u000C ]+(:|$)/)
+    const configAt = spec.search(/[   \t\u000C ]+:/)
     if (bar === undefined) {
-      if (configAt < 0) return { content: contentOf(code.children, code.bodyStart, code.bodyEnd), type: 'fcode', name, meta: null }
+      if (configAt < 0)
+        return { content: contentOf(code.children, code.bodyStart, code.bodyEnd), type: 'fcode', name, meta: null }
       return {
         content: [linkTarget(spec.slice(0, configAt))],
         type: 'fcode',
@@ -229,7 +230,10 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
   return contentOf(codes, 0, text.length)
 }
 
-const reportScan = (issue: ScanIssue, report: (code: CodeIssueKind, message: string, start: number, end: number) => void) => {
+const reportScan = (
+  issue: ScanIssue,
+  report: (code: CodeIssueKind, message: string, start: number, end: number) => void,
+) => {
   if (issue.kind === 'unclosed') {
     const where = issue.ending === 'cut' ? 'by the bracket of the code around it' : 'by the end of the block'
     report(
@@ -249,9 +253,7 @@ const reportScan = (issue: ScanIssue, report: (code: CodeIssueKind, message: str
 }
 
 const collect = (content: Content): string =>
-  content
-    .map(item => (typeof item === 'string' ? item : collect((item.content as Content) || [])))
-    .join('')
+  content.map(item => (typeof item === 'string' ? item : collect((item.content as Content) || []))).join('')
 
 // quotes around the whole address are not part of it
 const linkTarget = (spec: string): string => {
