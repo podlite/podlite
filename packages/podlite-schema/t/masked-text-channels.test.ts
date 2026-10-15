@@ -10,6 +10,10 @@ import {
 } from '../src'
 import { podlite } from '../../core/src'
 
+// the text a reader sees: a hidden word inside S<> is drawn by G<> as anywhere else, in
+// its own span (Specification, Space-preserving text: formatted normally)
+const visible = (out: string): string => out.replace(/<\/?span[^>]*>/g, '')
+
 type Mode = 'production' | 'draft'
 
 const p = podlite({ importPlugins: true })
@@ -178,7 +182,7 @@ describe('text inside S<> in guillemets', () => {
   ] as const) {
     it(`hides a guarded word in ${name} and keeps the spaces`, () => {
       hiddenIn(render, 'S«a G<secret> b»', ['secret'])
-      expect(render('S«a G<secret> b»')).toContain('a&nbsp;██████&nbsp;b')
+      expect(visible(render('S«a G<secret> b»'))).toContain('a&nbsp;██████&nbsp;b')
     })
 
     it(`writes no comment in ${name}`, () => {
@@ -188,11 +192,11 @@ describe('text inside S<> in guillemets', () => {
 
     it(`hides S<> inside a guarded code inside S<> in ${name}`, () => {
       hiddenIn(render, 'S«a G<S<x y>> b»', ['x'])
-      expect(render('S«a G<S<x y>> b»')).toContain('a&nbsp;█&nbsp;█&nbsp;b')
+      expect(visible(render('S«a G<S<x y>> b»'))).toContain('a&nbsp;█&nbsp;█&nbsp;b')
     })
 
     it(`keeps the space inside a guarded phrase in ${name}`, () => {
-      expect(render('S«x G<one two> y»')).toContain('x&nbsp;███&nbsp;███&nbsp;y')
+      expect(visible(render('S«x G<one two> y»'))).toContain('x&nbsp;███&nbsp;███&nbsp;y')
     })
   }
 })
@@ -200,10 +204,10 @@ describe('text inside S<> in guillemets', () => {
 describe('a heading with S<> in guillemets in a table of contents', () => {
   const doc = '=toc head1\n\n=head1 S«a G<secret> b»'
   it('hides the guarded word in the label and in the heading', () => {
-    const out = html(doc)
+    const out = visible(html(doc))
     expect(out).toMatch(/<a href="[^"]*">a&nbsp;██████&nbsp;b/)
     expect(out).toMatch(/<h1[^>]*>a&nbsp;██████&nbsp;b/)
-    expect(html(doc, 'draft')).toMatch(/<a href="[^"]*">a&nbsp;secret&nbsp;b/)
+    expect(visible(html(doc, 'draft'))).toMatch(/<a href="[^"]*">a&nbsp;secret&nbsp;b/)
   })
 })
 

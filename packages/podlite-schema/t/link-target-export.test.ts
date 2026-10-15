@@ -42,10 +42,9 @@ describe('the address a link carries into an export', () => {
     expect(markdown('W<>')).not.toContain('](')
   })
 
-  // the parser leaves the bar in the content here, so the tree says the target
-  // is the text `|url`; splitting that is a question for the parser, not export
-  it('takes the target the tree gives, bar and all', () => {
-    expect(html('L<|url>')).toContain('href="|url"')
+  // the bar separates the link text, empty here, from the address (813–820)
+  it('takes the address after the bar when the text is empty', () => {
+    expect(html('L<|url>')).toContain('href="url"')
   })
 
   // a quote inside the address would close the attribute and let the document

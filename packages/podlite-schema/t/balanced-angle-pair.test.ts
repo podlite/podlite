@@ -243,11 +243,12 @@ describe('text around codes', () => {
 
 // Input outside the norm. What it reads as is held here so that a change is seen,
 // not because the reading is right.
-describe('compatibility: input outside the norm', () => {
-  // a run of angles longer than the delimiter (3350-3359)
+describe('input the earlier reader read outside the norm, now read by it (plan T814)', () => {
+  // the delimiter is a run of any length (3354 «multiple»); the closing run is split
+  // into the closings of what is open, nearest first (decision 2.1)
   it.each([
-    ['C<<<<a>>>>', 'C[<a>]'],
-    ['B<<<<a>>>>', 'B[<a>]'],
+    ['C<<<<a>>>>', 'C[a]'],
+    ['B<<<<a>>>>', 'B[a]'],
     ['B<<x>>>', 'B[x]>'],
     ['B<<x<y>>>', 'B[x<y]>'],
     ['C<<x <a>>>', 'C[x <a]>'],
@@ -255,21 +256,20 @@ describe('compatibility: input outside the norm', () => {
     expect(read(src)).toBe(expected)
   })
 
-  // an unbalanced angle inside a one-angle delimiter (3367-3379): S<> and Z<>
-  // read up to the first closing angle, so a comment stays a comment; a link, a
-  // definition and any other code are not read as a code
+  // an angle as long as the delimiter opens a literal pair that must be balanced
+  // (3368-3372); left open, the code runs to the end of its block (3388-3394)
   it.each([
-    ['Z<a < b>', 'Z[a < b]'],
-    ['S<a < b>', 'S[a < b]'],
-    ['L<a|x<y>', 'L<a|x<y>'],
-    ['D<a|b < c;d>', 'D<a|b < c;d>'],
-    ['B<a < b>', 'B<a < b>'],
+    ['Z<a < b>', 'Z[a < b>\n]'],
+    ['S<a < b>', 'S[a < b>\n]'],
+    ['L<a|x<y>', 'L[a](x<y>\n)'],
+    ['D<a|b < c;d>', 'D[a](b < c;d>\n)'],
+    ['B<a < b>', 'B[a < b>\n]'],
   ])('reads %s', (src, expected) => {
     expect(read(src)).toBe(expected)
   })
 
-  // a pair with a code inside still closes the code early: a known defect
-  it('reads B<x<I<a>>y> as before', () => {
-    expect(read('B<x<I<a>>y>')).toBe('B[x<I[a]]y>')
+  // a pair with a code inside is closed by its own angle, and the code by the next
+  it('reads B<x<I<a>>y> with the pair balanced', () => {
+    expect(read('B<x<I<a>>y>')).toBe('B[x<I[a]>y]')
   })
 })

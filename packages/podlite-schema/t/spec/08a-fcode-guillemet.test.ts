@@ -40,19 +40,19 @@ describe('fcode guillemet support', () => {
   it('V«code» parses as code_V (verbatim)', () => {
     const fc = firstFcode('=pod\nV«raw <text> here»\n')
     expect(fc?.name).toBe('V')
-    expect(fc?.content).toBe('raw <text> here')
+    expect(fc?.content).toEqual(['raw <text> here'])
   })
 
   it('S«spaced» parses as code_S', () => {
     const fc = firstFcode('=pod\nS«keep spaces»\n')
     expect(fc?.name).toBe('S')
-    expect(fc?.content).toBe('keep spaces')
+    expect(fc?.content).toEqual(['keep spaces'])
   })
 
   it('Z«hidden» parses as code_Z', () => {
     const fc = firstFcode('=pod\nZ«comment»\n')
     expect(fc?.name).toBe('Z')
-    expect(fc?.content).toBe('comment')
+    expect(fc?.content).toEqual(['comment'])
   })
 
   it('D«term|syn1;syn2» parses with synonyms', () => {
@@ -71,9 +71,11 @@ describe('fcode guillemet support', () => {
     expect(fc?.entry).toEqual(['entry'])
   })
 
-  it('mismatched brackets A«foo> fall back', () => {
+  // an angle does not close a guillemet: the code runs to the end of its block (3388–3394)
+  it('mismatched brackets A«foo> run to the end of the block', () => {
     const fc = firstFcode('=pod\nA«foo>\n')
-    expect(fc?.name).not.toBe('A')
+    expect(fc?.name).toBe('A')
+    expect(fc?.content).toBe('foo>\n')
   })
 
   it('angle brackets still work: A<link>', () => {

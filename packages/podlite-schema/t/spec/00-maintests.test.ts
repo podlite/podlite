@@ -964,13 +964,15 @@ teZ<s>tZ<>
             "content": Array [
               "te",
               Object {
-                "content": "s",
+                "content": Array [
+                  "s",
+                ],
                 "name": "Z",
                 "type": "fcode",
               },
               "t",
               Object {
-                "content": "",
+                "content": Array [],
                 "name": "Z",
                 "type": "fcode",
               },

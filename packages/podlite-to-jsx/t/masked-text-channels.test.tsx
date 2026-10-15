@@ -159,8 +159,8 @@ describe('text inside S<> in guillemets', () => {
     const production = page('S«a G<secret> b»')
     expect(production).not.toContain('[object Object]')
     expect(production).not.toContain('secret')
-    expect(production).toContain('a\u00a0██████\u00a0b')
-    expect(page('S«a G<secret> b»', 'draft')).toContain('a\u00a0secret\u00a0b')
+    expect(production.replace(/<\/?span[^>]*>/g, '')).toContain('a\u00a0██████\u00a0b')
+    expect(page('S«a G<secret> b»', 'draft').replace(/<\/?span[^>]*>/g, '')).toContain('a\u00a0secret\u00a0b')
   })
 
   it('draws no comment', () => {

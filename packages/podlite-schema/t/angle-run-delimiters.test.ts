@@ -12,9 +12,11 @@ describe('the delimiter pairs a markup code may take', () => {
     }
   })
 
+  // a bracket of the other kind is text: the code finds no bracket of its own and
+  // runs to the end of the block (3374–3378, 3388–3394)
   it('does not let a pair be mixed', () => {
-    expect(render('C<a»')).not.toContain('<code>')
-    expect(render('C«a>')).not.toContain('<code>')
+    expect(render('C<a»')).toContain('<code>a»</code>')
+    expect(render('C«a>')).toContain('<code>a&gt;</code>')
   })
 
   it('reads angles inside guillemets as text', () => {
@@ -62,8 +64,9 @@ describe('a markup code delimited by a run of angles', () => {
     expect(render('B<a>>')).toContain('<strong>a</strong>&gt;')
   })
 
-  it('takes the opening run from the left, leaving the rest to the content', () => {
-    expect(render('C<<<<a>>>>')).toContain('<code>&lt;a&gt;</code>')
+  // the delimiter is the whole run, of any length (3354 «multiple»)
+  it('takes the whole opening run as the delimiter', () => {
+    expect(render('C<<<<a>>>>')).toContain('<code>a</code>')
   })
 
   it('lets a code inside close on its own pair', () => {
@@ -73,10 +76,10 @@ describe('a markup code delimited by a run of angles', () => {
 
   // The run that opens is the run that has to close. A code whose content cannot
   // fill the run it opened is not a code, and the text stays as written.
+  // an empty body is a code with nothing in it; a run shorter than the delimiter
+  // does not close it, so it runs to the end of the block (3381–3385, 3388–3394)
   it('does not fall back to a shorter opening run', () => {
-    for (const src of ['C<<>>', 'C<<<>>>', 'B<<>']) {
-      expect(render(src)).not.toContain('<code>')
-      expect(render(src)).not.toContain('<strong>')
-    }
+    for (const src of ['C<<>>', 'C<<<>>>']) expect(render(src)).toContain('<code></code>')
+    expect(render('B<<>')).toContain('<strong>&gt;</strong>')
   })
 })

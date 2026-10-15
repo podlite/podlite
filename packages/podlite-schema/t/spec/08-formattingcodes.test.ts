@@ -428,7 +428,9 @@ it('spec: 08-formattingcodes 4', () => {
           Object {
             "content": Array [
               Object {
-                "content": "C<boo> B<bar> asd",
+                "content": Array [
+                  "C<boo> B<bar> asd",
+                ],
                 "name": "V",
                 "type": "fcode",
               },
@@ -616,7 +618,13 @@ it('spec: 08-formattingcodes 7', () => {
         "content": Array [
           Object {
             "content": Array [
-              "M<",
+              Object {
+                "config": Array [],
+                "content": Array [],
+                "module": null,
+                "name": "M",
+                "type": "fcode",
+              },
             ],
             "name": "B",
             "type": "fcode",

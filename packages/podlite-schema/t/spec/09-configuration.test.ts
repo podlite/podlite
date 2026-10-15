@@ -139,8 +139,7 @@ C<doc:>
                     "name": "B",
                     "type": "fcode",
                   },
-                  ">",
-                  " to
+                  "> to
       view the results.
     ",
                 ],
