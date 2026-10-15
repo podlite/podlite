@@ -112,6 +112,9 @@ describe('codes inside C<> and V<>', () => {
     reads('C<E<lt> I<x>>', 'C[E[lt] I<x>]', [], { entityInCode: true })
     reads('C<E<lt> I<x>>', 'C[E[lt] I[x]]', [], { entityInCode: true, allowedIn: { C: ['I'] } })
     reads('C<E<lt>>', 'C[E<lt>]', [], { entityInCode: true, allowed: ['C'] })
+    // inside a literal pair of C<> the earlier reader left E<…> as written, and so does the transition
+    reads('C<G<E<32>>>', 'C[G<E<32>>]', [], { entityInCode: true })
+    reads('C«G<E<32>> E<lt>»', 'C[G<E<32>> E[lt]]', [], { entityInCode: true })
   })
 
   it('reads nothing inside V<>', () => {

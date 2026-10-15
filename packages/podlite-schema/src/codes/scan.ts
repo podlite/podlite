@@ -73,6 +73,9 @@ interface Frame {
   bodyStart: number
   // depth of literal pairs of this code's own kind
   depth: number
+  // inside guillemets: angles opened and not closed yet. They are not pairs; the
+  // transition release only asks it, as the earlier reader took <…> there as text
+  angles: number
   at: number
   own: Piece[]
   passed: Piece[]
@@ -96,18 +99,23 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   const runFrom = (i: number): number => runEnd[i] - i
 
   const fragmentAllows = (name: string): boolean => !scope.allowed?.length || scope.allowed.includes(name)
-  const codeAllows = (outer: string | null, name: string, bracket: string): boolean => {
+  const codeAllows = (outer: string | null, name: string, bracket: string, depth: number): boolean => {
     if (outer === null || !VERBATIM_CODES.includes(outer)) return true
-    // the transition reads what the earlier reader read: E<…> with angles, not E«…»
-    if (outer === 'C' && name === 'E' && scope.entityInCode && bracket === '<') return true
+    // the transition reads what the earlier reader read: E<…> with angles, not E«…»,
+    // and not inside a literal pair of the code, as in C<G<E<32>>>
+    if (outer === 'C' && name === 'E' && scope.entityInCode && bracket === '<' && depth === 0) return true
     return (scope.allowedIn?.[outer] || []).includes(name)
   }
-  const openerAt = (i: number, outer: string | null): { name: string; bracket: Bracket; length: number } | null => {
+  const openerAt = (
+    i: number,
+    outer: string | null,
+    depth = 0,
+  ): { name: string; bracket: Bracket; length: number } | null => {
     const name = text[i]
     if (!isLetter(name) || i + 1 >= n) return null
     const next = text[i + 1]
     if (next !== '<' && next !== '«') return null
-    if (!fragmentAllows(name) || !codeAllows(outer, name, next)) return null
+    if (!fragmentAllows(name) || !codeAllows(outer, name, next, depth)) return null
     return { name, bracket: next, length: next === '«' ? 1 : runFrom(i + 1) }
   }
 
@@ -119,6 +127,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
       start,
       bodyStart,
       depth: 0,
+      angles: 0,
       at: bodyStart,
       own: [],
       passed: [],
@@ -180,7 +189,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
     let i = frame.at
     while (i < n) {
       const c = text[i]
-      const opener = openerAt(i, frame.name)
+      const opener = openerAt(i, frame.name, frame.bracket === '«' ? frame.angles : frame.depth)
       if (opener) {
         const child = memo.get(i)
         if (!child || !child.done) {
@@ -199,6 +208,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
         const m = runFrom(i)
         if (frame.bracket === '<' && m === frame.length) frame.depth++
         else frame.own.push({ at: i, char: '<', length: m })
+        if (frame.bracket === '«') frame.angles += m
         i += m
         continue
       }
@@ -217,7 +227,10 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
             return null
           }
           if (rest > 0) frame.own.push({ at, char: '>', length: rest })
-        } else frame.own.push({ at: i, char: '>', length: m })
+        } else {
+          frame.own.push({ at: i, char: '>', length: m })
+          frame.angles = Math.max(0, frame.angles - m)
+        }
         i += m
         continue
       }
@@ -258,7 +271,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
         stack.pop()
         continue
       }
-      const child = makeFrame(need, openerAt(need, frame.name)!)
+      const child = makeFrame(need, openerAt(need, frame.name, frame.bracket === '«' ? frame.angles : frame.depth)!)
       memo.set(need, child)
       stack.push(child)
     }
