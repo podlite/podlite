@@ -149,3 +149,15 @@ export const handleNested = (defaultHandler: RuleHandler, implicitLevel?: number
     }
   }
 }
+
+// Inside S<> every whitespace character stays and does not break: a tab becomes the
+// spaces up to the next tab stop, every eighth column of its line, as a code block counts them
+export const expandTabs = (text: string): string =>
+  text
+    .split('\n')
+    .map(line => {
+      let out = ''
+      for (const ch of line) out += ch === '\t' ? ' '.repeat(8 - (out.length % 8)) : ch
+      return out
+    })
+    .join('\n')

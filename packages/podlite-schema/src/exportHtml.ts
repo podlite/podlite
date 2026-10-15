@@ -7,6 +7,7 @@ import {
   setFn,
   handleNested,
   maskText,
+  expandTabs,
   collectText,
 } from './helpers/handlers'
 import { isNamedBlock } from './helpers/makeTransformer'
@@ -93,7 +94,7 @@ const rules = {
     // handle text with content
     if (node.value && ctx.keepSpaces) {
       // inside S<>: every space stays and does not break, a line break stays a line break
-      const text = writer.escape(isCovered(node, ctx) ? maskText(node.value) : node.value)
+      const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(node.value) : node.value))
       writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
     } else if (node.value) {
       writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
@@ -166,7 +167,8 @@ const rules = {
     writer.writeRaw('<span class="masked">')
     const masked = maskText(collectText(node.content))
     // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
-    if (ctx.keepSpaces) writer.writeRaw(writer.escape(masked).replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
+    if (ctx.keepSpaces)
+      writer.writeRaw(writer.escape(expandTabs(masked)).replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
     else writer.write(masked)
     writer.writeRaw('</span>')
   },

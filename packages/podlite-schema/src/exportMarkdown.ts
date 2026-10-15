@@ -8,6 +8,7 @@ import {
   setFn,
   handleNested,
   maskText,
+  expandTabs,
   collectText,
 } from './helpers/handlers'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
@@ -125,7 +126,7 @@ const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value && ctx.keepSpaces) {
       // inside S<>: every space stays and does not break, a line break stays a line break
-      const text = writer.escape(isCovered(node, ctx) ? maskText(node.value) : node.value)
+      const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(node.value) : node.value))
       writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
     } else if (node.value) {
       writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
@@ -172,7 +173,8 @@ const rules = {
     }
     const masked = maskText(collectText(node.content))
     // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
-    if (ctx.keepSpaces) writer.writeRaw(writer.escape(masked).replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+    if (ctx.keepSpaces)
+      writer.writeRaw(writer.escape(expandTabs(masked)).replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
     else writer.write(masked)
   },
   'H<>': wrapContent('<sup>', '</sup>'),

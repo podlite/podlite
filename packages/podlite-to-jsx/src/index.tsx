@@ -34,6 +34,7 @@ import {
   collectText,
   isCovered,
   writtenValue,
+  expandTabs,
   ConfigItem,
 } from '@podlite/schema'
 import { buildLinkPreviewIndex, LinkPreviewResolver, LinkPreviewTarget } from './link-preview'
@@ -461,11 +462,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const text = isCovered(node, ctx) ? maskText(node.value) : node.value
       if (!ctx.keepSpaces || typeof text !== 'string') return text
       // inside S<>: every space stays and does not break, a line break stays a line break
-      return text.split('').map((symbol, index) => {
-        if (symbol === ' ') return '\u00a0'
-        if (symbol === '\n') return <br key={index} />
-        return symbol
-      })
+      return expandTabs(text)
+        .split('')
+        .map((symbol, index) => {
+          if (symbol === ' ') return '\u00a0'
+          if (symbol === '\n') return <br key={index} />
+          return symbol
+        })
     },
     ':verbatim': (writer, processor) => (node: Verbatim, ctx, interator) => {
       return isCovered(node, ctx) ? maskText(node.value) : node.value
@@ -821,7 +824,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       const hidden = maskText(collectText(node.content))
       // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
-      const masked = ctx.keepSpaces ? hidden.replace(/ /g, '\u00a0') : hidden
+      const masked = ctx.keepSpaces ? expandTabs(hidden).replace(/ /g, '\u00a0') : hidden
       return makeComponent(
         ({ key }) => (
           <span key={key} className="masked">
