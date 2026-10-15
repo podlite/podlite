@@ -58,7 +58,11 @@ describe('reading markup codes by their letter', () => {
   })
 
   it('does not let the content of G<> out through a literal pair or a nested code (plan T808)', () => {
-    for (const text of ['G<public <I<x> > secret> end.', 'G<public <I<x>> secret> end.', 'G«public «I«x» » secret» end.']) {
+    for (const text of [
+      'G<public <I<x> > secret> end.',
+      'G<public <I<x>> secret> end.',
+      'G«public «I«x» » secret» end.',
+    ]) {
       const { html } = para(text)
       expect(html).not.toContain('secret')
       expect(html).not.toContain('public')
@@ -72,7 +76,20 @@ describe('reading markup codes by their letter', () => {
   })
 })
 
+describe('the address of a link', () => {
+  // only whitespace before a colon begins the configuration; the rest is the address as written (813–820)
+  it('keeps a space at the end of the address', () => {
+    expect(para('L<text| https://example.org >').html).toContain('href=" https://example.org "')
+    expect(para('L<text|https://example.org :new>').html).toContain('href="https://example.org"')
+  })
+})
+
 describe('where a warning about a markup code points', () => {
+  it('warns about a code without its bracket in a table cell', () => {
+    const { warnings } = parsed('=begin table\n  a | B<b\n  c | d\n=end table\n')
+    expect(warnings.map(w => w.code)).toEqual(['markup-code-unclosed'])
+  })
+
   it('names the line and column of the code in the source (3392)', () => {
     const { warnings } = parsed('=begin pod\n\n=for para\nSome text B<x\n\n=end pod\n')
     expect(warnings).toHaveLength(1)
