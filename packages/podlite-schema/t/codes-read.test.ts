@@ -163,8 +163,10 @@ describe('the rest of round 1', () => {
       for (const issue of issues) placeInSource(source, block, { fragment, start: issue.start, end: issue.end }, starts)
       return Number(process.hrtime.bigint() - started) / 1e6
     }
-    time(1000)
-    expect(time(8000)).toBeLessThan(time(2000) * 8)
+    // the least of three runs, so a busy machine does not decide; a square would give 16
+    const least = (k: number) => Math.min(time(k), time(k), time(k))
+    least(1000)
+    expect(least(8000)).toBeLessThan(least(2000) * 8)
   })
 
   it('keeps a tab inside S<> as spaces that do not break (4060–4063)', () => {
@@ -179,5 +181,27 @@ describe('the rest of round 1', () => {
   it('warns about a closing bracket of the outer code inside a nested code closed by its own (decision 6.1)', () => {
     expect(para('B«x I<y » z>»').warnings.map(w => w.code)).toEqual(['markup-code-foreign-closer'])
     expect(para('B«x I<y «a» z>»').warnings).toEqual([])
+  })
+})
+
+// code review, round 2 (Sol, 2026-10-16)
+describe('the alternative text of P<> and the brackets left inside a nested code', () => {
+  it('masks only the hidden word and leaves out a comment (3583–3586, 3655–3657)', () => {
+    expect(para('P<public G<secret> suffix|x.png>').html).toContain('alt="public ██████ suffix"')
+    expect(para('P<public Z<G<secret>> suffix|x.png>').html).toContain('alt="public  suffix"')
+  })
+
+  it('writes an entity in it as its character', () => {
+    expect(para('P<E<lt>|x.png>').html).toContain('alt="<"')
+  })
+
+  it('reads it from deep nesting without the JavaScript stack', () => {
+    const content: any = readCodes('P<' + 'B<'.repeat(5000) + 'x' + '>'.repeat(5000) + '|x.png>')
+    expect(content[0].content[0].alt).toBe('x')
+  })
+
+  it('splits a closing run inside a nested code by what it closes first (decision 2.1, 6.1)', () => {
+    expect(para('B<I«<x>>»tail>').warnings.map(w => w.code)).toEqual(['markup-code-foreign-closer'])
+    expect(para('B<I«<x>»tail>').warnings).toEqual([])
   })
 })
