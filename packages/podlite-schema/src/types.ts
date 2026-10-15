@@ -206,6 +206,7 @@ export interface ParseDiagnostic {
     | 'table-source-deferred'
     | 'markup-code-unclosed'
     | 'markup-code-longer-run'
+    | 'markup-code-foreign-closer'
     | 'markup-code-reserved'
     | 'markup-code-unsupported'
     | 'markup-code-unreadable'

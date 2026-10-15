@@ -49,6 +49,9 @@ export interface CodeSpan {
 export type ScanIssue =
   | { kind: 'unclosed'; code: CodeSpan; ending: 'cut' | 'fragment' }
   | { kind: 'longer-run'; start: number; end: number; code: CodeSpan }
+  // a closing bracket of a code standing unbalanced inside a code it holds, which
+  // ends at its own bracket (decision 6.1): the outer code does not end there
+  | { kind: 'foreign-closer'; start: number; end: number; code: CodeSpan; inner: string }
 
 export interface ScanResult {
   codes: CodeSpan[]
@@ -80,6 +83,8 @@ interface Frame {
   own: Piece[]
   passed: Piece[]
   kids: Array<{ frame: Frame; cut: number | null }>
+  // closing brackets of this code left unbalanced inside children closed by their own
+  foreign: Array<{ at: number; length: number; inner: string }>
   done: boolean
   closed: boolean
   bodyEnd: number
@@ -132,6 +137,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
       own: [],
       passed: [],
       kids: [],
+      foreign: [],
       done: false,
       closed: false,
       bodyEnd: n,
@@ -182,6 +188,20 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
     finish(frame, false, n, n)
   }
 
+  // the brackets a closed child left free, balanced among themselves by this code's kind
+  const noteForeign = (frame: Frame, child: Frame): void => {
+    const closing = CLOSING[frame.bracket]
+    let open = 0
+    const pieces = child.passed.length ? child.own.concat(child.passed) : child.own
+    for (const piece of pieces) {
+      if (piece.char === frame.bracket && (frame.bracket === '«' || piece.length === frame.length)) open++
+      else if (piece.char === closing && piece.length >= frame.length) {
+        if (open > 0) open--
+        else frame.foreign.push({ at: piece.at, length: piece.length, inner: child.name })
+      }
+    }
+  }
+
   // Reads one code's body until it closes, meets a child not yet read, or the
   // fragment ends. Returns the child to read first, or null when the code is done.
   const step = (frame: Frame): number | null => {
@@ -197,6 +217,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
           return i
         }
         if (child.closed) {
+          noteForeign(frame, child)
           frame.kids.push({ frame: child, cut: null })
           i = child.end
           continue
@@ -324,6 +345,9 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
       children: [],
     }
     if (ending !== 'own') issues.push({ kind: 'unclosed', code: span, ending })
+    for (const f of frame.foreign)
+      if (f.at < span.bodyEnd)
+        issues.push({ kind: 'foreign-closer', start: f.at, end: f.at + f.length, code: span, inner: f.inner })
     return span
   }
   const codes = top.map(k => build(k, n))

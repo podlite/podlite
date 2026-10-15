@@ -1901,6 +1901,7 @@
                     "enum": [
                         "directive-unreadable",
                         "markup-code-entity-in-code",
+                        "markup-code-foreign-closer",
                         "markup-code-longer-run",
                         "markup-code-reserved",
                         "markup-code-unclosed",
