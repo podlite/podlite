@@ -12,6 +12,10 @@
 
 =item B<Breaking:> the content of C<S<>>, C<Z<>> and C<V<>> is a list of text and codes, not a string; the codes inside C<S<>> are formatted as anywhere else and its whitespace kept, so a C<G<>> inside it is drawn as a hidden phrase with its spaces kept
 
+=item a warning when a closing bracket of a code stands unbalanced inside a code it holds that ends at its own bracket (C<markup-code-foreign-closer>): the outer code does not end there
+
+=item the alternative text of C<P<>> leaves out a C<Z<>> comment and is hidden whole when it holds a C<G<>> code; the address of a link leaves out a comment and masks a hidden word; an entity code it cannot read is shown with its letter and brackets around what it holds, read as anywhere else. A tab inside C<S<>> becomes spaces to the next tab stop, every eighth column, that do not break
+
 =item two warnings of a parse for one place keep the first instead of dropping both, and a warning about a markup code is not dropped for one about a value around it
 
 =item an implicit code block loses the indent of its first line on every line it holds, not only on the first: the output keeps the lines aligned as written. The indent is counted in columns, with tabs at every eighth column

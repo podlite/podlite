@@ -1,4 +1,6 @@
 import { podlitePluggable } from '../src/pluggableParser'
+import { readCodes } from '../src/codes/read'
+import { placeInSource, lineStarts } from '../src/codes/place'
 
 const parsed = (doc: string) => {
   const p = podlitePluggable()
@@ -106,5 +108,76 @@ describe('where a warning about a markup code points', () => {
   it('reports a code without its own bracket inside another once, at the inner code', () => {
     const { warnings } = para('B«x I<y » z»')
     expect(warnings.map(w => [w.code, w.location.start.column])).toEqual([['markup-code-unclosed', 11]])
+  })
+})
+
+// code review, round 1 (Sol, 2026-10-16): hidden content through the new paths, cost, the norm
+describe('what G<> and Z<> hide does not leave through the fields of a code', () => {
+  it('keeps them out of the alternative text of P<>', () => {
+    for (const out of Object.values(para('P<G<hunter2>|x.png> P<Z<note>|y.png>')).slice(0, 2) as string[]) {
+      expect(out).not.toContain('hunter2')
+      expect(out).not.toContain('note')
+    }
+  })
+
+  it('keeps them out of an E<> it cannot read, and out of the warning', () => {
+    const { html, md, warnings } = para('E<G<hunter2>> and E<Z<note>>')
+    for (const out of [html, md, JSON.stringify(warnings)]) {
+      expect(out).not.toContain('hunter2')
+      expect(out).not.toContain('note')
+    }
+  })
+
+  it('keeps them out of the address of a link', () => {
+    const { html, md } = para('L<x|G<hunter2>> L<y|a/Z<note>b>')
+    for (const out of [html, md]) {
+      expect(out).not.toContain('hunter2')
+      expect(out).not.toContain('note')
+    }
+  })
+})
+
+describe('the rest of round 1', () => {
+  it('reads deep nesting without the JavaScript stack', () => {
+    const depth = 20000
+    const content: any = readCodes('B<'.repeat(depth) + 'x' + '>'.repeat(depth))
+    let node = content[0]
+    let levels = 1
+    while (node.content && typeof node.content[0] === 'object') {
+      node = node.content[0]
+      levels++
+    }
+    expect(levels).toBe(depth)
+  })
+
+  it('places many warnings of one paragraph in time that grows with it', () => {
+    const time = (k: number) => {
+      const text = 'M<x|Unknown> '.repeat(k)
+      const source = `=para ${text}\n`
+      const issues: any[] = []
+      readCodes(text, { issues })
+      const fragment = { text }
+      const block = { start: { offset: 0, line: 1, column: 1 }, end: { offset: source.length, line: 2, column: 1 } }
+      const starts = lineStarts(source)
+      const started = process.hrtime.bigint()
+      for (const issue of issues) placeInSource(source, block, { fragment, start: issue.start, end: issue.end }, starts)
+      return Number(process.hrtime.bigint() - started) / 1e6
+    }
+    time(1000)
+    expect(time(8000)).toBeLessThan(time(2000) * 8)
+  })
+
+  it('keeps a tab inside S<> as spaces that do not break (4060–4063)', () => {
+    expect(para('S<a\tb>').html).toContain('a' + '&nbsp;'.repeat(7) + 'b')
+  })
+
+  // a specification holding spaces is quoted, and the quotes are syntax (4015)
+  it('takes the quotes off a link address with a configuration (4015)', () => {
+    expect(para('L<x|"/path" :new>').html).toContain('href="/path"')
+  })
+
+  it('warns about a closing bracket of the outer code inside a nested code closed by its own (decision 6.1)', () => {
+    expect(para('B«x I<y » z>»').warnings.map(w => w.code)).toEqual(['markup-code-foreign-closer'])
+    expect(para('B«x I<y «a» z>»').warnings).toEqual([])
   })
 })
