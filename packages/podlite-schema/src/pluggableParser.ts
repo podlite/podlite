@@ -8,7 +8,7 @@ import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
 import { applyFoldedSections } from './folded-sections'
 import { assignHeadingKeys } from './helpers/headingKeys'
-import { placeInSource } from './codes/place'
+import { placeInSource, lineStarts } from './codes/place'
 export { cleanIds, frozenIds, headingId } from './helpers/ids'
 
 export interface podlitePluggableOpt {
@@ -62,10 +62,12 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     // a warning about a markup code knows its place in the text it was read from;
     // the source turns that into a place a reader can go to
     const placed = new Set<string>()
+    let starts: number[] | null = null
     for (let k = 0; k < diagnostics.length; k++) {
       const d = diagnostics[k] as any
       if (!d.pending) continue
-      d.location = placeInSource(text, d.location, d.pending)
+      starts = starts || lineStarts(text)
+      d.location = placeInSource(text, d.location, d.pending, starts)
       delete d.pending
       // the same text read twice reports one warning for one place
       const key = `${d.code}@${d.location.start.offset}`

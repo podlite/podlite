@@ -51,6 +51,7 @@ const middle: ParserPlugin = opt => tree => {
     const issues: CodeIssue[] = []
     const content = readCodes(text, { allowed, allowedIn, parseAttributes, entityInCode: true, issues })
     const location = block && block.location
+    const fragment = { text }
     if (Array.isArray(opt.diagnostics) && location)
       for (const issue of issues)
         opt.diagnostics.push({
@@ -58,7 +59,7 @@ const middle: ParserPlugin = opt => tree => {
           code: issue.code,
           message: issue.message,
           location,
-          pending: { text, start: issue.start, end: issue.end },
+          pending: { fragment, start: issue.start, end: issue.end },
         } as any)
     return content
   }
