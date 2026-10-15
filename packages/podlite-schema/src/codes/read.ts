@@ -15,6 +15,7 @@ readers of the tree see the same fields.
 */
 import { scanCodes, CodeSpan, ScanScope, ScanIssue } from './scan'
 import { maskText } from '../helpers/handlers'
+import { decodeHTMLStrict } from 'entities'
 
 export type CodeIssueKind =
   | 'markup-code-unclosed'
@@ -177,10 +178,9 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
         const src = (bar === undefined ? body : text.slice(bar + 1, code.bodyEnd)).trim()
         const image: { [key: string]: unknown } = { type: 'image', src }
         if (altContent !== undefined) {
-          // an alternative text is a plain string: a comment in it is not written, and a
-          // hidden word in it hides the whole text, as the renderer covers a guarded node
-          image.alt = plain(altContent, false)
-          if (holds(altContent, 'G')) image.guarded = true
+          // an alternative text is a plain string: a comment in it is not written, a hidden
+          // word in it is masked, an entity is its character
+          image.alt = plain(altContent, true)
         }
         return [{ content: [image], type: 'fcode', name }]
       }
@@ -267,23 +267,52 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
   return contentOf(codes, 0, text.length)
 }
 
-// the text of read content: Z<> left out, G<> masked when asked, the letters of codes dropped
-const plain = (content: Content, mask: boolean): string =>
-  content
-    .map(item => {
-      if (typeof item === 'string') return item
-      if (item.name === 'Z') return ''
-      const inner = Array.isArray(item.content) ? plain(item.content as Content, mask) : String(item.content ?? '')
-      return item.name === 'G' && mask ? maskText(inner) : inner
-    })
-    .join('')
+// the text of read content, without recursion: Z<> left out, G<> masked when asked,
+// an entity its character, the letters of other codes dropped
+const plain = (content: Content, mask: boolean): string => {
+  const out: string[] = []
+  const work: Array<{ item: Content[number]; masked: boolean }> = content
+    .map(item => ({ item, masked: false }))
+    .reverse()
+  while (work.length) {
+    const { item, masked } = work.pop()!
+    if (typeof item === 'string') {
+      out.push(masked ? maskText(item) : item)
+      continue
+    }
+    if (item.name === 'Z') continue
+    if (item.name === 'E' && Array.isArray(item.content)) {
+      const chars = (item.content as Array<{ type?: string; value?: unknown }>)
+        .map(e =>
+          e.type === 'number'
+            ? String.fromCodePoint(Number(e.value))
+            : e.type === 'html_named'
+            ? decodeHTMLStrict(`&${e.value};`)
+            : '',
+        )
+        .join('')
+      out.push(masked ? maskText(chars) : chars)
+      continue
+    }
+    const inner = item.content
+    const hide = masked || (mask && item.name === 'G')
+    if (typeof inner === 'string') out.push(hide ? maskText(inner) : inner)
+    else if (Array.isArray(inner))
+      for (let k = inner.length - 1; k >= 0; k--) work.push({ item: inner[k] as Content[number], masked: hide })
+  }
+  return out.join('')
+}
 
-const holds = (content: Content, name: string): boolean =>
-  content.some(
-    item =>
-      typeof item !== 'string' &&
-      (item.name === name || (Array.isArray(item.content) && holds(item.content as Content, name))),
-  )
+const holds = (content: Content, name: string): boolean => {
+  const work = [...content]
+  while (work.length) {
+    const item = work.pop()!
+    if (typeof item === 'string') continue
+    if (item.name === name) return true
+    if (Array.isArray(item.content)) work.push(...(item.content as Content))
+  }
+  return false
+}
 
 const reportScan = (
   issue: ScanIssue,
