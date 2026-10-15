@@ -196,8 +196,15 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
     for (const piece of pieces) {
       if (piece.char === frame.bracket && (frame.bracket === '«' || piece.length === frame.length)) open++
       else if (piece.char === closing && piece.length >= frame.length) {
-        if (open > 0) open--
-        else frame.foreign.push({ at: piece.at, length: piece.length, inner: child.name })
+        // a run closes what is open first, nearest first (decision 2.1); what is left stands alone
+        let rest = piece.length
+        let at = piece.at
+        while (open > 0 && rest >= frame.length) {
+          open--
+          rest -= frame.length
+          at += frame.length
+        }
+        if (rest >= frame.length) frame.foreign.push({ at, length: rest, inner: child.name })
       }
     }
   }
