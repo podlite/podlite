@@ -122,7 +122,8 @@ const middle: ParserPlugin = opt => tree => {
       // their turn, since a cell may declare a set of its own
       const literal = inheritsAllow && declared !== undefined && declared.length === 0
       const allowed = [...allowValues].sort()
-      const inner = { ...ctx, allowedIn, allowFromTable: passesAllow }
+      // a warning about text with no place of its own, such as a table cell, points at this block
+      const inner = { ...ctx, allowedIn, allowFromTable: passesAllow, block: n.location ? n : ctx.block }
       // code written without a marker is verbatim unless its own :allow names codes
       const ownCode = (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn })
       // a paragraph written without a marker reads codes as an explicit =para does;
