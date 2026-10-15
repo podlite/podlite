@@ -14,10 +14,12 @@ readers of the tree see the same fields.
 =end pod
 */
 import { scanCodes, CodeSpan, ScanScope, ScanIssue } from './scan'
+import { maskText } from '../helpers/handlers'
 
 export type CodeIssueKind =
   | 'markup-code-unclosed'
   | 'markup-code-longer-run'
+  | 'markup-code-foreign-closer'
   | 'markup-code-reserved'
   | 'markup-code-unsupported'
   | 'markup-code-unreadable'
@@ -60,13 +62,15 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     options.issues?.push({ code, message, start, end })
   for (const issue of issues) reportScan(issue, report)
 
+  // each code is read once, after the codes it holds, so deep nesting needs no recursion
+  const built = new Map<CodeSpan, Content>()
   // text between codes, the codes themselves read by their letter
   const contentOf = (list: CodeSpan[], from: number, to: number): Content => {
     const out: Content = []
     let i = from
     for (const code of list) {
       if (code.start > i) out.push(text.slice(i, code.start))
-      out.push(...node(code))
+      out.push(...(built.get(code) || []))
       i = code.end
     }
     if (to > i) out.push(text.slice(i, to))
@@ -111,7 +115,6 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       from,
       to,
     )
-  const written = (code: CodeSpan): string => text.slice(code.start, code.end)
 
   const node = (code: CodeSpan): Content => {
     const name = code.name
@@ -123,9 +126,16 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       case 'E': {
         // E<> with nothing in it stands for no character, as before
         const items = body.trim() === '' ? [] : readEntities(body)
+        // shown as written: its letter and brackets around what it holds, read as anywhere
+        // else, so a G<> or Z<> inside stays hidden; the warning does not repeat the body
         if (items === null) {
-          report('markup-code-unreadable', `E<> holds no entity it can read: ${body}`, code.start, code.end)
-          return [written(code)]
+          report(
+            'markup-code-unreadable',
+            'E<> holds no entity it can read; it is shown as written',
+            code.start,
+            code.end,
+          )
+          return [name + openingOf(code), ...children(), code.ending === 'own' ? closingOf(code) : '']
         }
         return [{ content: items, type: 'fcode', name }]
       }
@@ -163,10 +173,15 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       }
       case 'P': {
         const bar = topLevel(code, '|')[0]
-        const alt = bar === undefined ? undefined : collect(part(code, code.bodyStart, bar))
+        const altContent = bar === undefined ? undefined : part(code, code.bodyStart, bar)
         const src = (bar === undefined ? body : text.slice(bar + 1, code.bodyEnd)).trim()
         const image: { [key: string]: unknown } = { type: 'image', src }
-        if (alt !== undefined) image.alt = alt
+        if (altContent !== undefined) {
+          // an alternative text is a plain string: a comment in it is not written, and a
+          // hidden word in it hides the whole text, as the renderer covers a guarded node
+          image.alt = plain(altContent, false)
+          if (holds(altContent, 'G')) image.guarded = true
+        }
         return [{ content: [image], type: 'fcode', name }]
       }
       default:
@@ -209,7 +224,7 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       if (configAt < 0)
         return { content: contentOf(code.children, code.bodyStart, code.bodyEnd), type: 'fcode', name, meta: null }
       return {
-        content: [linkTarget(spec.slice(0, configAt))],
+        content: [unquote(addressOf(code, specFrom, specFrom + configAt))],
         type: 'fcode',
         name,
         meta: null,
@@ -217,18 +232,58 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       }
     }
     const content = part(code, code.bodyStart, bar)
-    if (configAt < 0) return { content, type: 'fcode', name, meta: spec }
+    // a specification holding spaces is quoted (Specification 4015); the quotes are not part of the address
+    const written = addressOf(code, specFrom, configAt < 0 ? code.bodyEnd : specFrom + configAt)
+    const address = configAt < 0 ? written : unquote(written)
+    if (configAt < 0) return { content, type: 'fcode', name, meta: address }
     return {
       content,
       type: 'fcode',
       name,
-      meta: linkTarget(spec.slice(0, configAt)),
+      meta: address,
       config: attributes(spec.slice(configAt).replace(HS, '')),
     }
   }
 
+  // the address as written, unless a code that hides or is not written stands in it:
+  // then a comment is left out and a hidden word is masked, so neither reaches the link
+  const addressOf = (code: CodeSpan, from: number, to: number): string => {
+    const inside = part(code, from, to)
+    return holds(inside, 'G') || holds(inside, 'Z') ? plain(inside, true) : text.slice(from, to)
+  }
+
+  // read the codes after the codes they hold, without recursion
+  const order: CodeSpan[] = []
+  const stack: Array<{ code: CodeSpan; open: boolean }> = codes.map(code => ({ code, open: false })).reverse()
+  while (stack.length) {
+    const top = stack.pop()!
+    if (top.open) order.push(top.code)
+    else {
+      stack.push({ code: top.code, open: true })
+      for (let k = top.code.children.length - 1; k >= 0; k--) stack.push({ code: top.code.children[k], open: false })
+    }
+  }
+  for (const code of order) built.set(code, node(code))
   return contentOf(codes, 0, text.length)
 }
+
+// the text of read content: Z<> left out, G<> masked when asked, the letters of codes dropped
+const plain = (content: Content, mask: boolean): string =>
+  content
+    .map(item => {
+      if (typeof item === 'string') return item
+      if (item.name === 'Z') return ''
+      const inner = Array.isArray(item.content) ? plain(item.content as Content, mask) : String(item.content ?? '')
+      return item.name === 'G' && mask ? maskText(inner) : inner
+    })
+    .join('')
+
+const holds = (content: Content, name: string): boolean =>
+  content.some(
+    item =>
+      typeof item !== 'string' &&
+      (item.name === name || (Array.isArray(item.content) && holds(item.content as Content, name))),
+  )
 
 const reportScan = (
   issue: ScanIssue,
@@ -244,24 +299,21 @@ const reportScan = (
     )
     return
   }
+  if (issue.kind === 'foreign-closer') {
+    report(
+      'markup-code-foreign-closer',
+      `a closing bracket of ${issue.code.name}<> stands inside ${issue.inner}<>, which ends at its own bracket; ${issue.code.name}<> does not end there`,
+      issue.start,
+      issue.end,
+    )
+    return
+  }
   report(
     'markup-code-longer-run',
     `a run of angles longer than the delimiter of ${issue.code.name}<> stands inside it`,
     issue.start,
     issue.end,
   )
-}
-
-const collect = (content: Content): string =>
-  content.map(item => (typeof item === 'string' ? item : collect((item.content as Content) || []))).join('')
-
-// quotes around the whole address are not part of it
-const linkTarget = (spec: string): string => {
-  const trimmed = spec.replace(/\s+$/, '')
-  const quote = trimmed[0]
-  if ((quote === "'" || quote === '"') && trimmed.length > 1 && trimmed[trimmed.length - 1] === quote)
-    return trimmed.slice(1, -1)
-  return trimmed
 }
 
 // entries of D<> and X<> after the bar: split at semicolons, the blanks after one dropped
@@ -287,4 +339,11 @@ const readEntities = (body: string): Array<{ type: string; value: unknown }> | n
     else return null
   }
   return out
+}
+
+// quotes around the whole specification are not part of the address
+const unquote = (spec: string): string => {
+  const quote = spec[0]
+  if ((quote === "'" || quote === '"') && spec.length > 1 && spec[spec.length - 1] === quote) return spec.slice(1, -1)
+  return spec
 }
