@@ -47,11 +47,11 @@ const allowOf = (node: unknown): string[] | undefined => {
 const middle: ParserPlugin = opt => tree => {
   // the codes of one piece of text; a warning keeps the block it came from and its
   // place in the text, and the parser turns that into a place in the source
-  const read = (text: string, allowed: string[] | undefined, allowedIn: AllowedIn, block: any) => {
+  const read = (text: string, allowed: string[] | undefined, allowedIn: AllowedIn, block: any, inline = false) => {
     const issues: CodeIssue[] = []
     const content = readCodes(text, { allowed, allowedIn, parseAttributes, entityInCode: true, issues })
     const location = block && block.location
-    const fragment = { text }
+    const fragment = { text, inline }
     if (Array.isArray(opt.diagnostics) && location)
       for (const issue of issues)
         opt.diagnostics.push({
@@ -124,7 +124,13 @@ const middle: ParserPlugin = opt => tree => {
       const literal = inheritsAllow && declared !== undefined && declared.length === 0
       const allowed = [...allowValues].sort()
       // a warning about text with no place of its own, such as a table cell, points at this block
-      const inner = { ...ctx, allowedIn, allowFromTable: passesAllow, block: n.location ? n : ctx.block }
+      const inner = {
+        ...ctx,
+        allowedIn,
+        allowFromTable: passesAllow,
+        block: n.location ? n : ctx.block,
+        inline: !n.location,
+      }
       // code written without a marker is verbatim unless its own :allow names codes
       const ownCode = (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn })
       // a paragraph written without a marker reads codes as an explicit =para does;
@@ -132,11 +138,21 @@ const middle: ParserPlugin = opt => tree => {
       // codes of the block they belong to
       const ownPara = (node, ctx) =>
         blockNameOf(node, n) !== 'para' || (inheritsAllow && allowOf(node) === undefined)
-          ? { ...node, content: transformer(node.content, { ...ctx, block: node.location ? node : ctx.block }) }
+          ? {
+              ...node,
+              // text held by a node with no place of its own, such as a cell, stands inside a line
+              content: transformer(node.content, {
+                ...ctx,
+                block: node.location ? node : ctx.block,
+                inline: !node.location,
+              }),
+            }
           : transformerBlocks(node, { ...ctx, allowedIn })
       const transformer = makeTransformer({
-        ':verbatim': (node: nVerbatim, ctx) => (literal ? node : read(node.value, allowed, allowedIn, ctx.block || n)),
-        ':text': (node: nText, ctx) => (literal ? node : read(node.value, allowed, allowedIn, ctx.block || n)),
+        ':verbatim': (node: nVerbatim, ctx) =>
+          literal ? node : read(node.value, allowed, allowedIn, ctx.block || n, Boolean(ctx.inline)),
+        ':text': (node: nText, ctx) =>
+          literal ? node : read(node.value, allowed, allowedIn, ctx.block || n, Boolean(ctx.inline)),
         ':para': ownPara,
         ':code': ownCode,
         ':config': (node, ctx) => {

@@ -8,6 +8,8 @@ import { Location } from '../types'
 // the warnings of one piece of text share it, so its lines are matched to the source once
 export interface PendingFragment {
   text: string
+  // text with no place of its own inside a line of its block, such as a table cell
+  inline?: boolean
 }
 export interface PendingPlace {
   fragment: PendingFragment
@@ -65,12 +67,13 @@ export const placeInSource = (
         const line = lineOf(s)
         const at = words === '' ? line.length : line.lastIndexOf(words)
         const before = line.slice(0, at)
-        if (at >= 0 && at + words.length === line.length && (j === 0 || /^\s*$/.test(before))) {
+        const alone = !(pending.fragment.inline && j === 0 && textLines.length === 1 && words !== '')
+        if (alone && at >= 0 && at + words.length === line.length && (j === 0 || /^\s*$/.test(before))) {
           hit = s
           break
         }
-        // a single line of text may stand inside a line, as a table cell does
-        if (j === 0 && textLines.length === 1 && words !== '') {
+        // a cell stands inside its line: found left to right, after the cell before it
+        if (!alone) {
           const cursor = cursors.get(block) ?? -1
           const from = cursor >= starts[s] && cursor <= starts[s] + line.length ? cursor - starts[s] : 0
           if (cursor > starts[s] + line.length) continue
