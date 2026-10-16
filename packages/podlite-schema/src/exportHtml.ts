@@ -242,7 +242,10 @@ const rules = {
   },
   // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
   'S<>': (writer, processor) => (node, ctx, interator) =>
-    interator(node.content, { ...ctx, keepSpaces: { column: 0 } }),
+    interator(node.content, {
+      ...ctx,
+      keepSpaces: typeof ctx.keepSpaces === 'object' ? ctx.keepSpaces : { column: 0 },
+    }),
   // a module this renderer cannot run shows its text (Specification, M<>)
   'M<>': content,
   // an inline picture is the picture node it holds

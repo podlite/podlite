@@ -780,7 +780,10 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       makeComponent(
         ({ children, key }) => children,
         {},
-        interator(node.content, { ...ctx, keepSpaces: { column: 0 } }),
+        interator(node.content, {
+          ...ctx,
+          keepSpaces: typeof ctx.keepSpaces === 'object' ? ctx.keepSpaces : { column: 0 },
+        }),
       ),
     // a module this renderer cannot run shows its text (Specification, M<>)
     'M<>': nodeContent,
