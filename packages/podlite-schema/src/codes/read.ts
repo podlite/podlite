@@ -175,7 +175,9 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       case 'P': {
         const bar = topLevel(code, '|')[0]
         const altContent = bar === undefined ? undefined : part(code, code.bodyStart, bar)
-        const src = (bar === undefined ? body : text.slice(bar + 1, code.bodyEnd)).trim()
+        const src = (
+          bar === undefined ? addressOf(code, code.bodyStart, code.bodyEnd) : addressOf(code, bar + 1, code.bodyEnd)
+        ).trim()
         const image: { [key: string]: unknown } = { type: 'image', src }
         if (altContent !== undefined) {
           // an alternative text is a plain string: a comment in it is not written, a hidden
@@ -247,9 +249,46 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
 
   // the address as written, unless a code that hides or is not written stands in it:
   // then a comment is left out and a hidden word is masked, so neither reaches the link
+  // An address as written: its text and codes stay as they stand, except that a
+  // comment in it is left out and a hidden word masked, at any depth, so neither
+  // reaches a link or a picture. Walked without recursion.
   const addressOf = (code: CodeSpan, from: number, to: number): string => {
-    const inside = part(code, from, to)
-    return holds(inside, 'G') || holds(inside, 'Z') ? plain(inside, true) : text.slice(from, to)
+    const out: string[] = []
+    type Step = { span: CodeSpan } | { raw: string }
+    const work: Step[] = []
+    const visit = (spans: CodeSpan[], start: number, end: number) => {
+      const steps: Step[] = []
+      let i = start
+      for (const span of spans) {
+        if (span.start < start || span.end > end) continue
+        if (span.start > i) steps.push({ raw: text.slice(i, span.start) })
+        steps.push({ span })
+        i = span.end
+      }
+      if (end > i) steps.push({ raw: text.slice(i, end) })
+      for (let k = steps.length - 1; k >= 0; k--) work.push(steps[k])
+    }
+    visit(code.children, from, to)
+    while (work.length) {
+      const step = work.pop()!
+      if ('raw' in step) {
+        out.push(step.raw)
+        continue
+      }
+      const span = step.span
+      if (span.name === 'Z') continue
+      if (span.name === 'G') {
+        out.push(maskText(text.slice(span.bodyStart, span.bodyEnd)))
+        continue
+      }
+      // the code itself as written, its body walked for what it holds
+      work.push({ raw: text.slice(span.bodyEnd, span.end) })
+      const before = work.length
+      visit(span.children, span.bodyStart, span.bodyEnd)
+      if (work.length === before) work.push({ raw: '' })
+      out.push(text.slice(span.start, span.bodyStart))
+    }
+    return out.join('')
   }
 
   // read the codes after the codes they hold, without recursion
