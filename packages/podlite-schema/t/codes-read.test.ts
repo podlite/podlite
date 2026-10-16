@@ -205,3 +205,19 @@ describe('the alternative text of P<> and the brackets left inside a nested code
     expect(para('B<I«<x>»tail>').warnings).toEqual([])
   })
 })
+
+// code review, round 3 (Sol, 2026-10-16)
+describe('what G<> and Z<> hide does not reach an address', () => {
+  it('keeps them out of the source of a picture', () => {
+    for (const out of Object.values(para('P<x|images/G<secret>.png> P<y|Z<note>image.png>')).slice(0, 2) as string[]) {
+      expect(out).not.toContain('secret')
+      expect(out).not.toContain('note')
+    }
+    expect(para('P<y|Z<note>image.png>').html).toContain('src="image.png"')
+  })
+
+  it('leaves the other codes of a link address as written', () => {
+    expect(para('L<x|/B<part>/Z<note>>').html).toContain('href="/B<part>/"')
+    expect(para('L<x|/B<G<ab>>/>').html).toContain('href="/B<██>/"')
+  })
+})
