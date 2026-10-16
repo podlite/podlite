@@ -221,3 +221,21 @@ describe('what G<> and Z<> hide does not reach an address', () => {
     expect(para('L<x|/B<G<ab>>/>').html).toContain('href="/B<██>/"')
   })
 })
+
+// code review, closing round (Astra, 2026-10-16)
+describe('the closing round', () => {
+  it('places the warning of each cell of a row at the cell', () => {
+    const { warnings } = parsed('=begin table\nM<a|NoSuchModule> | M<b|NoSuchModule> | c\n=end table\n')
+    expect(warnings.map(w => w.location.start.column)).toEqual([1, 21])
+  })
+
+  it('begins the configuration of a link at a line break before a colon (813–820, 3965–3967)', () => {
+    const { html } = parsed('=para L<x|https://example.com\n:new>\n')
+    expect(html).toContain('href="https://example.com"')
+    expect(html).toContain('target="_blank"')
+  })
+
+  it('keeps the tab stops inside S<> where a code inside does not move them', () => {
+    expect(para('S<aB<b>\tc>').html).toContain('a<strong>b</strong>' + '&nbsp;'.repeat(6) + 'c')
+  })
+})
