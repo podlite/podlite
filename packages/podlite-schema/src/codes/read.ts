@@ -161,9 +161,9 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
         const bar = topLevel(code, '|')[0]
         const content = bar === undefined ? children() : part(code, code.bodyStart, bar)
         const spec = bar === undefined ? '' : text.slice(bar + 1, code.bodyEnd)
-        const configAt = spec.search(/[   \t\u000C ]+:/)
+        const configAt = spec.search(/\s+:/)
         const module = (configAt < 0 ? spec : spec.slice(0, configAt)).trim()
-        const config = configAt < 0 ? [] : attributes(spec.slice(configAt).replace(HS, ''))
+        const config = configAt < 0 ? [] : attributes(spec.slice(configAt).replace(/^\s+/, ''))
         report(
           'markup-code-unsupported',
           `M<> names a module this reader cannot run${module ? `: ${module}` : ''}; its text is shown as it is`,
@@ -221,7 +221,7 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     const bar = topLevel(code, '|')[0]
     const specFrom = bar === undefined ? code.bodyStart : bar + 1
     const spec = text.slice(specFrom, code.bodyEnd)
-    const configAt = spec.search(/[   \t\u000C ]+:/)
+    const configAt = spec.search(/\s+:/)
     if (bar === undefined) {
       if (configAt < 0)
         return { content: contentOf(code.children, code.bodyStart, code.bodyEnd), type: 'fcode', name, meta: null }
@@ -230,7 +230,7 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
         type: 'fcode',
         name,
         meta: null,
-        config: attributes(spec.slice(configAt).replace(HS, '')),
+        config: attributes(spec.slice(configAt).replace(/^\s+/, '')),
       }
     }
     const content = part(code, code.bodyStart, bar)
@@ -243,7 +243,7 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       type: 'fcode',
       name,
       meta: address,
-      config: attributes(spec.slice(configAt).replace(HS, '')),
+      config: attributes(spec.slice(configAt).replace(/^\s+/, '')),
     }
   }
 
