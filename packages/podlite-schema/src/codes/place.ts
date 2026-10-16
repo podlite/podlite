@@ -57,6 +57,7 @@ export const placeInSource = (
     for (let j = 0; j < textLines.length && k < starts.length; j++) {
       const words = textLines[j].replace(/^\s+/, '')
       let hit = -1
+      let inside = -1
       for (let s = k; s < starts.length; s++) {
         const line = lineOf(s)
         const at = words === '' ? line.length : line.lastIndexOf(words)
@@ -65,10 +66,17 @@ export const placeInSource = (
           hit = s
           break
         }
+        // a single line of text may stand inside a line, as a table cell does
+        if (j === 0 && textLines.length === 1 && words !== '' && line.indexOf(words) >= 0) {
+          hit = s
+          inside = line.indexOf(words)
+          break
+        }
       }
       if (hit < 0) break
       const line = lineOf(hit)
-      found.push(starts[hit] + line.length - words.length - (textLines[j].length - words.length))
+      const wordsAt = inside >= 0 ? inside : line.length - words.length
+      found.push(starts[hit] + wordsAt - (textLines[j].length - words.length))
       k = hit + 1
     }
     match = { found, lines: lineStarts(pending.fragment.text) }

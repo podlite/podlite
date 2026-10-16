@@ -68,9 +68,10 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
       if (!d.pending) continue
       starts = starts || lineStarts(text)
       d.location = placeInSource(text, d.location, d.pending, starts)
+      // the same text read twice reports one warning for one place; two pieces of text
+      // placed at the same point, such as cells of one row, keep their warnings apart
+      const key = `${d.code}@${d.location.start.offset}@${d.pending.start}@${d.pending.fragment.text}`
       delete d.pending
-      // the same text read twice reports one warning for one place
-      const key = `${d.code}@${d.location.start.offset}`
       if (placed.has(key)) diagnostics.splice(k--, 1)
       else placed.add(key)
     }
