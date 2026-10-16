@@ -229,6 +229,11 @@ describe('the closing round', () => {
     expect(warnings.map(w => w.location.start.column)).toEqual([1, 21])
   })
 
+  it('places the warnings of two cells with the same text at each cell', () => {
+    const { warnings } = parsed('=begin table\nM<a|NoSuchModule> | M<a|NoSuchModule> | c\n=end table\n')
+    expect(warnings.map(w => w.location.start.column)).toEqual([1, 21])
+  })
+
   it('begins the configuration of a link at a line break before a colon (813–820, 3965–3967)', () => {
     const { html } = parsed('=para L<x|https://example.com\n:new>\n')
     expect(html).toContain('href="https://example.com"')
@@ -237,5 +242,6 @@ describe('the closing round', () => {
 
   it('keeps the tab stops inside S<> where a code inside does not move them', () => {
     expect(para('S<aB<b>\tc>').html).toContain('a<strong>b</strong>' + '&nbsp;'.repeat(6) + 'c')
+    expect(para('S<aS<b>\tc>').html).toContain('ab' + '&nbsp;'.repeat(6) + 'c')
   })
 })
