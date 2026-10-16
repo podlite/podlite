@@ -28,6 +28,9 @@ interface Matched {
   lines: number[]
 }
 const matched = new WeakMap<PendingFragment, Matched>()
+// where the last piece of text found inside a line of a block ended: the cells of a
+// row are read left to right, so a cell with the same text as one before it is the next
+const cursors = new WeakMap<Location, number>()
 
 const binary = (starts: number[], at: number): number => {
   let low = 0
@@ -67,10 +70,17 @@ export const placeInSource = (
           break
         }
         // a single line of text may stand inside a line, as a table cell does
-        if (j === 0 && textLines.length === 1 && words !== '' && line.indexOf(words) >= 0) {
-          hit = s
-          inside = line.indexOf(words)
-          break
+        if (j === 0 && textLines.length === 1 && words !== '') {
+          const cursor = cursors.get(block) ?? -1
+          const from = cursor >= starts[s] && cursor <= starts[s] + line.length ? cursor - starts[s] : 0
+          if (cursor > starts[s] + line.length) continue
+          const where = line.indexOf(words, from)
+          if (where >= 0) {
+            hit = s
+            inside = where
+            cursors.set(block, starts[s] + where + words.length)
+            break
+          }
         }
       }
       if (hit < 0) break
