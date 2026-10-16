@@ -151,13 +151,23 @@ export const handleNested = (defaultHandler: RuleHandler, implicitLevel?: number
 }
 
 // Inside S<> every whitespace character stays and does not break: a tab becomes the
-// spaces up to the next tab stop, every eighth column of its line, as a code block counts them
-export const expandTabs = (text: string): string =>
-  text
-    .split('\n')
-    .map(line => {
-      let out = ''
-      for (const ch of line) out += ch === '\t' ? ' '.repeat(8 - (out.length % 8)) : ch
-      return out
-    })
-    .join('\n')
+// spaces up to the next tab stop, every eighth column of its line, as a code block counts
+// them. The column is carried from one piece of text of S<> to the next by `state`, so a
+// code inside does not move the stops after it.
+export const expandTabs = (text: string, state: { column: number } = { column: 0 }): string => {
+  let out = ''
+  for (const ch of text) {
+    if (ch === '\n') {
+      state.column = 0
+      out += ch
+    } else if (ch === '\t') {
+      const n = 8 - (state.column % 8)
+      out += ' '.repeat(n)
+      state.column += n
+    } else {
+      out += ch
+      state.column++
+    }
+  }
+  return out
+}

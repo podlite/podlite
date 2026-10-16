@@ -462,7 +462,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const text = isCovered(node, ctx) ? maskText(node.value) : node.value
       if (!ctx.keepSpaces || typeof text !== 'string') return text
       // inside S<>: every space stays and does not break, a line break stays a line break
-      return expandTabs(text)
+      return expandTabs(text, ctx.keepSpaces)
         .split('')
         .map((symbol, index) => {
           if (symbol === ' ') return '\u00a0'
@@ -777,7 +777,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     'W<>': linkRule('backlink'),
     // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
     'S<>': (writer, processor) => (node, ctx, interator) =>
-      makeComponent(({ children, key }) => children, {}, interator(node.content, { ...ctx, keepSpaces: true })),
+      makeComponent(
+        ({ children, key }) => children,
+        {},
+        interator(node.content, { ...ctx, keepSpaces: { column: 0 } }),
+      ),
     // a module this renderer cannot run shows its text (Specification, M<>)
     'M<>': nodeContent,
     // an inline picture is the picture node it holds
@@ -824,7 +828,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       const hidden = maskText(collectText(node.content))
       // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
-      const masked = ctx.keepSpaces ? expandTabs(hidden).replace(/ /g, '\u00a0') : hidden
+      const masked = ctx.keepSpaces ? expandTabs(hidden, ctx.keepSpaces).replace(/ /g, '\u00a0') : hidden
       return makeComponent(
         ({ key }) => (
           <span key={key} className="masked">

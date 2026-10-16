@@ -94,7 +94,7 @@ const rules = {
     // handle text with content
     if (node.value && ctx.keepSpaces) {
       // inside S<>: every space stays and does not break, a line break stays a line break
-      const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(node.value) : node.value))
+      const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(node.value) : node.value, ctx.keepSpaces))
       writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
     } else if (node.value) {
       writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
@@ -168,7 +168,7 @@ const rules = {
     const masked = maskText(collectText(node.content))
     // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
     if (ctx.keepSpaces)
-      writer.writeRaw(writer.escape(expandTabs(masked)).replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
+      writer.writeRaw(writer.escape(expandTabs(masked, ctx.keepSpaces)).replace(/ /g, '&nbsp;').replace(/\n/g, '<br>'))
     else writer.write(masked)
     writer.writeRaw('</span>')
   },
@@ -241,7 +241,8 @@ const rules = {
     }
   },
   // the text inside is formatted as anywhere else, its whitespace kept (Specification, Space-preserving text)
-  'S<>': (writer, processor) => (node, ctx, interator) => interator(node.content, { ...ctx, keepSpaces: true }),
+  'S<>': (writer, processor) => (node, ctx, interator) =>
+    interator(node.content, { ...ctx, keepSpaces: { column: 0 } }),
   // a module this renderer cannot run shows its text (Specification, M<>)
   'M<>': content,
   // an inline picture is the picture node it holds
