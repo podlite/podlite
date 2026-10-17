@@ -162,17 +162,17 @@ Everything else     57
 `,
   },
   {
-    displayText: 'toc (with :title) 🏷',
-    text: `=for toc :title('Table of contents')
+    displayText: 'toc (with :caption) 🏷',
+    text: `=for toc :caption('Table of contents')
 head1, head2, head3 
 
 `,
   },
   {
     displayText: 'toc ( picture, Mermaid )  + tables 🏷',
-    text: `=for toc :title('List of media')
+    text: `=for toc :caption('List of media')
 picture, Mermaid
-=for toc :title('List of tables')
+=for toc :caption('List of tables')
 table
 
 `,
