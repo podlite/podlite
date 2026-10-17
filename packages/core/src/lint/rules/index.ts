@@ -12,6 +12,7 @@ import { deadDefinitionsRule } from './dead-definitions'
 import { includeResolvesRule } from './include-resolves'
 import { directiveNamedBlockRule, imageNamedBlockRule } from './named-blocks'
 import { notifyAttributeRule } from './notify-attribute'
+import { tocTitleAttributeRule } from './toc-title-attribute'
 
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
@@ -28,4 +29,5 @@ export const DEFAULT_RULES: Rule[] = [
   directiveNamedBlockRule,
   imageNamedBlockRule,
   notifyAttributeRule,
+  tocTitleAttributeRule,
 ]

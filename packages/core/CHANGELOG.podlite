@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<lint> warns about C<:title> on a C<=toc> block, written on the block or given by C<=set> or C<=config>: the specification captions a table of contents with C<:caption>. The table of contents still reads C<:title> in this release and will not in the next (rule C<toc-title-attribute>)
+
 =item C<podlite test> reads a fixture whose C<=include> fails to resolve: its assertions are checked against what was read, and the failure is reported apart as a warning that names the test and the fixture
 
 =item C<podlite lint> rule C<delimited-block-balance> reports an C<=end> with no open block of its name once and leaves the open blocks open, instead of closing the block above it and reporting every C<=end> after; an C<=end> that closes a block further down reports each block left open above it

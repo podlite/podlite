@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<:title> as the caption of a table of contents is deprecated: it is still read in this release and will not be in the next. The specification captions a table of contents with C<:caption>, and C<podlite lint> warns about C<:title> (rule C<toc-title-attribute>)
+
 =item an entry for a heading leads to that heading, not to the first heading with the same text: two C<=head1 Intro> get entries to C<#Intro> and C<#Intro-2>, and so do a heading of the page and one of an included file. The entry carries the heading's key instead of its text, so the address of an entry for a heading with hidden text holds none of it. A heading named with C<:id>, written or set, keeps that name
 
 =head1 0.0.64
