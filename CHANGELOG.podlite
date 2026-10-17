@@ -2,6 +2,127 @@
 
 =head1 Upcoming
 
+=head1 0.0.96
+
+
+=head2 podlite
+
+=item C<lint> warns about C<:title> on a C<=toc> block, written on the block or given by C<=set> or C<=config>: the specification captions a table of contents with C<:caption>. The table of contents still reads C<:title> in this release and will not in the next (rule C<toc-title-attribute>)
+
+=item C<podlite test> reads a fixture whose C<=include> fails to resolve: its assertions are checked against what was read, and the failure is reported apart as a warning that names the test and the fixture
+
+=item C<podlite lint> rule C<delimited-block-balance> reports an C<=end> with no open block of its name once and leaves the open blocks open, instead of closing the block above it and reporting every C<=end> after; an C<=end> that closes a block further down reports each block left open above it
+
+=item C<podlite query> and an C<=include> whose selector cannot be read name an empty operand of C<~<>> in the message
+
+=item C<podlite lint> rule C<id-unique> checks the document as its includes assemble it: an C<:id> repeated between the document and an included file, in a file included twice, or given by C<=config> to blocks an include places is an error naming both files. A C<=config> directive itself is no longer counted as an occurrence of the C<:id> it gives
+
+=item an C<=include> no longer brings a directive that stands outside every brought block — a C<=boundary> between top-level blocks, or an C<=include> left in the included file because it could not be read
+
+=item an C<=include> that waits for a later pass, written in a file another C<=include> selects from, stays in place under the universal pattern without a predicate, as when the file is included whole; under other patterns the selection reports C<incomplete-selection>, a warning: it may be short of the blocks the waiting include brings
+
+=head2 @podlite/editor-react
+
+=item the completions that insert a table of contents with a caption write C<:caption> instead of C<:title>, as the specification does
+
+=item the package no longer ships C<esm/Editor.css> and C<esm/podlite-vars.css>, which the export map never opened; the styles are taken by the short paths C<@podlite/editor-react/Editor.css> and C<@podlite/editor-react/podlite-vars.css>, or under C<lib/>. The package check fails a package that ships a style no export target opens
+
+=item the C<./demo/Components> subpath is no longer exported: its target is not in the package, which does not ship the C<demo> directory
+
+=item B<Breaking:> the unused stylesheet C<lib/Editor.old.css> and its export path are removed
+
+=head2 @podlite/formula
+
+=item the package no longer ships C<esm/default.css>, which the export map never opened; the style is taken as C<@podlite/formula/default.css> or C<@podlite/formula/lib/default.css>
+
+=head2 @podlite/image
+
+=item the html of an image block carries an C<id> only when the author wrote C<:id>, in the form a link to it takes; the generated one, which changed on every run, is no longer written
+
+=head2 @podlite/markdown
+
+=item C<md2ast> gives each heading a C<headingKey>, fingerprinted from the markdown text it read, including the body of a C<=markdown> block
+
+=head2 @podlite/mcp
+
+=item C<podlite_query> names an empty operand of C<~<>> when the selector cannot be read
+
+=item C<podlite_query> finds no C<=boundary>, and no C<=include> left in a document whose files were not given: a selector pattern does not find a directive
+
+=head2 @podlite/publisher
+
+=item the index the publisher writes for the site carries a term from hidden text masked, entry and text; an entry in a heading points to the anchor the page gives that heading, so it reaches a hidden heading, a repeated one and one with an C<:id>
+
+=item a hidden word in the title or subtitle of a document, an article, a page or the site is masked in the title the publisher gives out, and is left out of the address built from that title; the text a C<doc:> link takes from the document it names keeps its hidden words marked, so the page shows them masked
+
+=head2 @podlite/schema
+
+=item markup codes are read in two steps, as the specification sets them out: first where each code begins and ends (C<scanCodes>), then what each code means (C<readCodes>, which C<parseFormattingCodes> now calls). A code ends at its own matching bracket; a run of closing brackets closes what is open, nearest first, so C<<< B<x<I<a>>y> >>> is bold C<< x<a>y >> with the pair balanced; a delimiter is a run of any length, so C<<<<< C<<<<a>>>> >>>>> is code C<a>; a literal angle as long as the delimiter must be balanced, and a code left open runs to the end of its block, as C<< B<a < b> >> does now. A code inside another that never meets its own bracket ends at the bracket that closes the code around it, and the brackets it leaves free count for that code. The codes a code block allows by C<:allow> are the only ones read in it at any depth
+
+=item a warning for each markup code closed by the end of its block or by the bracket of a code around it (C<markup-code-unclosed>), for a run of opening angles longer than the delimiter (C<markup-code-longer-run>), for C<Q<>> and C<Y<>> (C<markup-code-reserved>), for C<M<>> (C<markup-code-unsupported>), for an entity code C<E> that holds no entity (C<markup-code-unreadable>, written out as it stands) and for C<E> inside C<C<>> without C<=config C<> :allow<E>> (C<markup-code-entity-in-code>), each with the line and column of the code in the source
+
+=item an entity code C<E> inside C<C<>> still reads as an entity in this release, with the warning above; the next release reads it as the specification does, as text unless C<=config C<> :allow<E>> is written
+
+=item C<M<text|Module>> is a markup code: the text is shown, as the specification asks of a module the renderer cannot run. C<P<text|source>> is an inline picture, written by the picture rule of each export. C<Q<>> and C<Y<>> are reserved: shown with their letter and brackets around what they hold, so a C<G<>> or C<Z<>> inside stays hidden
+
+=item B<Breaking:> the content of C<S<>>, C<Z<>> and C<V<>> is a list of text and codes, not a string; the codes inside C<S<>> are formatted as anywhere else and its whitespace kept, so a C<G<>> inside it is drawn as a hidden phrase with its spaces kept
+
+=item a warning when a closing bracket of a code stands unbalanced inside a code it holds that ends at its own bracket (C<markup-code-foreign-closer>): the outer code does not end there
+
+=item the alternative text of C<P<>> leaves out a C<Z<>> comment and is hidden whole when it holds a C<G<>> code; the address of a link leaves out a comment and masks a hidden word; an entity code it cannot read is shown with its letter and brackets around what it holds, read as anywhere else. A tab inside C<S<>> becomes spaces to the next tab stop, every eighth column, that do not break
+
+=item two warnings of a parse for one place keep the first instead of dropping both, and a warning about a markup code is not dropped for one about a value around it
+
+=item an implicit code block loses the indent of its first line on every line it holds, not only on the first: the output keeps the lines aligned as written. The indent is counted in columns, with tabs at every eighth column
+
+=item a parse gives each heading a C<headingKey>: its number among the headings of the tree that parse made, with a fingerprint of the text it read (C<assignHeadingKeys>, C<fingerprint>). A link that carries C<headingRef>, such as a table of contents entry, is bound by that key to its heading and written with the anchor the output gave it; C<sameDocTarget> takes the link as a fourth argument for this, and a key no heading holds gives no address. Two parses of the same text give the same keys, so a file included twice still leads its entries to the first copy
+
+=item an empty or balanced pair of angles inside a markup code no longer closes it: C<< B<x<>y> >> is bold C<< x<>y >>, and the same holds in a link address, a synonym and an index entry; a code delimited by two or three angles reads a shorter angle inside as text, so C<<< C<< a < b >> >>> and C«C<<< <<END_MARKER >>>» are codes. Text with many unpaired angles is read in milliseconds instead of seconds or minutes. A link, definition or index entry with an unpaired angle after its bar inside one-angle delimiters is now left as text, as other codes already were
+
+=item C<renderCodeText> gives the text of a code such as C<S<>> with each hidden piece masked as the context requires and no C<Z<>> comment; the html and markdown exports write C<S<>> through it, so a C<G<>> code inside C<S«…»> is hidden in production and a comment inside it is not written
+
+=item the text of C<S<>> is escaped in the html and markdown exports, and a line break in it is written in html as C<< <br> >> instead of C<< </br> >>
+
+=item an item is numbered for a C<#> only when the C<#> alone is its first word: C<#Hashtag> and C<##> stay as written; C<:!numbered> written on the item keeps the C<#> as text, and an item numbered by the C<#> over a C<=set :!numbered> carries one C<:numbered>
+
+=item a heading whose first word is a single C<#> is numbered, in the abbreviated, C<=for> and C<=begin> forms, and drawn without the C<#>; C<:!numbered> written on the heading keeps the C<#> as text. A heading with a C<#> elsewhere keeps its text, C<:id> and C<:numbered>
+
+=item C<readSelector> reads a selector or throws a C<SelectorError> of the new kind C<syntax> that says why it cannot be read; an empty operand of C<~<>> is named. C<parseSelector> returns C<undefined> for the same selectors as before
+
+=item the html export names a node it has no rule for, and an item whose content is not a list, by name and line, instead of printing the node with its content, hidden text included, to the error stream
+
+=item the content of a link may be a list of text nodes, as the parser already gives for a link that holds formatting codes
+
+=item C<getMaskedTextContent> gives the text of a node with its hidden parts under the mask, and C<guardedTextLeaves> gives the same text as pieces marked hidden or not, for text a host writes out past the renderer
+
+=item a selector pattern, by name or C<*>, does not find the C<=boundary> directive, nor an C<=include> left in a tree that was not assembled; C<=config boundary> no longer applies to C<=boundary>, in the tree and in HTML
+
+=item C<isDirectiveNode> tells a directive the tree keeps as a block node, and C<isWrapper> a block the tree adds around written blocks
+
+=head2 @podlite/to-jsx
+
+=item C<M<>> shows its text, C<P<>> is drawn as a picture, and C<Q<>> and C<Y<>> with their letter and brackets, a C<G<>> or C<Z<>> inside staying hidden; they were drawn as plain text or as a node it could not draw
+
+=item the codes inside C<S<>> are drawn as anywhere else, its whitespace kept and not breaking, inside a hidden phrase too
+
+=item the package no longer ships C<esm/podlite.css>, which the export map never opened; the style is taken as C<@podlite/to-jsx/podlite.css> or C<@podlite/to-jsx/lib/podlite.css>
+
+=item a link the tree generated, such as a table of contents entry, is drawn with the anchor of the heading its key names; the link preview callback gets that key, not the heading's text, as the target of such a link
+
+=item C<S«…»> holding other codes is drawn as its text instead of C<[object Object]>, with a C<G<>> code inside hidden in production and a C<Z<>> comment inside left out
+
+=item a block the renderer has no rule for is shown and logged by name, type and line, and an item whose content is not a list is logged by its line, instead of printing the node with its content, hidden text included, on the page and in the log
+
+=item C<=config boundary> no longer gives a C<=boundary> its C<:id>
+
+=item C<:folded> folds a paragraph, a code block, a C<=nested> block without C<:notice> and a definition description, written on the block or given by C<=config> or C<=set>
+
+=head2 @podlite/toc
+
+=item C<:title> as the caption of a table of contents is deprecated: it is still read in this release and will not be in the next. The specification captions a table of contents with C<:caption>, and C<podlite lint> warns about C<:title> (rule C<toc-title-attribute>)
+
+=item an entry for a heading leads to that heading, not to the first heading with the same text: two C<=head1 Intro> get entries to C<#Intro> and C<#Intro-2>, and so do a heading of the page and one of an included file. The entry carries the heading's key instead of its text, so the address of an entry for a heading with hidden text holds none of it. A heading named with C<:id>, written or set, keeps that name
+
 =head1 0.0.95
 
 

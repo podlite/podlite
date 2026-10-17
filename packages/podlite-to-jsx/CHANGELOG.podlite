@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.80
+
 =item C<M<>> shows its text, C<P<>> is drawn as a picture, and C<Q<>> and C<Y<>> with their letter and brackets, a C<G<>> or C<Z<>> inside staying hidden; they were drawn as plain text or as a node it could not draw
 
 =item the codes inside C<S<>> are drawn as anywhere else, its whitespace kept and not breaking, inside a hidden phrase too

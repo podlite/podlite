@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.76
+
 =item markup codes are read in two steps, as the specification sets them out: first where each code begins and ends (C<scanCodes>), then what each code means (C<readCodes>, which C<parseFormattingCodes> now calls). A code ends at its own matching bracket; a run of closing brackets closes what is open, nearest first, so C<<< B<x<I<a>>y> >>> is bold C<< x<a>y >> with the pair balanced; a delimiter is a run of any length, so C<<<<< C<<<<a>>>> >>>>> is code C<a>; a literal angle as long as the delimiter must be balanced, and a code left open runs to the end of its block, as C<< B<a < b> >> does now. A code inside another that never meets its own bracket ends at the bracket that closes the code around it, and the brackets it leaves free count for that code. The codes a code block allows by C<:allow> are the only ones read in it at any depth
 
 =item a warning for each markup code closed by the end of its block or by the bracket of a code around it (C<markup-code-unclosed>), for a run of opening angles longer than the delimiter (C<markup-code-longer-run>), for C<Q<>> and C<Y<>> (C<markup-code-reserved>), for C<M<>> (C<markup-code-unsupported>), for an entity code C<E> that holds no entity (C<markup-code-unreadable>, written out as it stands) and for C<E> inside C<C<>> without C<=config C<> :allow<E>> (C<markup-code-entity-in-code>), each with the line and column of the code in the source

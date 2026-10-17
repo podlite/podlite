@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.69
+
 =item C<md2ast> gives each heading a C<headingKey>, fingerprinted from the markdown text it read, including the body of a C<=markdown> block
 
 =head1 0.0.63

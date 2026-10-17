@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.57
+
 =item the index the publisher writes for the site carries a term from hidden text masked, entry and text; an entry in a heading points to the anchor the page gives that heading, so it reaches a hidden heading, a repeated one and one with an C<:id>
 
 =item a hidden word in the title or subtitle of a document, an article, a page or the site is masked in the title the publisher gives out, and is left out of the address built from that title; the text a C<doc:> link takes from the document it names keeps its hidden words marked, so the page shows them masked
