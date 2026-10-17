@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<lint> rule C<toc-title-attribute> says that C<:title> on a C<=toc> block gives no caption: the table of contents no longer reads it
+
 =head1 0.0.89
 
 =item C<lint> warns about C<:title> on a C<=toc> block, written on the block or given by C<=set> or C<=config>: the specification captions a table of contents with C<:caption>. The table of contents still reads C<:title> in this release and will not in the next (rule C<toc-title-attribute>)

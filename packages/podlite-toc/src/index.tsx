@@ -45,9 +45,11 @@ const entryOf = (node: PodNode): TocEntry => {
     }
     if (node.type === 'block') {
       const conf = makeAttrs(node, {})
+      // a table of contents is captioned by :caption only; other blocks still name an entry by :title
+      const titled = node.name !== 'toc' && node.name !== 'Toc' && conf.exists('title')
       if (isNamedBlock(node.name)) {
         if (conf.exists('caption')) return { text: conf.getFirstValue('caption'), source: null }
-        if (conf.exists('title')) return { text: conf.getFirstValue('title'), source: null }
+        if (titled) return { text: conf.getFirstValue('title'), source: null }
         const [captionNode] = getFromTree(node, 'caption')
         if (captionNode)
           return { text: getTextContentFromNode(captionNode), source: (captionNode as any).content || null }
@@ -69,7 +71,7 @@ const entryOf = (node: PodNode): TocEntry => {
       if (conf.exists('caption')) {
         const caption = getTextContentFromNode(conf.getFirstValue('caption'))
         if (caption) return { text: caption, source: null }
-      } else if (conf.exists('title')) {
+      } else if (titled) {
         const title = getTextContentFromNode(conf.getFirstValue('title'))
         if (title) return { text: title, source: null }
       } else {
@@ -282,7 +284,7 @@ const buildToc = (node: any, ctx: any, fulltree: any, self: unknown, read: { sel
     return mkTocList(resultList, level)
   }
   const conf = makeAttrs(node, ctx)
-  const tocTitle = conf.getFirstValue('caption') || conf.getFirstValue('title')
+  const tocTitle = conf.getFirstValue('caption')
 
   // Parse :folded (bare) — wraps entire TOC in <details>.
   //   :folded      -> folded: true  (collapsed)

@@ -176,9 +176,9 @@ describe('the caption of a table of contents in html', () => {
   }
   const toc = (caption: string) => `=for toc ${caption}\nhead1\n\n=head1 One`
 
-  it('stands before the entries, from :caption or :title', () => {
+  it('stands before the entries, from :caption only', () => {
     expect(captionOf(html(toc(":caption('Tests')")))).toBe('Tests')
-    expect(captionOf(html(toc(":title('Tests')")))).toBe('Tests')
+    expect(tocOf(html(toc(":title('Tests')")))).not.toContain('toctitle')
     expect(tocOf(html('=toc head1\n\n=head1 One'))).not.toContain('toctitle')
   })
 

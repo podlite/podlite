@@ -13,13 +13,12 @@ const isToc = (node: unknown): node is TocNode =>
   (node as TocNode).type === 'block' &&
   ((node as TocNode).name === 'toc' || (node as TocNode).name === 'Toc')
 
-// The specification captions a table of contents with :caption; the module of the
-// table of contents also reads :title, and stops in the next release. The parser
+// The specification captions a table of contents with :caption, and the module of the
+// table of contents no longer takes a caption from :title. The parser
 // already puts on a block what =set and =config give it, marked by where it came
 // from, so one reading of the block covers all three sources and gives one warning.
-// The linter can assemble a document by its includes, and this rule does not: no
-// document gives a table of contents :title through =set or =config, and a warning
-// about a block of another file would have to stand at the line of =include. So a
+// The linter can assemble a document by its includes, and this rule does not: a
+// warning about a block of another file would have to stand at the line of =include. So a
 // :title that reaches a table of contents only when the files are assembled is not
 // reported, as with the notification attribute.
 export const tocTitleAttributeRule: Rule = {
@@ -35,7 +34,7 @@ export const tocTitleAttributeRule: Rule = {
         {
           rule: TOC_TITLE_ATTRIBUTE_RULE_ID,
           severity: 'warning' as const,
-          message: `:title${source} as the caption of =${node.name} is deprecated; a caption is written :caption`,
+          message: `:title${source} on =${node.name} gives no caption; a caption is written :caption`,
           location: node.location,
         },
       ]

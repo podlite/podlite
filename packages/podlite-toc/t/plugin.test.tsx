@@ -175,7 +175,7 @@ it('[check default list]=toc', () => {
   `)
 })
 it.skip('=toc Image Diagram1', () => {
-  const pod = `=for toc :title<Table of Media>
+  const pod = `=for toc :caption<Table of Media>
   Image, Diagram 
     =for Image :caption('Image caption') :id(1)
     https://example.com.image.png
@@ -191,7 +191,7 @@ it.skip('=toc Image Diagram1', () => {
 })
 
 it('=toc Image Diagram', () => {
-  const pod = `=for toc :title<Table of Media>
+  const pod = `=for toc :caption<Table of Media>
 Image, Diagram 
   =for Image :caption('Image caption') :id(1)
   https://example.com.image.png

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import { markGuarded, mkCaption, mkToc, mkTocList } from '@podlite/schema'
+import { markGuarded, mkCaption, mkToc, mkTocList, toAnyRules, toHtml } from '@podlite/schema'
 import { podlite } from '../src/index'
 import { resolveIncludes, IncludeOrigin } from '../src/resolve-includes'
 import { refreshTocs } from '../src/refresh-tocs'
@@ -30,6 +30,32 @@ const findToc = (node: unknown): Found | undefined => {
 }
 
 const tocOf = (source: string): Found | undefined => findToc(parseToAst(source))
+
+const html = (source: string): string =>
+  String(toHtml({ renderMode: 'production' }).use(toAnyRules('toHtml', p.getPlugins())).run(parseToAst(source)))
+
+const tocsOf = (node: unknown): Found[] => {
+  if (Array.isArray(node)) return node.flatMap(tocsOf)
+  const own = record(node)
+  if (!own) return []
+  return own.type === 'toc' ? [own] : tocsOf(own.content)
+}
+
+const textOf = (node: unknown): string => {
+  if (typeof node === 'string') return node
+  if (Array.isArray(node)) return node.map(textOf).join('')
+  const own = record(node)
+  if (!own) return ''
+  return own.type === 'text' ? String(own.value) : textOf(own.content)
+}
+
+// the text of each entry of the last table of contents in the document
+const entriesOf = (source: string): string[] => {
+  const tocs = tocsOf(parseToAst(source))
+  const list = record(tocs[tocs.length - 1]?.content)
+  const items = Array.isArray(list?.content) ? list.content : []
+  return items.map(item => textOf(record(item)?.content))
+}
 
 // the words of the caption with the mark each one carries
 const wordsOf = (node: unknown): Array<[string, boolean]> => {
@@ -62,10 +88,24 @@ describe('the caption of a table of contents', () => {
     expect(tocOf('=for toc\nhead1\n\n=head1 One\n')).not.toHaveProperty('caption')
   })
 
-  it('is read from :title as well', () => {
-    const toc = tocOf("=for toc :title('Contents B<here>')\nhead1\n\n=head1 One\n")
-    expect(codesOf(toc?.caption)).toEqual(['B'])
-    expect(wordsOf(toc?.caption).map(([word]) => word)).toEqual(['Contents ', 'here'])
+  it('is not taken from :title', () => {
+    const source = '=for toc :title<LEGACY>\nhead1\n\n=head1 One\n'
+    const toc = tocOf(source)
+    expect(toc).not.toHaveProperty('caption')
+    expect(toc?.title).toBeUndefined()
+    expect(html(source)).not.toContain('toctitle')
+  })
+
+  it('is not taken from :title when :caption is empty', () => {
+    const source = "=for toc :caption('') :title<LEGACY>\nhead1\n\n=head1 One\n"
+    expect(tocOf(source)).not.toHaveProperty('caption')
+    expect(html(source)).not.toContain('toctitle')
+  })
+
+  it('comes from :caption when :title is written beside it', () => {
+    expect(wordsOf(tocOf('=for toc :caption<CAP> :title<LEGACY>\nhead1\n\n=head1 One\n')?.caption)).toEqual([
+      ['CAP', false],
+    ])
   })
 
   it('is hidden word by word when the table is hidden', () => {
@@ -125,5 +165,28 @@ describe('marking covered content', () => {
     )
     markGuarded([toc], true)
     expect(wordsOf(toc.caption)).toEqual([['Plain', true]])
+  })
+})
+
+describe('an entry for a block that a table of contents lists', () => {
+  it('is not named by the :title of a table of contents', () => {
+    const entries = entriesOf('=for toc :id<inner> :title<LEGACY>\nhead1\n\n=toc toc[ :id<inner> ]\n\n=head1 One\n')
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).not.toContain('LEGACY')
+    // the listed table still holds its selector when the entries are made, so its text is the selector
+    expect(entries[0].trim()).toBe('head1')
+  })
+
+  it('is not named by the :title of a table of contents written Toc', () => {
+    // Toc is the older spelling the module still reads, not a name of the specification
+    const entries = entriesOf(
+      '=for Toc :id<inner> :title<LEGACY>\nhead1\n\n=for Toc\nToc[ :id<inner> ]\n\n=head1 One\n',
+    )
+    expect(entries).toEqual(['Toc not have :caption'])
+  })
+
+  it('is still named by the :title of another block', () => {
+    expect(entriesOf('=for Diagram :id<d> :title<Flow>\ngraph LR\n\n=toc Diagram\n')).toEqual(['Flow'])
+    expect(entriesOf('=for nested :id<n> :title<Quoted>\nText\n\n=toc nested\n')).toEqual(['Quoted'])
   })
 })

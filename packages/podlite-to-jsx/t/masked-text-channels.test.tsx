@@ -35,7 +35,7 @@ describe('text the page writes from a hidden block is hidden with it', () => {
   })
 
   it('hides the title of a table of contents', () => {
-    hidden('=begin pod :masked\n=for toc :title<Tocz> :folded\nhead1\n\n=head1 x\n=end pod', ['Tocz'])
+    hidden('=begin pod :masked\n=for toc :caption<Tocz> :folded\nhead1\n\n=head1 x\n=end pod', ['Tocz'])
   })
 
   it('hides the caption of highlighted code', () => {

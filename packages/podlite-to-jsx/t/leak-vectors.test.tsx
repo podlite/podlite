@@ -119,7 +119,7 @@ describe('the caption of a table of contents on the page', () => {
 
   it('hides a hidden word of its own and shows the rest', () => {
     expect(captionOf(page(toc(":caption('Tests')")))).toBe('Tests')
-    expect(captionOf(page(toc(":title('Tests')")))).toBe('Tests')
+    expect(page(toc(":title('Tests')"))).not.toContain('toctitle')
     for (const written of ['Public G<Secret>', 'Public G«Secret»']) {
       expect(captionOf(page(toc(`:caption('${written}')`)))).toBe('Public <span class="masked">██████</span>')
       expect(captionOf(page(toc(`:caption('${written}')`), 'draft'))).toContain('Secret')

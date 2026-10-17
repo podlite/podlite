@@ -6,10 +6,10 @@ import { DEFAULT_RULES } from '../src/lint/rules'
 
 const RULE = 'toc-title-attribute'
 
-const WRITTEN = ':title as the caption of =toc is deprecated; a caption is written :caption'
-const WRITTEN_OLD = ':title as the caption of =Toc is deprecated; a caption is written :caption'
-const FROM_SET = ':title given by =set as the caption of =toc is deprecated; a caption is written :caption'
-const FROM_CONFIG = ':title given by =config as the caption of =toc is deprecated; a caption is written :caption'
+const WRITTEN = ':title on =toc gives no caption; a caption is written :caption'
+const WRITTEN_OLD = ':title on =Toc gives no caption; a caption is written :caption'
+const FROM_SET = ':title given by =set on =toc gives no caption; a caption is written :caption'
+const FROM_CONFIG = ':title given by =config on =toc gives no caption; a caption is written :caption'
 
 const found = (src: string) =>
   lintSource(src, 'doc.podlite', {})
@@ -27,7 +27,8 @@ describe('toc-title-attribute rule', () => {
   })
 
   it('warns on :title written on a paragraph and on a delimited table of contents', () => {
-    const src = '=begin pod\n=for toc :title<X>\nhead1\n\n=begin toc :title<Y>\nhead1\n=end toc\n\n=head1 One\n=end pod\n'
+    const src =
+      '=begin pod\n=for toc :title<X>\nhead1\n\n=begin toc :title<Y>\nhead1\n=end toc\n\n=head1 One\n=end pod\n'
     expect(found(src)).toEqual([
       { line: 2, message: WRITTEN },
       { line: 5, message: WRITTEN },
@@ -35,11 +36,15 @@ describe('toc-title-attribute rule', () => {
   })
 
   it('names the older spelling as written', () => {
-    expect(found("=begin pod\n=for Toc :title('List of tables')\ntable\n=end pod\n")).toEqual([{ line: 2, message: WRITTEN_OLD }])
+    expect(found("=begin pod\n=for Toc :title('List of tables')\ntable\n=end pod\n")).toEqual([
+      { line: 2, message: WRITTEN_OLD },
+    ])
   })
 
   it('warns on :title written on a continuation line of the directive', () => {
-    expect(found('=begin pod\n=for toc :id<t>\n= :title<X>\nhead1\n=end pod\n')).toEqual([{ line: 2, message: WRITTEN }])
+    expect(found('=begin pod\n=for toc :id<t>\n= :title<X>\nhead1\n=end pod\n')).toEqual([
+      { line: 2, message: WRITTEN },
+    ])
   })
 
   it('warns on an empty :title', () => {
@@ -47,7 +52,9 @@ describe('toc-title-attribute rule', () => {
   })
 
   it('warns where :caption stands next to :title', () => {
-    expect(found('=begin pod\n=for toc :caption<A> :title<B>\nhead1\n=end pod\n')).toEqual([{ line: 2, message: WRITTEN }])
+    expect(found('=begin pod\n=for toc :caption<A> :title<B>\nhead1\n=end pod\n')).toEqual([
+      { line: 2, message: WRITTEN },
+    ])
   })
 
   it('warns on :title given by =set to the next block only, at the line of the block', () => {
