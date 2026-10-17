@@ -229,6 +229,11 @@ describe('the closing round', () => {
     expect(warnings.map(w => w.location.start.column)).toEqual([1, 21])
   })
 
+  it('places a warning past a cell before it that holds the same text and says nothing', () => {
+    const { warnings } = parsed('=begin table\nC<M<a|NoSuchModule>> | M<a|NoSuchModule>\n=end table\n')
+    expect(warnings.map(w => w.location.start.column)).toEqual([24])
+  })
+
   it('places the warnings of two cells with the same text ending a row at each cell', () => {
     const { warnings } = parsed('=begin table\nM<a|NoSuchModule> | M<a|NoSuchModule>\n=end table\n')
     expect(warnings.map(w => w.location.start.column)).toEqual([1, 21])
