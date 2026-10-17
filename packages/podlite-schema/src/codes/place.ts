@@ -33,6 +33,14 @@ const matched = new WeakMap<PendingFragment, Matched>()
 // where the last piece of text found inside a line of a block ended: the cells of a
 // row are read left to right, so a cell with the same text as one before it is the next
 const cursors = new WeakMap<Location, number>()
+// every piece of text inside a line of a block, in the order it was read, with or
+// without warnings of its own: a cell before moves the cursor even when it says nothing
+const inlineOf = new WeakMap<Location, PendingFragment[]>()
+export const registerInline = (block: Location, fragment: PendingFragment): void => {
+  const list = inlineOf.get(block) || []
+  list.push(fragment)
+  inlineOf.set(block, list)
+}
 
 const binary = (starts: number[], at: number): number => {
   let low = 0
@@ -54,9 +62,10 @@ export const placeInSource = (
 ): Location => {
   const lineOf = (k: number): string =>
     source.slice(starts[k], (starts[k + 1] ?? source.length + 1) - 1).replace(/\r$/, '')
-  let match = matched.get(pending.fragment)
-  if (!match) {
-    const textLines = pending.fragment.text.split('\n')
+  const matchOf = (fragment: PendingFragment): Matched => {
+    const known = matched.get(fragment)
+    if (known) return known
+    const textLines = fragment.text.split('\n')
     const found: number[] = []
     let k = Math.max(0, (block.start.line || 1) - 1)
     for (let j = 0; j < textLines.length && k < starts.length; j++) {
@@ -67,7 +76,7 @@ export const placeInSource = (
         const line = lineOf(s)
         const at = words === '' ? line.length : line.lastIndexOf(words)
         const before = line.slice(0, at)
-        const alone = !(pending.fragment.inline && j === 0 && textLines.length === 1 && words !== '')
+        const alone = !(fragment.inline && j === 0 && textLines.length === 1 && words !== '')
         if (alone && at >= 0 && at + words.length === line.length && (j === 0 || /^\s*$/.test(before))) {
           hit = s
           break
@@ -92,10 +101,17 @@ export const placeInSource = (
       found.push(starts[hit] + wordsAt - (textLines[j].length - words.length))
       k = hit + 1
     }
-    match = { found, lines: lineStarts(pending.fragment.text) }
-    matched.set(pending.fragment, match)
+    const match = { found, lines: lineStarts(fragment.text) }
+    matched.set(fragment, match)
+    return match
   }
-  const { found, lines } = match
+  // the cells read before this one are found first, in order
+  if (pending.fragment.inline)
+    for (const before of inlineOf.get(block) || []) {
+      if (before === pending.fragment) break
+      matchOf(before)
+    }
+  const { found, lines } = matchOf(pending.fragment)
   const point = (offset: number) => {
     const j = binary(lines, offset)
     const column = offset - lines[j]

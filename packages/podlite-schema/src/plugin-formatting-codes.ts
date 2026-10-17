@@ -1,4 +1,5 @@
 import { readCodes, CodeIssue } from './codes/read'
+import { registerInline } from './codes/place'
 import makeTransformer from './helpers/makeTransformer'
 import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
@@ -52,6 +53,7 @@ const middle: ParserPlugin = opt => tree => {
     const content = readCodes(text, { allowed, allowedIn, parseAttributes, entityInCode: true, issues })
     const location = block && block.location
     const fragment = { text, inline }
+    if (inline && block && block.location) registerInline(block.location, fragment)
     if (Array.isArray(opt.diagnostics) && location)
       for (const issue of issues)
         opt.diagnostics.push({
