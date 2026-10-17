@@ -177,12 +177,12 @@ describe('the rest of round 1', () => {
       for (const issue of issues) placeInSource(source, block, { fragment, start: issue.start, end: issue.end }, starts)
       return Number(process.hrtime.bigint() - started) / 1e6
     }
-    // the least of three runs, so a busy machine does not decide; eight times the input
-    // gives eight times the time when it grows with it and sixty-four when it squares,
-    // so the bound between them leaves room for a slow runner
-    const least = (k: number) => Math.min(time(k), time(k), time(k))
-    least(1000)
-    expect(least(16000)).toBeLessThan(least(2000) * 24)
+    // the least of five runs on inputs that take milliseconds, so a busy machine does not
+    // decide; eight times the input gives eight times the time when it grows with it and
+    // sixty-four when it squares, so the bound between them leaves room for a slow runner
+    const least = (k: number) => Math.min(time(k), time(k), time(k), time(k), time(k))
+    least(4000)
+    expect(least(64000)).toBeLessThan(least(8000) * 24)
   })
 
   it('keeps a tab inside S<> as spaces that do not break (4060–4063)', () => {

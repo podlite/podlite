@@ -22,7 +22,7 @@ const shape = (node: any): string => {
 }
 const read = (text: string) => shape(parsed(`=para ${text}\n`).ast).trim()
 
-describe('T805: the codes with rules of their own take doubled and tripled delimiters', () => {
+describe('the codes with rules of their own take doubled and tripled delimiters', () => {
   const bodies: Record<string, string> = { L: 't|u', W: 't|u', X: 't|a;b', D: 't|a;b' }
   for (const code of ['S', 'Z', 'V', 'L', 'X', 'D', 'W', 'A']) {
     it(`reads ${code} the same with one, two and three angles and with guillemets`, () => {
@@ -36,7 +36,7 @@ describe('T805: the codes with rules of their own take doubled and tripled delim
   }
 })
 
-describe('T744: S<> reads the codes inside it', () => {
+describe('S<> reads the codes inside it', () => {
   it('holds a nested code and keeps the spaces around it', () => {
     expect(read('S<x B<b> y>')).toBe('S[x B[b] y]')
     expect(parsed('=para S<x  B<b>  y>\n').html).toContain('x&nbsp;&nbsp;<strong>b</strong>&nbsp;&nbsp;y')
@@ -51,7 +51,7 @@ describe('T744: S<> reads the codes inside it', () => {
   })
 })
 
-describe('T806: thousands of unpaired angles parse in time that grows with the text', () => {
+describe('thousands of unpaired angles parse in time that grows with the text', () => {
   const ms = (doc: string) => {
     const started = process.hrtime.bigint()
     parsed(doc)
@@ -62,8 +62,10 @@ describe('T806: thousands of unpaired angles parse in time that grows with the t
       expect(ms(`=para ${doc}\n`)).toBeLessThan(100)
   })
   it('grows no faster than the text', () => {
-    const least = (k: number) => Math.min(...[0, 1, 2].map(() => ms(`=para B<${'a < b '.repeat(k)}>\n`)))
-    least(500)
-    expect(least(4000)).toBeLessThan(least(1000) * 8)
+    // the least of five runs on texts that take milliseconds; the text grows eight times, linear time
+    // stays well under 24 even on a busy machine, square time would be 64
+    const least = (k: number) => Math.min(...[0, 1, 2, 3, 4].map(() => ms(`=para B<${'a < b '.repeat(k)}>\n`)))
+    least(2000)
+    expect(least(32000)).toBeLessThan(least(4000) * 24)
   })
 })
