@@ -68,6 +68,9 @@ export const placeInSource = (
     const textLines = fragment.text.split('\n')
     const found: number[] = []
     let k = Math.max(0, (block.start.line || 1) - 1)
+    // a cell stands in the body: the directive line and its continuations, which hold
+    // the attributes such as a caption, are not searched for it
+    if (fragment.inline) while (k < starts.length && /^\s*=/.test(lineOf(k))) k++
     for (let j = 0; j < textLines.length && k < starts.length; j++) {
       const words = textLines[j].replace(/^\s+/, '')
       let hit = -1
