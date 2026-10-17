@@ -11,15 +11,13 @@ type Read = { node: Node; closed: boolean; free: Array<[number, string]> } // fr
 
 const oracle = (text: string, scope: ScanScope): Node[] => {
   const n = text.length
-  const gate = (outer: string | null, name: string, bracket: string, depth: number): boolean => {
+  const gate = (outer: string | null, name: string): boolean => {
     if (scope.allowed?.length && !scope.allowed.includes(name)) return false
     if (outer !== 'C' && outer !== 'V') return true
-    // the transition release: E<…> with angles, outside the literal pairs of C<>
-    if (outer === 'C' && name === 'E' && scope.entityInCode && bracket === '<' && depth === 0) return true
     return (scope.allowedIn?.[outer] || []).includes(name)
   }
-  const opens = (i: number, outer: string | null, depth = 0): boolean =>
-    /[A-Z]/.test(text[i] || '') && /[<«]/.test(text[i + 1] || '') && gate(outer, text[i], text[i + 1], depth)
+  const opens = (i: number, outer: string | null): boolean =>
+    /[A-Z]/.test(text[i] || '') && /[<«]/.test(text[i + 1] || '') && gate(outer, text[i])
   const run = (i: number): string => (text.slice(i).match(/^(<+|>+|«|»)/) || [''])[0]
 
   // the code at p on its own: where it ends, what it holds, what it leaves free
@@ -30,8 +28,6 @@ const oracle = (text: string, scope: ScanScope): Node[] => {
     const node: Node = { name, start: p, body: p + 1 + open.length, bodyEnd: n, end: n, own: false, kids: [] }
     const free: Array<[number, string]> = []
     let depth = 0
-    // angles inside guillemets, open and not closed: asked only by the transition release
-    let angles = 0
     // one bracket token met by this code, in its text or freed by a child; true when it closed the code
     const meet = (at: number, token: string, holder: Node | null): boolean => {
       if (token === open || (open === '«' && token === '«')) {
@@ -61,7 +57,7 @@ const oracle = (text: string, scope: ScanScope): Node[] => {
     }
     let i = node.body
     while (i < n) {
-      if (opens(i, name, open === '«' ? angles : depth)) {
+      if (opens(i, name)) {
         const child = alone(i)
         if (child.closed) {
           node.kids.push(child.node)
@@ -76,8 +72,6 @@ const oracle = (text: string, scope: ScanScope): Node[] => {
         return { node, closed: false, free }
       }
       const token = run(i)
-      if (token && open === '«' && token[0] === '<') angles += token.length
-      if (token && open === '«' && token[0] === '>') angles = Math.max(0, angles - token.length)
       if (token) {
         if (open !== '«' && token[0] === '<' && token !== open) free.push([i, token])
         else if (meet(i, token, null)) return { node, closed: true, free }
@@ -126,7 +120,7 @@ const fromOracle = (nodes: Node[]): Node[] =>
   nodes.map(c => ({ ...c, body: Math.min(c.body, c.bodyEnd), kids: fromOracle(c.kids) }))
 
 const ALPHABET = ['B', 'I', 'C', 'E', '<', '>', '«', '»', 'x', ' ']
-const SCOPES: ScanScope[] = [{}, { allowed: ['B', 'C', 'E'] }, { allowedIn: { C: ['I'] } }, { entityInCode: true }]
+const SCOPES: ScanScope[] = [{}, { allowed: ['B', 'C', 'E'] }, { allowedIn: { C: ['I'] } }, { allowedIn: { C: ['E'] } }]
 
 const differs = (text: string, scope: ScanScope): boolean =>
   JSON.stringify(fromScan(scanCodes(text, scope).codes)) !== JSON.stringify(fromOracle(oracle(text, scope)))

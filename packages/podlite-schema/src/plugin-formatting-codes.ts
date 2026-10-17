@@ -50,7 +50,7 @@ const middle: ParserPlugin = opt => tree => {
   // place in the text, and the parser turns that into a place in the source
   const read = (text: string, allowed: string[] | undefined, allowedIn: AllowedIn, block: any, inline = false) => {
     const issues: CodeIssue[] = []
-    const content = readCodes(text, { allowed, allowedIn, parseAttributes, entityInCode: true, issues })
+    const content = readCodes(text, { allowed, allowedIn, parseAttributes, issues })
     const location = block && block.location
     const fragment = { text, inline }
     if (inline && block && block.location) registerInline(block.location, fragment)

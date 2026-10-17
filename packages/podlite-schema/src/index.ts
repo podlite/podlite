@@ -244,7 +244,7 @@ export { makeTree as toTree }
 const parse: Function = makeTree().parse
 export { parse as parse }
 export const parseFormattingCodes = (text: string, options: { [key: string]: any } = {}): any =>
-  readCodes(text, { parseAttributes, entityInCode: true, ...options })
+  readCodes(text, { parseAttributes, ...options })
 export { default as toHtml } from './exportHtml'
 export { default as toMarkdown } from './exportMarkdown'
 export { default as Writer } from './writer'

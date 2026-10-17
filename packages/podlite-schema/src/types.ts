@@ -210,7 +210,6 @@ export interface ParseDiagnostic {
     | 'markup-code-reserved'
     | 'markup-code-unsupported'
     | 'markup-code-unreadable'
-    | 'markup-code-entity-in-code'
   message: string
   location: Location
 }

@@ -108,13 +108,11 @@ describe('codes inside C<> and V<>', () => {
     reads('C<BE<lt>constE<gt>>', 'C[BE[lt]constE[gt]]', [], { allowedIn: { C: ['E'] } })
   })
 
-  it('reads E<> inside C<> in the transition release, inside the codes of the block only', () => {
-    reads('C<E<lt> I<x>>', 'C[E[lt] I<x>]', [], { entityInCode: true })
-    reads('C<E<lt> I<x>>', 'C[E[lt] I[x]]', [], { entityInCode: true, allowedIn: { C: ['I'] } })
-    reads('C<E<lt>>', 'C[E<lt>]', [], { entityInCode: true, allowed: ['C'] })
-    // inside a literal pair of C<> the earlier reader left E<…> as written, and so does the transition
-    reads('C<G<E<32>>>', 'C[G<E<32>>]', [], { entityInCode: true })
-    reads('C«G<E<32>> E<lt>»', 'C[G<E<32>> E[lt]]', [], { entityInCode: true })
+  it('reads E<> inside C<> as text unless =config names it', () => {
+    reads('C<E<lt> I<x>>', 'C[E<lt> I<x>]', [])
+    reads('C<E<lt> I<x>>', 'C[E<lt> I[x]]', [], { allowedIn: { C: ['I'] } })
+    reads('C<G<E<32>>>', 'C[G<E<32>>]', [])
+    reads('C«G<E<32>> E<lt>»', 'C[G<E<32>> E<lt>]', [])
   })
 
   it('reads nothing inside V<>', () => {

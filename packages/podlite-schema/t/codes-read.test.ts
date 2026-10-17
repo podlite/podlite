@@ -1,5 +1,6 @@
 import { podlitePluggable } from '../src/pluggableParser'
 import { readCodes } from '../src/codes/read'
+import { parseFormattingCodes } from '../src/index'
 import { placeInSource, lineStarts } from '../src/codes/place'
 
 const parsed = (doc: string) => {
@@ -50,13 +51,26 @@ describe('reading markup codes by their letter', () => {
     expect(html).toContain('a&nbsp;&nbsp;<strong>b</strong>&nbsp;&nbsp;c')
   })
 
-  it('reads E<> inside C<> in this release and warns that =config is needed (decision 4.1)', () => {
+  it('reads E<> inside C<> as text unless =config allows it', () => {
     const plain = para('C<E<lt>x>')
-    expect(plain.html).toContain('<code>&lt;x</code>')
-    expect(plain.warnings.map(w => w.code)).toEqual(['markup-code-entity-in-code'])
+    expect(plain.html).toContain('<code>E&lt;lt&gt;x</code>')
+    expect(plain.warnings).toEqual([])
     const configured = parsed('=config C<> :allow<E>\n\n=para C<E<lt>x>\n')
     expect(configured.html).toContain('<code>&lt;x</code>')
     expect(configured.warnings).toEqual([])
+  })
+
+  it('reads E<> inside C<> as text when =config allows other codes only', () => {
+    const { html } = parsed('=config C<> :allow<I>\n\n=para C<E<lt> I<x>>\n')
+    expect(html).toContain('<code>E&lt;lt&gt; <em>x</em></code>')
+  })
+
+  it('reads E<> inside C<> as text through parseFormattingCodes', () => {
+    expect(parseFormattingCodes('C<E<lt>>')).toEqual([{ type: 'fcode', name: 'C', content: ['E<lt>'] }])
+  })
+
+  it('reads E<> as an entity in a code block that allows E', () => {
+    expect(parsed('=begin code :allow<E>\na E<lt> b\n=end code\n').html).toContain('a &lt; b')
   })
 
   it('does not let the content of G<> out through a literal pair or a nested code (plan T808)', () => {

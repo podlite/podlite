@@ -24,7 +24,6 @@ export type CodeIssueKind =
   | 'markup-code-reserved'
   | 'markup-code-unsupported'
   | 'markup-code-unreadable'
-  | 'markup-code-entity-in-code'
 
 // where in the fragment a warning points; the parser turns it into a place in the source
 export interface CodeIssue {
@@ -38,8 +37,6 @@ export interface ReadOptions {
   allowed?: string[]
   allowedIn?: { [code: string]: string[] }
   parseAttributes?: (text: string) => unknown
-  // E<> inside C<> without =config: the release that moves documents to the norm reads it, with a warning
-  entityInCode?: boolean
   issues?: CodeIssue[]
 }
 
@@ -56,7 +53,6 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
   const scope: ScanScope = {
     allowed: options.allowed,
     allowedIn: options.allowedIn,
-    entityInCode: options.entityInCode,
   }
   const { codes, issues } = scanCodes(text, scope)
   const report = (code: CodeIssueKind, message: string, start: number, end: number) =>
@@ -198,15 +194,6 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
             },
           ]
         }
-        if (name === 'C' && !(options.allowedIn?.C || []).includes('E'))
-          for (const child of code.children)
-            if (child.name === 'E')
-              report(
-                'markup-code-entity-in-code',
-                'E<> inside C<> reads as an entity only in this release; to keep it, write =config C<> :allow<E>',
-                child.start,
-                child.end,
-              )
         return [{ content: children(), type: 'fcode', name }]
     }
   }
