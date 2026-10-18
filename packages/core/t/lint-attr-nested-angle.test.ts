@@ -82,6 +82,42 @@ describe('attr-nested-angle rule', () => {
     expect(scanSourceRules('Example: C<:status<accepted>> and C<:status<draft>>\n')).toEqual([])
     expect(scanSourceRules('=begin code\n=for para :k<a<b>>\n=end code\n')).toEqual([])
   })
+
+  it('reads an unclosed angle in running text only to the end of its line', () => {
+    const block = '=begin code :lang<bash>\nx\n=end code\n'
+    expect(scanSourceRules(`=begin pod\n\nLook for C«:released-in<» and fail.\n\n${block}\n=end pod\n`)).toEqual([])
+    expect(scanSourceRules(`=begin pod\n\nWrite :id< with no close.\n\n${block}\n=end pod\n`)).toEqual([])
+  })
+
+  it('ends an angle value with its line on the directive line', () => {
+    expect(
+      scanSourceRules('=begin pod\n\n=for para :a<x\n\n=begin code :lang<bash>\nx\n=end code\n\n=end pod\n'),
+    ).toEqual([])
+  })
+
+  it('reads a line of content that starts with a colon or a quote as content', () => {
+    expect(scanSourceRules('=for para :a<x>\n:b<y<z>> is written so.\n')).toEqual([])
+    expect(scanSourceRules("=for para :a<x>\n'quoted' then :b<y<z>>\n")).toEqual([])
+  })
+
+  it('takes no colon inside a markup code or a quoted value for an attribute', () => {
+    expect(scanSourceRules("=for para :caption('C«:a<x<y>>»')\nText\n")).toEqual([])
+    expect(scanSourceRules('=for para :caption"see :a<x<y>>"\nText\n')).toEqual([])
+    expect(scanSourceRules('=for para :caption｢see :a<x<y>>｣\nText\n')).toEqual([])
+    expect(scanSourceRules("=config para\n= :caption('see :a<x<y>>')\n\n=para Text\n")).toEqual([])
+    const v = scanSourceRules('=for item :a<x>\n  :b<y> C«:c<d<e>>»\n')
+    expect(v.map(d => d.rule)).toEqual(['attr-continuation-dropped'])
+  })
+
+  it('reads a quoted value after text that holds an unclosed angle', () => {
+    const src = "=begin pod\n\nLook for C«:released-in<».\n\n=for para :caption('see :a<x<y>>')\nText\n\n=end pod\n"
+    expect(scanSourceRules(src)).toEqual([])
+  })
+
+  it('flags an option of a hash after the brace and after a comma', () => {
+    expect(scanSourceRules('=for para :k{:a<x B<1> y>}\n')).toHaveLength(1)
+    expect(scanSourceRules('=for para :k{:a(1),:b<x B<bold> tail>}\nText\n')).toHaveLength(1)
+  })
 })
 
 describe('runLint attr-nested-angle integration', () => {

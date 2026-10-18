@@ -13,6 +13,7 @@ start
 
 rule_match
   = attr_nested_angle
+  / quoted_value
   / delim_begin
   / delim_end
   / paragraph_directive
@@ -23,12 +24,13 @@ rule_match
 
 // === attr-nested-angle ===
 attr_nested_angle
-  = ":" name:identifier "<" !"<" value:$([^>]*) ">"
+  = &{
+      // an option is written after whitespace, or after the brace or a comma of a hash
+      if (!options._inDirective || options._blockStack.some(b => options.isVerbatim(b.name))) return false;
+      return /[ \t\x7b,]/.test(input.charAt(location().start.offset - 1));
+    }
+    ":" name:identifier "<" !"<" value:$([^>\r\n]*) ">"
     {
-      // only a real attribute list is checked: `<` and `>` in running text or in
-      // a verbatim block are not markup
-      const verbatim = options._blockStack.some(b => options.isVerbatim(b.name));
-      if (!options._inDirective || verbatim) return null;
       const advice = "use a non-conflicting delimiter (\"...\", (...), <<...>>) or plain text";
       // the mirror case: the value ended at a `>` written inside it, and the one
       // the author meant as the closing bracket is still ahead on the line
@@ -51,6 +53,12 @@ attr_nested_angle
       }
       return null;
     }
+
+// a quoted value is read whole: a colon inside it is text, not an option
+quoted_value
+  = !sol &{ return options._inDirective }
+    ("'" [^'\r\n]* "'" / "\"" [^"\r\n]* "\"" / "｢" [^｣\r\n]* "｣")
+    { return null; }
 
 // === delimited-block-balance ===
 delim_begin
