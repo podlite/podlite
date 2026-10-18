@@ -2,6 +2,21 @@
 
 =head1 Upcoming
 
+=head1 0.0.97
+
+
+=head2 podlite
+
+=item C<lint> rule C<toc-title-attribute> says that C<:title> on a C<=toc> block gives no caption: the table of contents no longer reads it
+
+=head2 @podlite/schema
+
+=item B<Breaking:> an entity code C<E> inside C<C<>> is read as text unless C«=config C<> :allow<E>» is written, as the specification sets it out; the warning C<markup-code-entity-in-code> and the option C<entityInCode> of C<parseFormattingCodes> are removed
+
+=head2 @podlite/toc
+
+=item B<Breaking:> a table of contents takes its caption from C<:caption> only; C<:title> is no longer read, and an entry for a table of contents that another one lists is not named by its C<:title> either, in C<getContentForToc> as well. A folded table of contents without a caption shows C<Contents> in C<@podlite/to-jsx>. Blocks other than a table of contents still name their entry by C<:title>
+
 =head1 0.0.96
 
 

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.90
+
 =item C<lint> rule C<toc-title-attribute> says that C<:title> on a C<=toc> block gives no caption: the table of contents no longer reads it
 
 =head1 0.0.89

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.77
+
 =item B<Breaking:> an entity code C<E> inside C<C<>> is read as text unless C«=config C<> :allow<E>» is written, as the specification sets it out; the warning C<markup-code-entity-in-code> and the option C<entityInCode> of C<parseFormattingCodes> are removed
 
 =head1 0.0.76
