@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.78
+
 =item B<Breaking:> markup codes in a C<:caption> are read only when C<=set> gives it, with the codes C<=config> allows inside other codes; a caption written on the block is text. The read caption is kept on the block as an optional C<caption> node, and a table renders it with its codes in html and Markdown, in Markdown as a paragraph of its own
 
 =head1 0.0.77

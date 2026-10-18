@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.82
+
 =item a table caption C<=set> gives is drawn with its markup codes; the summary of a folded table shows it again without registering its notes, index entries or defined terms a second time
 
 =head1 0.0.80

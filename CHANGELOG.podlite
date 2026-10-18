@@ -2,6 +2,29 @@
 
 =head1 Upcoming
 
+=head1 0.0.98
+
+
+=head2 podlite
+
+=item C<podlite lint> reads an attribute value in angles to the end of its line, and only in the configuration of a directive: an unclosed C«<» in running text no longer hides the next C<=begin> from rule C<delimited-block-balance>, and rule C<attr-nested-angle> no longer checks a colon inside a markup code or inside a value written in quotes, such as C<:caption('…')>
+
+=head2 @podlite/image
+
+=item B<Breaking:> a C<:caption> written on a picture is shown as text, markup codes and all, so a C<G<>> in it no longer hides anything; a caption C<=set> gives keeps its codes, and the caption under the source line reads them as before
+
+=head2 @podlite/schema
+
+=item B<Breaking:> markup codes in a C<:caption> are read only when C<=set> gives it, with the codes C<=config> allows inside other codes; a caption written on the block is text. The read caption is kept on the block as an optional C<caption> node, and a table renders it with its codes in html and Markdown, in Markdown as a paragraph of its own
+
+=head2 @podlite/to-jsx
+
+=item a table caption C<=set> gives is drawn with its markup codes; the summary of a folded table shows it again without registering its notes, index entries or defined terms a second time
+
+=head2 @podlite/toc
+
+=item B<Breaking:> a C<:caption> written on a table of contents is shown as text, markup codes and all, so a C<G<>> in it no longer hides anything; a caption C<=set> gives keeps its codes. The entry of a block whose caption C<=set> gives hides what the caption hides
+
 =head1 0.0.97
 
 
