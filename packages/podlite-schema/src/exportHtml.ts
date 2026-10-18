@@ -448,7 +448,12 @@ const rules = {
   'table:block': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     writer.writeRaw(openTag('table', node, ctx))
-    if (conf.exists('caption')) {
+    // a caption =set gave holds its codes; one written on the table is text
+    if (node.caption) {
+      writer.writeRaw('<caption>')
+      interator(node.caption.content, ctx)
+      writer.writeRaw('</caption>')
+    } else if (conf.exists('caption')) {
       writer.writeRaw('<caption>')
       writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('</caption>')

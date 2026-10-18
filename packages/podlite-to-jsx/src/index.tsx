@@ -724,8 +724,8 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         writer.postInterator.push(FootNotes)
       })
       return (node, ctx, interator) => {
-        // skip empty notes
-        if (node.content.length < 1) {
+        // skip empty notes, and a note in text shown a second time
+        if (node.content.length < 1 || ctx.shownAgain) {
           return
         }
         if (!writer.hasOwnProperty('gid')) {
@@ -770,7 +770,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (!writer.hasOwnProperty('DEFINITIONS')) {
         writer.DEFINITIONS = []
       }
-      writer.DEFINITIONS.push({ definition })
+      if (!ctx.shownAgain) writer.DEFINITIONS.push({ definition })
       return makeComponent('dfn', node, interator(node.content, ctx))
     },
     'L<>': linkRule(),
@@ -811,9 +811,10 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       if (!writer.hasOwnProperty('INDEXTERMS')) {
         writer.INDEXTERMS = []
       }
-      writer.INDEXTERMS.push({
-        entry,
-      })
+      if (!ctx.shownAgain)
+        writer.INDEXTERMS.push({
+          entry,
+        })
       return interator(node.content, ctx)
     },
     'O<>': mkComponent('del'),
@@ -845,8 +846,16 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // table section
     table: (writer, processor) => (node, ctx, interator) => {
       const conf = makeAttrs(node, ctx)
-      const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : ''
+      const own = (node as any).caption
+      // a caption =set gave holds its codes; one written on the table is text. What
+      // it registers, notes and index and defined terms, counts once, in the caption
+      const caption = own
+        ? interator(own.content, ctx)
+        : conf.exists('caption')
+        ? covered(node, ctx, String(conf.getFirstValue('caption')))
+        : ''
       const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
+      const summary = own && folded !== null ? interator(own.content, { ...ctx, shownAgain: true }) : caption
 
       if (typeof node === 'string') {
         return node
@@ -904,7 +913,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         return makeComponent(
           ({ key }) => (
             <details className="folded table-folded" key={key} open={isExpanded || undefined}>
-              {caption && <summary className="folded-summary">{caption}</summary>}
+              {caption && <summary className="folded-summary">{summary}</summary>}
               <div className="folded-content">{renderTable(`${key}-table`)}</div>
             </details>
           ),

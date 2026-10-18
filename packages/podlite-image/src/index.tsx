@@ -70,10 +70,15 @@ const Image: Plugin = {
         // node and reached every image below that had none of its own.
         const imageLink = conf.exists('link') ? conf.getFirstValue('link') : undefined
         const resultContent: Array<PodNode> = [mkImage(imageSrc, imageAlt, imageLink)]
-        // make caption
-        const captionContent = conf.exists('caption') ? conf.getFirstValue('caption') : captionText
-        if (captionContent) {
-          resultContent.push(mkCaption(parseFormattingCodes(captionContent, {})))
+        // make caption: one =set gave holds its codes already, one written as an
+        // attribute is text, and the text under the source line reads codes
+        const written = conf.exists('caption') ? String(conf.getFirstValue('caption') ?? '') : ''
+        if ((node as any).caption) {
+          resultContent.push((node as any).caption)
+        } else if (conf.exists('caption')) {
+          if (written) resultContent.push(mkCaption([{ type: 'text', value: written }]))
+        } else if (captionText) {
+          resultContent.push(mkCaption(parseFormattingCodes(captionText, {})))
         }
 
         return { ...node, content: resultContent /* content_: node.content */ }

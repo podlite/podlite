@@ -175,6 +175,8 @@ describe('the caption of a table of contents in html', () => {
     return found[1]
   }
   const toc = (caption: string) => `=for toc ${caption}\nhead1\n\n=head1 One`
+  // a caption reads markup codes only when =set gives it
+  const setToc = (caption: string, attrs = '') => `=set :caption('${caption}')\n=for toc ${attrs}\nhead1\n\n=head1 One`
 
   it('stands before the entries, from :caption only', () => {
     expect(captionOf(html(toc(":caption('Tests')")))).toBe('Tests')
@@ -207,32 +209,42 @@ describe('the caption of a table of contents in html', () => {
 
   it('hides a hidden word of its own and shows the rest', () => {
     for (const written of ['Public G<Secret>', 'Public G«Secret»']) {
-      expect(captionOf(html(toc(`:caption('${written}')`)))).toBe('Public <span class="masked">██████</span>')
-      expect(captionOf(html(toc(`:caption('${written}')`), 'draft'))).toContain('Secret')
+      expect(captionOf(html(setToc(written)))).toBe('Public <span class="masked">██████</span>')
+      expect(captionOf(html(setToc(written), 'draft'))).toContain('Secret')
     }
   })
 
   it('renders the markup written in it', () => {
-    expect(captionOf(html(toc(":caption('The C<G<>> code')")))).toBe('The <code>G&lt;&gt;</code> code')
-    expect(captionOf(html(toc(":caption('Plain B<bold>')")))).toBe('Plain <strong>bold</strong>')
-    expect(captionOf(html(toc(":caption('See L<text|#One>')")))).toContain('>text</a>')
-    expect(captionOf(html(toc(":caption('a < b & c')")))).toBe('a &lt; b &amp; c')
+    expect(captionOf(html(setToc('The C<G<>> code')))).toBe('The <code>G&lt;&gt;</code> code')
+    expect(captionOf(html(setToc('Plain B<bold>')))).toBe('Plain <strong>bold</strong>')
+    expect(captionOf(html(setToc('See L<text|#One>')))).toContain('>text</a>')
+    expect(captionOf(html(setToc('a < b & c')))).toBe('a &lt; b &amp; c')
+  })
+
+  it('shows a caption written on the table of contents as text, codes and all', () => {
+    expect(captionOf(html(toc(":caption('Public G<Secret> B<bold>')")))).toBe('Public G&lt;Secret&gt; B&lt;bold&gt;')
+  })
+
+  it('hides a hidden word of a picture caption =set gives in the entry of the picture', () => {
+    const out = html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture\na.png')
+    expect(out).not.toContain('Secret')
+    expect(html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture\na.png', 'draft')).toContain('Secret')
   })
 
   it('hides a word an alias brings into it', () => {
-    const doc = '=alias SECRET G<Hidden>\n\n' + toc(":caption('A<SECRET> x')")
+    const doc = '=alias SECRET G<Hidden>\n\n' + setToc('A<SECRET> x')
     expect(captionOf(html(doc))).not.toContain('Hidden')
     expect(captionOf(html(doc, 'draft'))).toContain('Hidden')
   })
 
   it('registers a note and an index entry of its own once', () => {
-    const result = htmlResult(toc(":caption('With N<note> X<term>')"))
+    const result = htmlResult(setToc('With N<note> X<term>'))
     expect(result.annotations).toHaveLength(1)
     expect(result.indexingTerms).toHaveLength(1)
   })
 
   it('keeps the mark on an index entry of a hidden caption', () => {
-    const result = htmlResult(toc(":masked :caption('Public X<SecretTerm> N<SecretNote>')"))
+    const result = htmlResult(setToc('Public X<SecretTerm> N<SecretNote>', ':masked'))
     expect(String(result)).not.toContain('SecretTerm')
     expect(String(result)).not.toContain('SecretNote')
     expect(result.indexingTerms).toEqual([{ entry: [{ type: 'text', value: 'SecretTerm', guarded: true }] }])
@@ -251,7 +263,7 @@ describe('the caption of a table of contents in html', () => {
       strip(built)
       return (mode: Mode) => String(toHtml({ renderMode: mode }).use(toAnyRules('toHtml', p.getPlugins())).run(built))
     }
-    const hidden = withoutCaption(toc(":caption('Public G<Secret>')"))
+    const hidden = withoutCaption(setToc('Public G<Secret>'))
     expect(captionOf(hidden('production'))).toBe('██████ █████████')
     expect(captionOf(hidden('draft'))).toBe('Public G&lt;Secret&gt;')
     expect(captionOf(withoutCaption(toc(":caption('Plain words')"))('production'))).toBe('Plain words')

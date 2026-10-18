@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> markup codes in a C<:caption> are read only when C<=set> gives it, with the codes C<=config> allows inside other codes; a caption written on the block is text. The read caption is kept on the block as an optional C<caption> node, and a table renders it with its codes in html and Markdown, in Markdown as a paragraph of its own
+
 =head1 0.0.77
 
 =item B<Breaking:> an entity code C<E> inside C<C<>> is read as text unless C«=config C<> :allow<E>» is written, as the specification sets it out; the warning C<markup-code-entity-in-code> and the option C<entityInCode> of C<parseFormattingCodes> are removed

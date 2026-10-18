@@ -169,19 +169,19 @@ export interface TocItem {
 // extra definitions
 export interface BlockImage extends Omit<Block, 'content'> {
   name: 'image'
-  caption?: string //TODO: move caption into content and make it optional and may contain multiple nodes
+  caption?: BlockCaption
   link?: string
   content: [Image, BlockCaption?]
 }
 
 export interface BlockPicture extends Omit<Block, 'content'> {
   name: 'picture'
-  caption?: string //TODO: move caption into content and make it optional and may contain multiple nodes
+  caption?: BlockCaption
   link?: string
   content: [Image, BlockCaption?]
 }
 
-export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id'> {
+export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id' | 'caption'> {
   name: 'caption'
   content: Array<Node>
 }
@@ -491,6 +491,8 @@ export interface Block {
   // on =include: the =set assignments written before it, for the block its
   // resolved content brings
   set?: ConfigItem[]
+  // a :caption =set gave, read for the markup codes it holds
+  caption?: BlockCaption
 }
 
 export interface BlockPod extends Block {

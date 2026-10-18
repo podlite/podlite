@@ -200,7 +200,7 @@ describe('podlite convert with a caption on a table of contents', () => {
 
   it('writes the caption of a table rebuilt after the includes, with their entries', () => {
     const toc = convert({
-      'doc.podlite': "=pod\n\n=for toc :caption('Included G<Qor>')\nhead1\n\n=include file:part.podlite\n",
+      'doc.podlite': "=pod\n\n=set :caption('Included G<Qor>')\n=for toc\nhead1\n\n=include file:part.podlite\n",
       'part.podlite': '=head1 From part\n',
     })
     expect(toc).toContain('<div class="toctitle">Included <span class="masked">███</span></div>')

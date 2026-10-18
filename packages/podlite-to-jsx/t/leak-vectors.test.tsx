@@ -116,25 +116,27 @@ describe('the caption of a table of contents on the page', () => {
     return found[1]
   }
   const toc = (caption: string) => `=for toc ${caption}\nhead1\n\n=head1 One`
+  // a caption reads markup codes only when =set gives it
+  const setToc = (caption: string, attrs = '') => `=set :caption('${caption}')\n=for toc ${attrs}\nhead1\n\n=head1 One`
 
   it('hides a hidden word of its own and shows the rest', () => {
     expect(captionOf(page(toc(":caption('Tests')")))).toBe('Tests')
     expect(page(toc(":title('Tests')"))).not.toContain('toctitle')
     for (const written of ['Public G<Secret>', 'Public G«Secret»']) {
-      expect(captionOf(page(toc(`:caption('${written}')`)))).toBe('Public <span class="masked">██████</span>')
-      expect(captionOf(page(toc(`:caption('${written}')`), 'draft'))).toContain('Secret')
+      expect(captionOf(page(setToc(written)))).toBe('Public <span class="masked">██████</span>')
+      expect(captionOf(page(setToc(written), 'draft'))).toContain('Secret')
     }
   })
 
   it('renders the markup written in it', () => {
-    expect(captionOf(page(toc(":caption('The C<G<>> code')")))).toBe('The <code>G&lt;&gt;</code> code')
-    expect(captionOf(page(toc(":caption('Plain B<bold>')")))).toBe('Plain <strong>bold</strong>')
-    expect(captionOf(page(toc(":caption('See L<text|#One>')")))).toContain('>text</a>')
-    expect(captionOf(page(toc(":caption('a < b & c')")))).toBe('a &lt; b &amp; c')
+    expect(captionOf(page(setToc('The C<G<>> code')))).toBe('The <code>G&lt;&gt;</code> code')
+    expect(captionOf(page(setToc('Plain B<bold>')))).toBe('Plain <strong>bold</strong>')
+    expect(captionOf(page(setToc('See L<text|#One>')))).toContain('>text</a>')
+    expect(captionOf(page(setToc('a < b & c')))).toBe('a &lt; b &amp; c')
   })
 
   it('registers a note of its own once and keeps no index code as text', () => {
-    const out = page(toc(":caption('With N<note> X<term>')"))
+    const out = page(setToc('With N<note> X<term>'))
     expect(out.split('id="fnref:').length - 1).toBe(1)
     expect(captionOf(out)).not.toContain('X&lt;')
   })
@@ -142,7 +144,7 @@ describe('the caption of a table of contents on the page', () => {
   it('is hidden with a hidden table of contents, and parsed when the table is folded', () => {
     expect(captionOf(page(toc(':masked :caption<TocSecret>')))).toBe('█████████')
     expect(captionOf(page(toc(':masked :caption<TocSecret>'), 'draft'))).toBe('TocSecret')
-    expect(captionOf(page(toc(":folded :caption('Map G<Vorn>')")))).toBe('Map <span class="masked">████</span>')
+    expect(captionOf(page(setToc('Map G<Vorn>', ':folded')))).toBe('Map <span class="masked">████</span>')
   })
 
   // a tree built before the caption was parsed carries the title string alone
@@ -159,8 +161,36 @@ describe('the caption of a table of contents on the page', () => {
       strip(tree.interator)
       return (mode: Mode) => renderToStaticMarkup(<Podlite tree={tree} renderMode={mode} />)
     }
-    const hidden = withoutCaption(toc(":caption('Public G<Secret>')"))
+    const hidden = withoutCaption(setToc('Public G<Secret>'))
     expect(captionOf(hidden('production'))).toBe('██████ █████████')
     expect(captionOf(hidden('draft'))).toBe('Public G&lt;Secret&gt;')
+  })
+})
+
+describe('the caption of a table =set gives on the page', () => {
+  const folded = (caption: string) => `=set :caption ${caption}\n=begin table :folded\nA | B\n1 | 2\n=end table`
+
+  it('reads its codes, and a caption written on the table stays text', () => {
+    expect(page('=set :caption Selected B<chemical> elements\n=begin table\nA | B\n=end table')).toContain(
+      '<caption class="caption">Selected <strong>chemical</strong> elements</caption>',
+    )
+    expect(page("=begin table :caption('Selected B<chemical> elements')\nA | B\n=end table")).toContain(
+      '<caption class="caption">Selected B&lt;chemical&gt; elements</caption>',
+    )
+  })
+
+  it('counts a note of a folded table once, in the caption and not in the summary', () => {
+    for (const doc of [folded('Label N<Note>'), `=alias NOTE N<Note>\n\n${folded('Label A<NOTE>')}`]) {
+      const out = page(doc)
+      expect(out.match(/id="fnref:/g)).toHaveLength(1)
+      const summary = /<summary class="folded-summary">([\s\S]*?)<\/summary>/.exec(out)
+      expect(summary && summary[1]).not.toContain('Note')
+    }
+  })
+
+  it('hides a hidden word in the summary and the caption of a folded table', () => {
+    const out = page(folded('Public G<Secret>'))
+    expect(out).not.toContain('Secret')
+    expect(page(folded('Public G<Secret>'), 'draft')).toContain('Secret')
   })
 })

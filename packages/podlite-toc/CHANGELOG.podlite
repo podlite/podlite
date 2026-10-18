@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> a C<:caption> written on a table of contents is shown as text, markup codes and all, so a C<G<>> in it no longer hides anything; a caption C<=set> gives keeps its codes. The entry of a block whose caption C<=set> gives hides what the caption hides
+
 =head1 0.0.70
 
 =item B<Breaking:> a table of contents takes its caption from C<:caption> only; C<:title> is no longer read, and an entry for a table of contents that another one lists is not named by its C<:title> either, in C<getContentForToc> as well. A folded table of contents without a caption shows C<Contents> in C<@podlite/to-jsx>. Blocks other than a table of contents still name their entry by C<:title>

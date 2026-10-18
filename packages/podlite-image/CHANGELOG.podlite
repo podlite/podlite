@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> a C<:caption> written on a picture is shown as text, markup codes and all, so a C<G<>> in it no longer hides anything; a caption C<=set> gives keeps its codes, and the caption under the source line reads them as before
+
 =head1 0.0.75
 
 =item the html of an image block carries an C<id> only when the author wrote C<:id>, in the form a link to it takes; the generated one, which changed on every run, is no longer written

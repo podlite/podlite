@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a table caption C<=set> gives is drawn with its markup codes; the summary of a folded table shows it again without registering its notes, index entries or defined terms a second time
+
 =head1 0.0.80
 
 =item C<M<>> shows its text, C<P<>> is drawn as a picture, and C<Q<>> and C<Y<>> with their letter and brackets, a C<G<>> or C<Z<>> inside staying hidden; they were drawn as plain text or as a node it could not draw

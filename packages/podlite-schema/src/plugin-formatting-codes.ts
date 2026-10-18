@@ -7,6 +7,7 @@ import { parseAttributes } from './helpers/parseAttributes'
 import { ParserPlugin, Node, nPara, AST, nText, nVerbatim } from './'
 import { ConfigScope } from './helpers/configPropagation'
 import { blockNameOf } from './helpers/blockName'
+import { mkCaption } from './blocks-helpers'
 
 /**
  *  Main transforms
@@ -43,6 +44,31 @@ const inheritedAllowedIn = (config: ConfigScope = {}): AllowedIn => {
 const allowOf = (node: unknown): string[] | undefined => {
   const conf = makeAttrs(node, {})
   return conf.exists('allow') ? conf.getAllValues('allow') : undefined
+}
+
+// The text between codes as text nodes, all the way in, so a guard mark has a
+// node to land on. V and E keep their content as written.
+const asTextNodes = (nodes: any[]): any[] =>
+  nodes.map(child =>
+    typeof child === 'string'
+      ? { type: 'text', value: child }
+      : child && typeof child === 'object' && Array.isArray(child.content) && child.name !== 'V' && child.name !== 'E'
+      ? { ...child, content: asTextNodes(child.content) }
+      : child,
+  )
+
+// A caption =set gives is read for markup codes, with the codes this place
+// allows; one written on the block is text. The value stays a string, since
+// selectors and =set itself match on it. A caption with no code gets nothing.
+const withSetCaption = (n: any, allowedIn: AllowedIn): any => {
+  if (!n || n.caption || !Array.isArray(n.config)) return n
+  const item = n.config.find(c => c && c.name === 'caption')
+  if (!item || item.from !== 'set') return n
+  const value = Array.isArray(item.value) ? item.value[0] : item.value
+  if (typeof value !== 'string') return n
+  const content = readCodes(value, { allowedIn, parseAttributes, issues: [] })
+  if (!content.some(c => c && typeof c === 'object' && c.type === 'fcode')) return n
+  return { ...n, caption: mkCaption(asTextNodes(content)) }
 }
 
 const middle: ParserPlugin = opt => tree => {
@@ -91,6 +117,8 @@ const middle: ParserPlugin = opt => tree => {
     ':block': (n, ctx, visiter) => {
       // a block is a lexical scope: a code configured inside it stays inside
       const allowedIn: AllowedIn = { ...(ctx.allowedIn || {}) }
+      // before any block is let through unread: a picture's caption is not its body
+      n = withSetCaption(n, allowedIn)
       // only =pod may have childs blocks
       if ('name' in n && n.name === 'pod')
         return {

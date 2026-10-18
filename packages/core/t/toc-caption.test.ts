@@ -75,7 +75,7 @@ const codesOf = (node: unknown): string[] => {
 
 describe('the caption of a table of contents', () => {
   it('is parsed into a caption node next to the title', () => {
-    const toc = tocOf("=for toc :caption('Public G<Secret> B<bold>')\nhead1\n\n=head1 One\n")
+    const toc = tocOf("=set :caption('Public G<Secret> B<bold>')\n=for toc\nhead1\n\n=head1 One\n")
     expect(toc?.title).toBe('Public G<Secret> B<bold>')
     expect(toc?.caption).toMatchObject({ type: 'block', name: 'caption' })
     expect(codesOf(toc?.caption)).toEqual(['G', 'B'])
@@ -140,7 +140,9 @@ describe('the caption of a table rebuilt after the includes', () => {
   }
 
   it('keeps the mark on a hidden word of the caption', () => {
-    const toc = findToc(convertTree("=for toc :caption('Public G<Secret>')\nhead1\n\n=include file:part.podlite\n"))
+    const toc = findToc(
+      convertTree("=set :caption('Public G<Secret>')\n=for toc\nhead1\n\n=include file:part.podlite\n"),
+    )
     expect(wordsOf(toc?.caption)).toEqual([
       ['Public ', false],
       ['Secret', true],

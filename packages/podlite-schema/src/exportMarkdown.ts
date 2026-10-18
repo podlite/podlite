@@ -437,7 +437,12 @@ const rules = {
   // table section
   'table:block': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
-    if (conf.exists('caption')) {
+    // a caption with codes of its own stands as a paragraph: bold around it would
+    // hide the bold inside and break on an emphasis that touches a word
+    if (node.caption) {
+      interator(node.caption.content, ctx)
+      writer.writeRaw('\n\n')
+    } else if (conf.exists('caption')) {
       writer.writeRaw('**')
       writer.write(covered(node, ctx, String(conf.getFirstValue('caption'))))
       writer.writeRaw('**\n\n')

@@ -31,15 +31,32 @@ describe('picture caption is parsed as inline content', () => {
     expect(dump).not.toContain('"name":"table"')
   })
 
-  it('resolves formatting codes in the caption', () => {
-    const caption = captionOf(`=for picture :caption('B<bold> label')\nimg.png`)
-    const bold = caption.content.find((n: any) => n.type === 'fcode' && n.name === 'B')
-    expect(bold).toBeTruthy()
+  it('resolves formatting codes in a caption =set gives', () => {
+    for (const set of ['=set :caption B<bold> label', "=set :caption('B<bold> label')"]) {
+      const caption = captionOf(`${set}\n=for picture\nimg.png`)
+      const bold = caption.content.find((n: any) => n.type === 'fcode' && n.name === 'B')
+      expect(bold).toBeTruthy()
+    }
   })
 
-  it('resolves entities in the caption', () => {
-    const caption = captionOf(`=for picture :caption('E<lt>x')\nimg.png`)
+  it('resolves entities in a caption =set gives', () => {
+    const caption = captionOf(`=set :caption E<lt>x\n=for picture\nimg.png`)
     const entity = caption.content.find((n: any) => n.type === 'fcode' && n.name === 'E')
     expect(entity).toBeTruthy()
+  })
+
+  it('reads the first value of a list =set gives, as before', () => {
+    const caption = captionOf(`=set :caption('B<orbit>', 'other')\n=for picture\nimg.png`)
+    expect(caption.content.some((n: any) => n.type === 'fcode' && n.name === 'B')).toBe(true)
+  })
+
+  it('takes a caption written on the picture for text', () => {
+    const caption = captionOf(`=for picture :caption('Scheme of B<orbit> E<lt>')\nimg.png`)
+    expect(caption.content).toEqual([{ type: 'text', value: 'Scheme of B<orbit> E<lt>' }])
+  })
+
+  it('reads the codes of the caption under the source line', () => {
+    const caption = captionOf(`=begin picture\nimg.png\nScheme of B<orbit>\n=end picture`)
+    expect(caption.content.some((n: any) => n.type === 'fcode' && n.name === 'B')).toBe(true)
   })
 })

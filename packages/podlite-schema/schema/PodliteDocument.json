@@ -344,6 +344,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -400,6 +403,39 @@
                 "value"
             ]
         },
+        "BlockCaption": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "const": "caption"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PodNode"
+                    }
+                },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ConfigItem"
+                    }
+                },
+                "type": {
+                    "type": "string",
+                    "const": "block"
+                },
+                "guarded": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "content",
+                "name",
+                "type"
+            ]
+        },
         "BlockData": {
             "type": "object",
             "properties": {
@@ -447,6 +483,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -479,6 +518,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "margin": {
                     "type": "string"
@@ -584,6 +626,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -653,6 +698,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -710,6 +758,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -767,6 +818,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -824,6 +878,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -881,6 +938,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -938,6 +998,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -1004,6 +1067,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -1062,6 +1128,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -1119,6 +1188,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -1790,6 +1862,9 @@
                         "$ref": "#/definitions/ConfigItem"
                     }
                 },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
+                },
                 "margin": {
                     "type": "string"
                 },
@@ -1849,6 +1924,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "margin": {
                     "type": "string"
@@ -1982,6 +2060,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "margin": {
                     "type": "string"
@@ -2213,6 +2294,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -2325,6 +2409,9 @@
                     "items": {
                         "$ref": "#/definitions/ConfigItem"
                     }
+                },
+                "caption": {
+                    "$ref": "#/definitions/BlockCaption"
                 }
             },
             "required": [
@@ -2343,7 +2430,7 @@
                     "const": "picture"
                 },
                 "caption": {
-                    "type": "string"
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "link": {
                     "type": "string"
@@ -2427,39 +2514,6 @@
                 "type"
             ]
         },
-        "BlockCaption": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "const": "caption"
-                },
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/PodNode"
-                    }
-                },
-                "set": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ConfigItem"
-                    }
-                },
-                "type": {
-                    "type": "string",
-                    "const": "block"
-                },
-                "guarded": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "content",
-                "name",
-                "type"
-            ]
-        },
         "BlockImage": {
             "type": "object",
             "properties": {
@@ -2468,7 +2522,7 @@
                     "const": "image"
                 },
                 "caption": {
-                    "type": "string"
+                    "$ref": "#/definitions/BlockCaption"
                 },
                 "link": {
                     "type": "string"

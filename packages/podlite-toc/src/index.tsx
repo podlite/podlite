@@ -16,7 +16,6 @@ import {
   mkNode,
   markGuarded,
   mkCaption,
-  parseFormattingCodes,
   parseSelector,
   runSelector,
   SelectorError,
@@ -44,6 +43,10 @@ const entryOf = (node: PodNode): TocEntry => {
       return { text: getTextContentFromNode(node), source: Array.isArray(content) ? content : null }
     }
     if (node.type === 'block') {
+      // a caption =set gave is read for codes: the entry takes its text and keeps
+      // its nodes, so what the caption hides the entry hides too
+      const own = (node as any).caption
+      if (isCaption(own)) return { text: getTextContentFromNode(own), source: own.content }
       const conf = makeAttrs(node, {})
       // a table of contents is captioned by :caption only; other blocks still name an entry by :title
       const titled = node.name !== 'toc' && node.name !== 'Toc' && conf.exists('title')
@@ -116,27 +119,15 @@ const textParts = (node: any, guarded: boolean): any[] => {
   return textParts(node.content, covered)
 }
 
-// A guard mark reaches nodes, not strings, so the text of a parsed value is made
-// into text nodes before it is marked. V and E keep their content as written.
-const textIntoNodes = (nodes: unknown[]): void => {
-  nodes.forEach((child, i) => {
-    if (typeof child === 'string') nodes[i] = textNode(child, false)
-    else if (
-      typeof child === 'object' &&
-      child !== null &&
-      'content' in child &&
-      Array.isArray(child.content) &&
-      !('name' in child && (child.name === 'V' || child.name === 'E'))
-    )
-      textIntoNodes(child.content)
-  })
-}
+const isCaption = (value: unknown): value is { type: 'block'; name: 'caption'; content: any[] } =>
+  Boolean(
+    value && typeof value === 'object' && (value as any).name === 'caption' && Array.isArray((value as any).content),
+  )
 
-// parsed the way a picture's caption is, so every code in it keeps its meaning
-const captionOf = (value: unknown, hidden: boolean) => {
-  const content = parseFormattingCodes(String(value), {})
-  textIntoNodes(content)
-  return markGuarded(mkCaption(content), hidden)
+// a caption =set gave holds its codes already; one written on the table is text
+const captionOf = (own: unknown, value: unknown, hidden: boolean) => {
+  const written: any[] = [textNode(String(value), false)]
+  return markGuarded(isCaption(own) ? own : mkCaption(written), hidden)
 }
 
 const labelCopy = (node: any, guarded: boolean): any[] => {
@@ -326,7 +317,7 @@ const buildToc = (node: any, ctx: any, fulltree: any, self: unknown, read: { sel
 
   const hasTitle = tocTitle !== undefined && tocTitle !== null && String(tocTitle) !== ''
   // marked here: when a table is rebuilt after the includes, no marking pass follows
-  const caption = hasTitle ? captionOf(tocTitle, tocHidden) : undefined
+  const caption = hasTitle ? captionOf((node as any).caption, tocTitle, tocHidden) : undefined
 
   const makeToc = (tocTree: any, title): Toc => {
     return mkToc(
