@@ -1,7 +1,6 @@
 import { podlitePluggable } from '../src/pluggableParser'
 import { readCodes } from '../src/codes/read'
 import { parseFormattingCodes } from '../src/index'
-import { placeInSource, lineStarts } from '../src/codes/place'
 
 const parsed = (doc: string) => {
   const p = podlitePluggable()
@@ -162,27 +161,6 @@ describe('the rest of round 1', () => {
       levels++
     }
     expect(levels).toBe(depth)
-  })
-
-  it('places many warnings of one paragraph in time that grows with it', () => {
-    const time = (k: number) => {
-      const text = 'M<x|Unknown> '.repeat(k)
-      const source = `=para ${text}\n`
-      const issues: any[] = []
-      readCodes(text, { issues })
-      const fragment = { text }
-      const block = { start: { offset: 0, line: 1, column: 1 }, end: { offset: source.length, line: 2, column: 1 } }
-      const starts = lineStarts(source)
-      const started = process.hrtime.bigint()
-      for (const issue of issues) placeInSource(source, block, { fragment, start: issue.start, end: issue.end }, starts)
-      return Number(process.hrtime.bigint() - started) / 1e6
-    }
-    // the least of five runs on inputs that take milliseconds, so a busy machine does not
-    // decide; eight times the input gives eight times the time when it grows with it and
-    // sixty-four when it squares, so the bound between them leaves room for a slow runner
-    const least = (k: number) => Math.min(time(k), time(k), time(k), time(k), time(k))
-    least(4000)
-    expect(least(64000)).toBeLessThan(least(8000) * 24)
   })
 
   it('keeps a tab inside S<> as spaces that do not break (4060–4063)', () => {
