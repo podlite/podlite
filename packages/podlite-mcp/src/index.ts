@@ -58,7 +58,7 @@ export const createServer = (): McpServer => {
     {
       title: 'Validate Podlite',
       description:
-        'Check Podlite source: parse errors plus lint rules. The rule set is growing; a clean result means the source parses and passes current rules, not an exhaustive audit.',
+        'Check Podlite source: syntax, lint rules, and the AST schema. Returns a report with ok, counts, and problems; ok is true when the report contains no errors.',
       inputSchema: {
         text: z.string().describe('Podlite source text'),
         files,

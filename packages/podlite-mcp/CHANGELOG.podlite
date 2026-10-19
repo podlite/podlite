@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the description of C<podlite_validate> names what it checks — syntax, lint rules and the AST schema — and when C<ok> is true
+
 =head1 0.0.26
 
 =item C<podlite_query> names an empty operand of C<~<>> when the selector cannot be read
