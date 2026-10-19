@@ -1,6 +1,7 @@
 import type { Rule } from '../types'
 import { syntaxValidRule } from './syntax-valid'
 import { headingHierarchyRule } from './heading-hierarchy'
+import { itemHierarchyRule } from './item-hierarchy'
 import { idUniqueRule } from './id-unique'
 import { mediaAbsoluteFileRule } from './media-absolute-file'
 import { linkTargetResolvesRule } from './link-target-resolves'
@@ -17,6 +18,7 @@ import { tocTitleAttributeRule } from './toc-title-attribute'
 export const DEFAULT_RULES: Rule[] = [
   syntaxValidRule,
   headingHierarchyRule,
+  itemHierarchyRule,
   idUniqueRule,
   mediaAbsoluteFileRule,
   linkTargetResolvesRule,

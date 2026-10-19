@@ -48,6 +48,12 @@ describe('validateSource', () => {
     const rules = report.problems.map(p => p.rule)
     expect(rules).toContain('attr-nested-angle')
   })
+
+  it('warns of an item with no item a level above it and stays ok', () => {
+    const report = validateSource('=item1 One\n=item3 Three\n')
+    expect(report.ok).toBe(true)
+    expect(report.problems.map(p => [p.rule, p.severity])).toEqual([['item-hierarchy', 'warning']])
+  })
 })
 
 describe('renderSource', () => {

@@ -8,6 +8,8 @@
 
 =item C<podlite lint> rule C<attr-nested-angle> no longer reports a value in angles that holds a quoted string, such as C«:caption<'a B<b>'>»: it reads the value the way the parser does
 
+=item C<podlite lint> adds rule C<item-hierarchy> (warning): an C<=item2> with no C<=item1> before it in the same block, and so on for each level, as the specification requires. Markdown files are not checked
+
 =head1 0.0.91
 
 =item C<podlite lint> reads an attribute value in angles to the end of its line, and only in the configuration of a directive: an unclosed C«<» in running text no longer hides the next C<=begin> from rule C<delimited-block-balance>, and rule C<attr-nested-angle> no longer checks a colon inside a markup code or inside a value written in quotes, such as C<:caption('…')>
