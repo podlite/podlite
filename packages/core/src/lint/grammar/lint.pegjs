@@ -6,6 +6,20 @@
   // cannot be enumerated ahead of time
   options.isVerbatim = options.isVerbatim || (name => options.verbatimBlocks.indexOf(name) !== -1);
   if (typeof options._inDirective !== 'boolean') options._inDirective = false;
+  // an option inside a hash follows its opening brace or a comma, across a continuation marker
+  options.inHash = options.inHash || (offset => {
+    let at = offset - 1;
+    for (;;) {
+      while (at >= 0 && /[ \t\f\r]/.test(input.charAt(at))) at--;
+      if (at > 0 && input.charAt(at) === '=' && input.charAt(at - 1) === '\n') at -= 2;
+      else break;
+    }
+    return input.charAt(at) === '\x7b' || input.charAt(at) === ',';
+  });
+  // a `>` left on the line closed the value early, unless the options or the hash go on
+  options.closedEarly = options.closedEarly || ((rest, inHash) =>
+    rest.indexOf('>') !== -1 && !(inHash ? /^[ \t\f]*[:,\x7d]/ : /^[ \t\f]*:/).test(rest));
+  options.nestedAngleAdvice = 'use a non-conflicting delimiter ("...", (...), <<...>>) or plain text';
 }
 
 start
@@ -31,11 +45,9 @@ attr_nested_angle
     }
     ":" name:identifier "<" !"<" value:$([^>\r\n]*) ">"
     {
-      const advice = "use a non-conflicting delimiter (\"...\", (...), <<...>>) or plain text";
-      // the mirror case: the value ended at a `>` written inside it, and the one
-      // the author meant as the closing bracket is still ahead on the line
+      const advice = options.nestedAngleAdvice;
       const rest = input.slice(peg$savedPos + text().length).split(/\r?\n/)[0];
-      const closedEarly = rest.indexOf('>') !== -1 && !/^[ \t]*:/.test(rest);
+      const closedEarly = options.closedEarly(rest, options.inHash(location().start.offset));
       if (value.indexOf('<') !== -1) {
         options.diagnostics.push({
           rule: 'attr-nested-angle',

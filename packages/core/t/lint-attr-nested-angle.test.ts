@@ -118,6 +118,27 @@ describe('attr-nested-angle rule', () => {
     expect(scanSourceRules('=for para :k{:a<x B<1> y>}\n')).toHaveLength(1)
     expect(scanSourceRules('=for para :k{:a(1),:b<x B<bold> tail>}\nText\n')).toHaveLength(1)
   })
+
+  it('does not take the next option of a hash for a closing bracket', () => {
+    expect(scanSourceRules('=for para :h{:a<x>, :b<z>}\nText\n')).toEqual([])
+    expect(scanSourceRules('=for para :h{:a<x>, :c}\nText\n')).toEqual([])
+    expect(scanSourceRules('=for para :h{:a<x>\f, :b<z>}\nText\n')).toEqual([])
+    expect(scanSourceRules('=begin para :h{:a<x>,\n= :b<y>, :c<z>}\nText\n=end para\n')).toEqual([])
+  })
+
+  it('takes no brace inside a value for the brace of a hash', () => {
+    expect(scanSourceRules('=for para :note<}> :h{:a<x>, :b<z>}\nText\n')).toEqual([])
+    expect(scanSourceRules('=for para :note｢}｣ :h{:a<x>, :b<z>}\nText\n')).toEqual([])
+    expect(scanSourceRules('=for para :h{:a<}>, :b<x>, :c<z>}\nText\n')).toEqual([])
+    expect(scanSourceRules('=begin para :note<}>\n= :h{:a<x>, :b<z>}\nText\n=end para\n')).toEqual([])
+  })
+
+  it('still flags a > written after a closed value outside a hash', () => {
+    for (const attrs of [':k<a> b>', ':k<a>, b>']) {
+      const v = scanSourceRules(`=for para ${attrs}\nText\n`)
+      expect(v.map(d => d.message)).toEqual([expect.stringContaining('contains a > that closes the attribute early')])
+    }
+  })
 })
 
 describe('runLint attr-nested-angle integration', () => {
