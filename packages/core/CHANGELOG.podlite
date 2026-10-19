@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the help of C<podlite> describes C<lint> without calling it a work in progress
+
 =head1 0.0.91
 
 =item C<podlite lint> reads an attribute value in angles to the end of its line, and only in the configuration of a directive: an unclosed C«<» in running text no longer hides the next C<=begin> from rule C<delimited-block-balance>, and rule C<attr-nested-angle> no longer checks a colon inside a markup code or inside a value written in quotes, such as C<:caption('…')>

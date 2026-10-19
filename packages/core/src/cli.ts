@@ -50,7 +50,7 @@ function usage() {
 
 Commands:
   convert    Convert Podlite files to another format
-  lint       Check Podlite/Markdown files for issues (work in progress)
+  lint       Check Podlite/Markdown files for issues
   query      Extract blocks matching a selector
   test       Run the tests written in Podlite files
 
