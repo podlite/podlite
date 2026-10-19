@@ -26,7 +26,8 @@ start
   = (rule_match / .)*
 
 rule_match
-  = attr_nested_angle
+  = attr_quoted_angle
+  / attr_nested_angle
   / quoted_value
   / delim_begin
   / delim_end
@@ -37,12 +38,57 @@ rule_match
   / line_marker
 
 // === attr-nested-angle ===
-attr_nested_angle
+// an option is written after whitespace, or after the brace or a comma of a hash
+option_start
   = &{
-      // an option is written after whitespace, or after the brace or a comma of a hash
       if (!options._inDirective || options._blockStack.some(b => options.isVerbatim(b.name))) return false;
       return /[ \t\x7b,]/.test(input.charAt(location().start.offset - 1));
     }
+
+// a quoted value in angle brackets, read by the parser's value forms; change them together
+attr_quoted_angle
+  = option_start ":" identifier "<" qa_ws value:(qa_list / qa_quoted) qa_ws ">"
+    &{ return value.quoted }
+    {
+      if (options.closedEarly(input.slice(peg$savedPos + text().length).split(/\r?\n/)[0], options.inHash(location().start.offset))) {
+        options.diagnostics.push({
+          rule: 'attr-nested-angle',
+          severity: 'error',
+          message: "attribute value contains a > that closes the attribute early; " + options.nestedAngleAdvice,
+          location: location()
+        });
+      }
+      return null;
+    }
+
+qa_list
+  = first:qa_element rest:(qa_hs+ e:qa_element { return e })+
+    { return { quoted: [first].concat(rest).some(e => e) } }
+
+// true for a quoted string; the parser tries its item forms before a bare word
+qa_element
+  = qa_quoted { return true }
+  / ("True" / "False" / qa_float / qa_number) { return false }
+  / [^ \t\r\n,<>\[\]{}()'"]+ { return false }
+
+qa_quoted
+  = ("'" [^'\n\r]* "'" / "\"" [^"\n\r]* "\"") { return { quoted: true } }
+
+qa_number
+  = [-+]? [0-9]+
+
+qa_float
+  = qa_number ("." [0-9]+)? [eE] qa_number
+  / qa_number "." [0-9]+
+
+qa_hs
+  = [ \u00a0\u2001\t\u000C\u2008]
+
+qa_ws
+  = [ \t\u000C]*
+
+attr_nested_angle
+  = option_start
     ":" name:identifier "<" !"<" value:$([^>\r\n]*) ">"
     {
       const advice = options.nestedAngleAdvice;

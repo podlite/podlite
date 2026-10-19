@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { getFromTree, parse } from '@podlite/schema'
 import { runLint } from '../src/lint'
 import { scanSourceRules, ATTR_NESTED_ANGLE_RULE_ID, attrNestedAngleRule } from '../src/lint/grammar/scan'
 
@@ -137,6 +138,75 @@ describe('attr-nested-angle rule', () => {
     for (const attrs of [':k<a> b>', ':k<a>, b>']) {
       const v = scanSourceRules(`=for para ${attrs}\nText\n`)
       expect(v.map(d => d.message)).toEqual([expect.stringContaining('contains a > that closes the attribute early')])
+    }
+  })
+})
+
+describe('attr-nested-angle on a quoted value in angle brackets', () => {
+  const flagged = (attrs: string) =>
+    scanSourceRules(`=for para ${attrs}\nText\n`).some(v => v.rule === ATTR_NESTED_ANGLE_RULE_ID)
+
+  it('skips a quoted string the parser reads whole', () => {
+    expect(flagged(":caption<'a B<b>'>")).toBe(false)
+    expect(flagged(':caption<"x <y> z">')).toBe(false)
+    expect(flagged(":k< 'x>y' >")).toBe(false)
+    expect(flagged(":k<\t'a<b>'\t>")).toBe(false)
+  })
+
+  it('skips a list of words with a quoted string in it', () => {
+    expect(flagged(":k<'a<b>' c>")).toBe(false)
+    expect(flagged(":k<'a<b>' 42 True False>")).toBe(false)
+    expect(flagged(":k<'' 'a<b>'>")).toBe(false)
+    expect(flagged(":k<'a<b>'\u00a0c>")).toBe(false)
+  })
+
+  it('skips a quoted value on a continuation line and inside a hash', () => {
+    expect(scanSourceRules("=begin para :a<x>\n= :k<'a<b>'>\nText\n=end para\n")).toEqual([])
+    expect(flagged(":h{:a<'a >: b'>, :b<z>}")).toBe(false)
+  })
+
+  it('flags a value the parser drops', () => {
+    expect(flagged(":k<'a<b>' 42x>")).toBe(true)
+    expect(flagged(":k<'a<b>' Truex>")).toBe(true)
+    expect(flagged(':k<a B<b> c>')).toBe(true)
+    expect(flagged(":k<'a','b<c>'>")).toBe(true)
+  })
+
+  it('flags a > written after a quoted value', () => {
+    expect(flagged(":k<'a' b> c>")).toBe(true)
+  })
+
+  it('stays silent inside a verbatim block', () => {
+    expect(scanSourceRules("=begin code\n=for para :k<'a<b>' c>\n=end code\n")).toEqual([])
+  })
+
+  it('agrees with the parser on the values it reads whole and the ones it drops', () => {
+    const configOf = (attrs: string) => {
+      const [para] = getFromTree(parse(`=for para ${attrs}\nText\n`), 'para')
+      return typeof para === 'object' && 'config' in para ? para.config : []
+    }
+    const readWhole: Array<[string, Record<string, unknown>]> = [
+      [":caption<'a B<b>'>", { caption: 'a B<b>' }],
+      [':caption<"x <y> z">', { caption: 'x <y> z' }],
+      [":k< 'x>y' >", { k: 'x>y' }],
+      [":k<'a<b>' c>", { k: ['a<b>', 'c'] }],
+      [":k<'a<b>' 42 True False>", { k: ['a<b>', 42, true, false] }],
+      [":k<'a<b>' 1.5 2e3 -7>", { k: ['a<b>', 1.5, 2000, -7] }],
+      [":k<'' 'a<b>'>", { k: ['', 'a<b>'] }],
+      [":k<'a<b>'\u00a0c>", { k: ['a<b>', 'c'] }],
+      [":k<'a>, b'> :m<z>", { k: 'a>, b', m: 'z' }],
+      [":h{:a<'a >: b'>, :b<z>}", { h: { a: 'a >: b', b: 'z' } }],
+    ]
+    for (const [attrs, values] of readWhole) {
+      const items: unknown = configOf(attrs)
+      const config = Object.fromEntries(
+        (Array.isArray(items) ? items : []).map((c: { name: string; value: unknown }) => [c.name, c.value]),
+      )
+      expect({ attrs, config, flagged: flagged(attrs) }).toEqual({ attrs, config: values, flagged: false })
+    }
+    const dropped = [":k<'a<b>' 42x>", ":k<'a<b>' Truex>", ':k<a B<b> c>', ":k<'a','b<c>'>"]
+    for (const attrs of dropped) {
+      expect({ attrs, config: configOf(attrs), flagged: flagged(attrs) }).toEqual({ attrs, config: [], flagged: true })
     }
   })
 })
