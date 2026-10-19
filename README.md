@@ -4,8 +4,8 @@
     <img src="https://raw.githubusercontent.com/podlite/podlite/main/assets/podlite-mark-core.svg" width="350" alt="Podlite">
   </picture>
 </p>
-<p align="center"><em>one markup, many possibilities</em></p>
-<p align="center">lightweight block-based markup language with parser, AST and renderers</p>
+<p align="center"><strong>Markup for AI agents. Structure you can check.</strong></p>
+<p align="center">Parser, CLI, and MCP server for the Podlite markup language.</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/podlite"><img src="https://img.shields.io/npm/v/podlite" alt="npm"></a>
@@ -15,13 +15,11 @@
 
 ---
 
-Podlite is a universal markup language unbound by any specific domain, programming language, or concept. It supports Markdown as a standard block, allowing familiar syntax alongside structured Podlite blocks.
-
 Extensibility is a core feature — define domain-specific blocks and expand the language to fit your project. Podlite works for documentation, blogs, educational materials, knowledge bases and more.
 
-**What it is:** one spec-defined grammar and one canonical AST — block boundaries and typed attributes that survive regeneration by AI agents and round-trips between tools.
+Blocks keep their start, end, and typed attributes. `podlite lint` reports a block left open, with its line.
 
-**What it is NOT:** a Markdown replacement for every case. Markdown wins on ubiquity, and your Markdown parses in unchanged. Podlite wins when structure has to be machine-checkable.
+Markdown files are read as Markdown.
 
 ### Try it
 
@@ -30,7 +28,7 @@ npm i @podlite/schema
 node -e "const {parse}=require('@podlite/schema'); console.dir(parse('=head1 Hello World'), {depth:5})"
 ```
 
-Every node comes back typed, with a `location: { line, column }` — a structural break points at a line instead of vanishing into a re-render.
+Blocks come back typed, with `location.start` and `location.end`.
 
 ## Ecosystem
 
