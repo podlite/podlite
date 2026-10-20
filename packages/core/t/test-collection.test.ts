@@ -205,7 +205,7 @@ describe('collecting tests', () => {
     expect(collect(main).tests.map(t => [t.id, t.shape.kind])).toEqual([['stray', 'malformed']])
   })
 
-  it('finds a broken structure inside an item and a definition, and none in a table row or a fixture body', () => {
+  it('finds a broken structure inside an item, a definition and after a paragraph fixture, and none in a table row', () => {
     const cases = {
       item: '=begin item\n=end missing\n=end item\n',
       defn: '=begin defn\nTerm\n=end missing\n=end defn\n',
@@ -222,7 +222,7 @@ describe('collecting tests', () => {
       ['item', 'malformed'],
       ['defn', 'malformed'],
       ['table', 'runnable'],
-      ['body', 'runnable'],
+      ['body', 'malformed'],
     ])
   })
 

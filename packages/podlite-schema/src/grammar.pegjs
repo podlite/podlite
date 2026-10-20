@@ -189,18 +189,26 @@ markerAlias = '=alias'
 strictIdentifier =  name:identifier &{ return isSupportedBlockName(name)} { return name }
 markerAbbreviatedBlock = '='  name:strictIdentifier { return name }
 markers = markerBegin / markerEnd / markerFor / markerConfig / markerAlias
+// a line that is a directive by its form, whether its name is known or not; the
+// rest of a directive line is data, so only the start of a line can be one
+anyDirective = &{ return location().start.column === 1 } _ ( markerConfig / markerAlias / markers identifier / '=' identifier )
 Text "text" = $(c:char+)
 // TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
 // becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'
-text_content =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL
+// the first line of a text chunk: a line naming an unknown block may open one
+text_line_first =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL
   {
     noteUnknownDirective(options, text(), location())
     return text()
   }
+// a line that goes on with a body: no directive of any name continues it
+text_content =  !( anyDirective / blankline ) $(Text)+ EOL { return text() }
 raw_text_until_eol = $(Text)+ EOL {return text()}
 // a line of a table or of a body kept as written: never a directive, so the
 // parser has nothing to recognise in it
 plain_line =  !( _ ( markerConfig / markerAlias / markers strictIdentifier/ markerAbbreviatedBlock ) / blankline ) $(Text)+ EOL {return text()}
+// a line of a verbatim body of a paragraph or abbreviated block
+raw_line =  !( anyDirective / blankline ) $(Text)+ EOL {return text()}
 error_para = $(!EOL .)+ EOL
             {
               addDiagnostic(options, "Line looks like a directive but could not be read; it stays as text", location(), 'directive-unreadable')
@@ -418,7 +426,8 @@ tableBodyRowSeparator  =  $( tableHeadSeparator / &{ return options.isDelimited 
                                     }
                           }
 
-tableRow = t:plain_line { return { name:'row', type:'text', value:t } } 
+tableRow = &{ return !!options.isDelimited } t:plain_line { return { name:'row', type:'text', value:t } }
+         / !anyDirective t:plain_line { return { name:'row', type:'text', value:t } } 
 
  tableContents =
     &{  
@@ -570,7 +579,7 @@ delimitedBlock =
           //TODO::handle errors
           ) { return nodes} 
   / tvmargin:$( hs* ) 
-    text:$(text_content+)
+    text:$(text_line_first text_content*)
     {
       const type = name.match(/pod|nested|item|code|defn/) 
                   && 
@@ -610,7 +619,7 @@ delimitedBlock =
                     }
           }
 
-textBlock = ( text_content )+ 
+textBlock = text_line_first text_content* 
             {
               // the document is a pod: a chunk whose first line is set in from the margin is code
               const indent = text().match(/^[ \u00a0\u2001\t\u000C\u2008]*/)[0]
@@ -637,7 +646,7 @@ textBlock = ( text_content )+
                       location:location(),
                     }
             }
-ambientBlock = line:(emptyline { return  {empty:1}}/ [\s]+ / text_content )+ { return { text: text(), type: "ambient1"}}
+ambientBlock = line:(emptyline { return  {empty:1}}/ [\s]+ / text_line_first )+ { return { text: text(), type: "ambient1"}}
 
 abbreviatedBlockRaw = 
   vmargin:$(_) !markers
@@ -645,7 +654,7 @@ abbreviatedBlockRaw =
     &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline text:plain_line )*
+  content:$(!emptyline text:raw_line )*
   { 
     return {
             margin:vmargin,
@@ -790,7 +799,7 @@ paragraphBlockRaw =
       &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline plain_line)*
+  content:$(!emptyline raw_line)*
   { 
       return { 
               type: 'block',

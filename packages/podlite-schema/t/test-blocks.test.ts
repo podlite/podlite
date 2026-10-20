@@ -379,9 +379,17 @@ describe('what the parser did not recognise inside a test', () => {
     ])
   })
 
-  it('does not take a line of a table or of a body kept as written for a directive', () => {
-    const src = `=begin test\n=begin table\n=end missing | value\n=future | x\n=end table\n\n=for fixture\n=end missing\n\n=fixture\n=end gone\n\n${assert}=end test\n`
+  it('does not take a line of a delimited table for a directive', () => {
+    const src = `=begin test\n=begin table\n=end missing | value\n=future | x\n=end table\n\n${assert}=end test\n`
     expect(recognise(src)).toEqual([])
+  })
+
+  it('ends a paragraph or abbreviated body at a closing line and names that line', () => {
+    const src = `=begin test\n=for fixture\n=end missing\n\n=fixture\n=end gone\n\n${assert}=end test\n`
+    expect(recognise(src)).toEqual([
+      ['unknown-directive', 'end', 'missing', 3],
+      ['unknown-directive', 'end', 'gone', 6],
+    ])
   })
 
   it('names a marker line with no name or a name no block can have as unreadable', () => {

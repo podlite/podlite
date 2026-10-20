@@ -39,14 +39,13 @@ describe('strict block names ', () => {
           "content": Array [
             "=begin one
           s dddd
-      =end one
       ",
           ],
           "location": Object {
             "end": Object {
               "column": 1,
-              "line": 4,
-              "offset": 31,
+              "line": 3,
+              "offset": 22,
             },
             "start": Object {
               "column": 1,
@@ -57,7 +56,28 @@ describe('strict block names ', () => {
           "margin": "",
           "text": "=begin one
           s dddd
-      =end one
+      ",
+          "type": "para",
+        },
+        Object {
+          "content": Array [
+            "=end one
+      ",
+          ],
+          "location": Object {
+            "end": Object {
+              "column": 1,
+              "line": 4,
+              "offset": 31,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 3,
+              "offset": 22,
+            },
+          },
+          "margin": "",
+          "text": "=end one
       ",
           "type": "para",
         },

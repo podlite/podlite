@@ -76,4 +76,21 @@ describe('table-column-width rule', () => {
       expect(check(table(rows))).toEqual([])
     })
   })
+
+  describe('the end of an abbreviated table', () => {
+    const rows = 'a | b\n--+--\nc | d\n=future abcdef\n'
+
+    it('ends a paragraph or abbreviated table at a directive line, as the parser does', () => {
+      expect(check(`=for table\n${rows}`)).toEqual([])
+      expect(check(`=table\n${rows}`)).toEqual([])
+    })
+
+    it('ends an abbreviated table at a directive line inside a delimited table', () => {
+      expect(check(`=begin table\n=for table\n${rows}=end table\n`)).toEqual([])
+    })
+
+    it('ends an abbreviated table at a blank line inside a delimited table', () => {
+      expect(check(`=begin table\n=for table\na | b\n--+--\nc | d\n\nabcdef\n=end table\n`)).toEqual([])
+    })
+  })
 })

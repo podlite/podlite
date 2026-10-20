@@ -282,10 +282,84 @@ it('spec: 03-abbreviated 4', () => {
                 "type": "verbatim",
                 "value": "=begin one
     one, delimited block
-    =end one
-    =two two,
+    ",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 5,
+                "offset": 52,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 3,
+                "offset": 12,
+              },
+            },
+            "margin": "    ",
+            "text": "=begin one
+    one, delimited block
+    ",
+            "type": "code",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "type": "verbatim",
+                "value": "=end one
+    ",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 6,
+                "offset": 65,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 5,
+                "offset": 52,
+              },
+            },
+            "margin": "    ",
+            "text": "=end one
+    ",
+            "type": "code",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "type": "verbatim",
+                "value": "=two two,
     paragraph block
-    =for three
+    ",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 8,
+                "offset": 99,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 6,
+                "offset": 65,
+              },
+            },
+            "margin": "    ",
+            "text": "=two two,
+    paragraph block
+    ",
+            "type": "code",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "type": "verbatim",
+                "value": "=for three
     three, still a parablock
     ",
               },
@@ -298,17 +372,12 @@ it('spec: 03-abbreviated 4', () => {
               },
               "start": Object {
                 "column": 1,
-                "line": 3,
-                "offset": 12,
+                "line": 8,
+                "offset": 99,
               },
             },
             "margin": "    ",
-            "text": "=begin one
-    one, delimited block
-    =end one
-    =two two,
-    paragraph block
-    =for three
+            "text": "=for three
     three, still a parablock
     ",
             "type": "code",
@@ -322,7 +391,32 @@ it('spec: 03-abbreviated 4', () => {
                 "type": "verbatim",
                 "value": "=begin four
     four, another delimited one
-    =end four
+    ",
+              },
+            ],
+            "location": Object {
+              "end": Object {
+                "column": 1,
+                "line": 13,
+                "offset": 192,
+              },
+              "start": Object {
+                "column": 1,
+                "line": 11,
+                "offset": 144,
+              },
+            },
+            "margin": "    ",
+            "text": "=begin four
+    four, another delimited one
+    ",
+            "type": "code",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "type": "verbatim",
+                "value": "=end four
     ",
               },
             ],
@@ -334,14 +428,12 @@ it('spec: 03-abbreviated 4', () => {
               },
               "start": Object {
                 "column": 1,
-                "line": 11,
-                "offset": 144,
+                "line": 13,
+                "offset": 192,
               },
             },
             "margin": "    ",
-            "text": "=begin four
-    four, another delimited one
-    =end four
+            "text": "=end four
     ",
             "type": "code",
           },
@@ -557,15 +649,14 @@ Which, as we all know...
           into
           Jelly
           Beans!
-    =end foo
     ",
           },
         ],
         "location": Object {
           "end": Object {
             "column": 1,
-            "line": 19,
-            "offset": 324,
+            "line": 18,
+            "offset": 315,
           },
           "start": Object {
             "column": 1,
@@ -578,9 +669,30 @@ Which, as we all know...
           into
           Jelly
           Beans!
-    =end foo
     ",
         "type": "code",
+      },
+      Object {
+        "content": Array [
+          "=end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 19,
+            "offset": 324,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 18,
+            "offset": 315,
+          },
+        },
+        "margin": "",
+        "text": "=end foo
+    ",
+        "type": "para",
       },
       Object {
         "type": "blankline",

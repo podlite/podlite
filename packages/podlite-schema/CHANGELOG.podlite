@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item B<Breaking:> a paragraph, abbreviated or implicit block and a paragraph or abbreviated table end at a directive line whatever block it names, as they end at a known one; a line that names an unknown block starts a text of its own and is still reported to the recognition list
+
+=item the rest of the directive line of an abbreviated verbatim block is its first line even when it starts with C<=>: C«=code =para hello» holds C«=para hello»
+
 =head1 0.0.78
 
 =item B<Breaking:> markup codes in a C<:caption> are read only when C<=set> gives it, with the codes C<=config> allows inside other codes; a caption written on the block is text. The read caption is kept on the block as an optional C<caption> node, and a table renders it with its codes in html and Markdown, in Markdown as a paragraph of its own

@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<podlite test> reports as skipped a test whose assertion is followed at once by a block it does not know, which before was taken into the assertion
+
+=item C<podlite lint> rule C<table-column-width> ends an abbreviated table where the parser ends it: at a directive line, and at a blank line inside a delimited table too
+
 =item the help of C<podlite> describes C<lint> without calling it a work in progress
 
 =item C<podlite lint> rule C<attr-nested-angle> no longer reports a hash with values in angles, such as C«:key{:a<x>, :b<z>}»: the bracket of the next option is not taken for a stray C«>»

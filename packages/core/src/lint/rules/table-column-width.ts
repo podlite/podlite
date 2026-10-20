@@ -72,6 +72,9 @@ export function scanTableColumns(content: string): Violation[] {
   const openBlocks: string[] = []
   const violations: Violation[] = []
   let table: TableLine[] | null = null
+  // the form of the table being read, not of a table around it: an abbreviated
+  // one ends where the parser ends it, inside a delimited table too
+  let abbreviatedForm = false
 
   const closeTable = () => {
     if (table) violations.push(...checkTable(table))
@@ -84,6 +87,13 @@ export function scanTableColumns(content: string): Violation[] {
     const end = text.match(/^\s*=end\s+([\w-]+)/)
     const abbreviated = text.match(/^\s*=(?:for\s+)?table\b/)
 
+    // an abbreviated table ends at the first blank line or directive
+    if (table && abbreviatedForm && /^\s*=[A-Za-z]/.test(text)) closeTable()
+    if (table && abbreviatedForm && text.trim() === '') {
+      closeTable()
+      continue
+    }
+
     if (end) {
       if (end[1] === 'table') closeTable()
       openBlocks.pop()
@@ -92,18 +102,17 @@ export function scanTableColumns(content: string): Violation[] {
     if (begin) {
       closeTable()
       openBlocks.push(begin[1])
-      if (begin[1] === 'table' && !openBlocks.some(verbatim)) table = []
+      if (begin[1] === 'table' && !openBlocks.some(verbatim)) {
+        table = []
+        abbreviatedForm = false
+      }
       continue
     }
     if (openBlocks.some(verbatim)) continue
     if (abbreviated) {
       closeTable()
       table = []
-      continue
-    }
-    // an abbreviated table ends at the first blank line
-    if (table && text.trim() === '' && !openBlocks.includes('table')) {
-      closeTable()
+      abbreviatedForm = true
       continue
     }
     if (table) table.push({ text, line: i + 1 })

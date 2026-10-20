@@ -99,6 +99,17 @@ describe('an assertion', () => {
     ])
   })
 
+  it('skips a test whose assertion is followed at once by a block it does not know', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n=begin test :id<next>\n${block('fixture', '=head1 A')}=for assert\nhead1\n${block(
+        'cases',
+        'x',
+      )}=end test\n`,
+    )
+    expect(run(main).tests.map(t => [t.id, t.status, t.reason?.kind])).toEqual([['next', 'skipped', 'unknown-child']])
+  })
+
   it('names the test, the assertion, the document read and the file a found block is written in', () => {
     write('third.podlite', '=pod\n\n=head1 Third\n')
     write('named.podlite', '=pod\n\n=include file:./third.podlite\n')

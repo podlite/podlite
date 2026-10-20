@@ -15,7 +15,28 @@ it('spec: 01-delimited 0', () => {
       Object {
         "content": Array [
           "=begin foo
-    =end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 3,
+            "offset": 12,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "",
+        "text": "=begin foo
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          "=end foo
     ",
         ],
         "location": Object {
@@ -26,13 +47,12 @@ it('spec: 01-delimited 0', () => {
           },
           "start": Object {
             "column": 1,
-            "line": 2,
-            "offset": 1,
+            "line": 3,
+            "offset": 12,
           },
         },
         "margin": "",
-        "text": "=begin foo
-    =end foo
+        "text": "=end foo
     ",
         "type": "para",
       },
@@ -60,14 +80,13 @@ some text
         "content": Array [
           "=begin foo
     some text
-    =end foo
     ",
         ],
         "location": Object {
           "end": Object {
             "column": 1,
-            "line": 5,
-            "offset": 31,
+            "line": 4,
+            "offset": 22,
           },
           "start": Object {
             "column": 1,
@@ -78,7 +97,28 @@ some text
         "margin": "",
         "text": "=begin foo
     some text
-    =end foo
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          "=end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 5,
+            "offset": 31,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 4,
+            "offset": 22,
+          },
+        },
+        "margin": "",
+        "text": "=end foo
     ",
         "type": "para",
       },
@@ -108,14 +148,13 @@ spaced   text
           "=begin foo
     some
     spaced   text
-    =end foo
     ",
         ],
         "location": Object {
           "end": Object {
             "column": 1,
-            "line": 6,
-            "offset": 40,
+            "line": 5,
+            "offset": 31,
           },
           "start": Object {
             "column": 1,
@@ -127,7 +166,28 @@ spaced   text
         "text": "=begin foo
     some
     spaced   text
-    =end foo
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          "=end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 6,
+            "offset": 40,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 5,
+            "offset": 31,
+          },
+        },
+        "margin": "",
+        "text": "=end foo
     ",
         "type": "para",
       },
@@ -185,14 +245,13 @@ two
         "content": Array [
           "paragraph
     two
-    =end foo
     ",
         ],
         "location": Object {
           "end": Object {
             "column": 1,
-            "line": 8,
-            "offset": 50,
+            "line": 7,
+            "offset": 41,
           },
           "start": Object {
             "column": 1,
@@ -203,7 +262,28 @@ two
         "margin": "",
         "text": "paragraph
     two
-    =end foo
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          "=end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 8,
+            "offset": 50,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 7,
+            "offset": 41,
+          },
+        },
+        "margin": "",
+        "text": "=end foo
     ",
         "type": "para",
       },
@@ -232,10 +312,80 @@ it('spec: 01-delimited 4', () => {
       Object {
         "content": Array [
           "=begin something
-        =begin somethingelse
-        toot tooot!
-        =end somethingelse
-    =end something
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 3,
+            "offset": 18,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 2,
+            "offset": 1,
+          },
+        },
+        "margin": "",
+        "text": "=begin something
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "type": "verbatim",
+            "value": "=begin somethingelse
+    toot tooot!
+    ",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 5,
+            "offset": 59,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 3,
+            "offset": 18,
+          },
+        },
+        "margin": "    ",
+        "text": "=begin somethingelse
+    toot tooot!
+    ",
+        "type": "code",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "type": "verbatim",
+            "value": "=end somethingelse
+    ",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 6,
+            "offset": 82,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 5,
+            "offset": 59,
+          },
+        },
+        "margin": "    ",
+        "text": "=end somethingelse
+    ",
+        "type": "code",
+      },
+      Object {
+        "content": Array [
+          "=end something
     ",
         ],
         "location": Object {
@@ -246,16 +396,12 @@ it('spec: 01-delimited 4', () => {
           },
           "start": Object {
             "column": 1,
-            "line": 2,
-            "offset": 1,
+            "line": 6,
+            "offset": 82,
           },
         },
         "margin": "",
-        "text": "=begin something
-        =begin somethingelse
-        toot tooot!
-        =end somethingelse
-    =end something
+        "text": "=end something
     ",
         "type": "para",
       },
@@ -442,16 +588,14 @@ Which, as we all know...
             "type": "verbatim",
             "value": "=begin bar
     Turn into Jelly Beans!
-    =end bar
-    =end foo
     ",
           },
         ],
         "location": Object {
           "end": Object {
             "column": 1,
-            "line": 21,
-            "offset": 335,
+            "line": 19,
+            "offset": 313,
           },
           "start": Object {
             "column": 1,
@@ -462,10 +606,55 @@ Which, as we all know...
         "margin": "    ",
         "text": "=begin bar
     Turn into Jelly Beans!
-    =end bar
-    =end foo
     ",
         "type": "code",
+      },
+      Object {
+        "content": Array [
+          Object {
+            "type": "verbatim",
+            "value": "=end bar
+    ",
+          },
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 20,
+            "offset": 326,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 19,
+            "offset": 313,
+          },
+        },
+        "margin": "    ",
+        "text": "=end bar
+    ",
+        "type": "code",
+      },
+      Object {
+        "content": Array [
+          "=end foo
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 21,
+            "offset": 335,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 20,
+            "offset": 326,
+          },
+        },
+        "margin": "",
+        "text": "=end foo
+    ",
+        "type": "para",
       },
       Object {
         "type": "blankline",
@@ -643,7 +832,28 @@ foo
       Object {
         "content": Array [
           "foo
-    =end kwid
+    ",
+        ],
+        "location": Object {
+          "end": Object {
+            "column": 1,
+            "line": 8,
+            "offset": 41,
+          },
+          "start": Object {
+            "column": 1,
+            "line": 7,
+            "offset": 37,
+          },
+        },
+        "margin": "",
+        "text": "foo
+    ",
+        "type": "para",
+      },
+      Object {
+        "content": Array [
+          "=end kwid
     ",
         ],
         "location": Object {
@@ -654,13 +864,12 @@ foo
           },
           "start": Object {
             "column": 1,
-            "line": 7,
-            "offset": 37,
+            "line": 8,
+            "offset": 41,
           },
         },
         "margin": "",
-        "text": "foo
-    =end kwid
+        "text": "=end kwid
     ",
         "type": "para",
       },
