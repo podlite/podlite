@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<canOwnTest> and C<mayHoldTests> say whether a node can be the block a C<=test> belongs to and whether a test can stand among its children, the rule a page groups tests by
+
 =item an indented block written with C<=for> or in the abbreviated form takes its virtual margin off every line of its body, as the C<=begin> form does: a verbatim body keeps the lines aligned as written, and the text of a paragraph, an item, a definition and a heading loses the margin on each line. The rest of the directive line is kept as it is
 
 =item B<Breaking:> a paragraph, abbreviated or implicit block and a paragraph or abbreviated table end at a directive line whatever block it names, as they end at a known one; a line that names an unknown block starts a text of its own and is still reported to the recognition list

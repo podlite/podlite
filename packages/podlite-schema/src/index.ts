@@ -261,7 +261,7 @@ export { applySetToFirst, mergeSet, isSetTransparent, isSetTarget } from './set-
 export type { SetOutcome } from './set-assign'
 export { markGuarded, isCovered, guardedTextLeaves, getMaskedTextContent, renderCodeText } from './guard'
 export { applyFoldedSections } from './folded-sections'
-export { testCaption, testFoldedByAuthor } from './test-display'
+export { testCaption, testFoldedByAuthor, canOwnTest, mayHoldTests } from './test-display'
 export { tocTitleText } from './toc-caption'
 export type { SelectorDoc, ParsedSelector, SelectorOptions } from './selectors'
 export { applyImageBase } from './image-base'

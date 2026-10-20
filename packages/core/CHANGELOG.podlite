@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> adds rule C<test-under-rule> (warning): a C<=test> with no block above it that it could check, where the page draws it with no rule, such as a test right under a heading or one that opens its block. Tests brought by C<=include> are checked where they land and reported at the C<=include> line
+
 =item C<podlite test> reports as skipped a test whose assertion is followed at once by a block it does not know, which before was taken into the assertion
 
 =item C<podlite lint> rule C<table-column-width> ends an abbreviated table where the parser ends it: at a directive line, and at a blank line inside a delimited table too

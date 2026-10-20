@@ -49,6 +49,13 @@ describe('validateSource', () => {
     expect(rules).toContain('attr-nested-angle')
   })
 
+  it('warns of a test with no rule above it and stays ok', () => {
+    const test = '=begin test\n=begin fixture\n=head1 A\n=end fixture\n=for assert\nhead1\n=end test\n'
+    const report = validateSource(`=head1 Part\n\n${test}`)
+    expect(report.ok).toBe(true)
+    expect(report.problems.map(p => [p.rule, p.severity])).toEqual([['test-under-rule', 'warning']])
+  })
+
   it('warns of an item with no item a level above it and stays ok', () => {
     const report = validateSource('=item1 One\n=item3 Three\n')
     expect(report.ok).toBe(true)

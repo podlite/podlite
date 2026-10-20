@@ -58,3 +58,69 @@ export const testFoldedByAuthor = (node: any, ctx: any): boolean | undefined => 
 // A fence has to be longer than any run of backticks inside what it encloses.
 export const longestBacktickRun = (text: string): number =>
   Math.max(0, ...(text.match(/`+/g) || []).map(run => run.length))
+
+// a heading, a directive, a comment or data says nothing a test could check, and a
+// directive wrapped into a group would lose the reach it has over what follows
+const NOT_A_TEST_OWNER = new Set([
+  'head',
+  'comment',
+  'data',
+  'test',
+  'fixture',
+  'assert',
+  'resource',
+  'include',
+  'toc',
+  'pod',
+])
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
+
+/*
+=begin pod :kind<export>
+
+=head2 canOwnTest
+
+Whether a node can be the block a C<=test> right after it belongs to. A test
+belongs to the nearest preceding sibling that is not itself a test; when that
+sibling cannot own it, the page draws the test with no rule and the linter warns.
+A paragraph, a list and code can; so can any block but a heading, a directive, a
+comment, data, a part of a test, a table of contents and the blocks the tree adds,
+whose names begin with C<_>.
+
+=end pod
+*/
+export const canOwnTest = (node: unknown): boolean => {
+  if (!isRecord(node)) return false
+  if (node.type === 'para' || node.type === 'list' || node.type === 'code') return true
+  if (node.type !== 'block' || typeof node.name !== 'string') return false
+  return !node.name.startsWith('_') && !NOT_A_TEST_OWNER.has(node.name)
+}
+
+// source, data and the parts of a test hold no tests of their own
+const HOLDS_NO_TESTS = new Set([
+  'test',
+  'fixture',
+  'assert',
+  'resource',
+  'code',
+  'comment',
+  'data',
+  'markdown',
+  'input',
+  'output',
+  'formula',
+])
+
+/*
+=begin pod :kind<export>
+
+=head2 mayHoldTests
+
+Whether a test can stand among the children of a node, so that a pass over the
+tests of a document goes into it: no for a test itself and its parts, and for
+code, comments, data, Markdown, input, output and formulas.
+
+=end pod
+*/
+export const mayHoldTests = (node: unknown): boolean => !isRecord(node) || !HOLDS_NO_TESTS.has(String(node.name))
