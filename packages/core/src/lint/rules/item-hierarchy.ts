@@ -31,16 +31,22 @@ export const itemHierarchyRule: Rule = {
     // a Markdown list nests its sublists inside the item, which is no =item block
     if (ctx.fileType === 'md') return []
     const assembled = assembleForLint(ast, ctx)
-    const whole = assembled && !(assembled instanceof Error) ? assembled : undefined
+    // with an include not read, the written tree is checked and the include holds what follows
+    const whole = assembled && !(assembled instanceof Error) && assembled.problems.length === 0 ? assembled : undefined
     const violations: Violation[] = []
 
-    const visit = (nodes: unknown, seen: Set<number>): void => {
+    type Scope = { seen: Set<number>; unknown: boolean }
+    const visit = (nodes: unknown, scope: Scope): void => {
       if (!Array.isArray(nodes)) return
       for (const node of nodes) {
         if (!isNode(node)) continue
         // lists, folded sections and included roots are no surrounding block of the norm
         if (node.type === 'list' || (node.type === 'block' && WRAPPERS.has(node.name ?? ''))) {
-          visit(node.content, seen)
+          visit(node.content, scope)
+          continue
+        }
+        if (node.type === 'block' && node.name === 'include') {
+          scope.unknown = true
           continue
         }
         if (node.type === 'block' && node.name === 'item') {
@@ -48,7 +54,7 @@ export const itemHierarchyRule: Rule = {
           if (level !== undefined) {
             // an item an include placed here counts as preceding but is not reported
             const included = (whole?.origin.get(node)?.steps?.length ?? 0) > 0
-            if (level > 1 && !seen.has(level - 1) && !included) {
+            if (level > 1 && !scope.seen.has(level - 1) && !included && !scope.unknown) {
               violations.push({
                 rule: ITEM_HIERARCHY_RULE_ID,
                 severity: 'warning',
@@ -56,15 +62,15 @@ export const itemHierarchyRule: Rule = {
                 location: node.location,
               })
             }
-            seen.add(level)
+            scope.seen.add(level)
           }
         }
-        if (node.type === 'block') visit(node.content, new Set())
+        if (node.type === 'block') visit(node.content, { seen: new Set(), unknown: false })
       }
     }
 
     const root: unknown = whole ? whole.tree : ast
-    visit(isNode(root) ? root.content : [], new Set())
+    visit(isNode(root) ? root.content : [], { seen: new Set(), unknown: false })
     return violations
   },
 }

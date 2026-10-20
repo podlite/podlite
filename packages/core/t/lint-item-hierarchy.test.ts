@@ -112,6 +112,13 @@ describe('item-hierarchy rule', () => {
     expect(check('=for head1 :folded\nSection\n\n=item1 One\n=item2 Two\n')).toEqual([])
   })
 
+  it('reports no item after an include that is not read', () => {
+    const src = '=include file:part.podlite\n\n=item2 Two\n'
+    expect(withParts(src, {})).toEqual([])
+    expect(check(src)).toEqual([])
+    expect(check('=item2 Before\n\n=include file:part.podlite\n')).toHaveLength(1)
+  })
+
   it('reports no item of an included file', () => {
     expect(withParts('=include file:part.podlite\n', { 'part.podlite': '=item1 One\n=item3 Three\n' })).toEqual([])
   })
