@@ -791,7 +791,7 @@ it('spec: 04-code 5', () => {
             "content": Array [
               Object {
                 "type": "verbatim",
-                "value": "        this is not
+                "value": "    this is not
     ",
               },
             ],

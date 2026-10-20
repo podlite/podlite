@@ -167,7 +167,7 @@ it('spec: 00-maintests 1', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  "  sdsdsdsd
+                  "sdsdsdsd
     ",
                 ],
                 "location": Object {
@@ -183,7 +183,7 @@ it('spec: 00-maintests 1', () => {
                   },
                 },
                 "margin": "  ",
-                "text": "  sdsdsdsd
+                "text": "sdsdsdsd
     ",
                 "type": "para",
               },

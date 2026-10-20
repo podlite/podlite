@@ -186,7 +186,7 @@ Outside blocks
             "content": Array [
               Object {
                 "type": "verbatim",
-                "value": "   Inside Bidden
+                "value": "Inside Bidden
     ",
               },
             ],

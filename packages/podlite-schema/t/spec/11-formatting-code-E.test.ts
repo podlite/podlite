@@ -166,7 +166,7 @@ it('spec: 11-formatting-code-E 1', () => {
                 "type": "fcode",
               },
               "
-      ",
+    ",
             ],
             "location": Object {
               "end": Object {
@@ -182,7 +182,7 @@ it('spec: 11-formatting-code-E 1', () => {
             },
             "margin": "",
             "text": "E<bull> E<amp; quot; ndash> E<LEFT DOUBLE ANGLE BRACKET> E<171;ndash>
-      ",
+    ",
             "type": "para",
           },
         ],

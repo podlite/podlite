@@ -655,12 +655,12 @@ abbreviatedBlockRaw =
     &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline text:raw_line )*
+  content:(!emptyline text:raw_line { return exludeVMargin(vmargin, text) })*
   { 
     return {
             margin:vmargin,
             type: 'block',
-            content: content === "" ? [] : [{ type:'verbatim', value:content}],
+            content: content.length === 0 ? [] : [{ type:'verbatim', value:content.join('')}],
             name,
             config:[],
             location:location()
@@ -689,9 +689,9 @@ abbreviatedBlockTable =
 abbreviatedBlock = 
   vmargin:$(_) !markers
   name:markerAbbreviatedBlock _ first_line:( emptyline / raw_text_until_eol )
-  content_rest:$( !emptyline text:text_content )*
+  content_rest:( !emptyline text:text_content { return exludeVMargin(vmargin, text) } )*
   { 
-    const content = (first_line === "\n" ? "" : first_line ) + content_rest
+    const content = (first_line === "\n" ? "" : first_line ) + content_rest.join('')
     return {
             margin:vmargin,
             type:'block',
@@ -800,11 +800,11 @@ paragraphBlockRaw =
       &{  
      return isRawBlock(name)
      }
-  content:$(!emptyline raw_line)*
+  content:(!emptyline text:raw_line { return exludeVMargin(vmargin, text) })*
   { 
       return { 
               type: 'block',
-              content: content === "" ? [] : [{ type:'verbatim', value:content}],
+              content: content.length === 0 ? [] : [{ type:'verbatim', value:content.join('')}],
               name,
               margin:vmargin,
               config,
@@ -833,8 +833,9 @@ paragraphBlockTable =
 paragraphBlock = 
   vmargin:$(_) 
   marker:markerFor  name:strictIdentifier _ config:pod_configuration
-  content:$(!emptyline text_content)*
+  lines:(!emptyline text:text_content { return exludeVMargin(vmargin, text) })*
   { 
+      const content = lines.join('')
       return { 
               type:'block',
               content: content === "" ? [] 

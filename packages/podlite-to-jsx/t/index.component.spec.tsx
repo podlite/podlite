@@ -274,7 +274,7 @@ it('accepts D<>', () => {
           formatting code
         </dfn>
         provides a way
-        to add inline mark-up to a
+      to add inline mark-up to a
         <dfn>
           piece
         </dfn>
@@ -439,7 +439,7 @@ it('accepts N<>', () => {
             </a>
           </sup>
           Preferably with an explicit
-      iterator variable.
+    iterator variable.
         </p>
       </div>
     </div>
@@ -459,7 +459,7 @@ it('accepts N<>', () => {
           for
         </code>
         loop is far more
-      powerful than its Perl 5 predecessor.
+    powerful than its Perl 5 predecessor.
       </p>
     </div>
   `)
@@ -486,7 +486,7 @@ it('accepts U<>, X<>, S<>', () => {
         </u>
         .
         <br>
-           
+         
       </p>
     </div>
   `)
