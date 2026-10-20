@@ -58,6 +58,12 @@ describe('the virtual margin of an indented paragraph or abbreviated block', () 
     expect(toMarkdown({}).run(inPod('  =item plain\n    deeper\n')).toString()).toBe('- plain\n  deeper\n\n')
   })
 
+  it('takes the margin off lines that end in a lone carriage return', () => {
+    const [pod] = tree('=begin pod\r  =for code\r  plain\r    deeper\r=end pod\r')
+    const [code] = pod.content.filter((n: any) => n.type !== 'blankline')
+    expect(verbatimOf(code)).toBe('plain\r  deeper\r')
+  })
+
   it('reads a line set in less than the margin from the margin', () => {
     expect(verbatimOf(inner('  =for code\n  plain\n deeper\n'))).toBe('plain\ndeeper\n')
   })
