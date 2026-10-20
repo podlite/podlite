@@ -180,7 +180,7 @@ function peg$parse(input, options) {
       peg$c31 = function(name) { return name },
       peg$c32 = "=",
       peg$c33 = peg$literalExpectation("=", false),
-      peg$c34 = function() { return location().start.column === 1 },
+      peg$c34 = function() { const at = location().start.offset; return at === 0 || input[at - 1] === '\n' || input[at - 1] === '\r' },
       peg$c35 = peg$otherExpectation("text"),
       peg$c36 = function() {
           noteUnknownDirective(options, text(), location())

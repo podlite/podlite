@@ -190,8 +190,9 @@ strictIdentifier =  name:identifier &{ return isSupportedBlockName(name)} { retu
 markerAbbreviatedBlock = '='  name:strictIdentifier { return name }
 markers = markerBegin / markerEnd / markerFor / markerConfig / markerAlias
 // a line that is a directive by its form, whether its name is known or not; the
-// rest of a directive line is data, so only the start of a line can be one
-anyDirective = &{ return location().start.column === 1 } _ ( markerConfig / markerAlias / markers identifier / '=' identifier )
+// rest of a directive line is data, so only the start of a line can be one, and
+// a line may end in a lone carriage return
+anyDirective = &{ const at = location().start.offset; return at === 0 || input[at - 1] === '\n' || input[at - 1] === '\r' } _ ( markerConfig / markerAlias / markers identifier / '=' identifier )
 Text "text" = $(c:char+)
 // TODO: "markers strictIdentifier" - not properly working for =config C<> and =alias SOME_TEXT
 // becouse  C<> and SOME_TEXT is not match to 'strictIdentifier'

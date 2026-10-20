@@ -121,11 +121,35 @@ describe('a directive line ends the body of a block whatever its name', () => {
     ])
   })
 
-  it('still ends a block at a known name and a mixed-case name', () => {
+  it('ends a body at a directive line after a lone carriage return or a CRLF', () => {
+    expect(shape(read('=for para\nx\r=for head1\ny\r').tree)).toEqual([
+      ['para', [['para', 'x\r']]],
+      ['head1', [['para', 'y\r']]],
+    ])
+    expect(shape(read('=for para\r\nx\r\n=for foo\r\ny\r\n').tree)).toEqual([
+      ['para', [['para', 'x\r\n']]],
+      ['para', '=for foo\r\ny\r\n'],
+    ])
+  })
+})
+
+describe('what a directive line of an unknown name leaves as it was', () => {
+  it('ends a block at a known name and a mixed-case name', () => {
     expect(shape(read('=for para\ntext\n=for head1\nbar\n').tree)[0]).toEqual(['para', [['para', 'text\n']]])
     expect(shape(read('=for para\ntext\n=begin Foo\nx\n=end Foo\n').tree)).toEqual([
       ['para', [['para', 'text\n']]],
       ['Foo', ['x\n']],
     ])
+  })
+
+  it('reports a standalone unknown block on both of its lines', () => {
+    expect(read('=begin foo\nx\n=end foo\n').events).toEqual([
+      ['unknown-directive', 'begin', 'foo', 1],
+      ['unknown-directive', 'end', 'foo', 3],
+    ])
+  })
+
+  it('keeps ambient text of the default mode in one piece', () => {
+    expect(shape(read('Some code\n=foo bar\nmore code\n', 0).tree)).toEqual([['ambient']])
   })
 })
