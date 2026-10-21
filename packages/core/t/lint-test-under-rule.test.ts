@@ -93,6 +93,33 @@ describe('test-under-rule rule', () => {
     expect(withParts(`=include file:missing.podlite\n\n=head1 Part\n\n${test}`, {})).toHaveLength(1)
   })
 
+  it('does not take an include inside a test passed over for one above the next test', () => {
+    const inside = '=begin test\n=include file:missing.podlite\n=for assert\nhead1\n=end test\n'
+    expect(lines(withParts(`=head1 Part\n\n${inside}${test}`, {}))).toEqual([3, 8])
+  })
+
+  it('says nothing of a test an include brought right after an include that does not resolve', () => {
+    const part = { 'part.podlite': test }
+    expect(
+      withParts('=head1 Part\n\n=include file:missing.podlite\n\n=include file:part.podlite | test\n', part),
+    ).toEqual([])
+    const inner = { 'part.podlite': `=include file:missing.podlite\n\n${test}` }
+    expect(withParts('=head1 Part\n\n=include file:part.podlite | test\n', inner)).toEqual([])
+    expect(withParts('=head1 Part\n\n=include file:part.podlite | test\n', part)).toHaveLength(1)
+  })
+
+  it('names the innermost file of a test brought through two includes', () => {
+    const parts = { 'outer.podlite': '=include file:inner.podlite | test\n', 'inner.podlite': test }
+    const v = withParts('A rule.\n\n=include file:outer.podlite\n', parts)
+    expect(messages(v)).toEqual(['=test has no rule above it (in inner.podlite:1)'])
+    expect(lines(v)).toEqual([3])
+  })
+
+  it('reads the tests of an item as the page does', () => {
+    expect(check(`=begin item\nA rule.\n\n${test}=end item\n`)).toEqual([])
+    expect(lines(check(`=begin item\n${test}=end item\n`))).toEqual([2])
+  })
+
   it('reads a Markdown file as having no tests', () => {
     const src = `=head1 Part\n\n${test}`
     expect(check(src, 'md')).toEqual([])
