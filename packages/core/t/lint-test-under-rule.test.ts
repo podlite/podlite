@@ -108,6 +108,11 @@ describe('test-under-rule rule', () => {
     expect(withParts('=head1 Part\n\n=include file:part.podlite | test\n', part)).toHaveLength(1)
   })
 
+  it('reads an ambiguous address as one that brought its block', () => {
+    const part = { 'p.podlite': '=for head1 :id<A>\nFirst\n\n=for head1 :id<A>\nSecond\n' }
+    expect(withParts(`=include file:p.podlite#A\n\n${test}`, part)).toHaveLength(1)
+  })
+
   it('names the innermost file of a test brought through two includes', () => {
     const parts = { 'outer.podlite': '=include file:inner.podlite | test\n', 'inner.podlite': test }
     const v = withParts('A rule.\n\n=include file:outer.podlite\n', parts)

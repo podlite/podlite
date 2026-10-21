@@ -20,11 +20,11 @@ const isTest = (node: Node): boolean => node.type === 'block' && node.name === '
 
 const isBlank = (node: Node): boolean => node.type === 'blankline'
 
-// the outcomes of an include that brought nothing, or brought what is not known yet
+// the outcomes of an include that brought nothing, or brought what is not known
+// yet; an ambiguous address still brings the block it found
 const UNKNOWN_OUTCOME = new Set([
   'source',
   'address',
-  'ambiguous',
   'unparsed-selector',
   'unsupported-scheme',
   'operand',
