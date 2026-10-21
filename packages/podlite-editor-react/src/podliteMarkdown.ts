@@ -1,10 +1,13 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { ensureSyntaxTree, LanguageDescription, ParseContext, syntaxTree } from '@codemirror/language'
+import { ensureSyntaxTree, LanguageDescription, LanguageSupport, ParseContext, syntaxTree } from '@codemirror/language'
 import { languages } from '@codemirror/language-data'
 import { styleTags, tags as t } from '@lezer/highlight'
 import { parseMixed } from '@lezer/common'
+import type { Parser } from '@lezer/common'
 import { parser as mdParser } from '@lezer/markdown'
-import { BLOCK_NAMES, isVerbatimBlock } from '@podlite/schema'
+import { isVerbatimBlock } from '@podlite/schema'
+import { isStandardName, nodeForName } from './blockNameClass'
+import { selectorLanguage } from './selectorLanguage'
 import type { EditorState, Extension } from '@codemirror/state'
 
 const directiveRe = /^=([A-Za-z][\w-]*)(.*)$/
@@ -15,22 +18,10 @@ const nameRe = /^(\s+)([A-Za-z][\w-]*)/
 // `=Markdown` with a capital letter is the old spelling, still met in documents
 const isMarkdownName = (name: string): boolean => /^markdown$/i.test(name)
 
-const DIRECTIVE_WORDS = ['begin', 'end', 'for', 'config', 'alias']
 const TAKES_A_NAME = new Set(['begin', 'end', 'for', 'config'])
 // the directives whose marker line carries settings; on every other one what
 // follows the keyword is content, and `C<…>` there is a markup code, not a value
 const TAKES_SETTINGS = new Set(['begin', 'for', 'config', 'alias', 'set', 'boundary'])
-const standard = (name: string): boolean =>
-  DIRECTIVE_WORDS.includes(name) || (BLOCK_NAMES as readonly string[]).includes(name) || /^(head|item)\d*$/.test(name)
-
-// SYNOPSIS and SEE-ALSO name a section of the document; Image and Diagram name
-// a block the author brought in; the rest is a name nothing here knows
-const nodeForName = (name: string): string => {
-  if (standard(name)) return 'PodBlockName'
-  if (/^[A-Z][A-Z][A-Z0-9_-]*$/.test(name)) return 'PodSemanticBlock'
-  if (/^[A-Z][a-z][a-zA-Z0-9_-]*$/.test(name)) return 'PodCustomBlock'
-  return 'PodUnknownBlock'
-}
 
 // a value keeps its own delimiters; the norm has no square brackets since 2026-08
 const attrRe = /:!?[\w-]+|<[^>]*>|\([^)]*\)|\{[^}]*\}|'[^']*'|"[^"]*"|｢[^｣]*｣/g
@@ -282,7 +273,7 @@ export const podliteMarkdownExtension: any = {
           rest = (m as RegExpExecArray)[2]
           // `=begin`, `=head1` and the like read as one word; a name of its own
           // keeps the `=` a keyword and takes its colour from what the name is
-          if (standard(word)) {
+          if (isStandardName(word)) {
             children.push(cx.elt('PodKeyword', at, at + 1 + word.length))
           } else {
             children.push(cx.elt('PodKeyword', at, at + 1))
@@ -451,9 +442,35 @@ const lineStartOf = (text: string, line: number): number => {
 
 // the body of `=begin code :lang<js>` is read by that language, the same way a
 // markdown fence is read by the language named after its backticks
-export const podliteCodeLanguage = (codeLanguages: any): any => ({
+// the languages of a body chosen by the name of its block rather than by :lang
+export type BodyLanguages = {
+  podlite: () => Parser | undefined
+  markdown: () => Parser | undefined
+}
+
+const optionOf = (marker: string, name: string): string => {
+  const found = new RegExp(`:${name}\\s*(?:<([^>]*)>|\\(\\s*'([^']*)'\\s*\\)|"([^"]*)"|｢([^｣]*)｣)`).exec(marker)
+  return ((found && (found[1] || found[2] || found[3] || found[4])) || '').trim()
+}
+
+// a fixture is a Podlite document, a resource is read by the extension of its
+// name, an assertion carries a selector
+const bodyByName = (block: string, marker: string, settings: boolean, own: BodyLanguages): Parser | undefined => {
+  if (block === 'fixture') return own.podlite()
+  if (block === 'assert') return selectorLanguage.parser
+  if (block !== 'resource' || !settings) return undefined
+  const file = optionOf(marker, 'name')
+  if (/\.(podlite|pod6)$/i.test(file)) return own.podlite()
+  if (/\.(md|markdown)$/i.test(file)) return own.markdown()
+  return undefined
+}
+
+// the body of `=begin code :lang<js>` is read by that language, the same way a
+// markdown fence is read by the language named after its backticks; without
+// :lang, the name of the block may choose one
+export const podliteCodeLanguage = (codeLanguages: any, own?: BodyLanguages): any => ({
   wrap: parseMixed((node: any, input: any) => {
-    if (node.name !== 'PodCodeBody' || !codeLanguages) return null
+    if (node.name !== 'PodCodeBody') return null
     // a delimited block holds the body inside itself, so its marker is the parent.
     // an abbreviated one puts the body next to the marker, and settings that go on
     // over the next line become siblings of their own, so walk back over those
@@ -468,10 +485,17 @@ export const podliteCodeLanguage = (codeLanguages: any): any => ({
         prev = prev.prevSibling
       }
     }
-    const marker = input.read(head ? head.from : node.from, node.from)
-    const named = /:lang\s*(?:<([^>]*)>|\(\s*'([^']*)'\s*\)|"([^"]*)"|｢([^｣]*)｣)/.exec(marker)
-    const name = ((named && (named[1] || named[2] || named[3] || named[4])) || '').trim()
-    if (!name) return null
+    const marker: string = input.read(head ? head.from : node.from, node.from)
+    const opening = /^\s*=([A-Za-z][\w-]*)(?:[ \t]+([A-Za-z][\w-]*))?/.exec(marker)
+    // only =begin and =for carry settings; the rest of an abbreviated line is data
+    const settings = !!opening && (opening[1] === 'begin' || opening[1] === 'for')
+    const block = opening ? (settings ? opening[2] ?? '' : opening[1]) : ''
+    const name = settings ? optionOf(marker, 'lang') : ''
+    if (!name) {
+      const parser = own ? bodyByName(block, marker, settings, own) : undefined
+      return parser ? { parser } : null
+    }
+    if (!codeLanguages) return null
     const found =
       typeof codeLanguages === 'function'
         ? codeLanguages(name)
@@ -487,12 +511,23 @@ export const podliteCodeLanguage = (codeLanguages: any): any => ({
 // Podlite read on top of the markdown parser: the content of a markdown block
 // and the code inside a fence get their own highlighting for free
 // `codeLanguages` is a parameter so a test can hand in a list it loads itself
-export const podliteTreeLang = (codeLanguages: any = languages): Extension =>
-  markdown({
+export const podliteTreeLang = (codeLanguages: any = languages): Extension => {
+  // a fixture body is read by this same language, which exists only once built
+  let own: LanguageSupport | undefined
+  const resourceMarkdown = markdown({ base: markdownLanguage, codeLanguages, completeHTMLTags: false })
+  own = markdown({
     base: markdownLanguage,
     codeLanguages,
     // in Podlite the angle opens a markup code and an attribute value, not an
     // HTML tag, so the tag list would follow the caret through ordinary writing
     completeHTMLTags: false,
-    extensions: [podliteMarkdownExtension as any, podliteCodeLanguage(codeLanguages)],
+    extensions: [
+      podliteMarkdownExtension as any,
+      podliteCodeLanguage(codeLanguages, {
+        podlite: () => own?.language.parser,
+        markdown: () => resourceMarkdown.language.parser,
+      }),
+    ],
   })
+  return own
+}

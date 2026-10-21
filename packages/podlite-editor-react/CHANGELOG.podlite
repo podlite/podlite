@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the body of C<=fixture> is highlighted as a Podlite document, the body of C<=resource> by the extension of its C<:name> (Podlite or Markdown), and the body of C<=assert> as a selector: block names, conditions, values, the source and its path, and the word C<in> of an operation. C<:lang> still chooses the language when it is given, and only on C<=begin> and C<=for>
+
 =head1 0.0.82
 
 =item the completions that insert a table of contents with a caption write C<:caption> instead of C<:title>, as the specification does
