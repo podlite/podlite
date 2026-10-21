@@ -522,7 +522,12 @@ export const podliteCodeLanguage = (codeLanguages: any, own?: BodyLanguages): an
 export const podliteTreeLang = (codeLanguages: any = languages): Extension => {
   // a fixture body is read by this same language, which exists only once built
   let own: LanguageSupport | undefined
-  const resourceMarkdown = markdown({ base: markdownLanguage, codeLanguages, completeHTMLTags: false })
+  const resourceMarkdown = markdown({
+    base: markdownLanguage,
+    codeLanguages,
+    completeHTMLTags: false,
+    extensions: [markdownHeadingStyle],
+  })
   own = markdown({
     base: markdownLanguage,
     codeLanguages,

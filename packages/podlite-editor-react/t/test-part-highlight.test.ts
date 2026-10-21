@@ -155,6 +155,31 @@ describe('an assertion is highlighted as a selector', () => {
     expect(at(', b').tags).toEqual(['string'])
   })
 
+  it('marks any scheme of a source, a data: source in an operation among them', () => {
+    const { at } = read('=for assert\nInvoice[ :status(in data:statuses#value) ]\n')
+    expect(at('data:').tags).toEqual(['keyword'])
+    expect(at('statuses#value').tags).toEqual(['url'])
+    const addressed = read('=for assert\nfile:./a.podlite#Intro | head1\n')
+    expect(addressed.at('./a.podlite#Intro').tags).toEqual(['url'])
+  })
+
+  it('reads every form of a value the configuration table gives', () => {
+    const { at } = read("=for assert\nhead1[ :caption'x' :note｢a b｣ :count(2.3) ]\n")
+    expect(at(':caption').tags).toEqual(['attributeName'])
+    expect(at("'x'").tags).toEqual(['string'])
+    expect(at('｢a b｣').tags).toEqual(['string'])
+    expect(at('2.3').tags).toEqual(['string'])
+  })
+
+  it('ends an unclosed value with its line', () => {
+    const { at } = read('=begin assert\nhead1[ :caption<a\n, para\n=end assert\n')
+    expect(at('para').tags).toEqual(['operator'])
+  })
+
+  it('reads a selector under a marker with settings but no :lang', () => {
+    expect(read('=for assert :absent\nhead1\n').at('head1').tags).toEqual(['operator'])
+  })
+
   it('takes no :lang from the data of an abbreviated assertion', () => {
     const { at } = read('=assert head1[ :lang<js> ]\n, para\n')
     expect(at(', para').tags).toEqual(['processingInstruction'])
@@ -176,6 +201,12 @@ describe('a resource is highlighted by the extension of its name', () => {
     }
     expect(read('=for resource\n= :name<x.md>\n# Title\n').at('Title').tags).toContain('heading')
     expect(read('=begin resource :name<x.txt>\n# Title\n=end resource\n').at('Title').tags).not.toContain('heading')
+  })
+
+  it('gives a heading of a Markdown resource the look of a heading in a markdown block', () => {
+    const resource = read('=begin resource :name<x.md>\n# Title\n=end resource\n').at('Title').tags
+    const block = read('=begin markdown\n# Title\n=end markdown\n').at('Title').tags
+    expect(resource).toEqual(block)
   })
 
   it('reads :name as an option of its own, in any form of value', () => {

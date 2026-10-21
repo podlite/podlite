@@ -57,16 +57,17 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
       state.path = false
       if (stream.match(/^[^\s|,()\]]+/)) return 'url'
     }
-    if (stream.match(/^(?:file|doc):/)) {
+    // a scheme names the kind of source: file:, doc:, data: and the like
+    if (stream.match(/^[A-Za-z][\w+.-]*:(?=[^\s:])/)) {
       state.path = true
       return 'keyword'
     }
     // with the scheme left out, the bar after it tells a source from a block name
     if (stream.match(/^[^\s|,()[\]<>'"]+(?=\s*\|)/)) return 'url'
     const ch = stream.peek()
-    if (ch === '<' || ch === "'" || ch === '"') {
+    if (ch === '<' || ch === "'" || ch === '"' || ch === '｢') {
       stream.next()
-      state.closing = ch === '<' ? '>' : ch
+      state.closing = ch === '<' ? '>' : ch === '｢' ? '｣' : ch
       return readValue(stream, state)
     }
     if (ch === '*' || ch === '~') {
@@ -84,9 +85,9 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
       if (ch === '|' && state.depth > 0) state.operand = true
       return 'processingInstruction'
     }
-    if (stream.match(/^:(?:!\?|!|\?)?[A-Za-z][\w'-]*/)) return 'attributeName'
+    if (stream.match(/^:(?:!\?|!|\?)?[A-Za-z][\w-]*/)) return 'attributeName'
     if (stream.match(/^[-+]?\d+(?:\.\d+)?/)) return 'string'
-    const word = stream.match(/^[A-Za-z][\w'-]*/)
+    const word = stream.match(/^[A-Za-z][\w-]*/)
     if (word && typeof word !== 'boolean') {
       if (word[0] === 'in' && state.depth > 0) return 'keyword'
       if ((word[0] === 'True' || word[0] === 'False') && state.depth > 0 && !state.operand) return 'string'
