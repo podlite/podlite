@@ -448,9 +448,17 @@ export type BodyLanguages = {
   markdown: () => Parser | undefined
 }
 
+// the value of an option of a marker, read option by option, so that text inside
+// the value of another option is not taken for one
 const optionOf = (marker: string, name: string): string => {
-  const found = new RegExp(`:${name}\\s*(?:<([^>]*)>|\\(\\s*'([^']*)'\\s*\\)|"([^"]*)"|｢([^｣]*)｣)`).exec(marker)
-  return ((found && (found[1] || found[2] || found[3] || found[4])) || '').trim()
+  const parts = [...marker.matchAll(attrRe)]
+  for (let i = 0; i < parts.length - 1; i++) {
+    const [part, value] = [parts[i], parts[i + 1]]
+    if (part[0] !== `:${name}` || value.index !== (part.index ?? 0) + part[0].length) continue
+    const inner = value[0].slice(1, -1).trim()
+    return (value[0][0] === '(' ? inner.replace(/^(['"｢])(.*)['"｣]$/, '$2') : inner).trim()
+  }
+  return ''
 }
 
 // a fixture is a Podlite document, a resource is read by the extension of its

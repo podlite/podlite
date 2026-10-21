@@ -140,6 +140,12 @@ describe('an assertion is highlighted as a selector', () => {
     expect(at(')').tags).toEqual(['processingInstruction'])
   })
 
+  it('reads True and False in parentheses as values', () => {
+    const { at } = read('=for assert\nhead1[ :ready(True) :missing(False) ]\n')
+    expect(at('True').tags).toEqual(['string'])
+    expect(at('False').tags).toEqual(['string'])
+  })
+
   it('keeps a comma inside a value and a star as an operator', () => {
     const { at } = read('=for assert\n*[ :caption<a, b> ]\n')
     expect(at('*').tags).toEqual(['operator'])
@@ -168,5 +174,14 @@ describe('a resource is highlighted by the extension of its name', () => {
     }
     expect(read('=for resource\n= :name<x.md>\n# Title\n').at('Title').tags).toContain('heading')
     expect(read('=begin resource :name<x.txt>\n# Title\n=end resource\n').at('Title').tags).not.toContain('heading')
+  })
+
+  it('reads :name as an option of its own, in any form of value', () => {
+    expect(read("=begin resource :name'x.md'\n# Title\n=end resource\n").at('Title').tags).toContain('heading')
+    expect(read("=begin resource :name('x.md')\n# Title\n=end resource\n").at('Title').tags).toContain('heading')
+    const inside = read("=begin resource :caption(':name<x.txt>') :name<x.md>\n# Title\n=end resource\n")
+    expect(inside.at('Title').tags).toContain('heading')
+    const quoted = read("=begin resource :caption(':name<x.md>')\n# Title\n=end resource\n")
+    expect(quoted.at('Title').tags).not.toContain('heading')
   })
 })

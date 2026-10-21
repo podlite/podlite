@@ -90,6 +90,7 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
     const word = stream.match(/^[A-Za-z][\w'-]*/)
     if (word && typeof word !== 'boolean') {
       if (word[0] === 'in' && state.depth > 0) return 'keyword'
+      if ((word[0] === 'True' || word[0] === 'False') && state.depth > 0) return 'string'
       return NAME_TAG[nodeForName(word[0])]
     }
     stream.next()
