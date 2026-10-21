@@ -144,6 +144,8 @@ describe('an assertion is highlighted as a selector', () => {
     const { at } = read('=for assert\nhead1[ :ready(True) :missing(False) ]\n')
     expect(at('True').tags).toEqual(['string'])
     expect(at('False').tags).toEqual(['string'])
+    const operand = read('=for assert\nInvoice[ :type(in file:./v.podlite | True) ]\n')
+    expect(operand.at('True').tags).toEqual(['tagName'])
   })
 
   it('keeps a comma inside a value and a star as an operator', () => {

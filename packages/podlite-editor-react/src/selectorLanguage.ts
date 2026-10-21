@@ -17,6 +17,8 @@ type SelectorState = {
   path: boolean
   // depth of the parentheses of an operation
   depth: number
+  // a selector supplies the operand of the operation: its words are block names
+  operand: boolean
 }
 
 // a value in angle brackets or in quotation marks ends with its line
@@ -46,7 +48,7 @@ selects is not decided here.
 */
 export const selectorLanguage = StreamLanguage.define<SelectorState>({
   name: 'podlite-selector',
-  startState: () => ({ closing: null, path: false, depth: 0 }),
+  startState: () => ({ closing: null, path: false, depth: 0, operand: false }),
   copyState: state => ({ ...state }),
   token: (stream, state) => {
     if (state.closing) return readValue(stream, state)
@@ -71,18 +73,15 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
       stream.next()
       return 'operator'
     }
-    if (ch === '(') {
+    if (ch === '(' || ch === ')') {
       stream.next()
-      state.depth++
-      return 'processingInstruction'
-    }
-    if (ch === ')') {
-      stream.next()
-      state.depth = Math.max(0, state.depth - 1)
+      state.depth = ch === '(' ? state.depth + 1 : Math.max(0, state.depth - 1)
+      state.operand = false
       return 'processingInstruction'
     }
     if (ch === '|' || ch === ',' || ch === '[' || ch === ']') {
       stream.next()
+      if (ch === '|' && state.depth > 0) state.operand = true
       return 'processingInstruction'
     }
     if (stream.match(/^:(?:!\?|!|\?)?[A-Za-z][\w'-]*/)) return 'attributeName'
@@ -90,7 +89,7 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
     const word = stream.match(/^[A-Za-z][\w'-]*/)
     if (word && typeof word !== 'boolean') {
       if (word[0] === 'in' && state.depth > 0) return 'keyword'
-      if ((word[0] === 'True' || word[0] === 'False') && state.depth > 0) return 'string'
+      if ((word[0] === 'True' || word[0] === 'False') && state.depth > 0 && !state.operand) return 'string'
       return NAME_TAG[nodeForName(word[0])]
     }
     stream.next()
