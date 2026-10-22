@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an alias that expands into itself, past 8 levels or past 10000 replacements in one use is shown as written, with one warning per use, as in the HTML output; before, the render overflowed the stack and showed a render error
+
 =head1 0.0.82
 
 =item a table caption C<=set> gives is drawn with its markup codes; the summary of a folded table shows it again without registering its notes, index entries or defined terms a second time

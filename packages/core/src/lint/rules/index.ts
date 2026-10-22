@@ -10,6 +10,7 @@ import { linkFileResolvesRule } from './link-file-resolves'
 import { linkNotEmptyRule } from './link-not-empty'
 import { attrValueDroppedRule } from './attr-value-dropped'
 import { tableShapeRule } from './table-shape'
+import { markupCodeTooDeepRule } from './markup-code-too-deep'
 import { deadDefinitionsRule } from './dead-definitions'
 import { includeResolvesRule } from './include-resolves'
 import { directiveNamedBlockRule, imageNamedBlockRule } from './named-blocks'
@@ -28,6 +29,7 @@ export const DEFAULT_RULES: Rule[] = [
   linkNotEmptyRule,
   attrValueDroppedRule,
   tableShapeRule,
+  markupCodeTooDeepRule,
   deadDefinitionsRule,
   includeResolvesRule,
   directiveNamedBlockRule,

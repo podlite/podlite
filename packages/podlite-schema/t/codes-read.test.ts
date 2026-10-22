@@ -1,5 +1,5 @@
 import { podlitePluggable } from '../src/pluggableParser'
-import { readCodes } from '../src/codes/read'
+import { readCodes, MARKUP_CODE_DEPTH_LIMIT } from '../src/codes/read'
 import { parseFormattingCodes } from '../src/index'
 
 const parsed = (doc: string) => {
@@ -151,7 +151,8 @@ describe('what G<> and Z<> hide does not leave through the fields of a code', ()
 })
 
 describe('the rest of round 1', () => {
-  it('reads deep nesting without the JavaScript stack', () => {
+  // the reader goes through any depth without the stack; past the limit it writes the codes out as text (T600)
+  it('reads deep nesting without the JavaScript stack, the codes past the limit as text', () => {
     const depth = 20000
     const content: any = readCodes('B<'.repeat(depth) + 'x' + '>'.repeat(depth))
     let node = content[0]
@@ -160,7 +161,9 @@ describe('the rest of round 1', () => {
       node = node.content[0]
       levels++
     }
-    expect(levels).toBe(depth)
+    expect(levels).toBe(MARKUP_CODE_DEPTH_LIMIT)
+    const rest = depth - MARKUP_CODE_DEPTH_LIMIT
+    expect(node.content).toEqual(['B<'.repeat(rest) + 'x' + '>'.repeat(rest)])
   })
 
   it('keeps a tab inside S<> as spaces that do not break (4060–4063)', () => {
@@ -189,9 +192,11 @@ describe('the alternative text of P<> and the brackets left inside a nested code
     expect(para('P<E<lt>|x.png>').html).toContain('alt="<"')
   })
 
-  it('reads it from deep nesting without the JavaScript stack', () => {
+  it('reads it from deep nesting without the JavaScript stack, the codes past the limit as text', () => {
     const content: any = readCodes('P<' + 'B<'.repeat(5000) + 'x' + '>'.repeat(5000) + '|x.png>')
-    expect(content[0].content[0].alt).toBe('x')
+    // P<> is the first level, so 31 B<> are read as codes and the rest stays as written
+    const rest = 5000 - (MARKUP_CODE_DEPTH_LIMIT - 1)
+    expect(content[0].content[0].alt).toBe('B<'.repeat(rest) + 'x' + '>'.repeat(rest))
   })
 
   it('splits a closing run inside a nested code by what it closes first (decision 2.1, 6.1)', () => {

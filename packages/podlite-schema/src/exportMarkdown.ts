@@ -16,6 +16,7 @@ import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
+import { expandAlias } from './helpers/alias'
 import { getNodeId, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
 import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
@@ -138,18 +139,25 @@ const rules = {
   // Formatting codes
   'A<>': (writer, processor) => (node, ctx, interator) => {
     const term = collectText(node.content).trim()
-    if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
-      writer.writeRaw(`A<${covered(node, ctx, term)}>`)
-    } else {
-      const src = ctx.alias[term].join('\n')
-      const tree_1 = processor(src)
-      const tree = clean_plugin()(tree_1)
-      if (tree[0].type === 'para') {
-        interator(tree[0].content, ctx)
-      } else {
-        interator(tree, ctx)
-      }
-    }
+    const expanded =
+      ctx.alias &&
+      ctx.alias.hasOwnProperty(term) &&
+      expandAlias(
+        ctx,
+        term,
+        () => {
+          const src = ctx.alias[term].join('\n')
+          const tree_1 = processor(src)
+          const tree = clean_plugin()(tree_1)
+          if (tree[0].type === 'para') {
+            interator(tree[0].content, ctx)
+          } else {
+            interator(tree, ctx)
+          }
+        },
+        message => console.warn(`[podlite] ${message}`),
+      ).expanded
+    if (!expanded) writer.writeRaw(`A<${covered(node, ctx, term)}>`)
   },
   'C<>': wrapContent('`', '`'),
   'D<>': (writer, processor) => (node, ctx, interator) => {

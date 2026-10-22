@@ -12,6 +12,8 @@ export * from './attribute-names'
 export * from './blocks-helpers'
 export * from './query-helpers'
 export * from './ast-helpers'
+export { expandAlias, ALIAS_EXPANSION_DEPTH, ALIAS_EXPANSION_BUDGET } from './helpers/alias'
+export { MARKUP_CODE_DEPTH_LIMIT } from './codes/read'
 export * from './helpers/handlers'
 
 export { makeInterator } from './ast-inerator'

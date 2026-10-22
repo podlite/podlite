@@ -24,6 +24,7 @@ export type CodeIssueKind =
   | 'markup-code-reserved'
   | 'markup-code-unsupported'
   | 'markup-code-unreadable'
+  | 'markup-code-too-deep'
 
 // where in the fragment a warning points; the parser turns it into a place in the source
 export interface CodeIssue {
@@ -42,6 +43,12 @@ export interface ReadOptions {
 
 type Content = Array<string | { [key: string]: unknown }>
 
+// Codes nested deeper than this are written out as text. The tree walkers after the
+// reader recurse, and the depth of an alias expansion adds to the depth of the place
+// it stands in, so the limit is set with ALIAS_EXPANSION_DEPTH: 8 expansions of 32
+// levels stay well inside what every walker holds.
+export const MARKUP_CODE_DEPTH_LIMIT = 32
+
 const RESERVED = ['Q', 'Y']
 const HS = /^[   \t\u000C ]+/
 
@@ -57,7 +64,31 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
   const { codes, issues } = scanCodes(text, scope)
   const report = (code: CodeIssueKind, message: string, start: number, end: number) =>
     options.issues?.push({ code, message, start, end })
-  for (const issue of issues) reportScan(issue, report)
+
+  // the codes past the depth limit: each is written out as it stands, with all it holds
+  const tooDeep: CodeSpan[] = []
+  const levels: Array<{ code: CodeSpan; depth: number }> = codes.map(code => ({ code, depth: 1 }))
+  while (levels.length) {
+    const { code, depth } = levels.pop()!
+    if (depth > MARKUP_CODE_DEPTH_LIMIT) {
+      tooDeep.push(code)
+      continue
+    }
+    for (const child of code.children) levels.push({ code: child, depth: depth + 1 })
+  }
+  // what the scanner says about text that is no longer read as codes is not said
+  const inCut = (at: number): boolean => tooDeep.some(code => at >= code.start && at < code.end)
+  for (const issue of issues)
+    if (!inCut(issue.kind === 'unclosed' ? issue.code.start : issue.start)) reportScan(issue, report)
+  if (tooDeep.length) {
+    const first = tooDeep.reduce((a, b) => (b.start < a.start ? b : a))
+    report(
+      'markup-code-too-deep',
+      `markup codes nest deeper than ${MARKUP_CODE_DEPTH_LIMIT} levels; the deeper ones are written out as text`,
+      first.start,
+      first.end,
+    )
+  }
 
   // each code is read once, after the codes it holds, so deep nesting needs no recursion
   const built = new Map<CodeSpan, Content>()
@@ -280,9 +311,22 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
 
   // read the codes after the codes they hold, without recursion
   const order: CodeSpan[] = []
+  const cut = new Set(tooDeep)
+  // written out as it stands, except that a comment is left out and a hidden word masked,
+  // as in an address, so text past the limit shows nothing the codes would hide
+  const asWritten = (code: CodeSpan): string =>
+    code.name === 'Z'
+      ? ''
+      : code.name === 'G'
+      ? maskText(text.slice(code.bodyStart, code.bodyEnd))
+      : text.slice(code.start, code.bodyStart) +
+        addressOf(code, code.bodyStart, code.bodyEnd) +
+        text.slice(code.bodyEnd, code.end)
+  for (const code of tooDeep) built.set(code, [asWritten(code)])
   const stack: Array<{ code: CodeSpan; open: boolean }> = codes.map(code => ({ code, open: false })).reverse()
   while (stack.length) {
     const top = stack.pop()!
+    if (cut.has(top.code)) continue
     if (top.open) order.push(top.code)
     else {
       stack.push({ code: top.code, open: true })

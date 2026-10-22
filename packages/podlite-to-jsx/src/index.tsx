@@ -25,7 +25,7 @@ import {
   linkTarget,
   sameDocTarget,
 } from '@podlite/schema'
-import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt } from '@podlite/schema'
+import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt, expandAlias } from '@podlite/schema'
 import {
   getExplicitNodeId,
   toFragment,
@@ -629,23 +629,31 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       }
       termString = termString.trim()
       //get replacement text
-      if (!(ctx.alias && ctx.alias.hasOwnProperty(termString))) {
-        return makeComponent(
-          ({ children, key }) => <code key={key}>A&lt;{children}&gt;</code>,
-          node,
-          interator(node.content, ctx),
+      if (ctx.alias && ctx.alias.hasOwnProperty(termString)) {
+        const done = expandAlias(
+          ctx,
+          termString,
+          () => {
+            const src = termString && ctx.alias[termString].join('\n')
+            const tree_1 = processor(src)
+            // now clean locations
+            const tree = clean_plugin()(tree_1)
+            if (tree[0]?.type === 'para') {
+              return interator(tree[0].content, ctx)
+            } else {
+              return interator(tree, ctx)
+            }
+          },
+          message => console.warn(`[to-jsx] ${message}`),
         )
-      } else {
-        const src = termString && ctx.alias[termString].join('\n')
-        const tree_1 = processor(src)
-        // now clean locations
-        const tree = clean_plugin()(tree_1)
-        if (tree[0]?.type === 'para') {
-          return interator(tree[0].content, ctx)
-        } else {
-          return interator(tree, ctx)
-        }
+        if (done.expanded) return done.result
       }
+      // an alias not defined, or one refused by the limits of expansion, is shown as written
+      return makeComponent(
+        ({ children, key }) => <code key={key}>A&lt;{children}&gt;</code>,
+        node,
+        interator(node.content, ctx),
+      )
     },
     'B<>': mkComponent('strong'),
     'C<>': mkComponent('code'),

@@ -17,6 +17,7 @@ import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
+import { expandAlias } from './helpers/alias'
 import {
   getNodeId,
   getExplicitNodeId,
@@ -107,19 +108,26 @@ const rules = {
   'A<>': (writer, processor) => (node, ctx, interator) => {
     //get replacement text
     const term = collectText(node.content).trim()
-    if (!(ctx.alias && ctx.alias.hasOwnProperty(term))) {
-      writer.write(`A<${covered(node, ctx, term)}>`)
-    } else {
-      const src = ctx.alias[term].join('\n')
-      const tree_1 = processor(src)
-      // now clean locations
-      const tree = clean_plugin()(tree_1)
-      if (tree[0].type === 'para') {
-        interator(tree[0].content, ctx)
-      } else {
-        interator(tree, ctx)
-      }
-    }
+    const expanded =
+      ctx.alias &&
+      ctx.alias.hasOwnProperty(term) &&
+      expandAlias(
+        ctx,
+        term,
+        () => {
+          const src = ctx.alias[term].join('\n')
+          const tree_1 = processor(src)
+          // now clean locations
+          const tree = clean_plugin()(tree_1)
+          if (tree[0].type === 'para') {
+            interator(tree[0].content, ctx)
+          } else {
+            interator(tree, ctx)
+          }
+        },
+        message => console.warn(`[podlite] ${message}`),
+      ).expanded
+    if (!expanded) writer.write(`A<${covered(node, ctx, term)}>`)
   },
   'C<>': wrapContent('<code>', '</code>'),
   'E<>': (writer, processor) => (node, ctx, interator) => {

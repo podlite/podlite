@@ -1981,6 +1981,7 @@
                         "markup-code-foreign-closer",
                         "markup-code-longer-run",
                         "markup-code-reserved",
+                        "markup-code-too-deep",
                         "markup-code-unclosed",
                         "markup-code-unreadable",
                         "markup-code-unsupported",

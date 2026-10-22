@@ -220,6 +220,10 @@ function convertFile(
   const readFormat = fromStdin ? 'podlite' : formatOfFile(inputPath)
 
   let tree = read(content, inputPath, undefined, { format: readFormat })
+  // codes nested past the limit are written out as text: say so, since the output alone does not
+  for (const d of (tree as any).diagnostics ?? [])
+    if (d.code === 'markup-code-too-deep')
+      console.error(`podlite convert: ${inputPath}:${d.location?.start?.line ?? 1}: ${d.message}`)
   try {
     const origin = new WeakMap<object, IncludeOrigin>()
     const baseDir = fromStdin ? process.cwd() : path.dirname(inputPath)
