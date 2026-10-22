@@ -322,7 +322,7 @@ export const validateSource = (text: string, files?: Files): ValidateReport => {
   // the same set as render and query: without files only the document itself is
   // known, the includes of other paths are not checked, and the paths are named
   const { sources, asked } = openSet(text, files)
-  const problems: Violation[] = [...scanSourceRules(text)]
+  let problems: Violation[] = [...scanSourceRules(text)]
   try {
     const ast = parseContent(text, 'podlite')
     const ctx: LintContext = {
@@ -336,7 +336,7 @@ export const validateSource = (text: string, files?: Files): ValidateReport => {
     }
     problems.push(...runRules(ast, DEFAULT_RULES, ctx))
     // the document's own :lint-ignore silences the rules it names, as in podlite lint
-    problems.splice(0, problems.length, ...applyMutes(problems, ast).kept)
+    problems = applyMutes(problems, ast).kept
     if (asked.length) {
       problems.push({
         rule: 'include-resolves',

@@ -529,3 +529,18 @@ describe('validateSource and podlite lint on the same files', () => {
     ])
   })
 })
+
+describe('validateSource with a very long report', () => {
+  it('keeps every finding and adds no error of its own', () => {
+    jest.isolateModules(() => {
+      jest.doMock('podlite/lib/lint/grammar/scan', () => ({
+        scanSourceRules: () =>
+          Array.from({ length: 200000 }, (_, i) => ({ rule: 'probe', severity: 'warning', message: String(i) })),
+      }))
+      const { validateSource: validate } = require('../src/tools')
+      const report = validate('=para\ntext\n', {})
+      expect(report.problems.length).toBe(200000)
+      expect(report.counts.error).toBe(0)
+    })
+  })
+})
