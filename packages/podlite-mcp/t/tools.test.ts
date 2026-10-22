@@ -542,5 +542,7 @@ describe('validateSource with a very long report', () => {
       expect(report.problems.length).toBe(200000)
       expect(report.counts.error).toBe(0)
     })
+    // doMock outlives isolateModules: take it back so no later test gets the stub
+    jest.dontMock('podlite/lib/lint/grammar/scan')
   })
 })
