@@ -5,10 +5,12 @@ import { getTextContentFromNode } from '@podlite/schema'
 
 type Files = Record<string, string>
 
-const readerOf = (files: Files, calls: string[] = []) => (path: string) => {
-  calls.push(path)
-  return files[path] ?? null
-}
+const readerOf =
+  (files: Files, calls: string[] = []) =>
+  (path: string) => {
+    calls.push(path)
+    return files[path] ?? null
+  }
 
 const render = (source: string, files: Files, props: Record<string, any> = {}): string =>
   renderToStaticMarkup(
@@ -24,8 +26,7 @@ const tocOf = (html: string): string => {
   const at = html.indexOf('<div class="toc">')
   return at === -1 ? '' : html.slice(at, html.indexOf('</ul></div>', at) + 11)
 }
-const entries = (html: string): string[] =>
-  [...tocOf(html).matchAll(/<a[^>]*>([^<]*)<\/a>/g)].map(m => m[1].trim())
+const entries = (html: string): string[] => [...tocOf(html).matchAll(/<a[^>]*>([^<]*)<\/a>/g)].map(m => m[1].trim())
 const hrefs = (html: string): string[] => [...tocOf(html).matchAll(/<a href="([^"]*)"/g)].map(m => m[1])
 
 // the id an element carrying the given text is written with
@@ -260,7 +261,8 @@ describe('what a wrapper is told about an included block', () => {
   const collect = (source: string, files: Files, extra: Record<string, any> = {}) => {
     const seen: Array<[string, string[] | undefined]> = []
     const wrapElement = (node: any, children: any, ctx: any) => {
-      if (node.type === 'block' && node.name === 'head') seen.push([String(getTextContentFromNode(node.content)).trim(), ctx?.includeStack])
+      if (node.type === 'block' && node.name === 'head')
+        seen.push([String(getTextContentFromNode(node.content)).trim(), ctx?.includeStack])
       return children
     }
     renderToStaticMarkup(

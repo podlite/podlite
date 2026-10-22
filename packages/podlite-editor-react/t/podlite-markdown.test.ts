@@ -253,10 +253,7 @@ describe('where the caret stands', () => {
     }
 
     it('a neighbour does not inherit the language of the block above it', () => {
-      expect(langs('=for code :lang<js>\nconst a = 1\n\n=for code :lang<python>\nx = 2\n')).toEqual([
-        'js',
-        'python',
-      ])
+      expect(langs('=for code :lang<js>\nconst a = 1\n\n=for code :lang<python>\nx = 2\n')).toEqual(['js', 'python'])
     })
 
     it('a table after a code block gets no language at all', () => {
@@ -272,12 +269,10 @@ describe('where the caret stands', () => {
     })
 
     it('one delimited block does not take the language of the one before it', () => {
-      const src =
-        '=begin code :lang<js>\nconst a = 1\n=end code\n\n=begin code :lang<python>\nx = 2\n=end code\n'
+      const src = '=begin code :lang<js>\nconst a = 1\n=end code\n\n=begin code :lang<python>\nx = 2\n=end code\n'
       expect(langs(src)).toEqual(['js', 'python'])
     })
   })
-
 })
 
 describe('markup codes', () => {

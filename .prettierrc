@@ -5,6 +5,6 @@
     "trailingComma": "all",
     "endOfLine": "lf",
     "tabWidth": 2,
-    "jsxBracketSameLine": false,
+    "bracketSameLine": false,
     "printWidth": 120
 }

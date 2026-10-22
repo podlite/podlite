@@ -100,7 +100,16 @@ describe('the places of the blocks of a body', () => {
     ['CR and LF', '\r\n'],
     ['CR alone', '\r'],
   ])('are found in a text whose lines end with %s', (_name, eol) => {
-    const text = ['=begin pod', '  =begin React', '  =para one', '', '  =head2 Two', '  =end React', '=end pod', ''].join(eol)
+    const text = [
+      '=begin pod',
+      '  =begin React',
+      '  =para one',
+      '',
+      '  =head2 Two',
+      '  =end React',
+      '=end pod',
+      '',
+    ].join(eol)
     const starts = blocksOf(react(read(text, 'a'))).map(child => {
       expect(child.location.start).toEqual(at(text, child.location.start.offset))
       return text.slice(child.location.start.offset, child.location.start.offset + 9)
