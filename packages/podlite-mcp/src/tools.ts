@@ -19,6 +19,7 @@ import { DEFAULT_RULES } from 'podlite/lib/lint/rules/index'
 import { runRules } from 'podlite/lib/lint/engine'
 import { parseContent } from 'podlite/lib/lint/loader'
 import { makeSyntaxViolation } from 'podlite/lib/lint/rules/syntax-valid'
+import { applyMutes } from 'podlite/lib/lint/mute'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from 'podlite/lib/query-blocks'
 import type { LintContext, Violation } from 'podlite/lib/lint/types'
 
@@ -334,6 +335,8 @@ export const validateSource = (text: string, files?: Files): ValidateReport => {
       self: `/${virtualFile}`,
     }
     problems.push(...runRules(ast, DEFAULT_RULES, ctx))
+    // the document's own :lint-ignore silences the rules it names, as in podlite lint
+    problems.splice(0, problems.length, ...applyMutes(problems, ast).kept)
     if (asked.length) {
       problems.push({
         rule: 'include-resolves',

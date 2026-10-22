@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_validate> applies the document's C<:lint-ignore>: a rule the attribute names is silenced inside its block, and a mute that names no rule or silences nothing is reported, as C<podlite lint> does
+
 =item the description of C<podlite_validate> names what it checks — syntax, lint rules and the AST schema — and when C<ok> is true
 
 =head1 0.0.26

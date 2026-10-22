@@ -1,3 +1,8 @@
+import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
+import { lintFile } from 'podlite/lib/lint/index'
+import type { Violation } from 'podlite/lib/lint/types'
 import { parseSource, querySource, renderReport, renderSource, validateSource } from '../src/tools'
 
 const validDoc = `=begin pod
@@ -450,5 +455,77 @@ describe('a mask of an include in the files given', () => {
     const doc = '=begin pod\n=include file:*.podlite\n=end pod\n'
     const report = validateSource(doc, { 'notes/b.podlite': '=begin pod\n=include file:absent.podlite\n=end pod\n' })
     expect([report.ok, report.problems]).toEqual([true, []])
+  })
+})
+
+describe('validateSource and podlite lint on the same files', () => {
+  let dir: string
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'podlite-mcp-mute-'))
+  })
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }))
+
+  // lint reads the document and its includes from disk, validate gets the same set as files;
+  // schema-valid is a check of validate alone
+  const both = (doc: string, files: Record<string, string> = {}) => {
+    fs.writeFileSync(path.join(dir, 'input.podlite'), doc)
+    for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), text)
+    const shape = (found: Violation[]) =>
+      found.filter(p => p.rule !== 'schema-valid').map(p => [p.rule, p.severity, p.message, p.location?.start.offset])
+    return {
+      lint: shape(lintFile(path.join(dir, 'input.podlite'), {}).violations),
+      validate: shape(validateSource(doc, files).problems),
+    }
+  }
+
+  it('silences a rule on a single block', () => {
+    const { lint, validate } = both('=head1 One\n\n=for head3 :lint-ignore<heading-hierarchy>\nThree\n')
+    expect(validate).toEqual(lint)
+    expect(lint).toEqual([])
+  })
+
+  it('silences a rule for the whole document and through =config', () => {
+    for (const doc of [
+      '=begin pod :lint-ignore<heading-hierarchy>\n=head1 One\n\n=head3 Three\n=end pod\n',
+      '=config head3 :lint-ignore<heading-hierarchy>\n\n=head1 One\n\n=head3 Three\n',
+    ]) {
+      const { lint, validate } = both(doc)
+      expect(validate).toEqual(lint)
+      expect(lint).toEqual([])
+    }
+  })
+
+  it('keeps the same rule outside the block it silences', () => {
+    const { lint, validate } = both(
+      '=head1 One\n\n=for head3 :lint-ignore<heading-hierarchy>\nThree\n\n=head1 Two\n\n=head3 Four\n',
+    )
+    expect(validate).toEqual(lint)
+    expect(lint).toEqual([['heading-hierarchy', 'warning', 'Heading level jump from 1 to 3', 74]])
+  })
+
+  it('silences a finding of the source scan', () => {
+    const { lint, validate } = both('=begin pod :lint-ignore<unclosed-markup-code>\n=para B<open\n=end pod\n')
+    expect(validate).toEqual(lint)
+    expect(lint).toEqual([])
+  })
+
+  it('silences an include inside the block and keeps the one outside', () => {
+    const doc =
+      '=begin pod\n=begin nested :lint-ignore<include-resolves>\n=include file:part.podlite\n=end nested\n' +
+      '=include file:absent.podlite\n=end pod\n'
+    const { lint, validate } = both(doc, { 'part.podlite': '=begin pod\n\n=include file:missing.podlite\n=end pod\n' })
+    expect(validate).toEqual(lint)
+    expect(lint).toEqual([['include-resolves', 'error', 'include target not found: absent.podlite', 95]])
+  })
+
+  it('warns of a mute that silenced nothing and of one that names no rule', () => {
+    const idle = both('=begin pod :lint-ignore<heading-hierarchy>\n=head1 One\n=end pod\n')
+    expect(idle.validate).toEqual(idle.lint)
+    expect(idle.lint).toEqual([['lint-ignore', 'warning', ':lint-ignore<heading-hierarchy> silenced nothing here', 0]])
+    const empty = both('=begin pod :lint-ignore<>\n=para\ntext\n=end pod\n')
+    expect(empty.validate).toEqual(empty.lint)
+    expect(empty.lint).toEqual([
+      ['lint-ignore', 'warning', ':lint-ignore names no rule; write the rule slugs it should silence', 0],
+    ])
   })
 })
