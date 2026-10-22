@@ -58,7 +58,7 @@ export const selectorLanguage = StreamLanguage.define<SelectorState>({
       if (stream.match(/^[^\s|,()\]]+/)) return 'url'
     }
     // a scheme names the kind of source: file:, doc:, data: and the like
-    if (stream.match(/^[A-Za-z][\w+.-]*:(?=[^\s:])/)) {
+    if (stream.match(/^[A-Za-z][\w+.-]*:(?=[ \t]*[^\s:|,\]])/)) {
       state.path = true
       return 'keyword'
     }
