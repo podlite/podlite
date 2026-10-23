@@ -92,10 +92,32 @@ describe('reading markup codes by their letter', () => {
 })
 
 describe('the address of a link', () => {
-  // only whitespace before a colon begins the configuration; the rest is the address as written (813–820)
-  it('keeps a space at the end of the address', () => {
-    expect(para('L<text| https://example.org >').html).toContain('href=" https://example.org "')
+  // whitespace on either side of the bar is not significant (3930); a specification holding
+  // spaces is quoted (4040), and what the quotes hold keeps its spaces
+  const meta = (code: string) => (readCodes(code)[0] as any).meta
+  it('drops the whitespace around the bar from the address', () => {
+    expect(para('L<text| https://example.org >').html).toContain('href="https://example.org"')
     expect(para('L<text|https://example.org :new>').html).toContain('href="https://example.org"')
+    for (const name of ['L', 'W']) {
+      expect(meta(`${name}<t| x >`)).toBe('x')
+      expect(meta(`${name}<t| x :new>`)).toBe('x')
+      expect(meta(`${name}<t|\tx\t>`)).toBe('x')
+      expect(meta(`${name}<t|\nx>`)).toBe('x')
+    }
+  })
+
+  it('takes the quotes off after the whitespace, and keeps the spaces they hold', () => {
+    expect(meta('L<t| "a b" :new>')).toBe('a b')
+    expect(meta('L<t| "   " :new>')).toBe('   ')
+    // without a configuration the quotes stay, as before
+    expect(meta('L<t| "   " >')).toBe('"   "')
+  })
+
+  it('reads an address of spaces alone as an empty address', () => {
+    for (const label of ['t', 'doc:Target']) {
+      expect(para(`L<${label}| >`).html).toBe(para(`L<${label}|>`).html)
+      expect(para(`L<${label}| >`).md).toBe(para(`L<${label}|>`).md)
+    }
   })
 })
 

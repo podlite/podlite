@@ -251,8 +251,10 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       }
     }
     const content = part(code, code.bodyStart, bar)
-    // a specification holding spaces is quoted (Specification 4015); the quotes are not part of the address
-    const written = addressOf(code, specFrom, configAt < 0 ? code.bodyEnd : specFrom + configAt)
+    // whitespace on either side of the bar is not significant (Specification 3930); a
+    // specification holding spaces is quoted (4040), and the quotes are not part of the
+    // address, so what they hold keeps its spaces
+    const written = addressOf(code, specFrom, configAt < 0 ? code.bodyEnd : specFrom + configAt).trim()
     const address = configAt < 0 ? written : unquote(written)
     if (configAt < 0) return { content, type: 'fcode', name, meta: address }
     return {

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<doc:> link finds its document when spaces follow the name, as in C<L<doc:Target >>
+
 =head1 0.0.57
 
 =item the index the publisher writes for the site carries a term from hidden text masked, entry and text; an entry in a heading points to the anchor the page gives that heading, so it reaches a hidden heading, a repeated one and one with an C<:id>

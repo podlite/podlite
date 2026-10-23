@@ -165,3 +165,21 @@ describe('the text a doc: link takes from the document it names', () => {
     expect(String(toHtml({}).run(res[0].node))).toContain('related discussion')
   })
 })
+
+// whitespace on either side of the bar is not significant (Specification 3930)
+it('linksPlugin: an address with spaces around it finds its document', () => {
+  const src = `
+=begin pod
+L<Text| doc:name_of >
+L<doc:name_of >
+L<doc:name_of| >
+L<doc:name_of|>
+=end pod
+`
+  const files = [processFile('virtual/src.pod6', src), processFile('virtual/dst.pod6', file2)]
+  const [res] = processPlugin({ plugin: linksPlugin(), includePatterns: '.*' }, files, tctx)
+  const metas: any[] = []
+  makeInterator({ 'L<>': node => void metas.push(node.meta) })(res[0].node)
+  expect(metas.slice(0, 2)).toEqual(['/about', '/about'])
+  expect(metas[2]).toEqual(metas[3])
+})

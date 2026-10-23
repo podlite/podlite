@@ -261,7 +261,8 @@ describe('input the earlier reader read outside the norm, now read by it (plan T
   it.each([
     ['Z<a < b>', 'Z[a < b>\n]'],
     ['S<a < b>', 'S[a < b>\n]'],
-    ['L<a|x<y>', 'L[a](x<y>\n)'],
+    // the line end the unclosed link runs to is whitespace at the edge of the address (3930, 4040)
+    ['L<a|x<y>', 'L[a](x<y>)'],
     ['D<a|b < c;d>', 'D[a](b < c;d>\n)'],
     ['B<a < b>', 'B[a < b>\n]'],
   ])('reads %s', (src, expected) => {
