@@ -143,6 +143,17 @@ describe('markup codes nested past the limit', () => {
     const issues: any[] = []
     readCodes('B<'.repeat(31) + 'A<I<x>> L<y|I<B<z>>>' + '>'.repeat(31), { issues })
     expect(issues).toEqual([])
+    for (const kept of ['A<X<I<x>>>', 'L<y|X<I<x>>>']) {
+      const deeper: any[] = []
+      readCodes('B<'.repeat(30) + kept + '>'.repeat(30), { issues: deeper })
+      expect(deeper).toEqual([])
+    }
+  })
+
+  it('tells a code past the limit that reaches the tree through the text of a link', () => {
+    const issues: any[] = []
+    readCodes('B<'.repeat(30) + 'L<X<I<x>>|y>' + '>'.repeat(30), { issues })
+    expect(issues.map(i => i.code)).toEqual(['markup-code-too-deep'])
   })
 
   it('says nothing about the text it no longer reads as codes, and keeps what it says above the limit', () => {

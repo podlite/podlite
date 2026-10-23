@@ -79,10 +79,12 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     }
     for (const child of code.children) levels.push({ code: child, depth: depth + 1 })
   }
-  // a code past the limit that stands where its holder keeps text as written, such as
-  // the body of A<> or an address, changes nothing and is not told
+  // A code past the limit is told only when it reaches the tree: a holder that keeps its
+  // body as written, such as A<> or an address, drops what its codes read. Each code
+  // records the codes it placed, and the cut ones reached from the top are the ones told.
   const cut = new Set(tooDeep)
-  const used = new Set<CodeSpan>()
+  const placed = new Map<CodeSpan | null, CodeSpan[]>()
+  let holder: CodeSpan | null = null
 
   // each code is read once, after the codes it holds, so deep nesting needs no recursion
   const built = new Map<CodeSpan, Content>()
@@ -92,7 +94,9 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     let i = from
     for (const code of list) {
       if (code.start > i) out.push(text.slice(i, code.start))
-      if (cut.has(code)) used.add(code)
+      const kids = placed.get(holder)
+      if (kids) kids.push(code)
+      else placed.set(holder, [code])
       out.push(...(built.get(code) || []))
       i = code.end
     }
@@ -327,8 +331,20 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
       for (let k = top.code.children.length - 1; k >= 0; k--) stack.push({ code: top.code.children[k], open: false })
     }
   }
-  for (const code of order) built.set(code, node(code))
+  for (const code of order) {
+    holder = code
+    built.set(code, node(code))
+  }
+  holder = null
   const content = contentOf(codes, 0, text.length)
+  const used = new Set<CodeSpan>()
+  const reach: Array<CodeSpan | null> = [null]
+  while (reach.length) {
+    for (const code of placed.get(reach.pop()!) ?? []) {
+      if (cut.has(code)) used.add(code)
+      else reach.push(code)
+    }
+  }
 
   // what the scanner says about text that is no longer read as codes is not said
   const usedCuts = Array.from(used)
