@@ -139,6 +139,12 @@ describe('markup codes nested past the limit', () => {
     expect(issues.map(i => i.code)).toEqual(['markup-code-too-deep'])
   })
 
+  it('says nothing about a code past the limit that stands where text is kept as written', () => {
+    const issues: any[] = []
+    readCodes('B<'.repeat(31) + 'A<I<x>> L<y|I<B<z>>>' + '>'.repeat(31), { issues })
+    expect(issues).toEqual([])
+  })
+
   it('says nothing about the text it no longer reads as codes, and keeps what it says above the limit', () => {
     const issues: any[] = []
     readCodes('I<open ' + 'B«'.repeat(40) + 'I<x B«>y»' + '»'.repeat(40), { issues })

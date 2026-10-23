@@ -62,8 +62,11 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     allowedIn: options.allowedIn,
   }
   const { codes, issues } = scanCodes(text, scope)
+  // what reading the codes finds is held until the scanner's warnings are out, which
+  // come first, as before
+  const found: CodeIssue[] = []
   const report = (code: CodeIssueKind, message: string, start: number, end: number) =>
-    options.issues?.push({ code, message, start, end })
+    found.push({ code, message, start, end })
 
   // the codes past the depth limit: each is written out as it stands, with all it holds
   const tooDeep: CodeSpan[] = []
@@ -76,19 +79,10 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     }
     for (const child of code.children) levels.push({ code: child, depth: depth + 1 })
   }
-  // what the scanner says about text that is no longer read as codes is not said
-  const inCut = (at: number): boolean => tooDeep.some(code => at >= code.start && at < code.end)
-  for (const issue of issues)
-    if (!inCut(issue.kind === 'unclosed' ? issue.code.start : issue.start)) reportScan(issue, report)
-  if (tooDeep.length) {
-    const first = tooDeep.reduce((a, b) => (b.start < a.start ? b : a))
-    report(
-      'markup-code-too-deep',
-      `markup codes nest deeper than ${MARKUP_CODE_DEPTH_LIMIT} levels; the deeper ones are written out as text`,
-      first.start,
-      first.end,
-    )
-  }
+  // a code past the limit that stands where its holder keeps text as written, such as
+  // the body of A<> or an address, changes nothing and is not told
+  const cut = new Set(tooDeep)
+  const used = new Set<CodeSpan>()
 
   // each code is read once, after the codes it holds, so deep nesting needs no recursion
   const built = new Map<CodeSpan, Content>()
@@ -98,6 +92,7 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     let i = from
     for (const code of list) {
       if (code.start > i) out.push(text.slice(i, code.start))
+      if (cut.has(code)) used.add(code)
       out.push(...(built.get(code) || []))
       i = code.end
     }
@@ -311,7 +306,6 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
 
   // read the codes after the codes they hold, without recursion
   const order: CodeSpan[] = []
-  const cut = new Set(tooDeep)
   // written out as it stands, except that a comment is left out and a hidden word masked,
   // as in an address, so text past the limit shows nothing the codes would hide
   const asWritten = (code: CodeSpan): string =>
@@ -334,7 +328,26 @@ export const readCodes = (text: string, options: ReadOptions = {}): Content => {
     }
   }
   for (const code of order) built.set(code, node(code))
-  return contentOf(codes, 0, text.length)
+  const content = contentOf(codes, 0, text.length)
+
+  // what the scanner says about text that is no longer read as codes is not said
+  const usedCuts = Array.from(used)
+  const inCut = (at: number): boolean => usedCuts.some(code => at >= code.start && at < code.end)
+  const scanned: CodeIssue[] = []
+  for (const issue of issues)
+    if (!inCut(issue.kind === 'unclosed' ? issue.code.start : issue.start))
+      reportScan(issue, (code, message, start, end) => scanned.push({ code, message, start, end }))
+  if (used.size) {
+    const first = usedCuts.reduce((a, b) => (b.start < a.start ? b : a))
+    found.push({
+      code: 'markup-code-too-deep',
+      message: `markup codes nest deeper than ${MARKUP_CODE_DEPTH_LIMIT} levels; the deeper ones are written out as text`,
+      start: first.start,
+      end: first.end,
+    })
+  }
+  if (options.issues) for (const issue of [scanned, found].flat()) options.issues.push(issue)
+  return content
 }
 
 // the text of read content, without recursion: Z<> left out, G<> masked when asked,
