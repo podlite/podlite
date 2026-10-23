@@ -208,8 +208,18 @@ const readWhole = (tail: string): ConfigItem[] | undefined => {
 // belongs to an operand, not to the selector
 const hasTopLevelBar = (line: string): boolean => {
   let depth = 0
+  let angle = 0
+  let quote = ''
   for (const c of line) {
-    if (c === '[' || c === '(') depth++
+    // a value in quotes or angles is read whole, whatever brackets it holds
+    if (quote) {
+      if (c === quote) quote = ''
+    } else if (angle) {
+      if (c === '<' || c === '«') angle++
+      else if (c === '>' || c === '»') angle--
+    } else if (c === "'" || c === '"') quote = c
+    else if (c === '<' || c === '«') angle++
+    else if (c === '[' || c === '(') depth++
     else if ((c === ']' || c === ')') && depth > 0) depth--
     else if (c === '|' && depth === 0) return true
   }
@@ -485,6 +495,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // the block of the state a block of the second walk is, or is a copy of
   const placedFrom = new WeakMap<object, object>()
   const inside: object[] = []
+  // In the second walk an include with no source inside a wrapper may bring nothing:
+  // the assignments it held go on past the wrapper, to the next block of the list
+  // that holds it, as they would have had it been resolved in the first walk.
+  let escapeNext = false
+  let escaped: { pending: ConfigItem[]; last?: { chain: IncludeStep[]; selector: string } } | undefined
   // a cycle of an include with no source is reported whether or not it loses =set
   const alwaysShown = new WeakSet<IncludeProblem>()
   const FAILED = 'include-failed'
@@ -615,6 +630,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const out: any[] = []
     let pending: ConfigItem[] = []
     let last: { chain: IncludeStep[]; selector: string } | undefined
+    const mayEscape = escapeNext
+    escapeNext = false
     // what an include with no source says in the second walk goes to its slot
     const visit = (n: any): void => {
       const slot = secondWalk && isIncludeBlock(n) && !slots.length ? n[PLACEMENT]?.slot : undefined
@@ -633,7 +650,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         // assignments carried from an earlier include are older than its own
         const set = mergeSet(pending, n.set)
         pending = []
-        const here = [...chain, { file, location: n.location }]
+        // an include with no source names the place it was written in
+        const placed: Placement | undefined = secondWalk ? n[PLACEMENT] : undefined
+        const here = placed ? placed.here : [...chain, { file, location: n.location }]
+        const where = placed ? placed.file : file
         let resolved: ReturnType<typeof resolveInclude>
         const at = reached.length
         try {
@@ -654,6 +674,17 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           throw e
         } finally {
           reached.length = at
+        }
+        if (resolved.kept) {
+          // as written, with the assignments it would have taken
+          const kept = set.length ? { ...n, set } : n
+          if (kept !== n) {
+            const known = origin.get(n)
+            if (known) origin.set(kept, known)
+            opts.onCopy?.(n, kept)
+          }
+          out.push(kept)
+          return
         }
         if (resolved.placement) {
           // left for the second walk with its assignments, as the place it stands in
@@ -677,9 +708,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         }
         const { nodes, failure, inner, roots, selector } = resolved
         if (!failure) brought++
-        if (!failure) markVia(nodes, `${file}@${n.location?.start?.offset ?? ''}`, { file, location: n.location })
+        if (!failure)
+          markVia(nodes, `${where}@${n.location?.start?.offset ?? ''}`, { file: where, location: n.location })
         if (!failure && resolved.outside.length) {
-          const step = stepOf(file, n.location)
+          const step = stepOf(where, n.location)
           const problem: IncludeProblem = { kind: 'external', target: selector, message: '', chain: here }
           hold([{ problem, shown: false, outside: { step, written: resolved.written, sources: resolved.outside } }])
         }
@@ -710,7 +742,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
           out.push(...nodes)
           return
         }
-        const applied = applySetToFirst(nodes, set, { mode: 'include', origin, onCopy: opts.onCopy, holder })
+        const applied = applySetToFirst(nodes, set, { mode: 'include', origin, onCopy: copied, holder })
         out.push(...applied.nodes)
         if (applied.outcome !== 'none') return
         // nothing came in because an include inside failed: what it would
@@ -724,21 +756,29 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         return
       }
       const walked = walkNode(n, context, stack, chain, file, home, config, holder)
+      const leaving = escaped
+      escaped = undefined
       const items = Array.isArray(walked) ? walked : [walked]
+      const goOn = (): void => {
+        if (!leaving) return
+        pending = mergeSet(pending, leaving.pending)
+        last = leaving.last ?? last
+      }
       if (!pending.length) {
         out.push(...items)
-        return
+        return goOn()
       }
       const stopped = firstStop(items, holder)
       if (stopped) {
         lose(stopped, pending)
         pending = []
         out.push(...items)
-        return
+        return goOn()
       }
-      const applied = applySetToFirst(items, pending, { mode: 'carry', origin, onCopy: opts.onCopy, holder })
+      const applied = applySetToFirst(items, pending, { mode: 'carry', origin, onCopy: copied, holder })
       if (applied.outcome !== 'none') pending = []
       out.push(...applied.nodes)
+      goOn()
     }
     level++
     try {
@@ -751,6 +791,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       }
     } finally {
       level--
+    }
+    if (pending.length && mayEscape) {
+      escaped = { pending, last }
+      return out
     }
     if (pending.length && last) {
       report({
@@ -874,6 +918,23 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     if (known) origin.set(copy, known)
     opts.onCopy?.(node, copy)
     return copy
+  }
+
+  // What a copy made inside this call keeps of the node it copies: where an include
+  // failed, a reading on its own, the block of the state it stands for, the marks.
+  const carry = (from: any, to: any): void => {
+    const failed = failedAt.get(from)
+    if (failed) failedAt.set(to, failed)
+    const alone = readAlone.get(from)
+    if (alone) readAlone.set(to, alone)
+    const placed = placedFrom.get(from)
+    if (placed) placedFrom.set(to, placed)
+    if (from[WAITING]) to[WAITING] = true
+    if (from[PLACEMENT]) to[PLACEMENT] = from[PLACEMENT]
+  }
+  const copied = (from: object, to: object): void => {
+    carry(from, to)
+    opts.onCopy?.(from, to)
   }
 
   // A block found in the state, copied for one place: each node remembers the node
@@ -1095,6 +1156,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     waiting?: boolean
     // an include with no source, left for the second walk: the place it stands in
     placement?: Placement
+    // left as written: a host with no files to give
+    kept?: boolean
     // the external sources read, and the path as the directive writes it
     outside: Source[]
     written: string
@@ -1137,7 +1200,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     if (sameDocument && !secondWalk) return { ...done([node]), placement: { file, here, context } }
     if (sameDocument) return resolvePlacement(node, selector!, stack, config)
     // a host with no files to give leaves the other includes as they are written
-    if (opts.onlySameDocument) return done([withoutSet(node)])
+    if (opts.onlySameDocument) return { ...done([node]), kept: true }
     if (!selector || !parsed || !parsed.scheme || !parsed.document) {
       return fail(
         {
@@ -1455,6 +1518,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (counted) inside.push(placedFrom.get(node) ?? node)
       let content: any[]
       try {
+        escapeNext = secondWalk && wrapper
         content = walkList(node.content, context, stack, chain, file, home, scope, inner)
       } finally {
         if (counted) inside.pop()

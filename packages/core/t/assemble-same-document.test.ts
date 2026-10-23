@@ -169,6 +169,48 @@ describe('an include with no source', () => {
     )
   })
 
+  it('keeps a failure under a block copied for an assignment before it reaches the state', () => {
+    const { tree, problems } = assembled('=set :outer<1>\n=include file:F\n', {
+      F: '=begin nested\n=set :inner<1>\n=include ABSENT\n\n=include file:loop\n\n=head1 After\n=end nested\n',
+      loop: '=include file:loop\n',
+    })
+    expect(shape(tree.content)).toEqual(['root[nested{outer=1}[root[] head]]'])
+    expect(problems).toEqual([
+      ['cycle', 'include brings nothing: loop is already being included; =set assignments not applied: inner'],
+    ])
+  })
+
+  it('passes an assignment it brings nothing for on past the file it stands in', () => {
+    const { tree, problems } = assembled('=set :a<1>\n=include file:F\n\n=VERSION top\n', { F: '=include ABSENT\n' })
+    expect([shape(tree.content), problems]).toEqual([['root[]', 'VERSION(top){a=1}'], []])
+  })
+
+  it('still reads the settings of an include of a file whose value holds a bracket', () => {
+    for (const include of ['=include part.podlite :tag<foo[> | head1', '=include part.podlite :tag("[") | head1']) {
+      const { tree, problems } = assembled(`${include}\n`, { 'part.podlite': '=head1 P\n' })
+      expect([shape(tree.content), problems]).toEqual([['head'], []])
+    }
+  })
+
+  it('leaves the includes of files as written, not as brought, where no files are given', () => {
+    const origin = new WeakMap<object, any>()
+    const text = '=include VERSION\n\n=set :a<1>\n=include file:missing\n\n=VERSION 1\n'
+    const tree = assembleIncludes(read(text, main), {
+      sources: { locate: () => ({ masked: false, sources: [] }), read: () => null },
+      context: '',
+      file: main,
+      parse: read,
+      origin,
+      onlySameDocument: true,
+    })
+    const left = tree.content.find((node: any) => node.name === 'include')
+    expect([shape(tree.content), left.set.map((c: any) => c.name), origin.get(left)?.via]).toEqual([
+      ['VERSION(1)', 'include', 'VERSION(1)'],
+      ['a'],
+      undefined,
+    ])
+  })
+
   it('is told apart from an include of a file', () => {
     expect(hasSameDocumentInclude(read('=include VERSION\n', main))).toBe(true)
     expect(hasSameDocumentInclude(read('=include file:a.podlite | head1\n', main))).toBe(false)
