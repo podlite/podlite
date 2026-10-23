@@ -5,7 +5,7 @@ import { PluginRegister as toc } from '@podlite/toc'
 import type { Rule, Violation, LintContext } from '../types'
 import { detectFileType } from '../loader'
 import { resolveIncludes, IncludeProblem } from '../../resolve-includes'
-import { assembleIncludes, silently } from '../../assemble'
+import { assembleIncludes, hasSameDocumentInclude, silently } from '../../assemble'
 import type { IncludeOrigin } from '../../assemble'
 import { readerFor } from '../../reader'
 import { isOnePass } from '../engine'
@@ -100,14 +100,27 @@ const assemble = (ast: PodliteDocument, ctx: LintContext): Assembled | Error | u
   // A markdown document has no directives: an =include line there is text.
   if (ctx.fileType === 'md') return undefined
   // text handed in by name has nothing next to it to read, unless the host
-  // gives the sources itself
-  if (!ctx.fromDisk && !ctx.sources) return undefined
+  // gives the sources itself; an include with no source reads only the text
+  const onlySameDocument = !ctx.fromDisk && !ctx.sources
+  if (onlySameDocument && !hasSameDocumentInclude(ast)) return undefined
   const problems: IncludeProblem[] = []
   const origin = new WeakMap<object, IncludeOrigin>()
   const parse = (source: string, file: string, config?: Parameters<typeof read>[2], how?: { format?: ReadFormat }) =>
     silently(() => read(source, file, config, { format: how?.format }))
   try {
-    const tree = ctx.sources
+    const tree = onlySameDocument
+      ? assembleIncludes(ast, {
+          sources: { locate: () => ({ masked: false, sources: [] }), read: () => null },
+          context: '',
+          parse,
+          tolerant: true,
+          file: ctx.filePath,
+          origin,
+          onlySameDocument: true,
+          onError: problem => problems.push(problem),
+          onWarning: problem => problems.push(problem),
+        })
+      : ctx.sources
       ? assembleIncludes(ast, {
           sources: ctx.sources,
           context: ctx.context ?? '',

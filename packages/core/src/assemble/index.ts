@@ -172,6 +172,9 @@ export type AssembleOptions = {
   tolerant?: boolean
   // a path that names a source already on the way in is reported even when it loses no =set
   reportCycles?: boolean
+  // only the includes with no source are resolved; the others stay as written,
+  // and nothing is said of them: for a host that has no files to give
+  onlySameDocument?: boolean
 }
 
 export const isWarning = (problem: IncludeProblem): boolean =>
@@ -282,6 +285,43 @@ export const silently = <T>(work: () => T): T => {
 
 const isIncludeBlock = (node: any): boolean =>
   node && typeof node === 'object' && node.type === 'block' && node.name === 'include'
+
+/*
+=begin pod :kind<export>
+
+=head2 hasSameDocumentInclude
+
+Whether a tree holds an C<=include> with no source, one that selects from the
+document itself. Such an include needs no file to resolve, so a host that has no
+files to give can still assemble the tree with C<onlySameDocument>.
+
+=end pod
+*/
+export const hasSameDocumentInclude = (tree: any): boolean => {
+  const work = [tree]
+  while (work.length) {
+    const node = work.pop()
+    if (!node || typeof node !== 'object') continue
+    if (Array.isArray(node)) {
+      for (const item of node) work.push(item)
+      continue
+    }
+    if (isIncludeBlock(node)) {
+      const line = getTextContentFromNode(node.content)?.toString().trim() ?? ''
+      const { selector, unread } = splitDirective(line)
+      if (!selector || unread) continue
+      try {
+        const parsed = readSelector(selector)
+        if (!parsed.scheme && !parsed.document && !parsed.anchor && parsed.patterns.length > 0) return true
+      } catch (e) {
+        if (!(e instanceof SelectorError)) throw e
+      }
+      continue
+    }
+    if (node.content) work.push(node.content)
+  }
+  return false
+}
 
 const keepBlocks = (items: Array<SelectorDoc | PodNode>): PodNode[] =>
   items.filter(item => item && typeof item === 'object' && !('file' in item)) as PodNode[]
@@ -406,6 +446,28 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // copy of it, wherever it is made, waits as well. The mark is this call's own:
   // a later pass does not read it.
   const WAITING = Symbol('waiting include')
+  // An include with no source selects from the document in one state: its includes
+  // of other sources in, its own includes with no source as written (Specification,
+  // Include directive). The first walk leaves each such include in place with this
+  // mark, which carries the place it stands in; when the walk is over, a second walk
+  // over its result resolves the marked includes from that result, which they are not
+  // in, so none of them sees what another one brought. Its copies are walked by that
+  // second walk too, and a block is not placed inside itself: the blocks the walk is
+  // inside, read back to the blocks of that result they are copies of, are the path a
+  // block found must not be on.
+  const PLACEMENT = Symbol('include with no source')
+  type Placement = { file: string; here: IncludeStep[]; context: unknown }
+  let placements = 0
+  let secondWalk = false
+  // the result of the first walk, which the marked includes select from
+  let state: any
+  // something in the first walk waited for a source: the state is not known in full
+  let stateWaits = false
+  // the block of the state a block of the second walk is, or is a copy of
+  const placedFrom = new WeakMap<object, object>()
+  const inside: object[] = []
+  // a cycle of an include with no source is reported whether or not it loses =set
+  const alwaysShown = new WeakSet<IncludeProblem>()
   const FAILED = 'include-failed'
   const isMark = (node: any): boolean => node && typeof node === 'object' && node.type === FAILED
   const firstStop = (nodes: any[], holder: any): Held[] | undefined => {
@@ -538,7 +600,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (n && n.type === 'config' && typeof n.name === 'string' && Array.isArray(n.config)) {
         config[n.name] = mergeConfigSettings(n.config, config[n.name])
       }
-      if (isIncludeBlock(n)) {
+      if (isIncludeBlock(n) && (!secondWalk || n[PLACEMENT])) {
         // assignments carried from an earlier include are older than its own
         const set = mergeSet(pending, n.set)
         pending = []
@@ -564,6 +626,16 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         } finally {
           reached.length = at
         }
+        if (resolved.placement) {
+          // left for the second walk with its assignments, as the place it stands in
+          placements++
+          const kept = { ...n, ...(set.length ? { set } : {}), [PLACEMENT]: resolved.placement }
+          const known = origin.get(n)
+          if (known) origin.set(kept, known)
+          opts.onCopy?.(n, kept)
+          out.push(kept)
+          return
+        }
         if (resolved.waiting) {
           const kept = { ...n, ...(set.length ? { set } : {}), [WAITING]: true }
           const known = origin.get(n)
@@ -583,7 +655,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         if (failure) {
           const entries = failure.map(problem => ({
             problem,
-            shown: problem.kind !== 'cycle' || (opts.reportCycles === true && !maskCycles.has(problem)),
+            shown:
+              problem.kind !== 'cycle' ||
+              alwaysShown.has(problem) ||
+              (opts.reportCycles === true && !maskCycles.has(problem)),
           }))
           if (set.length) lose(entries, set)
           hold(entries)
@@ -639,10 +714,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       for (const n of list) {
         const from = out.length
         visit(n)
-        if (level === 1) {
-          confirmOutside(out.slice(from))
-          flush()
-        }
+        // the problems wait for the end of the call: the second walk may yet name
+        // assignments a failure of the first one lost
+        if (level === 1) confirmOutside(out.slice(from))
       }
     } finally {
       level--
@@ -764,6 +838,28 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const copy: any = {}
     for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyDeep(node[key])
     if (node[WAITING]) copy[WAITING] = true
+    if (node[PLACEMENT]) copy[PLACEMENT] = node[PLACEMENT]
+    const known = origin.get(node)
+    if (known) origin.set(copy, known)
+    opts.onCopy?.(node, copy)
+    return copy
+  }
+
+  // A block found in the state, copied for one place: each node remembers the node
+  // of the state it copies, and a failure, a reading on its own and the marks it
+  // carries come with it, so a copy is read as the block it copies.
+  const copyPlaced = (node: any): any => {
+    if (Array.isArray(node)) return node.map(copyPlaced)
+    if (!node || typeof node !== 'object') return node
+    const copy: any = {}
+    for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyPlaced(node[key])
+    if (node[WAITING]) copy[WAITING] = true
+    if (node[PLACEMENT]) copy[PLACEMENT] = node[PLACEMENT]
+    placedFrom.set(copy, placedFrom.get(node) ?? node)
+    const failed = failedAt.get(node)
+    if (failed) failedAt.set(copy, failed)
+    const alone = readAlone.get(node)
+    if (alone) readAlone.set(copy, alone)
     const known = origin.get(node)
     if (known) origin.set(copy, known)
     opts.onCopy?.(node, copy)
@@ -854,6 +950,99 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
   }
 
+  // A file an operand names is read the way an included file is, from the directory
+  // of the directive; one already on the way does not resolve.
+  const operandReader = (context: unknown, stack: string[], here: IncludeStep[]) => {
+    let waits = false
+    const read = (scheme: string, document: string): SelectorDoc[] | undefined => {
+      if (!schemes.includes(scheme)) return undefined
+      const found = provider.locate(document, context, true, undefined, scheme)
+      const refused = found && refusal(found)
+      if (refused !== undefined) {
+        throw new SelectorError('resolution', `the source does not resolve: ${scheme}:${document}: ${refused}`)
+      }
+      const source = found?.sources[0]
+      const target = source?.id ?? ''
+      const text = !source || stack.includes(target) ? null : textOf(source)
+      if (!found || text === undefined) waits = true
+      if (!source || text === null || text === undefined) return undefined
+      let own: any
+      try {
+        own = opts.parse(text, target, undefined, { format: source.format ?? formatOfFile(target) })
+      } catch (e) {
+        // a file that fails to parse is one the operand cannot be read from
+        if (!opts.tolerant) throw e
+        return undefined
+      }
+      recordOrigin(own, { file: target, text }, origin)
+      // the file is a document of its own: it is walked as the first walk walks
+      const second = secondWalk
+      secondWalk = false
+      try {
+        return [
+          {
+            file: document,
+            node: asDocument(walkNode(own, source.context, [...stack, target], here, target, own, {})),
+          },
+        ]
+      } finally {
+        secondWalk = second
+      }
+    }
+    return { read, waits: () => waits }
+  }
+
+  // An include with no source, in the second walk: its blocks are found in the state,
+  // copied, and walked where it stands, unless one of them holds it.
+  const resolvePlacement = (node: any, selector: string, stack: string[], config: ConfigScope) => {
+    const at: Placement = node[PLACEMENT]
+    const mark = failures.length
+    const done = (nodes: any[], failure?: IncludeProblem[]) => ({
+      nodes,
+      failure,
+      inner: failures.slice(mark),
+      selector,
+      outside: [] as Source[],
+      written: selector,
+    })
+    if (stateWaits) return { ...done([node]), waiting: true }
+    const operands = operandReader(at.context, stack, at.here)
+    const doc = { file: mainFile, node: asDocument(state) }
+    let found: any[]
+    try {
+      found = outermost(keepBlocks(runSelector(selector, [doc], { home: [doc], readSource: operands.read })))
+    } catch (e) {
+      if (!(e instanceof SelectorError)) throw e
+      return done(
+        [],
+        [
+          {
+            kind: 'operand',
+            target: selector,
+            message: `include selector cannot be read: ${e.message}`,
+            chain: at.here,
+          },
+        ],
+      )
+    }
+    if (operands.waits()) return { ...done([node]), waiting: true }
+    if (found.some(block => inside.includes(block))) {
+      const problem: IncludeProblem = {
+        kind: 'cycle',
+        target: selector,
+        message: `include brings nothing: a block it would bring holds it: ${selector}`,
+        chain: at.here,
+      }
+      alwaysShown.add(problem)
+      return done([], [problem])
+    }
+    const nodes = found.flatMap(block => {
+      const walked = walkNode(copyPlaced(block), at.context, stack, at.here, at.file, state, { ...config })
+      return Array.isArray(walked) ? walked : [walked]
+    })
+    return done(nodes)
+  }
+
   // What an include comes to: the nodes that take its place, or the problems
   // that left it with nothing, not yet reported
   const resolveInclude = (
@@ -872,6 +1061,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     selector: string
     // a source of the include is not known yet
     waiting?: boolean
+    // an include with no source, left for the second walk: the place it stands in
+    placement?: Placement
     // the external sources read, and the path as the directive writes it
     outside: Source[]
     written: string
@@ -908,6 +1099,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     // what it would have brought in is missing, and a reader of the tree cannot
     // tell that on its own.
     const fail = (problem: IncludeProblem, keep = false) => done(keep ? [withoutSet(node)] : [], [problem])
+    // a selection with patterns and no source selects from the document itself
+    const sameDocument =
+      !!selector && !!parsed && !parsed.scheme && !parsed.document && !parsed.anchor && parsed.patterns.length > 0
+    if (sameDocument && !secondWalk) return { ...done([node]), placement: { file, here, context } }
+    if (sameDocument) return resolvePlacement(node, selector!, stack, config)
+    // a host with no files to give leaves the other includes as they are written
+    if (opts.onlySameDocument) return done([withoutSet(node)])
     if (!selector || !parsed || !parsed.scheme || !parsed.document) {
       return fail(
         {
@@ -942,7 +1140,10 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       )
     }
 
-    const wait = () => ({ ...done([node]), roots: undefined, waiting: true })
+    const wait = () => {
+      if (!secondWalk) stateWaits = true
+      return { ...done([node]), roots: undefined, waiting: true }
+    }
     const located = provider.locate(parsed.document, context, false, here[here.length - 1], parsed.scheme)
     if (!located) return wait()
     const refused = refusal(located)
@@ -1140,37 +1341,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
 
     roots = placedDocs
 
-    // a file an operand names is read the way an included file is, from the
-    // directory of the directive; one already on the way does not resolve
-    let operandWaits = false
-    const readSource = (scheme: string, document: string): SelectorDoc[] | undefined => {
-      if (!schemes.includes(scheme)) return undefined
-      const found = provider.locate(document, context, true, undefined, scheme)
-      const refused = found && refusal(found)
-      if (refused !== undefined) {
-        throw new SelectorError('resolution', `the source does not resolve: ${scheme}:${document}: ${refused}`)
-      }
-      const source = found?.sources[0]
-      const target = source?.id ?? ''
-      const text = !source || stack.includes(target) ? null : textOf(source)
-      if (!found || text === undefined) operandWaits = true
-      if (!source || text === null || text === undefined) return undefined
-      let own: any
-      try {
-        own = opts.parse(text, target, undefined, { format: source.format ?? formatOfFile(target) })
-      } catch (e) {
-        // a file that fails to parse is one the operand cannot be read from
-        if (!opts.tolerant) throw e
-        return undefined
-      }
-      recordOrigin(own, { file: target, text }, origin)
-      return [
-        {
-          file: document,
-          node: asDocument(walkNode(own, source.context, [...stack, target], here, target, own, {})),
-        },
-      ]
-    }
+    const operands = operandReader(context, stack, here)
+    const readSource = operands.read
     // An include that waits for a later pass stands for blocks not yet known. The
     // universal pattern without a predicate would find every one of them, so the
     // include stays where it is written, among the found blocks; under other
@@ -1208,11 +1380,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       const found = outermost(
         keepBlocks(runSelector(selector, docs, { home: [{ file, node: asDocument(home) }], readSource })),
       )
-      if (operandWaits) return wait()
+      if (operands.waits()) return wait()
       return done(withoutLooseDirectives(placedFor(withWaiting(found))))
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
-      if (operandWaits) return wait()
+      if (operands.waits()) return wait()
       return fail({
         kind: 'operand',
         target: selector,
@@ -1234,7 +1406,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   ): any => {
     if (!node || typeof node !== 'object') return node
     if (Array.isArray(node)) return walkList(node, context, stack, chain, file, home, config, holder)
-    if (isIncludeBlock(node)) return walkList([node], context, stack, chain, file, home, config, holder)
+    // the second walk resolves only the includes with no source; the others stay
+    if (isIncludeBlock(node)) {
+      if (secondWalk && !node[PLACEMENT]) return node
+      return walkList([node], context, stack, chain, file, home, config, holder)
+    }
     const wrapper = node.type === 'block' && (node.name === 'root' || node.name === '_folded_section')
     if (isSetTarget(node, holder)) markReached()
 
@@ -1242,9 +1418,20 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       // a block is a lexical scope for the settings declared inside it
       const scope = node.type === 'block' && !wrapper ? { ...config } : config
       const inner = holderInside(node, holder)
-      const copy = { ...node, content: walkList(node.content, context, stack, chain, file, home, scope, inner) }
+      // a block the second walk is inside, as the block of the state it stands for
+      const counted = secondWalk && node.type === 'block' && !wrapper
+      if (counted) inside.push(placedFrom.get(node) ?? node)
+      let content: any[]
+      try {
+        content = walkList(node.content, context, stack, chain, file, home, scope, inner)
+      } finally {
+        if (counted) inside.pop()
+      }
+      const copy = { ...node, content }
       const known = origin.get(node)
       if (known) origin.set(copy, known)
+      const from = placedFrom.get(node)
+      if (from) placedFrom.set(copy, from)
       opts.onCopy?.(node, copy)
       return copy
     }
@@ -1252,7 +1439,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   }
 
   try {
-    return unmark(walkNode(tree, opts.context, opts.self ? [opts.self] : [], [], mainFile, tree, {}))
+    const self = opts.self ? [opts.self] : []
+    const first = walkNode(tree, opts.context, self, [], mainFile, tree, {})
+    if (!placements) return unmark(first)
+    state = first
+    secondWalk = true
+    return unmark(walkNode(first, opts.context, self, [], mainFile, tree, {}))
   } finally {
     flush()
   }

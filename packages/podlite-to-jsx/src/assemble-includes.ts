@@ -10,6 +10,8 @@ export type ExpandPaths = (pattern: string, baseDir?: string) => string[] | unde
 
 export type AssembleOptions = {
   includeReader: IncludeReader
+  // only the includes with no source are resolved: the host has no files to give
+  onlySameDocument?: boolean
   includeBaseDir?: string
   expandPaths?: ExpandPaths
   parser: {
@@ -182,6 +184,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     parse: readerFor(opts.parser),
     origin,
     tolerant: true,
+    onlySameDocument: opts.onlySameDocument,
     onError: problem => problems.push(problem),
     onWarning: problem => problems.push(problem),
   })

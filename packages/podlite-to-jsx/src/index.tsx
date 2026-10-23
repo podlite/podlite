@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createElement } from 'react'
-import { podlite as podlite_core } from 'podlite'
+import { podlite as podlite_core, hasSameDocumentInclude } from 'podlite'
 import {
   Verbatim,
   PodNode,
@@ -1144,8 +1144,11 @@ function podlite(
   })(tree)
   const folded = applyFoldedSections(astRaw)
   // included blocks take the place of the directive before anything reads the tree
+  // without a reader only an include with no source can be resolved, and the others stay as written
   const assembly = includeReader
     ? assembleIncludes(folded, { includeReader, includeBaseDir, expandPaths, parser: podliteParser })
+    : hasSameDocumentInclude(folded)
+    ? assembleIncludes(folded, { includeReader: () => null, parser: podliteParser, onlySameDocument: true })
     : undefined
   const stacks = assembly?.stacks
   const ast = groupTests(
