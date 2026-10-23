@@ -204,10 +204,22 @@ const readWhole = (tail: string): ConfigItem[] | undefined => {
 // colon before the selection, and ends at the last bar before which it reads
 // whole, or at the end of the line. A configuration that does not
 // read whole leaves the line unread.
+// whether a bar stands outside the brackets of a predicate: a bar inside one
+// belongs to an operand, not to the selector
+const hasTopLevelBar = (line: string): boolean => {
+  let depth = 0
+  for (const c of line) {
+    if (c === '[' || c === '(') depth++
+    else if ((c === ']' || c === ')') && depth > 0) depth--
+    else if (c === '|' && depth === 0) return true
+  }
+  return false
+}
+
 const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
   // without the address of a source there is no place for a configuration: a
   // source is written with its scheme, or without one when a selection follows
-  if (!/^[a-z][\w+.-]*:/i.test(line) && !line.includes('|')) return { selector: line }
+  if (!/^[a-z][\w+.-]*:/i.test(line) && !hasTopLevelBar(line)) return { selector: line }
   let start = -1
   for (let i = 0; i < line.length; i++) {
     if (line[i] === '|') break
@@ -397,8 +409,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // An include that read external sources waits for the walk of its entry: it is
   // reported only if blocks it brought from them stand in the result.
   type Outside = { step: string; written: string; sources: Source[] }
-  type Held = { problem: IncludeProblem; shown: boolean; outside?: Outside }
+  // A slot is held where an include with no source stands in the first walk: the
+  // problems the second walk finds for it are put there, in the order of the document.
+  type Held = { problem: IncludeProblem; shown: boolean; outside?: Outside; slot?: true }
   const held: Held[] = []
+  // the slot of the include with no source the second walk is resolving, outermost first
+  const slots: Held[] = []
   // the problem an error thrown with no handler was made from
   const thrownFrom = new WeakMap<object, Held>()
   // For each include being resolved, whether a block of its content was met
@@ -423,13 +439,16 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         throw error
       }
     }
-    held.push(...entries)
+    const slot = slots[0]
+    const at = slot ? held.indexOf(slot) : -1
+    if (at >= 0) held.splice(at, 0, ...entries)
+    else held.push(...entries)
   }
   const report = (problem: IncludeProblem): void => hold([{ problem, shown: true }])
   const flush = (): void => {
     held
       .splice(0)
-      .filter(entry => entry.shown)
+      .filter(entry => entry.shown && !entry.slot)
       .forEach(entry => emit(entry.problem))
   }
   // how many includes brought their content so far
@@ -456,7 +475,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // inside, read back to the blocks of that result they are copies of, are the path a
   // block found must not be on.
   const PLACEMENT = Symbol('include with no source')
-  type Placement = { file: string; here: IncludeStep[]; context: unknown }
+  type Placement = { file: string; here: IncludeStep[]; context: unknown; slot?: any }
   let placements = 0
   let secondWalk = false
   // the result of the first walk, which the marked includes select from
@@ -596,7 +615,17 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     const out: any[] = []
     let pending: ConfigItem[] = []
     let last: { chain: IncludeStep[]; selector: string } | undefined
+    // what an include with no source says in the second walk goes to its slot
     const visit = (n: any): void => {
+      const slot = secondWalk && isIncludeBlock(n) && !slots.length ? n[PLACEMENT]?.slot : undefined
+      if (slot) slots.push(slot)
+      try {
+        visitEntry(n)
+      } finally {
+        if (slot) slots.pop()
+      }
+    }
+    const visitEntry = (n: any): void => {
       if (n && n.type === 'config' && typeof n.name === 'string' && Array.isArray(n.config)) {
         config[n.name] = mergeConfigSettings(n.config, config[n.name])
       }
@@ -629,7 +658,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         if (resolved.placement) {
           // left for the second walk with its assignments, as the place it stands in
           placements++
-          const kept = { ...n, ...(set.length ? { set } : {}), [PLACEMENT]: resolved.placement }
+          const slot = { problem: undefined, shown: false, slot: true }
+          if (!quiet) held.push(slot as any)
+          const kept = { ...n, ...(set.length ? { set } : {}), [PLACEMENT]: { ...resolved.placement, slot } }
           const known = origin.get(n)
           if (known) origin.set(kept, known)
           opts.onCopy?.(n, kept)
@@ -1013,6 +1044,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       found = outermost(keepBlocks(runSelector(selector, [doc], { home: [doc], readSource: operands.read })))
     } catch (e) {
       if (!(e instanceof SelectorError)) throw e
+      if (operands.waits()) return { ...done([node]), waiting: true }
       return done(
         [],
         [

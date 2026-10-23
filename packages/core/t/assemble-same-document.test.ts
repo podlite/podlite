@@ -134,6 +134,41 @@ describe('an include with no source', () => {
     expect(shape(tree.content)).toEqual(['VERSION(2.0.0)', 'VERSION(1.0.0)', 'root[VERSION(2.0.0)]', 'VERSION(1.0.0)'])
   })
 
+  it('says what it finds in the order of the document', () => {
+    const { problems } = assembled('=begin nested\n=include nested\n=end nested\n\n=include file:missing.podlite\n')
+    expect(problems.map(([kind]) => kind)).toEqual(['cycle', 'source'])
+  })
+
+  it('reads a predicate whose operand names a file, a space before it or not', () => {
+    for (const include of [
+      '=include Invoice[ :type(in file:voc.podlite | defn) ]',
+      '=include Invoice[:type(in file:voc.podlite | defn)]',
+    ]) {
+      const { tree, problems } = assembled(`${include}\n\n=for Invoice :type<invoice>\nx\n`, {
+        'voc.podlite': '=defn invoice\nA bill\n',
+      })
+      expect([shape(tree.content).length, problems]).toEqual([2, []])
+    }
+    expect(hasSameDocumentInclude(read('=include Invoice[ :type(in file:voc.podlite | defn) ]\n', main))).toBe(true)
+  })
+
+  it('waits while a file its operand names is not known yet', () => {
+    const problems: IncludeProblem[] = []
+    const text = '=include Invoice[:type(in file:voc.podlite | defn)]\n\n=for Invoice :type<invoice>\nx\n'
+    const tree = assembleIncludes(read(text, main), {
+      sources: { locate: () => undefined, read: () => undefined },
+      context: '',
+      file: main,
+      parse: read,
+      tolerant: true,
+      onError: problem => problems.push(problem),
+      onWarning: problem => problems.push(problem),
+    })
+    expect([tree.content.filter((node: any) => node.type === 'block').map((node: any) => node.name), problems]).toEqual(
+      [['include', 'Invoice'], []],
+    )
+  })
+
   it('is told apart from an include of a file', () => {
     expect(hasSameDocumentInclude(read('=include VERSION\n', main))).toBe(true)
     expect(hasSameDocumentInclude(read('=include file:a.podlite | head1\n', main))).toBe(false)
