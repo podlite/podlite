@@ -1518,7 +1518,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (counted) inside.push(placedFrom.get(node) ?? node)
       let content: any[]
       try {
-        escapeNext = secondWalk && wrapper
+        // the root of the document has no list around it to pass assignments on to
+        escapeNext = secondWalk && wrapper && node !== state
         content = walkList(node.content, context, stack, chain, file, home, scope, inner)
       } finally {
         if (counted) inside.pop()

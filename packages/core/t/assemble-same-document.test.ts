@@ -185,6 +185,15 @@ describe('an include with no source', () => {
     expect([shape(tree.content), problems]).toEqual([['root[]', 'VERSION(top){a=1}'], []])
   })
 
+  it('says an assignment it brings nothing for has no target at the end of the document', () => {
+    for (const [text, files] of [
+      ['=set :a<1>\n=include ABSENT\n', {}],
+      ['=set :a<1>\n=include file:F\n', { F: '=include ABSENT\n' }],
+    ] as Array<[string, Record<string, string>]>) {
+      expect(assembled(text, files).problems.map(([kind]) => kind)).toEqual(['set-target'])
+    }
+  })
+
   it('still reads the settings of an include of a file whose value holds a bracket', () => {
     for (const include of ['=include part.podlite :tag<foo[> | head1', '=include part.podlite :tag("[") | head1']) {
       const { tree, problems } = assembled(`${include}\n`, { 'part.podlite': '=head1 P\n' })
