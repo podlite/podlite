@@ -497,7 +497,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   const inside: object[] = []
   // In the second walk an include with no source inside a wrapper may bring nothing:
   // the assignments it held go on past the wrapper, to the next block of the list
-  // that holds it, as they would have had it been resolved in the first walk.
+  // that holds it, as they would have had it been resolved in the first walk. They
+  // pass only out of the wrappers the tree adds (root, _folded_section), never out of
+  // a written block, and not out of the root of the document, where they are reported.
   let escapeNext = false
   let escaped: { pending: ConfigItem[]; last?: { chain: IncludeStep[]; selector: string } } | undefined
   // a cycle of an include with no source is reported whether or not it loses =set
@@ -710,6 +712,11 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
         if (!failure) brought++
         if (!failure)
           markVia(nodes, `${where}@${n.location?.start?.offset ?? ''}`, { file: where, location: n.location })
+        // a copy an include with no source placed came first through the way that include came
+        if (!failure && placed) {
+          const way = origin.get(n)
+          if (way?.via) prefixVia(nodes, way)
+        }
         if (!failure && resolved.outside.length) {
           const step = stepOf(where, n.location)
           const problem: IncludeProblem = { kind: 'external', target: selector, message: '', chain: here }
@@ -818,6 +825,21 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
       if (known) {
         const via = known.via ? `${step}>${known.via}` : step
         origin.set(node, { ...known, via, steps: [at, ...(known.steps ?? [])] })
+      }
+      visit(node.content)
+    }
+    visit(nodes)
+  }
+
+  // The way a placement came, put before the way of each node it brought.
+  const prefixVia = (nodes: any[], way: IncludeOrigin): void => {
+    const visit = (node: any): void => {
+      if (!node || typeof node !== 'object') return
+      if (Array.isArray(node)) return node.forEach(visit)
+      const known = origin.get(node)
+      if (known) {
+        const via = known.via ? `${way.via}>${known.via}` : way.via
+        origin.set(node, { ...known, via, steps: [...(way.steps ?? []), ...(known.steps ?? [])] })
       }
       visit(node.content)
     }

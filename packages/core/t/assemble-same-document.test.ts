@@ -194,6 +194,25 @@ describe('an include with no source', () => {
     }
   })
 
+  it('gives its copy the way it came itself, then its own step', () => {
+    const origin = new WeakMap<object, any>()
+    const text = '=include file:F\n\n=VERSION 1\n'
+    const tree = assembleIncludes(read(text, main), {
+      sources: sourcesFromFiles({ F: '=include VERSION\n' }),
+      context: '',
+      file: main,
+      text,
+      parse: read,
+      origin,
+    })
+    const [root, written] = tree.content.filter((node: any) => node.type === 'block')
+    const copy = root.content.find((node: any) => node.name === 'VERSION')
+    expect([origin.get(copy)?.steps?.map((step: any) => step.file), origin.get(written)?.steps]).toEqual([
+      [main, '/F'],
+      undefined,
+    ])
+  })
+
   it('still reads the settings of an include of a file whose value holds a bracket', () => {
     for (const include of ['=include part.podlite :tag<foo[> | head1', '=include part.podlite :tag("[") | head1']) {
       const { tree, problems } = assembled(`${include}\n`, { 'part.podlite': '=head1 P\n' })
