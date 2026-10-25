@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.60
+
 =item a C<doc:> link finds its document when spaces follow the name, as in C<L<doc:Target >>
 
 =head1 0.0.57

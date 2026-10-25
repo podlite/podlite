@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.83
+
 =item an C<=include> with no source is resolved as in C<convert>, also when no C<includeReader> is given; the includes of files are then left alone, as before
 
 =item an alias that expands into itself, past 8 levels or past 10000 replacements in one use is shown as written, with one warning per use, as in the HTML output; before, the render overflowed the stack and showed a render error

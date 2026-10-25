@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.92
+
 =item an C<=include> with no source, as C<=include VERSION>, brings the blocks of the document itself: every such include selects from the document with its includes of other sources in and its own includes with no source as written, so none of them brings what another one brought, and one that would bring a block it stands inside brings nothing, with a C<cycle> reported. Before, the selector could not be read. C<hasSameDocumentInclude> tells whether a tree holds one, and C<assembleIncludes> takes C<onlySameDocument> for a host with no files to give; C<podlite lint> resolves such includes in text given with no files
 
 =item C<podlite convert> says in its error output when markup codes nest deeper than 32 levels and the deeper ones go out as text, and C<podlite lint> adds rule C<markup-code-too-deep> (warning) for the same; a self-expanding alias and a thousand nested codes no longer overflow the stack in C<convert>

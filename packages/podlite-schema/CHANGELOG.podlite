@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.79
+
 =item the address of C<L<>> and C<W<>> after the bar loses the whitespace around it, as the specification says whitespace is not significant on either side of the bar: C<L<text| https://example.org >> links to C<https://example.org>, and with a configuration the quotes after a space are taken off (C<L<t| "a b" :new>> addresses C<a b>); an address of spaces alone is an empty address
 
 =item markup codes nested deeper than 32 levels (C<MARKUP_CODE_DEPTH_LIMIT>) are written out as text with a C<markup-code-too-deep> warning, instead of building a tree the walkers after the parser cannot hold; an alias expansion stops at an alias already on the way, past 8 levels (C<ALIAS_EXPANSION_DEPTH>) or past 10000 replacements in one use (C<ALIAS_EXPANSION_BUDGET>): the refused C<A<>> is written as it stands and the HTML and Markdown output warn once per use. Both inputs overflowed the stack before. C<expandAlias> is exported for other outputs

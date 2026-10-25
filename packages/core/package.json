@@ -1,6 +1,6 @@
 {
   "name": "podlite",
-  "version": "0.0.91",
+  "version": "0.0.92",
   "description": "Podlite markup language: parser and CLI (convert, lint, query, test). Reads Markdown; includes Mermaid diagram and LaTeX formula plugins.",
   "homepage": "https://podlite.org",
   "repository": {

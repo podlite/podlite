@@ -2,6 +2,63 @@
 
 =head1 Upcoming
 
+=head1 0.0.99
+
+
+=head2 podlite
+
+=item an C<=include> with no source, as C<=include VERSION>, brings the blocks of the document itself: every such include selects from the document with its includes of other sources in and its own includes with no source as written, so none of them brings what another one brought, and one that would bring a block it stands inside brings nothing, with a C<cycle> reported. Before, the selector could not be read. C<hasSameDocumentInclude> tells whether a tree holds one, and C<assembleIncludes> takes C<onlySameDocument> for a host with no files to give; C<podlite lint> resolves such includes in text given with no files
+
+=item C<podlite convert> says in its error output when markup codes nest deeper than 32 levels and the deeper ones go out as text, and C<podlite lint> adds rule C<markup-code-too-deep> (warning) for the same; a self-expanding alias and a thousand nested codes no longer overflow the stack in C<convert>
+
+=item C<podlite lint> adds rule C<test-under-rule> (warning): a C<=test> with no block above it that it could check, where the page draws it with no rule, such as a test right under a heading or one that opens its block. Tests brought by C<=include> are checked where they land and reported at the C<=include> line
+
+=item C<podlite test> reports as skipped a test whose assertion is followed at once by a block it does not know, which before was taken into the assertion
+
+=item C<podlite lint> rule C<table-column-width> ends an abbreviated table where the parser ends it: at a directive line, and at a blank line inside a delimited table too
+
+=item the help of C<podlite> describes C<lint> without calling it a work in progress
+
+=item C<podlite lint> rule C<attr-nested-angle> no longer reports a hash with values in angles, such as C«:key{:a<x>, :b<z>}»: the bracket of the next option is not taken for a stray C«>»
+
+=item C<podlite lint> rule C<attr-nested-angle> no longer reports a value in angles that holds a quoted string, such as C«:caption<'a B<b>'>»: it reads the value the way the parser does
+
+=item C<podlite lint> adds rule C<item-hierarchy> (warning): an C<=item2> with no C<=item1> before it in the same block, and so on for each level, as the specification requires. Markdown files are not checked
+
+=head2 @podlite/editor-react
+
+=item the body of C<=fixture> is highlighted as a Podlite document, the body of C<=resource> by the extension of its C<:name> (Podlite or Markdown), and the body of C<=assert> as a selector: block names, conditions, values, the source and its path, and the word C<in> of an operation. C<:lang> still chooses the language when it is given, and only on C<=begin> and C<=for>
+
+=head2 @podlite/mcp
+
+=item C<podlite_validate> applies the document's C<:lint-ignore>: a rule the attribute names is silenced inside its block, and a mute that names no rule or silences nothing is reported, as C<podlite lint> does
+
+=item the description of C<podlite_validate> names what it checks — syntax, lint rules and the AST schema — and when C<ok> is true
+
+=head2 @podlite/publisher
+
+=item a C<doc:> link finds its document when spaces follow the name, as in C<L<doc:Target >>
+
+=head2 @podlite/schema
+
+=item the address of C<L<>> and C<W<>> after the bar loses the whitespace around it, as the specification says whitespace is not significant on either side of the bar: C<L<text| https://example.org >> links to C<https://example.org>, and with a configuration the quotes after a space are taken off (C<L<t| "a b" :new>> addresses C<a b>); an address of spaces alone is an empty address
+
+=item markup codes nested deeper than 32 levels (C<MARKUP_CODE_DEPTH_LIMIT>) are written out as text with a C<markup-code-too-deep> warning, instead of building a tree the walkers after the parser cannot hold; an alias expansion stops at an alias already on the way, past 8 levels (C<ALIAS_EXPANSION_DEPTH>) or past 10000 replacements in one use (C<ALIAS_EXPANSION_BUDGET>): the refused C<A<>> is written as it stands and the HTML and Markdown output warn once per use. Both inputs overflowed the stack before. C<expandAlias> is exported for other outputs
+
+=item C<canOwnTest> and C<mayHoldTests> say whether a node can be the block a C<=test> belongs to and whether a test can stand among its children, the rule a page groups tests by
+
+=item an indented block written with C<=for> or in the abbreviated form takes its virtual margin off every line of its body: a verbatim body keeps the lines aligned as written, as in the C<=begin> form, and the text of a paragraph, an item, a definition and a heading loses the margin on each line. The rest of the directive line is kept as it is
+
+=item B<Breaking:> a paragraph, abbreviated or implicit block and a paragraph or abbreviated table end at a directive line whatever block it names, as they end at a known one; a line that names an unknown block starts a text of its own and is still reported to the recognition list
+
+=item the rest of the directive line of an abbreviated verbatim block is its first line even when it starts with C<=>: C«=code =para hello» holds C«=para hello»
+
+=head2 @podlite/to-jsx
+
+=item an C<=include> with no source is resolved as in C<convert>, also when no C<includeReader> is given; the includes of files are then left alone, as before
+
+=item an alias that expands into itself, past 8 levels or past 10000 replacements in one use is shown as written, with one warning per use, as in the HTML output; before, the render overflowed the stack and showed a render error
+
 =head1 0.0.98
 
 
