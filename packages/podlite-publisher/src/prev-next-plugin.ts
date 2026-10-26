@@ -1,5 +1,5 @@
 import { getMaskedTextContent } from '@podlite/schema'
-import { isEntry, publishRecord } from './record'
+import { isEntry, neighbourRecord, publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 const plugin = (): PodliteWebPlugin => {
   const outCtx: PodliteWebPluginContext = {}
@@ -10,7 +10,7 @@ const plugin = (): PodliteWebPlugin => {
       if (item.publishUrl) {
         const allData = (isEntry(item) ? notPages : recs).filter(({ publishUrl }) => Boolean(publishUrl))
         const articleIndex = allData.findIndex(({ publishUrl }) => publishUrl === item.publishUrl)
-        const prepareReference = (item: publishRecord): any | boolean => {
+        const prepareReference = (item: publishRecord): neighbourRecord | false => {
           if (item) {
             const { pluginsData, node, ...rest } = item
             // a neighbour without a title, a note, is named by its text: one line, hidden words masked

@@ -26,6 +26,10 @@ export type publishRecord = pubRecord & {
   template_file?: string
 }
 
+// A neighbour of an entry, as the links to the next and previous entry carry it: the
+// record without its tree; a neighbour without a title, a note, gets its text as a label.
+export type neighbourRecord = Omit<publishRecord, 'node' | 'pluginsData'> & { label?: string }
+
 // The record's `type` cannot answer this: it says whether the address was declared
 // or built, and it is the letter the short url is made of. Only the author can call
 // a document a page, with :type('page'); a document with no date is not published.
