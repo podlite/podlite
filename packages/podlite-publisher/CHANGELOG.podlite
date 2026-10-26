@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the plugin that links an entry to the next and the previous one gives a neighbour without a title, a note, a C<label>: its text on one line, a hidden word masked; the neighbour still comes without its node
+
 =item the site data (C<data.json>) carries the map of images the images plugin found; it was always written empty
 
 =head1 0.0.60

@@ -1,3 +1,4 @@
+import { getMaskedTextContent } from '@podlite/schema'
 import { isEntry, publishRecord } from './record'
 import { PodliteWebPlugin, PodliteWebPluginContext } from './plugins'
 const plugin = (): PodliteWebPlugin => {
@@ -12,7 +13,8 @@ const plugin = (): PodliteWebPlugin => {
         const prepareReference = (item: publishRecord): any | boolean => {
           if (item) {
             const { pluginsData, node, ...rest } = item
-            return rest
+            // a neighbour without a title, a note, is named by its text: one line, hidden words masked
+            return rest.title ? rest : { ...rest, label: getMaskedTextContent(node).replace(/\s+/g, ' ').trim() }
           }
           return false
         }
