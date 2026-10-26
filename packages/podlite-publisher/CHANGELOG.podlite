@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the site data (C<data.json>) carries the map of images the images plugin found; it was always written empty
+
 =head1 0.0.60
 
 =item a C<doc:> link finds its document when spaces follow the name, as in C<L<doc:Target >>

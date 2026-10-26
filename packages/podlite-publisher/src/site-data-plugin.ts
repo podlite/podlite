@@ -123,7 +123,8 @@ const plugin = ({
     const dataJson = {
       all: [],
       control: controlJson,
-      imagesMap: imagesMap?.size ? Object.fromEntries(imagesMap) : {},
+      // the images plugin hands the map over as a plain object, path to variable name
+      imagesMap: imagesMap ?? {},
       siteInfo: siteData,
     }
 
