@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a link written inside the text of a C<L<>> or C<W<>> link gives only its text, with its formatting; before, it was drawn as a link within the link, which HTML does not allow
+
 =head1 0.0.83
 
 =item an C<=include> with no source is resolved as in C<convert>, also when no C<includeReader> is given; the includes of files are then left alone, as before

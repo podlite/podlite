@@ -269,6 +269,18 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // so links in different blocks each got their own. The mode comes with the
     // context, which is why it is looked up here. Nothing is built without a resolver.
     return (node, ctx, interator) => {
+      // A link draws its text with this mark, so a link written inside that text gives
+      // only its text: HTML has no link within a link. A site that draws links with its
+      // own rule sets the same mark.
+      const inner = 'content' in node ? interator(node.content, { ...ctx, insideLink: true }) : []
+      if (ctx?.insideLink)
+        return makeComponent(
+          ({ children, key }) => <React.Fragment key={key}>{children}</React.Fragment>,
+          node,
+          inner,
+          {},
+          ctx,
+        )
       const index = resolver ? previewIndexFor(tree, ctx?.renderMode) : undefined
       const href = hrefOf(node, ctx)
       const linkProps = linkConfigProps(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))
@@ -286,7 +298,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
             {children}
           </a>
         )
-      return mkComponent(src)(writer, processor)(node, ctx, interator)
+      return makeComponent(src, node, inner, { id: getSafeNodeId(node, ctx) }, ctx)
     }
   }
 
