@@ -29,4 +29,10 @@ describe('a link inside the text of a link', () => {
       '<a href="/outer">the <strong>inner</strong> part</a>',
     )
   })
+
+  it('keeps a link in the text of a note written inside a link, and gives the mark of the note no link', () => {
+    const html = render('L<outer N<see L<inner|/inner>> tail|/outer>')
+    expect(html).toContain('<a href="/inner">inner</a>')
+    expect(html).toMatch(/<a href="\/outer">outer <sup id="fnref:1" class="footnote">\[1\]<\/sup> tail<\/a>/)
+  })
 })

@@ -763,14 +763,17 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
           fnRefId,
           fnId,
           node,
+          // the note is drawn at the end of the page, outside any link its mark stands in
           make: () => {
-            return interator(node.content, ctx)
+            const { insideLink, ...outside } = ctx
+            return interator(node.content, outside)
           },
         })
+        // a mark inside the text of a link is no second link: HTML has no link within a link
         return makeComponent(
           ({ children, key }) => (
             <sup key={key} id={fnRefId} className="footnote">
-              <a href={`#${fnId}`}>[{gid}]</a>
+              {ctx.insideLink ? `[${gid}]` : <a href={`#${fnId}`}>[{gid}]</a>}
             </sup>
           ),
           node,
