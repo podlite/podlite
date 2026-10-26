@@ -173,15 +173,18 @@ it('the site data carries the map of images the images plugin found', () => {
   const [, imagesCtx] = processPlugin({ plugin: imagesPlugin(), includePatterns: '.*' }, [imagesDoc], tctx)
   // a real build writes its files, so this one runs outside the testing mode, in a scratch directory
   const dir = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'site-data-'))
-  fs.writeFileSync(pathMod.join(dir, 'logo.png'), '')
-  const indexFilePath = pathMod.join(dir, 'index.podlite')
-  const config: PluginConfig = {
-    plugin: siteDataPlugin({ public_path: dir, indexFilePath, built_path: dir, site_url: 'http://example.com' }),
-    includePatterns: '.*',
+  try {
+    fs.writeFileSync(pathMod.join(dir, 'logo.png'), '')
+    const indexFilePath = pathMod.join(dir, 'index.podlite')
+    const config: PluginConfig = {
+      plugin: siteDataPlugin({ public_path: dir, indexFilePath, built_path: dir, site_url: 'http://example.com' }),
+      includePatterns: '.*',
+    }
+    processPlugin(config, [processFile(indexFilePath, indexFile)], { ...imagesCtx, testing: false })
+    const data = JSON.parse(fs.readFileSync(pathMod.join(dir, 'data.json'), 'utf8'))
+    expect(data.imagesMap).toEqual({ 't/image-plugin/open_and_browsing.png': 'iimage_plugin_open_and_browsing_png' })
+    expect(data.imagesMap).toEqual(JSON.parse(fs.readFileSync(pathMod.join(dir, 'imagesMap.json'), 'utf8')))
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true })
   }
-  processPlugin(config, [processFile(indexFilePath, indexFile)], { ...imagesCtx, testing: false })
-  const data = JSON.parse(fs.readFileSync(pathMod.join(dir, 'data.json'), 'utf8'))
-  expect(data.imagesMap).toEqual({ 't/image-plugin/open_and_browsing.png': 'iimage_plugin_open_and_browsing_png' })
-  expect(data.imagesMap).toEqual(JSON.parse(fs.readFileSync(pathMod.join(dir, 'imagesMap.json'), 'utf8')))
-  fs.rmSync(dir, { recursive: true, force: true })
 })
