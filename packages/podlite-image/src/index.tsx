@@ -60,7 +60,7 @@ const Image: Plugin = {
         // the source is the first non-blank line; blank is what the norm calls it,
         // horizontal whitespace only (\h), with \r left by CRLF line ends
         const lines = content.value.split('\n')
-        const blank = /^[\t\r    -   　]*$/
+        const blank = /^[\t\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]*$/
         const first = lines.findIndex(line => !blank.test(line))
         const [data, ...caption] = first < 0 ? lines : lines.slice(first)
         const captionText = caption.join('\n')

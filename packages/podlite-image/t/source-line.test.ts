@@ -55,7 +55,7 @@ describe('picture source is the first non-blank line', () => {
   })
 
   it('skips a line holding only a wide space the norm counts as blank', () => {
-    expect(pictureOf(picture(' ', url)).image.src).toBe(url)
+    expect(pictureOf(picture('\u2003', url)).image.src).toBe(url)
   })
 
   it('skips a blank line in an Image block', () => {
@@ -116,6 +116,6 @@ describe('picture source is the first non-blank line', () => {
   it('keeps a picture of blank lines only as it was', () => {
     const { image, caption } = pictureOf(picture('', '', ''))
     expect(image.src).toBeUndefined()
-    expect(caption).toBeDefined()
+    expect(caption).toBe(JSON.stringify(['\n\n']))
   })
 })
