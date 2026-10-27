@@ -25,7 +25,7 @@ describe('reading markup codes by their letter', () => {
     }
     expect(html).toContain('Q&lt;')
     expect(html).toContain('Y&lt;&gt;')
-    expect(md).toContain('Y<>')
+    expect(md).toContain('Y\\<>')
     expect(warnings.map(w => w.code)).toEqual(['markup-code-reserved', 'markup-code-reserved'])
   })
 

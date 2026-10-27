@@ -63,7 +63,7 @@ describe('a file an include brings whole', () => {
       write('book.podlite', '=include file:./ch.podlite\n\n=para After A<X> L<b|https://b.example>\n'),
     )
     expect(out).toContain('In Inner [a](https://a.example "tip")')
-    expect(out).toContain('After A<X> [b](https://b.example)')
+    expect(out).toContain('After A\\<X> [b](https://b.example)')
   })
 
   it('takes the =config and =alias of the including file', () => {

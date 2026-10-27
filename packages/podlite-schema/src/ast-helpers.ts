@@ -74,11 +74,27 @@ type Footnotes = { production: Map<object, number>; draft: Map<object, number> }
 
 type TreeNode = { guarded?: boolean; type?: string; name?: string; value?: unknown; content?: unknown }
 
-const decodeEntities = (content: unknown): string =>
+const isScalarValue = (value: number): boolean =>
+  Number.isInteger(value) && value >= 0 && value <= 0x10ffff && (value < 0xd800 || value > 0xdfff)
+
+/*
+=begin pod :kind<export>
+
+=head2 decodeEntities
+
+The characters an C<E<>> code stands for, given the content of its node. A number gives
+the character at that code point and a name the HTML5 character of that name. A number
+that is not a Unicode scalar value, such as one past 0x10FFFF, a surrogate or the C<NaN>
+the parser gives for C<E<0o9>>, gives nothing, and so does a Unicode character name.
+
+=end pod
+*/
+export const decodeEntities = (content: unknown): string =>
   Array.isArray(content)
     ? content
         .map((element: { type?: string; value?: unknown }) => {
-          if (element?.type === 'number' && typeof element.value === 'number') return String.fromCharCode(element.value)
+          if (element?.type === 'number' && typeof element.value === 'number')
+            return isScalarValue(element.value) ? String.fromCodePoint(element.value) : ''
           if (element?.type === 'html_named' && typeof element.value === 'string')
             return decodeHTMLStrict(`&${element.value};`)
           return ''
@@ -88,8 +104,9 @@ const decodeEntities = (content: unknown): string =>
 
 // The text the markdown output puts into a heading, as a reader sees it. Hidden parts
 // come out masked when the output masks them, and G<> masks everything written inside
-// it at once. The markdown export writes nothing for E<> and Z<>, a footnote as its
-// number, and S<> with unbreakable spaces, which a reader drops from the address.
+// it at once. The markdown export writes the characters of E<> and nothing for Z<>, a
+// footnote as its number, and S<> with unbreakable spaces, which a reader drops from
+// the address.
 const markdownText = (node: unknown, masked: boolean, footnotes: Map<object, number>, covered = false): string => {
   if (typeof node === 'string') return covered && masked ? maskText(node) : node
   if (Array.isArray(node)) return node.map(child => markdownText(child, masked, footnotes, covered)).join('')
@@ -98,7 +115,11 @@ const markdownText = (node: unknown, masked: boolean, footnotes: Map<object, num
   const hidden = covered || n.guarded === true
   if (n.type === 'fcode') {
     if (n.name === 'G' && masked) return maskText(collectText(n.content))
-    if (n.name === 'E' || n.name === 'Z') return ''
+    if (n.name === 'E') {
+      const text = decodeEntities(n.content)
+      return hidden && masked ? maskText(text) : text
+    }
+    if (n.name === 'Z') return ''
     if (n.name === 'N') return String(footnotes.get(node) ?? '')
     if (n.name === 'S') return markdownText(n.content, masked, footnotes, hidden).replace(/ /g, '\u00a0')
   }

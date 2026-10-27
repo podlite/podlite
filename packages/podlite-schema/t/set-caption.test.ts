@@ -77,7 +77,7 @@ describe('the caption of a table in markdown', () => {
 
   it('stays in bold when it holds no code, written on the table or given by =set', () => {
     expect(md('=set :caption Plain\n=begin table\nA | B\n=end table\n')).toContain('**Plain**')
-    expect(md("=begin table :caption('Own B<two>')\nA | B\n=end table\n")).toContain('**Own B<two>**')
+    expect(md("=begin table :caption('Own B<two>')\nA | B\n=end table\n")).toContain('**Own B\\<two>**')
   })
 })
 

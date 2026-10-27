@@ -21,7 +21,7 @@ describe('an alias that expands into itself', () => {
   })
 
   it('names the whole cycle, in markdown too', () => {
-    expect(markdown('=alias X A<Y>\n=alias Y A<X>\n\nA<X>\n')).toContain('A<X>')
+    expect(markdown('=alias X A<Y>\n=alias Y A<X>\n\nA<X>\n')).toContain('A\\<X>')
     expect(warnings()).toEqual(['[podlite] alias X expands into itself: X → Y → X'])
   })
 })
@@ -56,7 +56,7 @@ describe('the depth of an alias expansion', () => {
       Array.from({ length: 21 }, (_, i) => `=alias X${i} ${i === 20 ? 'x' : `A<X${i + 1}>A<X${i + 1}>`}`).join('\n') +
       '\n\nA<X0>\n'
     const out = markdown(src)
-    expect(count(out, 'A<X8>')).toBe(256)
+    expect(count(out, 'A\\<X8>')).toBe(256)
     expect(warnings()).toHaveLength(1)
   })
 })
@@ -67,7 +67,7 @@ describe('the budget of one alias expansion', () => {
   it('keeps the refused uses as written and the text after them', () => {
     const out = markdown(many('A<Y>'))
     expect(count(out, 'x')).toBe(9999)
-    expect(out).toMatch(/x A<Y> A<Y> tail/)
+    expect(out).toMatch(/x A\\<Y> A\\<Y> tail/)
     expect(warnings()).toEqual(['[podlite] alias expansion X makes more than 10000 replacements'])
   })
 
@@ -179,7 +179,7 @@ describe('markup codes nested past the limit', () => {
     const out = html(src)
     expect(count(out, '<strong>')).toBe(MARKUP_CODE_DEPTH_LIMIT)
     expect(out).toContain('B&lt;B&lt;')
-    expect(markdown(src)).toContain('B<B<')
+    expect(markdown(src)).toContain('B\\<B\\<')
   })
 
   it(`holds ${ALIAS_EXPANSION_DEPTH} expansions of ${MARKUP_CODE_DEPTH_LIMIT - 1} levels each`, () => {

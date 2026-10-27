@@ -17,7 +17,7 @@ import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { expandAlias } from './helpers/alias'
-import { getNodeId, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
+import { decodeEntities, getNodeId, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
 import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, longestBacktickRun } from './test-display'
@@ -91,7 +91,7 @@ const writeSourceBlock = (writer, node, ctx) => {
   const text = collectText(node.content)
   const fence = '`'.repeat(Math.max(3, longestBacktickRun(text) + 1))
   writer.writeRaw(`${fence}podlite\n`)
-  writer.writeRaw(isCovered(node, ctx) ? maskText(text) : text)
+  writeSource(writer, isCovered(node, ctx) ? maskText(text) : text)
   if (!text.endsWith('\n')) writer.writeRaw('\n')
   writer.writeRaw(`${fence}\n`)
 }
@@ -103,6 +103,32 @@ const inlineCode = (text: string): string => {
   const ticks = '`'.repeat(longestBacktickRun(text) + 1)
   const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : ''
   return `${ticks}${pad}${text}${pad}${ticks}`
+}
+
+// Inside code a reader takes < and & as written; inside a block of HTML, as HTML.
+const within = (writer, depth: 'codeDepth' | 'htmlDepth', write: () => void) => {
+  writer[depth]++
+  try {
+    write()
+  } finally {
+    writer[depth]--
+  }
+}
+
+const writeSource = (writer, text: string) => writer.writeSource(text)
+
+// Code in a line is written aside first: its fence is one backtick longer than any run
+// inside, so a backtick of the text does not end the code early.
+const codeSpan = (writer, processor) => (node, ctx, interator) => {
+  const parts: string[] = []
+  const original = writer.output
+  writer.output = (str: string) => parts.push(str)
+  try {
+    within(writer, 'codeDepth', () => node.content && interator(node.content, ctx))
+  } finally {
+    writer.output = original
+  }
+  writer.writeRaw(inlineCode(parts.join('')))
 }
 
 const implicitPara = handleNested((writer, processor) => (node, ctx, interator) => {
@@ -123,17 +149,21 @@ const writtenCode = (writer, node, ctx, interator) => {
   writer.write(close)
 }
 
+// text of the document, hidden or not by the node it comes from
+const writeText = (writer, node, ctx, value: string) => {
+  if (ctx.keepSpaces) {
+    // inside S<>: every space stays and does not break, a line break stays a line break
+    const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(value) : value, ctx.keepSpaces))
+    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+  } else {
+    writer.write(isCovered(node, ctx) ? maskText(value) : value)
+  }
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
-    if (node.value && ctx.keepSpaces) {
-      // inside S<>: every space stays and does not break, a line break stays a line break
-      const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(node.value) : node.value, ctx.keepSpaces))
-      writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
-    } else if (node.value) {
-      writer.write(isCovered(node, ctx) ? maskText(node.value) : node.value)
-    } else {
-      interator(node.content, ctx)
-    }
+    if (node.value) writeText(writer, node, ctx, node.value)
+    else interator(node.content, ctx)
   },
 
   // Formatting codes
@@ -157,9 +187,14 @@ const rules = {
         },
         message => console.warn(`[podlite] ${message}`),
       ).expanded
-    if (!expanded) writer.writeRaw(`A<${covered(node, ctx, term)}>`)
+    if (!expanded) writer.write(`A<${covered(node, ctx, term)}>`)
   },
-  'C<>': wrapContent('`', '`'),
+  'C<>': codeSpan,
+  // the characters of an entity are text like any other in the same place
+  'E<>': (writer, processor) => (node, ctx, interator) => {
+    const text = decodeEntities(node.content)
+    if (text) writeText(writer, node, ctx, text)
+  },
   'D<>': (writer, processor) => (node, ctx, interator) => {
     if (!writer.hasOwnProperty('DEFINITIONS')) {
       writer.DEFINITIONS = []
@@ -172,7 +207,7 @@ const rules = {
   'B<>': wrapContent('**', '**'),
   'I<>': wrapContent('*', '*'),
   'R<>': wrapContent('*', '*'),
-  'K<>': wrapContent('`', '`'),
+  'K<>': codeSpan,
   'O<>': wrapContent('~~', '~~'),
   'G<>': (writer, processor) => (node, ctx, interator) => {
     if (ctx.renderMode === 'draft') {
@@ -241,7 +276,7 @@ const rules = {
   // a reserved code is shown as written: its letter and brackets around what it holds
   'Q<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
   'Y<>': (writer, processor) => (node, ctx, interator) => writtenCode(writer, node, ctx, interator),
-  'T<>': wrapContent('`', '`'),
+  'T<>': codeSpan,
   'U<>': wrapContent('', ''),
   'V<>': content,
   'X<>': (writer, processor) => (node, ctx, interator) => {
@@ -266,17 +301,17 @@ const rules = {
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
     const masked = isCovered(node, ctx)
-    if (node.content) {
-      node.content.forEach(child => {
+    within(writer, 'codeDepth', () =>
+      (node.content || []).forEach(child => {
         if (typeof child === 'string') {
-          writer.writeRaw(masked ? maskText(child) : child)
+          writeSource(writer, masked ? maskText(child) : child)
         } else if (child.type === 'verbatim') {
-          writer.writeRaw(masked ? maskText(child.value) : child.value)
+          writeSource(writer, masked ? maskText(child.value) : child.value)
         } else {
           interator([child], ctx)
         }
-      })
-    }
+      }),
+    )
     // code at the end of input may lack its final line break
     if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
     writer.writeRaw('```\n')
@@ -286,17 +321,17 @@ const rules = {
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
     writer.writeRaw('```' + lang + '\n')
     const masked = isCovered(node, ctx)
-    if (node.content) {
-      node.content.forEach(child => {
+    within(writer, 'codeDepth', () =>
+      (node.content || []).forEach(child => {
         if (typeof child === 'string') {
-          writer.writeRaw(masked ? maskText(child) : child)
+          writeSource(writer, masked ? maskText(child) : child)
         } else if (child.type === 'verbatim') {
-          writer.writeRaw(masked ? maskText(child.value) : child.value)
+          writeSource(writer, masked ? maskText(child.value) : child.value)
         } else {
           interator([child], ctx)
         }
-      })
-    }
+      }),
+    )
     writer.writeRaw('```\n')
   }),
   data: emptyContent,
@@ -304,7 +339,7 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    writer.writeRaw(isCovered(node, ctx) ? maskText(node.value) : node.value)
+    writeSource(writer, isCovered(node, ctx) ? maskText(node.value) : node.value)
   },
   ':blankline': emptyContent,
   ':ambient': emptyContent,
@@ -387,7 +422,9 @@ const rules = {
     const conf = makeAttrs(node, ctx)
     const absent = conf.exists('absent') && Boolean(conf.getFirstValue('absent'))
     const selector = collectText(node.content).trim()
-    writer.writeRaw(`- ${inlineCode(isCovered(node, ctx) ? maskText(selector) : selector)} `)
+    writer.writeRaw('- ')
+    writeSource(writer, inlineCode(isCovered(node, ctx) ? maskText(selector) : selector))
+    writer.writeRaw(' ')
     writer.writeRaw(absent ? 'must find no block' : 'must find a block')
     if (conf.exists('caption')) {
       writer.writeRaw(': ')
@@ -398,7 +435,10 @@ const rules = {
   'resource:block': (writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     writer.writeRaw('\nResource')
-    if (conf.exists('name')) writer.writeRaw(` ${inlineCode(covered(node, ctx, String(conf.getFirstValue('name'))))}`)
+    if (conf.exists('name')) {
+      writer.writeRaw(' ')
+      writeSource(writer, inlineCode(covered(node, ctx, String(conf.getFirstValue('name')))))
+    }
     writer.writeRaw(':\n\n')
     writeSourceBlock(writer, node, ctx)
   },
@@ -480,23 +520,26 @@ const rules = {
 
     if (hasSpans) {
       writer.writeRaw('<table>\n')
-      rows.forEach(row => {
-        const tag = isRowHeader(row) ? 'th' : 'td'
-        writer.writeRaw('<tr>')
-        const cells = (row.content || []).filter(c => c.name === 'cell')
-        cells.forEach(cell => {
-          const colspan = cellSpan(cell, 'colspan')
-          const rowspan = cellSpan(cell, 'rowspan')
-          let attrs = ''
-          if (colspan) attrs += ` colspan="${colspan}"`
-          if (rowspan) attrs += ` rowspan="${rowspan}"`
-          writer.writeRaw(`<${tag}${attrs}>`)
-          writeCellParts(cell, writer, interator, ctx)
-          writer.writeRaw(`</${tag}>`)
-        })
-        writer.writeRaw('</tr>\n')
-      })
-      writer.writeRaw('</table>\n')
+      within(writer, 'htmlDepth', () =>
+        rows.forEach(row => {
+          const tag = isRowHeader(row) ? 'th' : 'td'
+          writer.writeRaw('<tr>')
+          const cells = (row.content || []).filter(c => c.name === 'cell')
+          cells.forEach(cell => {
+            const colspan = cellSpan(cell, 'colspan')
+            const rowspan = cellSpan(cell, 'rowspan')
+            let attrs = ''
+            if (colspan) attrs += ` colspan="${colspan}"`
+            if (rowspan) attrs += ` rowspan="${rowspan}"`
+            writer.writeRaw(`<${tag}${attrs}>`)
+            writeCellParts(cell, writer, interator, ctx)
+            writer.writeRaw(`</${tag}>`)
+          })
+          writer.writeRaw('</tr>\n')
+        }),
+      )
+      // a blank line ends the block of HTML, or the text after it is read as HTML too
+      writer.writeRaw('</table>\n\n')
       return
     }
 
