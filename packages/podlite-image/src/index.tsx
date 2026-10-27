@@ -57,8 +57,12 @@ const Image: Plugin = {
       }
       if (content && typeof content !== 'string' && 'location' in node && 'value' in content) {
         // get src and alt text
+        // the source is the first non-blank line; blank is what the norm calls it,
+        // horizontal whitespace only (\h), with \r left by CRLF line ends
         const lines = content.value.split('\n')
-        const [data, ...caption] = lines
+        const blank = /^[\t\r    -   　]*$/
+        const first = lines.findIndex(line => !blank.test(line))
+        const [data, ...caption] = first < 0 ? lines : lines.slice(first)
         const captionText = caption.join('\n')
         const altRegexp = /\s*((?<altText>.+)\s+)?(?<src>[^\s]+)/
         const { altText, src } = (data.match(altRegexp) || { groups: { altText: undefined, src: undefined } }).groups
