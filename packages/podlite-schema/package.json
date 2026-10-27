@@ -1,6 +1,6 @@
 {
   "name": "@podlite/schema",
-  "version": "0.0.79",
+  "version": "0.0.80",
   "description": "Parser and AST schema for Podlite: typed blocks with positions, selectors, validate, traverse, and transform.",
   "main": "./lib/index.js",
   "sideEffects": false,

@@ -2,6 +2,23 @@
 
 =head1 Upcoming
 
+=head1 0.0.100
+
+
+=head2 @podlite/publisher
+
+=item the type C<neighbourRecord> names a neighbour as the links to the next and previous entry give it: the record without its tree, with the C<label> of a neighbour without a title
+
+=item the plugin that links an entry to the next and the previous one gives a neighbour without a title, a note, a C<label>: its text on one line, a hidden word masked; the neighbour still comes without its node
+
+=item the site data (C<data.json>) carries the map of images the images plugin found; it was always written empty
+
+=head2 @podlite/to-jsx
+
+=item a link written inside the text of a C<L<>> or C<W<>> link gives only its text, with its formatting; before, it was drawn as a link within the link, which HTML does not allow
+
+=item the mark of a note written inside the text of a link is drawn without a link of its own, so the page has no link within a link; the note itself, at the end of the page, keeps its links
+
 =head1 0.0.99
 
 
