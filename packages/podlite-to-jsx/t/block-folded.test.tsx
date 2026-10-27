@@ -116,3 +116,48 @@ describe(':folded keeps the form of blocks that fold on their own', () => {
     expect(html).toContain('<details class="folded-section">')
   })
 })
+
+describe(':config scope inside nested blocks', () => {
+  it('folds a nested block after an inner config without folding its container', () => {
+    const html = render(
+      '=begin nested\n=config nested :folded\nParagraph\n\n=begin nested\nInner text\n=end nested\n=end nested',
+    )
+    expect(count(html, '<details class="folded">')).toBe(1)
+    expect(html).toContain('<blockquote><p>Paragraph\n</p><details class="folded">')
+  })
+
+  it('does not use an inner config caption on its container', () => {
+    const html = render('=begin nested :folded\n=config nested :caption<Inner>\nParagraph\n=end nested')
+    expect(count(html, '<details class="folded">')).toBe(1)
+    expect(html).toContain('<details class="folded"><div class="folded-content"><blockquote><p>Paragraph')
+    expect(html).not.toContain('<summary')
+    expect(html).not.toContain('Inner')
+  })
+
+  it('does not fold a nested block after the containing block', () => {
+    const html = render(
+      '=begin nested\n=config nested :folded\n=begin nested\nInner text\n=end nested\n=end nested\n\n=begin nested\nNeighbor\n=end nested',
+    )
+    expect(count(html, '<details class="folded">')).toBe(1)
+    expect(html).toContain('<blockquote><p>Neighbor\n</p></blockquote>')
+  })
+
+  it('folds a paragraph after an inner paragraph config without folding its container', () => {
+    const html = render('=begin nested\n=config para :folded\nParagraph\n=end nested')
+    expect(count(html, '<details class="folded">')).toBe(1)
+    expect(html).toContain('<blockquote><details class="folded">')
+    expect(html).not.toMatch(/<details class="folded"><div class="folded-content"><blockquote>/)
+  })
+
+  it('folds a nested block after a top-level config', () => {
+    const html = render('=config nested :folded\n\n=begin nested\nInner text\n=end nested')
+    expect(count(html, '<details class="folded">')).toBe(1)
+  })
+
+  it('uses an inner config caption on the next folded nested block', () => {
+    const html = render(
+      '=begin nested\n=config nested :caption<Inner>\n=begin nested :folded\nInner text\n=end nested\n=end nested',
+    )
+    expect(html).toContain('<summary class="folded-summary">Inner</summary>')
+  })
+})

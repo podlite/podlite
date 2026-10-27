@@ -320,14 +320,18 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     }
   }
   // Handle :folded attribute - wraps content in collapsible <details> element
-  const foldedContent = (node, ctx, children) => {
+  const readFoldedState = (node, ctx) => {
     const conf = makeAttrs(node, ctx)
     const folded = conf.exists('folded') ? conf.getFirstValue('folded') : null
+    const caption =
+      folded !== null && conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
+    return { folded, caption }
+  }
+  const foldedContent = (node, ctx, { folded, caption }, children) => {
     // if :folded not specified - return children as is
     if (folded === null) {
       return children
     }
-    const caption = conf.exists('caption') ? covered(node, ctx, String(conf.getFirstValue('caption'))) : null
 
     // :folded or :folded(1) = collapsed by default (no open attribute)
     // :!folded or :folded(0) = expanded by default (open attribute present)
@@ -349,7 +353,11 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
   const handleFolded = defaultHandler => {
     return (writer, processor) => {
       const defaultHandlerInited = defaultHandler(writer, processor)
-      return (node, ctx, interator) => foldedContent(node, ctx, defaultHandlerInited(node, ctx, interator))
+      return (node, ctx, interator) => {
+        const foldedState = readFoldedState(node, ctx)
+        const children = defaultHandlerInited(node, ctx, interator)
+        return foldedContent(node, ctx, foldedState, children)
+      }
     }
   }
 
@@ -365,7 +373,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         const children = defaultHandlerInited(node, ctx, interator)
         // without a notice the block folds like any other
         if (!notice) {
-          return foldedContent(node, ctx, children)
+          return foldedContent(node, ctx, { folded, caption }, children)
         }
 
         // Determine the title for the notification. In hidden content the kind the

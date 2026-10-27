@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a C<=config> inside a nested block no longer folds that block or gives it its caption; it applies to the blocks that follow it
+
 =head1 0.0.84
 
 =item a link written inside the text of a C<L<>> or C<W<>> link gives only its text, with its formatting; before, it was drawn as a link within the link, which HTML does not allow
