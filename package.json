@@ -35,6 +35,8 @@
     "g:copy_to_lib": "cd $INIT_CWD && yarn g:copyfiles lib",
     "g:copyfiles": "cd $INIT_CWD && copyfiles -E false -u 1 ./src/**/*.css",
     "format": "npx prettier --write '**/*.{js,jsx,ts,tsx,mjs}'",
+    "format:check": "npx prettier --check '**/*.{js,jsx,ts,tsx,mjs}'",
+    "verify": "yarn format:check && yarn build && yarn test",
     "g:linked-command": "cd $INIT_CWD && node ../../scripts/switchLink.mjs",
     "g:set-linked": "cd $INIT_CWD && yarn g:linked-command --set-linked",
     "g:set-unlinked": "cd $INIT_CWD && yarn g:linked-command --set-unlinked",
