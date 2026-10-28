@@ -692,14 +692,14 @@ it('spec: 07-tables 5', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  "               Superhero    ",
+                  "           Superhero",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Secret Identity      ",
+                  " Secret Identity",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -731,7 +731,7 @@ it('spec: 07-tables 5', () => {
               },
               Object {
                 "content": Array [
-                  " Eddie Stevens                ",
+                  " Eddie Stevens              ",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -788,14 +788,14 @@ it('spec: 07-tables 5', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Mr Furious                 ",
+                  " Mr Furious           ",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Roy Orson                    ",
+                  " Roy Orson          ",
                 ],
                 "name": "cell",
                 "type": "block",

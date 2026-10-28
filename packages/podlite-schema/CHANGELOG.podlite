@@ -6,6 +6,8 @@
 
 =item a simple table held apart by spaces alone splits a row or a header written on several lines at two whitespace characters, as a row on one line splits; it took three before. Tables with bars or pluses are read as before
 
+=item a simple table held apart by spaces alone splits a row or a header written on several lines by the gaps of its own lines, as a row on one line splits: a line of another row no longer closes a gap of the header or of a row. A gap of any width is one separator, so a cell left empty inside such a row is read as in a row on one line, and the row is padded at its end
+
 =item in a simple table a markup code whose opening and matching closing delimiters are on the same line is part of one cell: a C<|>, a C<+> or a run of whitespace inside it does not divide the row, and the separator type of a line is taken from outside such codes. Where a code ends follows the codes a cell of the table reads, from C<:allow> and C<=config>
 
 =item the Markdown output writes the characters of C<E<>> where it wrote nothing: in text, in table cells, inside C<C<>> configured with C<:allow<E>>, inside C<S<>> and in headings, whose Markdown addresses are built from those characters; an entity is written and hidden as text in the same place is. C<decodeEntities> is exported, and a number that is not a Unicode scalar value gives nothing instead of a wrong character

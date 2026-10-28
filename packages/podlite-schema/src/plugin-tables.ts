@@ -731,18 +731,22 @@ export default (opt: { config?: ConfigScope } = {}) =>
           makeBlock('row', cells, { config: [{ name: 'header', value: true, type: 'boolean' }] })
         const makeCell = text => makeBlock('cell', { type: 'text', value: text })
         // Routing: a whitespace-separated row on one line splits by its own
-        // gaps — two spaces are enough there, while the positional mask needs
-        // three. Rows with a visible separator keep the mask: an edge `|`
-        // carries a real empty cell that per-line splitting would drop.
+        // gaps. In a table held apart by spaces alone a row on several lines
+        // takes its columns from its own lines, so a line of another row does
+        // not close its gaps. Rows with a visible separator keep the shared
+        // mask: an edge `|` carries a real empty cell that per-line splitting
+        // would drop.
         const columnTemplate = makeMask(masks, separators)
         const seenSeparatorKinds = new Set(masks.map(detectLineSeparator))
+        const spacedOnly = seenSeparatorKinds.size === 1 && seenSeparatorKinds.has('whitespace')
         const useMixedSplitting =
           (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
         const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(protect(line)) === 'whitespace'
         const splitToCells = (rowValue: string): string[] => {
           const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
           if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue, protect)
-          return extractColumnsByTemplate(rowValue, columnTemplate)
+          const template = spacedOnly ? makeMask(rowLines.map(protect), separators) : columnTemplate
+          return extractColumnsByTemplate(rowValue, template)
         }
         const res = makeTransformer({
           'row:text': row => {

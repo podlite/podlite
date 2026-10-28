@@ -4,7 +4,7 @@ import type { ParseDiagnostic } from '../src'
 // the parser of this package, so a run against its earlier source reads that source
 const p = podlitePluggable()
 
-type Node = { type?: string; name?: string; value?: unknown; content?: unknown }
+type Node = { type?: string; name?: string; value?: unknown; content?: unknown; meta?: unknown }
 
 const isNode = (value: unknown): value is Node => typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -26,15 +26,31 @@ const rowsOf = (node: unknown, out: Node[] = []): Node[] => {
   return out
 }
 
-const table = (doc: string) => {
+const parsed = (doc: string) => {
   const diagnostics: ParseDiagnostic[] = []
   const tree: unknown = p.toAst(p.parse(doc, { podMode: 1, diagnostics }))
-  const rows = rowsOf(tree).map(row =>
-    (Array.isArray(row.content) ? row.content : [])
-      .filter((c): c is Node => isNode(c) && c.name === 'cell')
-      .map(cell => textOf(cell.content).trim()),
+  const cells = rowsOf(tree).map(row =>
+    (Array.isArray(row.content) ? row.content : []).filter((c): c is Node => isNode(c) && c.name === 'cell'),
   )
-  return { rows, codes: diagnostics.map(d => d.code) }
+  return { tree, cells, codes: diagnostics.map(d => d.code) }
+}
+
+const table = (doc: string) => {
+  const { cells, codes } = parsed(doc)
+  return { rows: cells.map(row => row.map(cell => textOf(cell.content).trim())), codes }
+}
+
+const findCode = (node: unknown, name: string): Node | undefined => {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findCode(child, name)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (!isNode(node)) return undefined
+  if (node.type === 'fcode' && node.name === name) return node
+  return findCode(node.content, name)
 }
 
 const simple = (...lines: string[]) => `=begin table\n${lines.join('\n')}\n=end table\n`
@@ -111,15 +127,108 @@ describe('two spaces divide the columns of a row written on several lines', () =
   })
 })
 
-describe('a row that covers the gap of the header', () => {
-  // the header is still cut where its gap is covered; the row below keeps all its text
-  it('keeps the cells of the row', () => {
+describe('a row on several lines takes its columns from its own lines', () => {
+  it('splits a header whose gap a longer row below covers', () => {
     const { rows, codes } = table(simple('aa  bb', 'cc  dd', '--------', 'eeeeeeee  ff'))
     expect(rows).toEqual([
-      ['aa  bb cc  dd', ''],
+      ['aa cc', 'bb dd'],
       ['eeeeeeee', 'ff'],
     ])
     expect(codes).not.toContain('table-row-cells')
+  })
+
+  it('splits rows whose columns stand in other places than the header', () => {
+    const { rows, codes } = table(
+      simple('aa  bb  cc', 'dd  ee  ff', '----------', 'longlong  x  y', 'moremore  z  w', '', 'lastlast  q  r'),
+    )
+    expect(rows).toEqual([
+      ['aa dd', 'bb ee', 'cc ff'],
+      ['longlong moremore', 'x z', 'y w'],
+      ['lastlast', 'q', 'r'],
+    ])
+    expect(codes).not.toContain('table-row-cells')
+  })
+
+  it('reads a wide gap of a row as one separator', () => {
+    const { rows, codes } = table(
+      simple('H1  H2', '--------------------', 'aa          bb', 'cc          dd', '', 'ee          ff'),
+    )
+    expect(rows).toEqual([
+      ['H1', 'H2'],
+      ['aa cc', 'bb dd'],
+      ['ee', 'ff'],
+    ])
+    expect(codes).not.toContain('table-row-cells')
+  })
+
+  it('splits a header over rows whose gaps stand apart', () => {
+    const { rows, codes } = table(
+      simple('aa  bb', 'cc  dd', '--------------------', 'longlong  xx', '', 'longlong      yy'),
+    )
+    expect(rows).toEqual([
+      ['aa cc', 'bb dd'],
+      ['longlong', 'xx'],
+      ['longlong', 'yy'],
+    ])
+    expect(codes).not.toContain('table-row-cells')
+  })
+
+  it('keeps a link in its own column', () => {
+    const doc = simple('H1  H2  H3', '--------------', 'aa  bb  L<x|url>', 'cc  dd', '', 'longlong  z  q')
+    const { rows, codes } = table(doc)
+    expect(rows).toEqual([
+      ['H1', 'H2', 'H3'],
+      ['aa cc', 'bb dd', 'L<x>'],
+      ['longlong', 'z', 'q'],
+    ])
+    expect(codes).not.toContain('table-row-cells')
+    expect(findCode(parsed(doc).cells[1][2], 'L')?.meta).toBe('url')
+  })
+
+  it('keeps a code whole when the header is cut by its own line', () => {
+    const { rows, codes } = table(simple('C<a  b>  cc', 'C<d  e>  ff', '----------', 'longlong  zz'))
+    expect(rows).toEqual([
+      ['C<a  b> C<d  e>', 'cc ff'],
+      ['longlong', 'zz'],
+    ])
+    expect(codes).not.toContain('markup-code-unclosed')
+  })
+
+  it('takes the length of a column from the separator line too', () => {
+    const header = parsed(simple('aa  bb ', 'cc  dd ', '-----------------', 'ee  ff')).cells[0]
+    expect(header.map(cell => textOf(cell.content))).toEqual([' aa cc', ' bb dd'])
+  })
+})
+
+// a run of spaces of any width divides two cells, in a row on one line and on several:
+// a cell left empty in the middle is not told from a wide gap
+describe('a gap of any width is one separator in a row on several lines', () => {
+  it('reads a row with an empty middle cell as its line read alone', () => {
+    const head = ['Name    Age  City', '------  ---  ------']
+    const several = table(simple(...head, 'Alice        London', 'Eve          town', '', 'Bob     25   Paris'))
+    const single = table(simple(...head, 'Alice        London', 'Bob     25   Paris'))
+    expect(several.rows[1]).toEqual(['Alice Eve', 'London town', ''])
+    expect(single.rows[1]).toEqual(['Alice', 'London', ''])
+    expect(several.codes).toContain('table-row-cells')
+  })
+
+  it('reads two spaces inside a cell on every line of a row as a separator', () => {
+    const several = table(
+      simple('Name     Note', '-------  ----------------', 'Alice    a  b', 'Eve      c  d', '', 'Bob      xyz'),
+    )
+    const single = table(simple('Name     Note', '-------  ----------------', 'Alice    a  b', 'Bob      xyz'))
+    expect(single.codes).toContain('table-row-cells')
+    expect(several.rows[1]).toEqual(['Alice Eve', 'a c'])
+    expect(single.rows[1]).toEqual(['Alice', 'a'])
+    expect(several.codes).toContain('table-row-cells')
+  })
+})
+
+describe('a header whose own line covers its gap', () => {
+  it('reads the header as one cell and cuts the rows to it', () => {
+    const { rows, codes } = table(simple('aa  bb', 'C<x  y>', '--------', 'longlong  zz'))
+    expect(rows).toEqual([['aa  bb C<x  y>'], ['longlong']])
+    expect(codes).toContain('table-row-cells')
   })
 })
 
