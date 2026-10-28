@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the Markdown output writes C<=input> and C<=output> as a fenced code block, as C<=code> is written: the fence no longer closes on the second line, and the sample keeps its lines, its spaces and its signs as written. Markup codes inside the fence are written as their Markdown and shown as such. Inside a quote or a table cell written on one line, where a fence does not hold, the sample is written as text
+
 =item a simple table held apart by spaces alone splits a row or a header written on several lines at two whitespace characters, as a row on one line splits; it took three before. Tables with bars or pluses are read as before
 
 =item in a simple table a markup code whose opening and matching closing delimiters are on the same line is part of one cell: a C<|>, a C<+> or a run of whitespace inside it does not divide the row, and the separator type of a line is taken from outside such codes. Where a code ends follows the codes a cell of the table reads, from C<:allow> and C<=config>

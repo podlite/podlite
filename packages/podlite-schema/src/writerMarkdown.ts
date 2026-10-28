@@ -11,6 +11,9 @@ class WriterMarkdown extends Writer {
   codeDepth = 0
   // inside a block of HTML a reader takes text as HTML, code fences included
   htmlDepth = 0
+  // open levels of a quote, and a table cell folded onto one line: a fence holds in neither
+  quoteDepth = 0
+  cellDepth = 0
   constructor(output?) {
     super(output)
   }
@@ -29,10 +32,12 @@ class WriterMarkdown extends Writer {
   }
 
   _add_nesting(n) {
+    this.quoteDepth += Number(n)
     this.writeRaw('> '.repeat(n))
   }
   _remove_nesting(n) {
     // no closing tag needed for Markdown blockquotes
+    this.quoteDepth -= Number(n)
   }
 }
 export default WriterMarkdown

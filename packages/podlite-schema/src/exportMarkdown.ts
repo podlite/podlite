@@ -106,7 +106,7 @@ const inlineCode = (text: string): string => {
 }
 
 // Inside code a reader takes < and & as written; inside a block of HTML, as HTML.
-const within = (writer, depth: 'codeDepth' | 'htmlDepth', write: () => void) => {
+const within = (writer, depth: 'codeDepth' | 'htmlDepth' | 'cellDepth', write: () => void) => {
   writer[depth] = (writer[depth] || 0) + 1
   try {
     write()
@@ -131,6 +131,47 @@ const codeSpan = (writer, processor) => (node, ctx, interator) => {
     writer.output = original
   }
   writer.writeRaw(inlineCode(parts.join('')))
+}
+
+// Input and output are written as code in a fence a reader keeps as written. A fence
+// holds only on a line of its own and outside a quote or a cell folded onto a line;
+// there the sample is written as text, so its words stay in sight.
+const sampleBlock = (writer, processor) => (node, ctx, interator) => {
+  const children = node.content || []
+  const isText = child => typeof child === 'string' || child.type === 'text' || child.type === 'verbatim'
+  const valueOf = child => (typeof child === 'string' ? child : child.value)
+  if (writer.quoteDepth > 0 || writer.cellDepth > 0) {
+    children.forEach(child =>
+      isText(child)
+        ? writeText(writer, typeof child === 'string' ? node : child, ctx, valueOf(child))
+        : interator([child], ctx),
+    )
+    if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
+    writer.writeRaw('\n')
+    return
+  }
+  const atLineStart = writer.lastWritten === '' || writer.lastWritten.endsWith('\n')
+  const masked = isCovered(node, ctx)
+  const parts: string[] = []
+  const original = writer.output
+  const capture = typeof original === 'function'
+  if (capture) writer.output = (str: string) => parts.push(str)
+  try {
+    within(writer, 'codeDepth', () =>
+      children.forEach(child =>
+        isText(child)
+          ? writeSource(writer, masked ? maskText(valueOf(child)) : valueOf(child))
+          : interator([child], ctx),
+      ),
+    )
+  } finally {
+    if (capture) writer.output = original
+  }
+  const body = parts.join('')
+  const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
+  writer.writeRaw(`${atLineStart ? '' : '\n'}${fence}\n`)
+  if (body !== '') writer.writeRaw(body.endsWith('\n') ? body : `${body}\n`)
+  writer.writeRaw(`${fence}\n`)
 }
 
 const implicitPara = handleNested((writer, processor) => (node, ctx, interator) => {
@@ -468,22 +509,8 @@ const rules = {
   ),
   'term:para': termPara,
   nested: handleNested(content, 1),
-  output: handleNested(
-    (writer, processor) => (node, ctx, interator) => {
-      writer.writeRaw('```\n')
-      if (node.content) interator(node.content, ctx)
-      writer.writeRaw('```\n')
-    },
-    1,
-  ),
-  input: handleNested(
-    (writer, processor) => (node, ctx, interator) => {
-      writer.writeRaw('```\n')
-      if (node.content) interator(node.content, ctx)
-      writer.writeRaw('```\n')
-    },
-    1,
-  ),
+  output: handleNested(sampleBlock),
+  input: handleNested(sampleBlock),
   // table section
   'table:block': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
@@ -554,7 +581,7 @@ const rules = {
       if (typeof original !== 'function') return null
       writer.output = (str: string) => parts.push(str)
       try {
-        writeCellParts(cell, writer, interator, ctx)
+        within(writer, 'cellDepth', () => writeCellParts(cell, writer, interator, ctx))
       } finally {
         writer.output = original
       }
@@ -572,7 +599,7 @@ const rules = {
         writer.writeRaw(' ')
         const folded = renderCell(cell)
         if (folded === null) {
-          writeCellParts(cell, writer, interator, ctx)
+          within(writer, 'cellDepth', () => writeCellParts(cell, writer, interator, ctx))
         } else {
           writer.writeRaw(folded)
         }
