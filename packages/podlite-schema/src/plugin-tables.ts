@@ -393,10 +393,13 @@ const strbin = (str1, str2, cb) => {
 // string where `0` runs mark column ranges and `1` runs mark gaps.
 const makeMask = (lines: string[], separators: string[]): string => {
   const tmplLength = Math.max(...[...lines, ...separators].map(s => s.length))
+  // a table held apart by spaces alone splits on two of them, as a row on one line
+  // does; a table with bars keeps its own gaps
+  const spacedOnly = lines.every(line => detectLineSeparator(line) === 'whitespace')
   const masks = lines.map(str => {
     const tstr = str + ' '.repeat(tmplLength - str.length)
     const mask: string[] = []
-    const re = /\s+[+|\s]\s/g
+    const re = spacedOnly ? /\s{2,}/g : /\s+[+|\s]\s/g
     let match
     while ((match = re.exec(tstr)) != null) {
       const tmpMask = '1'.repeat(match.index) + '0'.repeat(match[0].length)
