@@ -1,45 +1,47 @@
 import { podlitePluggable } from '../src/pluggableParser'
+import type { ConfigScope, ParseDiagnostic } from '../src'
 
 // the parser of this package, so a run against its earlier source reads that source
 const p = podlitePluggable()
 
-const parse = (doc: string, config?: object) => {
-  const diagnostics: any[] = []
-  const tree = p.toAst(p.parse(doc, { podMode: 1, diagnostics, ...(config ? { config } : {}) } as any))
+type Node = { type?: string; name?: string; value?: unknown; meta?: unknown; content?: unknown }
+
+const isNode = (value: unknown): value is Node => typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const parse = (doc: string, config?: ConfigScope) => {
+  const diagnostics: ParseDiagnostic[] = []
+  const tree: unknown = p.toAst(p.parse(doc, { podMode: 1, diagnostics, ...(config ? { config } : {}) }))
   return { tree, codes: diagnostics.map(d => d.code) }
 }
 
-const textOf = (node: any): string =>
-  typeof node === 'string'
-    ? node
-    : Array.isArray(node)
-    ? node.map(textOf).join('')
-    : node && typeof node === 'object'
-    ? node.type === 'fcode'
-      ? `${node.name}<${textOf(node.content)}>`
-      : node.value !== undefined && node.type !== 'number' && node.type !== 'html_named'
-      ? String(node.value)
-      : textOf(node.content)
-    : ''
+const textOf = (node: unknown): string => {
+  if (typeof node === 'string') return node
+  if (Array.isArray(node)) return node.map(textOf).join('')
+  if (!isNode(node)) return ''
+  if (node.type === 'fcode') return `${node.name}<${textOf(node.content)}>`
+  if (node.value !== undefined && node.type !== 'number' && node.type !== 'html_named') return String(node.value)
+  return textOf(node.content)
+}
 
-const rowsOf = (node: any, out: any[] = []): any[] => {
+const rowsOf = (node: unknown, out: Node[] = []): Node[] => {
   if (Array.isArray(node)) node.forEach(child => rowsOf(child, out))
-  else if (node && typeof node === 'object') {
+  else if (isNode(node)) {
     if (node.type === 'block' && node.name === 'row') out.push(node)
     else rowsOf(node.content, out)
   }
   return out
 }
 
-const cellsOf = (row: any) => (row.content || []).filter((c: any) => c && c.name === 'cell')
+const cellsOf = (row: Node): Node[] =>
+  (Array.isArray(row.content) ? row.content : []).filter((c): c is Node => isNode(c) && c.name === 'cell')
 
 // each row as the text of its cells, codes written back with their letter
-const table = (doc: string, config?: object) => {
+const table = (doc: string, config?: ConfigScope) => {
   const { tree, codes } = parse(doc, config)
-  return { rows: rowsOf(tree).map(row => cellsOf(row).map((cell: any) => textOf(cell.content).trim())), codes, tree }
+  return { rows: rowsOf(tree).map(row => cellsOf(row).map(cell => textOf(cell.content).trim())), codes, tree }
 }
 
-const findCode = (node: any, name: string): any => {
+const findCode = (node: unknown, name: string): Node | undefined => {
   if (Array.isArray(node)) {
     for (const child of node) {
       const found = findCode(child, name)
@@ -47,7 +49,7 @@ const findCode = (node: any, name: string): any => {
     }
     return undefined
   }
-  if (!node || typeof node !== 'object') return undefined
+  if (!isNode(node)) return undefined
   if (node.type === 'fcode' && node.name === name) return node
   return findCode(node.content, name)
 }
@@ -72,6 +74,11 @@ describe('a markup code closed on its line is part of one cell', () => {
       ['C<a  b>', 'both spaces stay inside the code'],
     ])
     expect(codes).not.toContain('table-mixed-separators')
+  })
+
+  it('keeps the code a node of its own, with all its text', () => {
+    const code = findCode(parse(simple('C<file:a.pod6 | head1>    desc\nx    y')).tree, 'C')
+    expect(code && textOf(code.content)).toBe('file:a.pod6 | head1')
   })
 
   it('keeps a bar and spaces inside a code in a table separated by spaces', () => {
@@ -101,6 +108,8 @@ describe('a markup code closed on its line is part of one cell', () => {
       ['\u{1F600} C<a | b>', 'z'],
       ['C<\u{1F600} | b>', 'z'],
     ])
+    // a mask counted in code points would put the gap two units early and cut the code
+    expect(table(simple('\u{1F600}\u{1F600}C<a | b>  z\nx  y')).rows[0]).toEqual(['\u{1F600}\u{1F600}C<a | b>', 'z'])
   })
 
   it('gives a row of two cells where the header has two', () => {
@@ -207,7 +216,7 @@ describe('the codes a cell reads decide where a code ends', () => {
   })
 
   it('reads settings that come with an included file', () => {
-    const config = { 'C<>': [{ name: 'allow', value: ['I'], type: 'array' }] }
+    const config: ConfigScope = { 'C<>': [{ name: 'allow', value: ['I'], type: 'array' }] }
     expect(table(simple(`${line}\nx    y`), config).rows[0]).toEqual(['C<I<a>b> | c>', 'desc'])
   })
 
@@ -282,9 +291,9 @@ describe('what stays as it was', () => {
 
   it('keeps the spaces of cells cut by column positions in a table without codes', () => {
     const { tree } = parse('=table\n  | x | y |\n')
-    const values = rowsOf(tree)[0]
-      .content.filter((c: any) => c.name === 'cell')
-      .map((c: any) => c.content[0].value)
+    const values = cellsOf(rowsOf(tree)[0]).map(cell =>
+      Array.isArray(cell.content) && isNode(cell.content[0]) ? cell.content[0].value : undefined,
+    )
     expect(values).toEqual([' x', ' y |'])
   })
 })
