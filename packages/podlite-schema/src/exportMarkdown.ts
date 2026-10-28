@@ -107,7 +107,7 @@ const inlineCode = (text: string): string => {
 
 // Inside code a reader takes < and & as written; inside a block of HTML, as HTML.
 const within = (writer, depth: 'codeDepth' | 'htmlDepth', write: () => void) => {
-  writer[depth]++
+  writer[depth] = (writer[depth] || 0) + 1
   try {
     write()
   } finally {
@@ -115,7 +115,9 @@ const within = (writer, depth: 'codeDepth' | 'htmlDepth', write: () => void) => 
   }
 }
 
-const writeSource = (writer, text: string) => writer.writeSource(text)
+// a writer given by the caller may be a plain one, without a source of its own
+const writeSource = (writer, text: string) =>
+  typeof writer.writeSource === 'function' ? writer.writeSource(text) : writer.writeRaw(text)
 
 // Code in a line is written aside first: its fence is one backtick longer than any run
 // inside, so a backtick of the text does not end the code early.

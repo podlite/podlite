@@ -1,5 +1,6 @@
 import { indexAnchors, readerAnchors, toHtml, toMarkdown } from '../src'
 import { podlite } from '../../core/src'
+import Writer from '../src/writer'
 
 type Mode = 'production' | 'draft'
 
@@ -164,5 +165,16 @@ describe('text a markdown reader would take for markup', () => {
   it('writes angle brackets in code as they stand', () => {
     expect(markdown('=para\nC«a<b»')).toContain('`a<b`')
     expect(markdown('=begin code\n<tag> & more\n=end code')).toContain('```\n<tag> & more\n```')
+  })
+})
+
+describe('a writer given by the caller', () => {
+  it('writes code with a plain writer', () => {
+    const out: string[] = []
+    toMarkdown({ writer: new Writer((str: string) => out.push(str)) }).run(
+      tree('=begin code\n<x> & y\n=end code\n\n=para C<a>'),
+    )
+    expect(out.join('')).toContain('<x> & y')
+    expect(out.join('')).toContain('`a`')
   })
 })
