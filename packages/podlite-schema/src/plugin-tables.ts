@@ -5,6 +5,9 @@
  */
 import makeTransformer from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
+import { scanCodes, CodeSpan, ScanScope } from './codes/scan'
+import { walkConfigScopes, ConfigScope } from './helpers/configPropagation'
+import { codeConfigOwner } from './helpers/code-config'
 function flattenDeep(arr) {
   return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), [])
 }
@@ -317,6 +320,58 @@ function buildCodeFromDataBlock(tableNode, dataBlock) {
     config: Array.isArray(tableNode.config) ? tableNode.config : [],
   }
 }
+// ─── Markup codes closed on their line (spec §Tables) ──────────────────────
+
+// The codes a cell of this table reads, by the scope at the table: the :allow of
+// a cell, else of a row, else of the table, else every code; the codes read
+// inside C<> and V<> come from =config C<> and =config V<>. Null when no code acts.
+const codeScopeOf = (table, scope: ConfigScope): ScanScope | null => {
+  const allowOf = items => {
+    const attrs = makeAttrs({ config: items || [] }, {})
+    return attrs.exists('allow') ? attrs.getAllValues('allow') : undefined
+  }
+  const own = makeAttrs(table, {})
+  const allowed =
+    allowOf(scope.cell) ??
+    allowOf(scope.row) ??
+    (own.exists('allow') ? own.getAllValues('allow') : allowOf(scope.table))
+  if (allowed && allowed.length === 0) return null
+  const allowedIn: { [code: string]: string[] } = {}
+  for (const key of Object.keys(scope)) {
+    const owner = codeConfigOwner(key)
+    const inside = owner && allowOf(scope[key])
+    if (owner && inside) allowedIn[owner] = inside
+  }
+  return { allowed, allowedIn }
+}
+
+// A line with every character of a markup code closed on that line replaced, so
+// no separator is found inside it. The length stays the same, unit by unit, and a
+// cell is cut out of the line itself at the places found in the mask.
+const protectCodes = (line: string, scope: ScanScope | null): string => {
+  if (!scope || !/[<«]/.test(line)) return line
+  const spans: Array<[number, number]> = []
+  const visit = (codes: CodeSpan[]) =>
+    codes.forEach(code => (code.ending === 'own' ? spans.push([code.start, code.end]) : visit(code.children)))
+  visit(scanCodes(line, scope).codes)
+  if (spans.length === 0) return line
+  const units = line.split('')
+  for (const [start, end] of spans) for (let i = start; i < end; i++) units[i] = 'x'
+  return units.join('')
+}
+
+// The pieces of a line between the separators found in its mask.
+const cutAt = (line: string, mask: string, separator: RegExp): string[] => {
+  const pieces: string[] = []
+  let from = 0
+  for (const match of mask.matchAll(separator)) {
+    pieces.push(line.slice(from, match.index))
+    from = (match.index || 0) + match[0].length
+  }
+  pieces.push(line.slice(from))
+  return pieces
+}
+
 /**
  *  Helpers section
  */
@@ -445,24 +500,26 @@ const trimEdgeEmpty = (cells: string[]): string[] => {
 }
 
 // A separator has to stand apart from the content, so a bare `|` inside markup
-// such as L<text|url> is content, not a column break.
-const splitLineByPipe = (line: string): string[] => trimEdgeEmpty(line.split(/(?<=^|\s)\|(?=\s|$)/).map(c => c.trim()))
+// such as L<text|url> is content, not a column break. Separators are looked for in
+// the mask, where a markup code closed on the line hides its own.
+const splitLineByPipe = (line: string, mask = line): string[] =>
+  trimEdgeEmpty(cutAt(line, mask, /(?<=^|\s)\|(?=\s|$)/g).map(c => c.trim()))
 
-const splitLineByPlus = (line: string): string[] => trimEdgeEmpty(line.split(/(?<=^|\s)\+(?=\s|$)/).map(c => c.trim()))
+const splitLineByPlus = (line: string, mask = line): string[] =>
+  trimEdgeEmpty(cutAt(line, mask, /(?<=^|\s)\+(?=\s|$)/g).map(c => c.trim()))
 
-const splitLineByWhitespace = (line: string): string[] =>
-  line
-    .trim()
-    .split(/\s{2,}/)
+const splitLineByWhitespace = (line: string, mask = line): string[] =>
+  cutAt(line, mask, /\s{2,}/g)
+    .map(c => c.trim())
     .filter(c => c !== '')
 
-const splitLineCells = (line: string): string[] => {
+const splitLineCells = (line: string, mask = line): string[] => {
   const trimmed = line.trim()
   if (trimmed === '') return []
-  const kind = detectLineSeparator(line)
-  if (kind === 'pipe') return splitLineByPipe(line)
-  if (kind === 'plus') return splitLineByPlus(line)
-  return splitLineByWhitespace(line)
+  const kind = detectLineSeparator(mask)
+  if (kind === 'pipe') return splitLineByPipe(line, mask)
+  if (kind === 'plus') return splitLineByPlus(line, mask)
+  return splitLineByWhitespace(line, mask)
 }
 
 // Convert a row's raw text (which may span multiple lines) to cell values.
@@ -470,14 +527,14 @@ const splitLineCells = (line: string): string[] => {
 // apply it to every line of the row, then aggregate column-wise so that a
 // continuation line (e.g. wrapped cell content) appends to the cell from the
 // previous line in the same column.
-const rowToCells = (rowValue: string): string[] => {
+const rowToCells = (rowValue: string, protect: (line: string) => string = line => line): string[] => {
   const lines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
   if (lines.length === 0) return []
-  if (lines.length === 1) return splitLineCells(lines[0])
+  if (lines.length === 1) return splitLineCells(lines[0], protect(lines[0]))
 
-  const kind = detectLineSeparator(lines[0])
+  const kind = detectLineSeparator(protect(lines[0]))
   const splitFn = kind === 'pipe' ? splitLineByPipe : kind === 'plus' ? splitLineByPlus : splitLineByWhitespace
-  const lineCells = lines.map(splitFn)
+  const lineCells = lines.map(line => splitFn(line, protect(line)))
 
   const maxCols = Math.max(...lineCells.map(c => c.length))
   const merged: string[] = []
@@ -543,9 +600,14 @@ const isStructured = tableNode =>
   Array.isArray(tableNode.content) &&
   tableNode.content.some(c => c && c.type === 'block' && (c.name === 'row' || c.name === 'cell'))
 
-export default (opt = {}) =>
+export default (opt: { config?: ConfigScope } = {}) =>
   tree => {
     const report = makeTableReport(opt)
+    // the settings in force where each table stands, as a cell of it will read them
+    const scopes = new Map<object, ConfigScope>()
+    walkConfigScopes(tree, opt.config || {}, (block, scope) => {
+      if (block.name === 'table') scopes.set(block, { ...scope })
+    })
     const transformer = makeTransformer({
       table: (node, ctx, visiter) => {
         // CSV/data source reference (spec §1672):
@@ -643,9 +705,12 @@ export default (opt = {}) =>
         // split each row into lines
         const lines = flattenDeep(rows.map(splitToLines))
         const separators = flattenDeep(seps.map(splitToLines))
+        const codeScope = codeScopeOf(node, scopes.get(node) || {})
+        const protect = (line: string) => protectCodes(line, codeScope)
+        const masks = lines.map(protect)
 
         // Rule 3: warn on mixed separator types within a single table
-        detectMixedSeparators(lines, report, node)
+        detectMixedSeparators(masks, report, node)
 
         // collect text rows
         let textRows = []
@@ -666,14 +731,14 @@ export default (opt = {}) =>
         // gaps — two spaces are enough there, while the positional mask needs
         // three. Rows with a visible separator keep the mask: an edge `|`
         // carries a real empty cell that per-line splitting would drop.
-        const columnTemplate = makeMask(lines, separators)
-        const seenSeparatorKinds = new Set(lines.map(detectLineSeparator))
+        const columnTemplate = makeMask(masks, separators)
+        const seenSeparatorKinds = new Set(masks.map(detectLineSeparator))
         const useMixedSplitting =
           (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
-        const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(line) === 'whitespace'
+        const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(protect(line)) === 'whitespace'
         const splitToCells = (rowValue: string): string[] => {
           const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
-          if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue)
+          if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue, protect)
           return extractColumnsByTemplate(rowValue, columnTemplate)
         }
         const res = makeTransformer({
@@ -683,9 +748,10 @@ export default (opt = {}) =>
               const textRowsLines = flattenDeep([row.value].map(splitToLines))
               return textRowsLines.map(line =>
                 makeRow(
-                  (splitsItself(line) ? splitLineCells(line) : extractColumnsByTemplate(line, columnTemplate)).map(
-                    makeCell,
-                  ),
+                  (splitsItself(line)
+                    ? splitLineCells(line, protect(line))
+                    : extractColumnsByTemplate(line, columnTemplate)
+                  ).map(makeCell),
                 ),
               )
             }

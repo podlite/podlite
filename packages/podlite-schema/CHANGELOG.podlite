@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item in a simple table a markup code whose opening and matching closing delimiters are on the same line is part of one cell: a C<|>, a C<+> or a run of whitespace inside it does not divide the row, and the separator type of a line is taken from outside such codes. Where a code ends follows the codes a cell of the table reads, from C<:allow> and C<=config>
+
 =item the Markdown output writes the characters of C<E<>> where it wrote nothing: in text, in table cells, inside C<C<>> configured with C<:allow<E>>, inside C<S<>> and in headings, whose Markdown addresses are built from those characters; an entity is written and hidden as text in the same place is. C<decodeEntities> is exported, and a number that is not a Unicode scalar value gives nothing instead of a wrong character
 
 =item the Markdown output escapes C<< < >> in text as C<< \< >>, and C<&> as C<\&> where it would start a character reference, so a reader does not take text such as C<< <Audit Title> >> or C<&copy;> for HTML or for a character; a table written as HTML has its text, code included, written with C<&lt;> and C<&amp;>, and a blank line after it, so the text that follows is not read as HTML. Inline code gets a fence longer than any run of backticks inside it

@@ -8,6 +8,7 @@ import { ParserPlugin, Node, nPara, AST, nText, nVerbatim } from './'
 import { ConfigScope } from './helpers/configPropagation'
 import { blockNameOf } from './helpers/blockName'
 import { mkCaption } from './blocks-helpers'
+import { codeConfigOwner } from './helpers/code-config'
 
 /**
  *  Main transforms
@@ -17,11 +18,6 @@ interface MakeTransformerParams {
 }
 
 type AllowedIn = Record<string, string[]>
-
-// `=config C<> :allow<I>` names a markup code, not a block: the trailing angles
-// are the marker, and what it declares belongs to the code they name
-const codeConfigOwner = (name: unknown): string | null =>
-  typeof name === 'string' && /^[A-Z]<>$/.test(name) ? name[0] : null
 
 // a declaration acts from where it is written, and one without :allow leaves
 // the codes an earlier declaration allowed
