@@ -31,6 +31,7 @@ describe('input and output blocks in markdown output', () => {
   it('writes markdown signs and character references of the sample as they stand', () => {
     expect(markdown('=output a_b *x* [y] &copy;\n')).toBe('```\na_b *x* [y] &copy;\n```\n')
     expect(markdown('=input E<lt> E<amp>\n')).toBe('```\n< &\n```\n')
+    expect(markdown('=output E<lt> E<amp>\n')).toBe('```\n< &\n```\n')
   })
 
   it('makes the fence longer than a run of backticks inside the sample', () => {
