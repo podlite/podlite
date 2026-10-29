@@ -37,10 +37,16 @@ const markdownAnchors = ctx => {
   return byMode.get(mode)
 }
 
+// a reader takes `&copy;` in an address or a title for the sign unless a backslash keeps it
+const characterReference = /&(?=#?[A-Za-z0-9]+;)/g
+const keepReferences = (text: string): string => text.replace(characterReference, '\\&')
+
 // a title written on a link inside hidden content is hidden with it
-const linkTitle = (config, conceal: (text: string) => string = text => text) => {
+const linkTitle = (config, conceal: (text: string) => string = text => text, inCode = false) => {
   const { title } = readLinkConfig(config)
-  return title === undefined ? '' : ` "${conceal(title).replace(/"/g, '\\"')}"`
+  if (title === undefined) return ''
+  const text = inCode ? conceal(title) : keepReferences(conceal(title).replace(/\\/g, '\\\\'))
+  return ` "${text.replace(/"/g, '\\"')}"`
 }
 
 // Markdown has no form for a link whose target the author never wrote — an empty
@@ -50,10 +56,13 @@ const linkTitle = (config, conceal: (text: string) => string = text => text) => 
 // markdown keeps for exactly that. An angle of its own is percent-encoded rather
 // than dropped, so the address survives the round trip — no source text reaches
 // here holding one today, since the parser ends the code on it.
-const markdownAddress = (address: string): string =>
-  /[()\s]/.test(address) ? `<${address.replace(/</g, '%3C').replace(/>/g, '%3E')}>` : address
+// Inside code a reader shows a backslash, so there the address stays as it is.
+const markdownAddress = (address: string, inCode = false): string => {
+  const kept = inCode ? address : keepReferences(address.replace(/\\/g, '\\\\'))
+  return /[()\s]/.test(kept) ? `<${kept.replace(/</g, '%3C').replace(/>/g, '%3E')}>` : kept
+}
 
-const linkWrap = (node, ctx) => {
+const linkWrap = (node, ctx, inCode = false) => {
   const target = linkTarget(node)
   if (target === undefined) return wrapContent('', '')
   const resolved = sameDocTarget(target, ctx, markdownAnchors(ctx), node)
@@ -63,7 +72,11 @@ const linkWrap = (node, ctx) => {
   const address = String(resolved)
   return wrapContent(
     `[`,
-    `](${markdownAddress(address)}${linkTitle(codeConfigWithDefaults(node, ctx), text => covered(node, ctx, text))})`,
+    `](${markdownAddress(address, inCode)}${linkTitle(
+      codeConfigWithDefaults(node, ctx),
+      text => covered(node, ctx, text),
+      inCode,
+    )})`,
   )
 }
 
@@ -299,8 +312,10 @@ const rules = {
   },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
-  'L<>': setFn((node, ctx) => linkWrap(node, ctx)),
-  'W<>': setFn((node, ctx) => linkWrap(node, ctx)),
+  'L<>': (writer, processor) => (node, ctx, interator) =>
+    linkWrap(node, ctx, writer.codeDepth > 0)(writer, processor)(node, ctx, interator),
+  'W<>': (writer, processor) => (node, ctx, interator) =>
+    linkWrap(node, ctx, writer.codeDepth > 0)(writer, processor)(node, ctx, interator),
 
   'N<>': (writer, processor) => {
     writer.addListener('end', () => {
@@ -665,8 +680,10 @@ const rules = {
   ':image': (writer, processor) => (node, ctx, interator) => {
     // the alternative text sits between square brackets, where a `]` of its own
     // would end it, and the address between round ones — the same shape a link has
-    const alt = covered(node, ctx, writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
-    const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''))
+    const inCode = writer.codeDepth > 0
+    const bracketed = covered(node, ctx, writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
+    const alt = inCode ? bracketed : keepReferences(bracketed)
+    const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''), inCode)
     writer.writeRaw(`![${alt}](${src})`)
   },
 }
