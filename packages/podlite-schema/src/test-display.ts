@@ -57,7 +57,7 @@ export const testFoldedByAuthor = (node: any, ctx: any): boolean | undefined => 
 
 // A fence has to be longer than any run of backticks inside what it encloses.
 export const longestBacktickRun = (text: string): number => {
-  // a loop, not a spread into Math.max: a long body holds more runs than a call takes arguments
+  // a loop: a long body holds more runs than Math.max takes arguments
   let longest = 0
   for (const run of text.match(/`+/g) || []) if (run.length > longest) longest = run.length
   return longest
