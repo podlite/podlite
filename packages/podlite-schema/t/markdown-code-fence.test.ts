@@ -15,6 +15,10 @@ describe('the fence of a code block in markdown output', () => {
     expect(markdown(code('before\n````\nafter\n'))).toBe('`````\nbefore\n````\nafter\n`````\n')
   })
 
+  it('writes a body that holds many runs of backticks', () => {
+    expect(markdown(code('` '.repeat(130000) + '\n')).startsWith('```\n` ` `')).toBe(true)
+  })
+
   it('counts a run of backticks anywhere in a line', () => {
     expect(markdown(code('before\n  ```\nafter\n'))).toBe('````\nbefore\n  ```\nafter\n````\n')
   })

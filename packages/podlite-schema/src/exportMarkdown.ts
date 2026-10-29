@@ -158,10 +158,7 @@ const writeIsland = (writer, open: string, close: string, write: () => void) => 
   writer.writeRaw(body.trim() === '' ? `${open}${close}\n` : `${open}\n\n${body}\n\n${close}\n`)
 }
 
-// A fence a reader keeps as written: one backtick longer than any run of the body,
-// opened on a line of its own. The prefix of a quote stands at the start of a line,
-// the prefix of an item does not. A writer without an output function cannot see the
-// body before it is written and gets the plain fence.
+// a fence longer than any run of backticks in the body, opened at the start of a line
 const writeFenced = (writer, info: string, write: () => void) => {
   const original = writer.output
   if (typeof original !== 'function') {
