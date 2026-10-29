@@ -115,9 +115,9 @@ describe('what stays as it was', () => {
     expect(markdown('=begin nested\nPara one\n=end nested\n')).toBe('> Para one\n\n')
   })
 
-  it('writes a sample in a cell of merged cells as HTML text', () => {
+  it('writes a sample in a cell of merged cells as a fence', () => {
     const doc = '=begin table\n=begin row\n=begin cell :colspan<2>\n=output <a> & b\n=end cell\n=end row\n=end table\n'
-    expect(markdown(doc)).toContain('&lt;a> &amp; b')
+    expect(markdown(doc)).toContain('```\n<a> & b\n```')
   })
 
   it('keeps the HTML output of a sample', () => {

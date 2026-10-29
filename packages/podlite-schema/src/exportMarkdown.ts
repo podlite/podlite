@@ -105,7 +105,8 @@ const inlineCode = (text: string): string => {
   return `${ticks}${pad}${text}${pad}${ticks}`
 }
 
-// Inside code a reader takes < and & as written; inside a block of HTML, as HTML.
+// Inside code a reader takes < and & as written; a cell of a table written as HTML
+// stands inside a frame, and a fence must not hold across a cell folded onto a line.
 const within = (writer, depth: 'codeDepth' | 'htmlDepth' | 'cellDepth', write: () => void) => {
   writer[depth] = (writer[depth] || 0) + 1
   try {
@@ -131,6 +132,30 @@ const codeSpan = (writer, processor) => (node, ctx, interator) => {
     writer.output = original
   }
   writer.writeRaw(inlineCode(parts.join('')))
+}
+
+const htmlText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
+// A cell of a table written as HTML holds Markdown: a blank line ends the block of
+// HTML before it and another one before the closing tag, so a reader takes what
+// lies between as Markdown. A cell with nothing to show closes on its own line.
+const writeIsland = (writer, open: string, close: string, write: () => void) => {
+  const original = writer.output
+  if (typeof original !== 'function') {
+    writer.writeRaw(`${open}\n\n`)
+    write()
+    writer.writeRaw(`\n\n${close}\n`)
+    return
+  }
+  const parts: string[] = []
+  writer.output = (str: string) => parts.push(str)
+  try {
+    write()
+  } finally {
+    writer.output = original
+  }
+  const body = parts.join('').replace(/\n+$/, '')
+  writer.writeRaw(body.trim() === '' ? `${open}${close}\n` : `${open}\n\n${body}\n\n${close}\n`)
 }
 
 // Input and output are written as code in a fence a reader keeps as written. A fence
@@ -382,7 +407,9 @@ const rules = {
     if (node.error) {
       writer.emit('errors', node.location)
     }
-    writeSource(writer, isCovered(node, ctx) ? maskText(node.value) : node.value)
+    const text = isCovered(node, ctx) ? maskText(node.value) : node.value
+    // inside a frame of HTML a raw </table> would close the frame and drop the cells after it
+    writeSource(writer, writer.htmlDepth > 0 ? htmlText(text) : text)
   },
   ':blankline': emptyContent,
   ':ambient': emptyContent,
@@ -552,7 +579,7 @@ const rules = {
       within(writer, 'htmlDepth', () =>
         rows.forEach(row => {
           const tag = isRowHeader(row) ? 'th' : 'td'
-          writer.writeRaw('<tr>')
+          writer.writeRaw('<tr>\n')
           const cells = (row.content || []).filter(c => c.name === 'cell')
           cells.forEach(cell => {
             const colspan = cellSpan(cell, 'colspan')
@@ -560,9 +587,7 @@ const rules = {
             let attrs = ''
             if (colspan) attrs += ` colspan="${colspan}"`
             if (rowspan) attrs += ` rowspan="${rowspan}"`
-            writer.writeRaw(`<${tag}${attrs}>`)
-            writeCellParts(cell, writer, interator, ctx)
-            writer.writeRaw(`</${tag}>`)
+            writeIsland(writer, `<${tag}${attrs}>`, `</${tag}>`, () => writeCellParts(cell, writer, interator, ctx))
           })
           writer.writeRaw('</tr>\n')
         }),

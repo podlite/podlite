@@ -148,14 +148,14 @@ describe('text a markdown reader would take for markup', () => {
     )
   })
 
-  it('writes text in a table of merged cells as HTML text', () => {
+  it('writes text in a table of merged cells as markdown text', () => {
     const merged = (cell: string) =>
       `${allowE}=begin table\n=begin row\n=for cell :colspan<2>\n${cell}\n=end row\n=end table`
-    expect(markdown(merged(adjust))).toContain('<td colspan="2">&lt;Adjust as appropriate for the specific audit>')
-    expect(markdown(merged('C<E<lt>Audit TitleE<gt>>'))).toContain('`&lt;Audit Title>`')
+    expect(markdown(merged(adjust))).toContain('<td colspan="2">\n\n\\<Adjust as appropriate for the specific audit>')
+    expect(markdown(merged('C<E<lt>Audit TitleE<gt>>'))).toContain('`<Audit Title>`')
     const block =
       '=begin table\n=begin row\n=begin cell :colspan<2>\n=begin code\n<Audit Title>\n=end code\n=end cell\n=end row\n=end table'
-    expect(markdown(block)).toContain('&lt;Audit Title>')
+    expect(markdown(block)).toContain('```\n<Audit Title>\n```')
   })
 
   it('makes the fence of inline code longer than a backtick inside it', () => {

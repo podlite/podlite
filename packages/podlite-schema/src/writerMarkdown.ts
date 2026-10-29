@@ -4,12 +4,10 @@
 
 import Writer from './writer'
 
-const htmlText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
-
 class WriterMarkdown extends Writer {
   // inside code a reader takes < and & as written
   codeDepth = 0
-  // inside a block of HTML a reader takes text as HTML, code fences included
+  // inside a frame of HTML around Markdown: raw text there could close the frame
   htmlDepth = 0
   // open levels of a quote, and a table cell folded onto one line: a fence holds in neither
   quoteDepth = 0
@@ -19,7 +17,6 @@ class WriterMarkdown extends Writer {
   }
   escape(string) {
     const text = string + ''
-    if (this.htmlDepth > 0) return htmlText(text.replace(/([\\`*_\[\]#|])/g, '\\$1'))
     if (this.codeDepth > 0) return text.replace(/([\\`*_\[\]#|])/g, '\\$1')
     // an ampersand opens a character reference only before a name or a number and a semicolon; one at the
     // end of a piece is escaped, since the piece after it is not seen here. Left alone elsewhere, it keeps
@@ -28,7 +25,7 @@ class WriterMarkdown extends Writer {
   }
   // text of the document written as it stands, such as the body of a code block
   writeSource(text: string) {
-    this.writeRaw(this.htmlDepth > 0 ? htmlText(text) : text)
+    this.writeRaw(text)
   }
 
   _add_nesting(n) {
