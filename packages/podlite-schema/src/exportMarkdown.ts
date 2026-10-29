@@ -158,6 +158,34 @@ const writeIsland = (writer, open: string, close: string, write: () => void) => 
   writer.writeRaw(body.trim() === '' ? `${open}${close}\n` : `${open}\n\n${body}\n\n${close}\n`)
 }
 
+// A fence a reader keeps as written: one backtick longer than any run of the body,
+// opened on a line of its own. The prefix of a quote stands at the start of a line,
+// the prefix of an item does not. A writer without an output function cannot see the
+// body before it is written and gets the plain fence.
+const writeFenced = (writer, info: string, write: () => void) => {
+  const original = writer.output
+  if (typeof original !== 'function') {
+    writer.writeRaw('```' + info + '\n')
+    within(writer, 'codeDepth', write)
+    if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
+    writer.writeRaw('```\n')
+    return
+  }
+  const atLineStart = /^$|\n$|^(> )+$/.test(writer.lastWritten)
+  const parts: string[] = []
+  writer.output = (str: string) => parts.push(str)
+  try {
+    within(writer, 'codeDepth', write)
+  } finally {
+    writer.output = original
+  }
+  const body = parts.join('')
+  const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
+  writer.writeRaw(`${atLineStart ? '' : '\n'}${fence}${info}\n`)
+  if (body !== '') writer.writeRaw(body.endsWith('\n') ? body : `${body}\n`)
+  writer.writeRaw(`${fence}\n`)
+}
+
 // Input and output are written as code in a fence a reader keeps as written. A fence
 // holds only on a line of its own and outside a quote or a cell folded onto a line;
 // there the sample is written as text, so its words stay in sight.
@@ -175,28 +203,12 @@ const sampleBlock = (writer, processor) => (node, ctx, interator) => {
     writer.writeRaw('\n')
     return
   }
-  const atLineStart = writer.lastWritten === '' || writer.lastWritten.endsWith('\n')
   const masked = isCovered(node, ctx)
-  const parts: string[] = []
-  const original = writer.output
-  const capture = typeof original === 'function'
-  if (capture) writer.output = (str: string) => parts.push(str)
-  try {
-    within(writer, 'codeDepth', () =>
-      children.forEach(child =>
-        isText(child)
-          ? writeSource(writer, masked ? maskText(valueOf(child)) : valueOf(child))
-          : interator([child], ctx),
-      ),
-    )
-  } finally {
-    if (capture) writer.output = original
-  }
-  const body = parts.join('')
-  const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
-  writer.writeRaw(`${atLineStart ? '' : '\n'}${fence}\n`)
-  if (body !== '') writer.writeRaw(body.endsWith('\n') ? body : `${body}\n`)
-  writer.writeRaw(`${fence}\n`)
+  writeFenced(writer, '', () =>
+    children.forEach(child =>
+      isText(child) ? writeSource(writer, masked ? maskText(valueOf(child)) : valueOf(child)) : interator([child], ctx),
+    ),
+  )
 }
 
 const implicitPara = handleNested((writer, processor) => (node, ctx, interator) => {
@@ -367,9 +379,8 @@ const rules = {
   ':code': handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
-    writer.writeRaw('```' + lang + '\n')
     const masked = isCovered(node, ctx)
-    within(writer, 'codeDepth', () =>
+    writeFenced(writer, lang, () =>
       (node.content || []).forEach(child => {
         if (typeof child === 'string') {
           writeSource(writer, masked ? maskText(child) : child)
@@ -380,16 +391,12 @@ const rules = {
         }
       }),
     )
-    // code at the end of input may lack its final line break
-    if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
-    writer.writeRaw('```\n')
   }),
   code: handleNested((writer, processor) => (node, ctx, interator) => {
     const conf = makeAttrs(node, ctx)
     const lang = conf.exists('lang') ? conf.getFirstValue('lang') : ''
-    writer.writeRaw('```' + lang + '\n')
     const masked = isCovered(node, ctx)
-    within(writer, 'codeDepth', () =>
+    writeFenced(writer, lang, () =>
       (node.content || []).forEach(child => {
         if (typeof child === 'string') {
           writeSource(writer, masked ? maskText(child) : child)
@@ -400,7 +407,6 @@ const rules = {
         }
       }),
     )
-    writer.writeRaw('```\n')
   }),
   data: emptyContent,
   ':verbatim': (writer, processor) => (node, ctx, interator) => {

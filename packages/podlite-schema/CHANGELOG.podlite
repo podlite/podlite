@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the Markdown output writes a code block in a fence one backtick longer than any run of backticks in its body, so a line of three backticks in the code no longer ends it, and opens the fence on a line of its own after the prefix of an item or the term of a definition. A code block without a final line break is closed on a line of its own
+
 =item the Markdown output writes a table with merged cells as an HTML frame whose cells hold Markdown: each cell stands between blank lines, so a reader takes its links, emphasis, lists and code blocks as Markdown instead of showing their signs. A cell with nothing to show is written as an empty tag. The raw text of a block without a Markdown rule inside such a cell is still written with C<&lt;> and C<&amp;>, so it cannot close the frame
 
 =item the Markdown output writes C<=input> and C<=output> as a fenced code block, as C<=code> is written: the fence no longer closes on the second line, and the sample keeps its lines, its spaces and its signs as written. Markup codes inside the fence are written as their Markdown and shown as such. Inside a quote or a table cell written on one line, where a fence does not hold, the sample is written as text
