@@ -7,7 +7,7 @@ import Writer from './writer'
 // An ampersand opens a character reference only before a name or a number and a semicolon; one at the
 // end of a piece is escaped, since the piece after it is not seen here. Left alone elsewhere, it keeps
 // the query of an address a reader links by itself, as a tilde inside such an address is kept.
-const bareAddress = /(?:https?:\/\/|www\.)[^\s<]*/g
+const bareAddress = /(?:https?:\/\/|www\.)[^\s<]*/gi
 const escapeText = (text: string): string => {
   let out = ''
   let from = 0

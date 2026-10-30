@@ -50,6 +50,7 @@ describe('a sign a reader takes for a block at the start of a line in markdown o
   it('escapes the start of the content after the prefix of an item or a quote', () => {
     expect(markdown('=item ~~~ in item\n')).toBe('- \\~\\~\\~ in item\n\n')
     expect(markdown('=item - x\n')).toBe('- \\- x\n\n')
+    expect(markdown('=config item :numbered\n\n=item ~~~\n')).toContain('1. \\~\\~\\~')
     expect(markdown('=begin nested\n=begin nested\n=para - x\n=end nested\n=end nested\n')).toBe('> > \\- x\n\n')
   })
 
@@ -88,6 +89,9 @@ describe('what stays as it was', () => {
   it('leaves a tilde inside an address in the text', () => {
     expect(markdown('=para https://example.org/~user and www.example.org/~a\n')).toBe(
       'https://example.org/~user and www.example.org/~a\n\n',
+    )
+    expect(markdown('=para HTTP://example.org/~u and WWW.example.org/~a\n')).toBe(
+      'HTTP://example.org/~u and WWW.example.org/~a\n\n',
     )
   })
 })
