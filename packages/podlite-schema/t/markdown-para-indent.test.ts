@@ -61,6 +61,12 @@ describe('what stays as it was', () => {
     )
   })
 
+  it('writes an indented paragraph of a cell of a pipe table as before', () => {
+    const doc =
+      '=begin table\n=begin row\n=begin cell\n=para\n    B<text> tail\n=end cell\n=cell b\n=end row\n=end table\n'
+    expect(markdown(doc)).toBe('| **text** tail | b |\n| --- | --- |\n\n')
+  })
+
   it('keeps an indent that is code, spaces kept by S<> and a no-break space', () => {
     expect(markdown('=para\nC<    code> tail\n')).toBe('`    code` tail\n\n')
     expect(markdown('=para\nS<    x> tail\n')).toBe('&nbsp;&nbsp;&nbsp;&nbsp;x tail\n\n')
