@@ -68,7 +68,8 @@ class WriterMarkdown extends Writer {
   }
   escape(string) {
     const text = string + ''
-    if (this.codeDepth > 0) return text.replace(/([\\`*_\[\]#|])/g, '\\$1')
+    // a bar divides a row only in a cell of a pipe table, so only there a bar in code needs a backslash
+    if (this.codeDepth > 0) return text.replace(this.cellDepth > 0 ? /([\\`*_\[\]#|])/g : /([\\`*_\[\]#])/g, '\\$1')
     // a sign a reader takes for a block only at the start of a line gets a backslash there
     const marks = lineStartMarks(text, this.lineText)
     let out = ''

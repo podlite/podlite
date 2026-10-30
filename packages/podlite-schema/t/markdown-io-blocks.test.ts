@@ -91,18 +91,15 @@ describe('a sample where a fence does not hold', () => {
     )
   })
 
-  it('writes a sample in a table cell as text that keeps the row whole', () => {
-    expect(markdown(inCell('=output a | b'))).toContain('| a \\| b | Tail |')
-    expect(markdown(inCell('=output a \\| b'))).toContain('| a \\\\\\| b | Tail |')
-    expect(markdown(inCell('=output a \\\\| b'))).toContain('| a \\\\\\\\\\| b | Tail |')
+  it('writes a table whose cell holds a sample as a frame with the sample in a fence', () => {
+    expect(markdown(inCell('=output a | b'))).toContain('<td>\n\n```\na | b\n```\n\n</td>\n<td>\n\nTail\n\n</td>')
+    expect(markdown(inCell('=output a \\| b'))).toContain('```\na \\| b\n```')
   })
 
-  it('writes a sample after a table inside the same cell as text', () => {
+  it('writes a sample after a table inside the same cell as a fence', () => {
     const doc =
       '=begin table\n=begin row\n=cell Header\n=end row\n=begin row\n=begin cell\n=begin table\n=begin row\n=cell inner\n=end row\n=end table\n=output <Out>\n=end cell\n=end row\n=end table\n'
-    const out = markdown(doc)
-    expect(out).toContain('\\<Out>')
-    expect(out).not.toContain('```')
+    expect(markdown(doc)).toContain('```\n<Out>\n```')
   })
 })
 

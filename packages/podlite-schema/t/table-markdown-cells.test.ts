@@ -10,7 +10,7 @@ const structured =
 const text = '=begin table\n A | B\n ==|==\n 1 | C<code>\n=end table\n'
 
 describe('table cells in markdown', () => {
-  it('keeps a row on one line when cells hold blocks', () => {
+  it('keeps a row on one line when each cell holds one paragraph', () => {
     expect(md(structured)).toContain('| Name | Value |')
     expect(md(structured)).toContain('| one | two |')
   })
@@ -19,10 +19,9 @@ describe('table cells in markdown', () => {
     expect(md(text)).toContain('| 1 | `code` |')
   })
 
-  it('folds a cell that holds more than one paragraph', () => {
+  it('writes a table whose cell holds two paragraphs as a frame', () => {
     const src = '=begin table\n=begin row\n=begin cell\nfirst\n\nsecond\n=end cell\n=cell plain\n=end row\n=end table\n'
-    const out = md(src)
-    expect(out).toContain('| first second | plain |')
+    expect(md(src)).toContain('<td>\n\nfirst\n\nsecond\n\n</td>\n<td>\n\nplain\n\n</td>')
   })
 
   it('keeps markup inside a folded cell', () => {

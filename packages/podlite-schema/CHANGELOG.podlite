@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the Markdown output writes a table whose cell holds a block — a code block, a list, a quote, a heading, more than one paragraph, a sample, a block without a rule or a table — as a frame of HTML whose cells hold Markdown, as a table with merged cells is written; a pipe table could not hold such a cell, and a bar of a code block broke its row. A bar in code is escaped only in a cell of a pipe table, where it would divide the row
+
 =item the Markdown output escapes a sign a reader would take for a block at the start of a line of text: a dash or a plus that starts an item, a quote sign, a number with a dot or a parenthesis that starts a list, a line of dashes or equal signs under a heading or as a rule, the line that aligns a table, also when the sign comes in several pieces. A tilde is escaped everywhere outside code, so a line of tildes no longer opens a code block and two tildes no longer strike text through; a tilde inside an address in the text is kept
 
 =item the Markdown output writes the first visible line of a paragraph without its indent, so a paragraph indented by four spaces or a tab, on its own, in a quote, in a table cell or after a hidden first line, is no longer read as a code block. Paragraphs inside an item keep their indent, which is what keeps them in the item

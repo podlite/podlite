@@ -91,3 +91,67 @@ describe('what stays as it was', () => {
     expect(markdown(merged('x') + '\n=para After\n')).toContain('</table>\n\nAfter\n')
   })
 })
+
+const blockIn = (cell: string) =>
+  `=begin table\n=begin row\n=cell Header\n=cell Other\n=end row\n=begin row\n=begin cell\n${cell}\n=end cell\n=cell Tail\n=end row\n=end table\n`
+const rowTail = '<td>\n\nTail\n\n</td>\n</tr>\n</table>\n\n'
+
+describe('a table without merged cells whose cell holds a block in markdown output', () => {
+  it('writes the table as a frame with a code block in its cell', () => {
+    expect(markdown(blockIn('=code a | b'))).toContain('<td>\n\n```\na | b\n```\n\n</td>\n' + rowTail)
+    expect(markdown(blockIn('=code a \\\\| b'))).toContain('<td>\n\n```\na \\\\| b\n```\n\n</td>\n' + rowTail)
+  })
+
+  it('writes the table as a frame for a list, a quote, a heading and two paragraphs', () => {
+    expect(markdown(blockIn('=item one\n=item two'))).toContain('<td>\n\n- one\n\n- two\n\n</td>\n' + rowTail)
+    expect(markdown(blockIn('=item one'))).toContain('<td>\n\n- one\n\n</td>\n' + rowTail)
+    expect(markdown(blockIn('=begin nested\nquoted\n=end nested'))).toContain('<td>\n\n> quoted\n\n</td>')
+    expect(markdown(blockIn('=head2 Title'))).toContain('<td>\n\n## Title\n\n</td>')
+    expect(markdown(blockIn('one\n\ntwo'))).toContain('<td>\n\none\n\ntwo\n\n</td>')
+    expect(markdown(blockIn('=para one\n\n=para two'))).toContain('<td>\n\none\n\ntwo\n\n</td>')
+  })
+
+  it('writes the table as a frame for a sample, a block without a rule and a table', () => {
+    expect(markdown(blockIn('=input one'))).toContain('<td>\n\n```\none\n```\n\n</td>')
+    expect(markdown(blockIn('=begin Unknown\nraw <x>\n=end Unknown'))).toContain('<td>\n\nraw &lt;x>\n\n</td>')
+    expect(markdown(blockIn('=begin table\n=begin row\n=cell x\n=end row\n=end table'))).toContain(
+      '<td>\n\n| x |\n| --- |\n\n</td>',
+    )
+  })
+
+  it('finds a block in a late cell of a late row and keeps a late header row', () => {
+    const doc =
+      '=begin table\n=begin row\n=cell a\n=cell b\n=end row\n=begin row :header\n=cell H1\n=cell H2\n=end row\n=begin row\n=cell c\n=begin cell\n=item x\n=end cell\n=end row\n=end table\n'
+    const out = markdown(doc)
+    expect(out).toContain('<tr>\n<th>\n\nH1\n\n</th>')
+    expect(out).toContain('<td>\n\n- x\n\n</td>')
+  })
+
+  it('writes code with a bar without a backslash in a cell of the frame and outside tables', () => {
+    const doc = '=begin table\n=begin row\n=begin cell\n=item one\n=end cell\n=cell C<a | b>\n=end row\n=end table\n'
+    expect(markdown(doc)).toContain('<td>\n\n`a | b`\n\n</td>')
+    expect(markdown('=para C<a | b> and K<c | d>\n')).toBe('`a | b` and `c | d`\n\n')
+  })
+
+  it('writes a bar in code with a backslash only in the row of a pipe table inside the frame', () => {
+    const doc =
+      "=set :caption('C<x | y>')\n=begin table\n=begin row\n=begin cell\n=begin table\n=begin row\n=cell C<a | b>\n=cell K<c | d>\n=cell T<e | f>\n=cell Tail\n=end row\n=end table\n\nC<g | h>\n=end cell\n=end row\n=end table\n"
+    const out = markdown(doc)
+    expect(out).toContain('| `a \\| b` | `c \\| d` | `e \\| f` | Tail |')
+    expect(out).toContain('`g | h`')
+  })
+})
+
+describe('a table without merged cells that stays a pipe table', () => {
+  it('keeps cells of one paragraph, text, codes and silent nodes', () => {
+    const row = (cell: string) =>
+      `=begin table\n=begin row\n=begin cell\n${cell}\n=end cell\n=cell b\n=end row\n=end table\n`
+    expect(markdown(row('one'))).toContain('| one | b |')
+    expect(markdown(row('=para one'))).toContain('| one | b |')
+    expect(markdown(row('B<bold> and C<a | b>'))).toContain('| **bold** and `a \\| b` | b |')
+    expect(markdown(row('Z<hidden>'))).toContain('|  | b |')
+    expect(markdown(row('text N<note>'))).toContain('| text [^1] | b |')
+    expect(markdown(row('text\n=comment hidden'))).toContain('| text | b |')
+    expect(markdown('=begin table\na  b\nc  d\n=end table\n')).toContain('| a | b |')
+  })
+})

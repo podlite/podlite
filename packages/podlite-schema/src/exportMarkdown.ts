@@ -263,6 +263,27 @@ const writeText = (writer, node, ctx, value: string) => {
   }
 }
 
+// A cell holds a block when it holds more than one paragraph or anything but a paragraph
+// and text; a comment, data and a directive show nothing and count for nothing.
+const holdsBlock = cell => {
+  let paragraphs = 0
+  let inline = false
+  let block = false
+  const visit = nodes =>
+    (nodes || []).forEach(node => {
+      if (typeof node === 'string' || node.type === 'text') {
+        if (String(typeof node === 'string' ? node : node.value || '').trim() !== '') inline = true
+      } else if (node.type === 'fcode') inline = true
+      else if (node.type === 'para') paragraphs++
+      else if (node.type === 'block' && node.name === 'para') visit(node.content)
+      else if (node.type === 'blankline' || node.type === 'config' || node.type === 'alias') return
+      else if (node.type === 'block' && (node.name === 'comment' || node.name === 'data')) return
+      else block = true
+    })
+  visit(cell.content)
+  return block || paragraphs + (inline ? 1 : 0) > 1
+}
+
 const rules = {
   ':text': (writer, processor) => (node, ctx, interator) => {
     if (node.value) writeText(writer, node, ctx, node.value)
@@ -601,9 +622,12 @@ const rules = {
       return Number.isFinite(n) && n > 1 ? n : 0
     }
 
-    // GFM pipe-tables don't support colspan/rowspan — fall back to inline HTML
+    // GFM pipe-tables hold neither a merged cell nor a block in a cell: such a table is
+    // written as a frame of HTML whose cells hold Markdown
     const hasSpans = rows.some(row =>
-      (row.content || []).some(c => c.name === 'cell' && (cellSpan(c, 'colspan') || cellSpan(c, 'rowspan'))),
+      (row.content || []).some(
+        c => c.name === 'cell' && (cellSpan(c, 'colspan') || cellSpan(c, 'rowspan') || holdsBlock(c)),
+      ),
     )
 
     const hasHeader = isRowHeader(rows[0])
