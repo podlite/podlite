@@ -12,6 +12,8 @@ class WriterMarkdown extends Writer {
   // open levels of a quote, and a table cell folded onto one line: a fence holds in neither
   quoteDepth = 0
   cellDepth = 0
+  // a paragraph has begun and shown nothing yet: an indent here would make it code
+  paraStart = false
   constructor(output?) {
     super(output)
   }
@@ -22,6 +24,10 @@ class WriterMarkdown extends Writer {
     // end of a piece is escaped, since the piece after it is not seen here. Left alone elsewhere, it keeps
     // the query of an address a reader links by itself
     return text.replace(/([\\`*_\[\]#|<])/g, '\\$1').replace(/&(?=#?[A-Za-z0-9]+;|$)/g, '\\&')
+  }
+  writeRaw(str) {
+    super.writeRaw(str)
+    if (this.paraStart && /[^ \t\n]/.test(str)) this.paraStart = false
   }
   // text of the document written as it stands, such as the body of a code block
   writeSource(text: string) {

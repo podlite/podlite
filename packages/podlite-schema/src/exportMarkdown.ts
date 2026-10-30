@@ -221,8 +221,20 @@ const sampleBlock = (writer, processor) => (node, ctx, interator) => {
   )
 }
 
+// The first visible line of a paragraph is written without its indent. Inside an item
+// the indent of a later paragraph is what keeps it in the item, so it stays there.
+const paragraph = (writer, ctx, write: () => void) => {
+  if (ctx.inItem || typeof writer.paraStart !== 'boolean') return write()
+  writer.paraStart = true
+  try {
+    write()
+  } finally {
+    writer.paraStart = false
+  }
+}
+
 const implicitPara = handleNested((writer, processor) => (node, ctx, interator) => {
-  if (node.content) interator(node.content, ctx)
+  paragraph(writer, ctx, () => node.content && interator(node.content, ctx))
   writer.writeRaw('\n')
 })
 
@@ -246,7 +258,8 @@ const writeText = (writer, node, ctx, value: string) => {
     const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(value) : value, ctx.keepSpaces))
     writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
   } else {
-    writer.write(isCovered(node, ctx) ? maskText(value) : value)
+    const text = isCovered(node, ctx) ? maskText(value) : value
+    writer.write(writer.paraStart && !(writer.codeDepth > 0) ? text.replace(/^[ \t\n]+/, '') : text)
   }
 }
 
@@ -444,7 +457,10 @@ const rules = {
   }),
 
   // block =para
-  para: handleNested(content),
+  para: handleNested(
+    (writer, processor) => (node, ctx, interator) =>
+      paragraph(writer, ctx, () => node.content && interator(node.content, ctx)),
+  ),
   ':para': implicitPara,
   'head:block': subUse(
     {
@@ -495,7 +511,7 @@ const rules = {
       prefix += node.checked ? '[x] ' : '[ ] '
     }
     writer.writeRaw(indent + prefix)
-    if (node.content) interator(node.content, ctx)
+    if (node.content) interator(node.content, { ...ctx, inItem: true })
   },
   'comment:block': emptyContent,
   'test:block': (writer, processor) => (node, ctx, interator) => {
@@ -562,7 +578,7 @@ const rules = {
     // a caption with codes of its own stands as a paragraph: bold around it would
     // hide the bold inside and break on an emphasis that touches a word
     if (node.caption) {
-      interator(node.caption.content, ctx)
+      paragraph(writer, ctx, () => interator(node.caption.content, ctx))
       writer.writeRaw('\n\n')
     } else if (conf.exists('caption')) {
       writer.writeRaw('**')
