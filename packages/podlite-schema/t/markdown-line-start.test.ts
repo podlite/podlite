@@ -90,8 +90,9 @@ describe('what stays as it was', () => {
     expect(markdown('=para https://example.org/~user and www.example.org/~a\n')).toBe(
       'https://example.org/~user and www.example.org/~a\n\n',
     )
-    expect(markdown('=para HTTP://example.org/~u and WWW.example.org/~a\n')).toBe(
-      'HTTP://example.org/~u and WWW.example.org/~a\n\n',
+    expect(markdown('=para HTTP://example.org/~u and Https://example.org/~v\n')).toBe(
+      'HTTP://example.org/~u and Https://example.org/~v\n\n',
     )
+    expect(markdown('=para WWW.example.org/~~a~~\n')).toBe('WWW.example.org/\\~\\~a\\~\\~\n\n')
   })
 })
