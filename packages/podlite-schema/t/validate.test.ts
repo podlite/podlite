@@ -127,3 +127,34 @@ describe('shapes the parser produces', () => {
     })
   })
 })
+
+describe('the mark of markdown in the schema of the tree', () => {
+  // the generated schema holds every type under its definitions
+  const { definitions } = require('../schema/AstTree.json')
+  const Ajv = require('ajv')
+  const ajv = new Ajv({ strict: false, allowUnionTypes: true, strictTuples: false })
+  const check = (name: string, node: object) => ajv.validate({ $ref: `#/definitions/${name}`, definitions }, node)
+  const shapes: Record<string, object> = {
+    BlockNamed: {
+      type: 'block',
+      name: 'Html',
+      location: { start: { offset: 0, line: 1, column: 1 }, end: { offset: 4, line: 1, column: 5 } },
+      content: [],
+      margin: '',
+    },
+    RootBlock: { type: 'block', name: 'root', content: [], margin: '' },
+    TableRow: { type: 'block', name: 'row', content: [] },
+    TableHead: { type: 'block', name: 'row', content: [] },
+    TableCell: { type: 'block', name: 'cell', content: [] },
+  }
+
+  it.each(Object.keys(shapes))('lets %s go without the mark or with markdown, and refuses another value', name => {
+    const node = shapes[name]
+    expect(definitions[name].properties.sourceFormat).toEqual({ const: 'markdown', type: 'string' })
+    expect(definitions[name].required || []).not.toContain('sourceFormat')
+    expect(check(name, node)).toBe(true)
+    expect(check(name, { ...node, sourceFormat: 'markdown' })).toBe(true)
+    expect(check(name, { ...node, sourceFormat: 'podlite' })).toBe(false)
+    expect(check(name, { ...node, sourceFormat: 7 })).toBe(false)
+  })
+})

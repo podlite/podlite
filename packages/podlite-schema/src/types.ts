@@ -479,7 +479,13 @@ export interface Separator {
   type: 'separator'
   text: string
 }
-export interface Block {
+// the reader of Markdown sets it on every block it makes, so a writer can tell such a
+// block from one an author wrote; no mark says nothing of where a block came from
+export interface SourceFormatMark {
+  sourceFormat?: 'markdown'
+}
+
+export interface Block extends SourceFormatMark {
   type: 'block'
   location: Location
   content: Array<Node>
@@ -561,18 +567,18 @@ export interface BlockTable extends Omit<Block, 'content'> {
   // why text not always presents here
   text?: string
 }
-export interface TableCell {
+export interface TableCell extends SourceFormatMark {
   name: 'cell'
   type: 'block'
   content: Array<PodNode>
 }
-export interface TableRow {
+export interface TableRow extends SourceFormatMark {
   name: 'row'
   type: 'block'
   content: Array<TableCell>
 }
 
-export interface TableHead {
+export interface TableHead extends SourceFormatMark {
   name: 'row'
   type: 'block'
   content: Array<TableCell>

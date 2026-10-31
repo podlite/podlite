@@ -347,6 +347,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -428,6 +432,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -486,6 +494,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -550,6 +562,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -629,6 +645,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -701,6 +721,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -761,6 +785,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -821,6 +849,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -881,6 +913,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -941,6 +977,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1001,6 +1041,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1070,6 +1114,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1131,6 +1179,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1191,6 +1243,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1893,6 +1949,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1953,6 +2013,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2093,6 +2157,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2119,6 +2187,10 @@
                     "items": {
                         "$ref": "#/definitions/TableCell"
                     }
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2143,6 +2215,10 @@
                     "items": {
                         "$ref": "#/definitions/PodNode"
                     }
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2167,6 +2243,10 @@
                     "items": {
                         "$ref": "#/definitions/TableCell"
                     }
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2298,6 +2378,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2413,6 +2497,10 @@
                 },
                 "caption": {
                     "$ref": "#/definitions/BlockCaption"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2483,6 +2571,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [
@@ -2575,6 +2667,10 @@
                 },
                 "guarded": {
                     "type": "boolean"
+                },
+                "sourceFormat": {
+                    "const": "markdown",
+                    "type": "string"
                 }
             },
             "required": [

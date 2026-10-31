@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the Markdown output writes the body of an C<=Html> block an author wrote in a fence, with a blank line after it, as a block without a rule is shown: written raw, a style could hide the paragraph after it and an open comment could take the rest of the document. HTML of Markdown, marked with C<sourceFormat: 'markdown'>, stays raw as before; inside a quote or a cell of a pipe table the body is written as text. A block has the optional field C<sourceFormat>, rows and cells of a table too; a tree from an earlier C<@podlite/markdown> has no mark, and its HTML is fenced
+
 =item the Markdown output writes a table whose cell holds a block — a code block, a list, a quote, a heading, more than one paragraph, a sample, a block without a rule or a table — as a frame of HTML whose cells hold Markdown, as a table with merged cells is written; a pipe table could not hold such a cell, and a bar of a code block broke its row. A bar in code is escaped only in a cell of a pipe table, where it would divide the row. HTML inside a line of a Markdown table cell, such as C<< <br> >>, keeps the table a pipe table
 
 =item the Markdown output escapes a sign a reader would take for a block at the start of a line of text: a dash or a plus that starts an item, a quote sign, a number with a dot or a parenthesis that starts a list, a line of dashes or equal signs under a heading or as a rule, the line that aligns a table, also when the sign comes in several pieces. A tilde is escaped everywhere outside code, so a line of tildes no longer opens a code block and two tildes no longer strike text through; a tilde inside an address in the text is kept

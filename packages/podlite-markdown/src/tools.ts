@@ -231,5 +231,21 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
     .run(md_tree)
   // a =markdown block hands over its verbatim node: the keys are fingerprinted from the
   // text the reader parsed
-  return assignHeadingKeys(res.interator, typeof src === 'string' ? src : (src as { value?: string })?.value ?? '')
+  const tree = assignHeadingKeys(
+    res.interator,
+    typeof src === 'string' ? src : (src as { value?: string })?.value ?? '',
+  )
+  markSource(tree)
+  return tree
+}
+
+// Every block made here is marked as coming from Markdown: HTML of Markdown is a block
+// named Html as an author's =Html is, and a writer must keep the first raw.
+// The walk goes into every node, since HTML stands in paragraphs, lists and codes too.
+const markSource = (node: unknown): void => {
+  if (Array.isArray(node)) return node.forEach(markSource)
+  if (!node || typeof node !== 'object') return
+  const item = node as { type?: string; content?: unknown; sourceFormat?: string }
+  if (item.type === 'block') item.sourceFormat = 'markdown'
+  if (item.content) markSource(item.content)
 }

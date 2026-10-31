@@ -196,29 +196,46 @@ const writeFenced = (writer, info: string, write: () => void) => {
   writer.writeRaw(`${fence}\n`)
 }
 
-// Input and output are written as code in a fence a reader keeps as written. A fence
-// holds only on a line of its own and outside a quote or a cell folded onto a line;
-// there the sample is written as text, so its words stay in sight.
-const sampleBlock = (writer, processor) => (node, ctx, interator) => {
+// A body shown as written goes into a fence a reader keeps as written. A fence holds only
+// on a line of its own and outside a quote or a cell folded onto a line; there the body
+// is written as text, so its words stay in sight. Says whether a fence was written.
+const isBodyText = child => typeof child === 'string' || child.type === 'text' || child.type === 'verbatim'
+const bodyValue = child => (typeof child === 'string' ? child : child.value)
+const writeBodyAsWritten = (writer, node, ctx, interator): boolean => {
   const children = node.content || []
-  const isText = child => typeof child === 'string' || child.type === 'text' || child.type === 'verbatim'
-  const valueOf = child => (typeof child === 'string' ? child : child.value)
   if (writer.quoteDepth > 0 || writer.cellDepth > 0) {
     children.forEach(child =>
-      isText(child)
-        ? writeText(writer, typeof child === 'string' ? node : child, ctx, valueOf(child))
+      isBodyText(child)
+        ? writeText(writer, typeof child === 'string' ? node : child, ctx, bodyValue(child))
         : interator([child], ctx),
     )
     if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
     writer.writeRaw('\n')
-    return
+    return false
   }
   const masked = isCovered(node, ctx)
   writeFenced(writer, '', () =>
     children.forEach(child =>
-      isText(child) ? writeSource(writer, masked ? maskText(valueOf(child)) : valueOf(child)) : interator([child], ctx),
+      isBodyText(child)
+        ? writeSource(writer, masked ? maskText(bodyValue(child)) : bodyValue(child))
+        : interator([child], ctx),
     ),
   )
+  return true
+}
+
+// Input and output are written as code a reader keeps as written.
+const sampleBlock = (writer, processor) => (node, ctx, interator) => {
+  writeBodyAsWritten(writer, node, ctx, interator)
+}
+
+// HTML the reader of Markdown made stays as written. An author's =Html is shown, not run:
+// raw, a style could hide what follows it and an open comment could take the rest.
+const htmlBlock = (writer, processor) => (node, ctx, interator) => {
+  if (node.sourceFormat === 'markdown') return interator(node.content, ctx)
+  const body = (node.content || []).map(child => (isBodyText(child) ? bodyValue(child) : ' ')).join('')
+  if (body.trim() === '') return
+  if (writeBodyAsWritten(writer, node, ctx, interator)) writer.writeRaw('\n')
 }
 
 // The first visible line of a paragraph is written without its indent. Inside an item
@@ -460,6 +477,7 @@ const rules = {
     )
   }),
   data: emptyContent,
+  Html: htmlBlock,
   ':verbatim': (writer, processor) => (node, ctx, interator) => {
     if (node.error) {
       writer.emit('errors', node.location)

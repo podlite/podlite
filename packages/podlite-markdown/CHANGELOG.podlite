@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item every block the reader of Markdown makes carries C<sourceFormat: 'markdown'>, the root and the rows and cells of a table too, so a writer can tell HTML of Markdown from an C<=Html> block an author wrote. The field is optional and the other fields are as before; a tree built by an earlier version has no mark
+
 =head1 0.0.69
 
 =item C<md2ast> gives each heading a C<headingKey>, fingerprinted from the markdown text it read, including the body of a C<=markdown> block

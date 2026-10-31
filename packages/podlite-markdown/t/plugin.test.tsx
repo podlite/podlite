@@ -108,6 +108,7 @@ header1
             "id": "id",
             "margin": "",
             "name": "root",
+            "sourceFormat": "markdown",
             "type": "block",
           },
           "id": "id",

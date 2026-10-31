@@ -48,6 +48,7 @@ it('=markdown: parse para', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -95,6 +96,7 @@ comments, given a root file as a path`
           },
           "margin": "",
           "name": "head",
+          "sourceFormat": "markdown",
           "type": "block",
         },
         Object {
@@ -123,6 +125,7 @@ comments, given a root file as a path`
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -168,6 +171,7 @@ it('[markdown]: parse link', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -196,6 +200,7 @@ it('[markdown]: parse image', () => {
                     "title",
                   ],
                   "name": "caption",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -214,6 +219,7 @@ it('[markdown]: parse image', () => {
               },
               "margin": "",
               "name": "Image",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -238,6 +244,7 @@ it('[markdown]: parse image', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -281,6 +288,7 @@ it('[markdown]: parse refs', () => {
           },
           "margin": "",
           "name": "head",
+          "sourceFormat": "markdown",
           "type": "block",
         },
         Object {
@@ -364,6 +372,7 @@ it('[markdown]: parse refs', () => {
                       },
                       "margin": "",
                       "name": "item",
+                      "sourceFormat": "markdown",
                       "type": "block",
                     },
                   ],
@@ -390,6 +399,7 @@ it('[markdown]: parse refs', () => {
               },
               "margin": "",
               "name": "item",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -403,6 +413,7 @@ it('[markdown]: parse refs', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -442,6 +453,7 @@ it('[markdown]: broken_refs', () => {
           },
           "margin": "",
           "name": "head",
+          "sourceFormat": "markdown",
           "type": "block",
         },
         Object {
@@ -501,6 +513,7 @@ it('[markdown]: broken_refs', () => {
               },
               "margin": "",
               "name": "item",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -558,6 +571,7 @@ it('[markdown]: broken_refs', () => {
               },
               "margin": "",
               "name": "item",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -571,6 +585,7 @@ it('[markdown]: broken_refs', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -618,12 +633,14 @@ var documentation = require('documentation');
           },
           "margin": "",
           "name": "code",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -818,6 +835,7 @@ _You **can** combine them_
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -838,6 +856,7 @@ it('[markdown]: thematic_break', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -918,12 +937,14 @@ As Kanye West said:
           },
           "margin": "",
           "name": "nested",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -977,6 +998,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -998,6 +1020,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1016,6 +1039,7 @@ Content in the first column | Content in the second column
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1039,6 +1063,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1060,6 +1085,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1078,6 +1104,7 @@ Content in the first column | Content in the second column
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1101,6 +1128,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1122,6 +1150,7 @@ Content in the first column | Content in the second column
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1140,6 +1169,7 @@ Content in the first column | Content in the second column
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -1158,12 +1188,14 @@ Content in the first column | Content in the second column
           },
           "margin": "",
           "name": "table",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -1215,6 +1247,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1234,6 +1267,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1252,6 +1286,7 @@ it('[markdown]: parse table with empty header', () => {
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1275,6 +1310,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1296,6 +1332,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1314,6 +1351,7 @@ it('[markdown]: parse table with empty header', () => {
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1337,6 +1375,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1358,6 +1397,7 @@ it('[markdown]: parse table with empty header', () => {
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1376,6 +1416,7 @@ it('[markdown]: parse table with empty header', () => {
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -1394,12 +1435,14 @@ it('[markdown]: parse table with empty header', () => {
           },
           "margin": "",
           "name": "table",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -1476,6 +1519,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1497,6 +1541,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1518,6 +1563,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1536,6 +1582,7 @@ More text    | Even more text   | And even more to the right
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1559,6 +1606,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1580,6 +1628,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1601,6 +1650,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1619,6 +1669,7 @@ More text    | Even more text   | And even more to the right
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
             Object {
@@ -1642,6 +1693,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1663,6 +1715,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
                 Object {
@@ -1684,6 +1737,7 @@ More text    | Even more text   | And even more to the right
                   },
                   "margin": "",
                   "name": "cell",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1702,6 +1756,7 @@ More text    | Even more text   | And even more to the right
               },
               "margin": "",
               "name": "row",
+              "sourceFormat": "markdown",
               "type": "block",
             },
           ],
@@ -1720,12 +1775,14 @@ More text    | Even more text   | And even more to the right
           },
           "margin": "",
           "name": "table",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -1772,6 +1829,7 @@ it('[markdown]: parse strikethrough', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -1819,12 +1877,14 @@ graph TD;
           },
           "margin": "",
           "name": "Mermaid",
+          "sourceFormat": "markdown",
           "type": "block",
         },
       ],
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
@@ -1883,6 +1943,7 @@ it('[markdown]: parse images', () => {
                   },
                   "margin": "",
                   "name": "Image",
+                  "sourceFormat": "markdown",
                   "type": "block",
                 },
               ],
@@ -1912,6 +1973,7 @@ it('[markdown]: parse images', () => {
       "id": "id",
       "margin": "",
       "name": "root",
+      "sourceFormat": "markdown",
       "type": "block",
     }
   `)
