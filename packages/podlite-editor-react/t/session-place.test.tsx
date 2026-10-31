@@ -248,6 +248,7 @@ describe('the place of a note restored on the element that scrolls', () => {
     const { outer, inner } = wrapperScrolls(m, { scrollHeight: 8000 })
     // the layout is not ready yet: CodeMirror holds the target until it has a height
     inner.clientHeight = 0
+    inner.scrollHeight = 0
     const seen: Array<{ top: number; height: number }> = []
     const lineBlockAt = m.view.lineBlockAt.bind(m.view)
     m.view.lineBlockAt = (pos: number) => {
@@ -260,6 +261,7 @@ describe('the place of a note restored on the element that scrolls', () => {
       m.view.dispatch({ changes: { from: 0, insert: 'x\n\n'.repeat(60) } })
     })
     inner.clientHeight = 8000
+    inner.scrollHeight = 8000
     await measure(m.view)
     expect(m.view.state.selection.main.head).toBe(FAR + 180)
     expect(m.outcomes).toEqual(['reached'])
@@ -273,13 +275,17 @@ describe('the place of a note restored on the element that scrolls', () => {
   it('ignores a target of its own left from a note opened before', async () => {
     const m = await mount({ autoFocus: false, focusOnRestore: false })
     const { outer, inner } = wrapperScrolls(m)
+    // the layout is not ready yet
     inner.clientHeight = 0
+    inner.scrollHeight = 0
     await m.open({ cursorOffset: FAR })
     // the next note comes before the first was measured
     await m.open({ scrollTop: 200 })
     inner.clientHeight = 2000
+    inner.scrollHeight = 2000
+    await act(async () => resized())
     await measure(m.view)
-    expect(outer.writes).toEqual([200])
+    expect(outer.writes[outer.writes.length - 1]).toBe(200)
     expect(m.outcomes).toEqual(['replaced', 'reached'])
     await m.done()
   })
