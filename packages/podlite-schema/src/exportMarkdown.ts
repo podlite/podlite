@@ -263,6 +263,11 @@ const writeText = (writer, node, ctx, value: string) => {
   }
 }
 
+// HTML the markdown plugin finds inside a line comes as an Html block of one line
+const inlineHtml = node =>
+  node.name === 'Html' &&
+  (node.content || []).every(part => part.type === 'verbatim' && !String(part.value).includes('\n'))
+
 // A cell holds a block when it holds more than one paragraph or anything but a paragraph
 // and text; a comment, data and a directive show nothing and count for nothing.
 const holdsBlock = cell => {
@@ -273,7 +278,7 @@ const holdsBlock = cell => {
     (nodes || []).forEach(node => {
       if (typeof node === 'string' || node.type === 'text') {
         if (String(typeof node === 'string' ? node : node.value || '').trim() !== '') inline = true
-      } else if (node.type === 'fcode') inline = true
+      } else if (node.type === 'fcode' || (node.type === 'block' && inlineHtml(node))) inline = true
       else if (node.type === 'para') paragraphs++
       else if (node.type === 'block' && node.name === 'para') visit(node.content)
       else if (node.type === 'blankline' || node.type === 'config' || node.type === 'alias') return

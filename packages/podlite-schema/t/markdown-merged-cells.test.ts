@@ -1,8 +1,19 @@
 import { podlitePluggable } from '../src/pluggableParser'
+import { podlite } from '../../core/src'
+import { toMarkdown, toAnyRules } from '../src'
 
 // the parser of this package, without plugins, so a run against its earlier source reads that source
 const p = podlitePluggable()
 const markdown = (doc: string) => String(p.toMarkdown(p.toAst(p.parse(doc, { podMode: 1 }))))
+// the path of the command line: the core with its plugins
+const withPlugins = (doc: string) => {
+  const core = podlite({ importPlugins: true })
+  return String(
+    toMarkdown({})
+      .use(toAnyRules('toMarkdown', core.getPlugins()))
+      .run(core.toAst(core.parse(doc, { podMode: 1 }))),
+  )
+}
 
 const merged = (cell: string) =>
   `=begin table\n=begin row\n=begin cell :colspan(2)\n${cell}\n=end cell\n=end row\n=begin row\n=cell Left\n=cell Right\n=end row\n=end table\n`
@@ -144,6 +155,13 @@ describe('a table without merged cells whose cell holds a block in markdown outp
 })
 
 describe('a table without merged cells that stays a pipe table', () => {
+  it('keeps a cell of a markdown table with HTML inside a line', () => {
+    const doc = '=begin markdown\n| A | B |\n| - | - |\n| x | 1. **a**<br>2. b |\n=end markdown\n'
+    const out = withPlugins(doc)
+    expect(out).toContain('| x | 1. **a**<br>2. b |')
+    expect(out).not.toContain('<table>')
+  })
+
   it('keeps cells of one paragraph, text, codes and silent nodes', () => {
     const row = (cell: string) =>
       `=begin table\n=begin row\n=begin cell\n${cell}\n=end cell\n=cell b\n=end row\n=end table\n`
