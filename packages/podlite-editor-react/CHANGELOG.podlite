@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the place of a note given in C<initialEditorState> is restored on the element that scrolls — the editor's own wrapper when CodeMirror grows with its content, CodeMirror when it has a height — and reported from it, so a saved scroll moves the view and a reported one is not always 0. The place is kept as an intention until it is reached: the editor tries again when its layout changes, the window is shown again or a picture loads, without counting frames. A place with a cursor and no scroll brings the line of the cursor into view, also without the focus, and the page around the editor still does not move. Typing, pasting, the wheel or a touch give the restore up and report where the editor is. New props: C<focusOnRestore> (default C<true>, the focus after a restore as before) and C<onPlaceRestored>, called once for each place with C<reached>, C<cancelled> or C<replaced>. While the line of the cursor is pending, a message carries no C<scrollTop>
+
 =head1 0.0.85
 
 =item the body of C<=fixture> is highlighted as a Podlite document, the body of C<=resource> by the extension of its C<:name> (Podlite or Markdown), and the body of C<=assert> as a selector: block names, conditions, values, the source and its path, and the word C<in> of an operation. C<:lang> still chooses the language when it is given, and only on C<=begin> and C<=for>

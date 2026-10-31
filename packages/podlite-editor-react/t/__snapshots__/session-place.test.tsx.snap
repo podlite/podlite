@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the person acts before the place is reached sorts every listener CodeMirror and the editor put on the content 1`] = `
+Array [
+  "beforeinput",
+  "blur",
+  "compositionend",
+  "compositionstart",
+  "compositionupdate",
+  "contextmenu",
+  "copy",
+  "cut",
+  "dragend",
+  "dragleave",
+  "dragover",
+  "dragstart",
+  "drop",
+  "focus",
+  "input",
+  "keydown",
+  "mousedown",
+  "mousewheel",
+  "paste",
+  "scroll",
+  "touchend",
+  "touchmove",
+  "touchstart",
+  "wheel",
+]
+`;

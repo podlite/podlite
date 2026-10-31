@@ -5,6 +5,7 @@ export { Editor2 as Editor2 }
 export { WindowWrapper as WindowWrapper }
 export { HighlightedCode as HighlightedCode }
 export type { EditorSessionState } from './types'
+export type { PlaceOutcome } from './sessionPlace'
 export type {
   ConverterResult,
   IPodliteEditor,

@@ -18,6 +18,9 @@ class NoResize {
 ;(global as any).IS_REACT_ACT_ENVIRONMENT = true
 // jsdom lays nothing out, so the preview has no scrolling of its own
 ;(Element.prototype as any).scrollTo = function () {}
+// the restore of a place asks CodeMirror to measure, and jsdom gives a range no boxes
+;(Range.prototype as any).getClientRects = () => []
+;(Range.prototype as any).getBoundingClientRect = () => ({ top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0 })
 
 const host = () => {
   const node = window.document.createElement('div')

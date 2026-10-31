@@ -30,7 +30,7 @@ class ImageWidget extends WidgetType {
     return other.src === this.src && other.url === this.url
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     const box = document.createElement('div')
     box.className = 'cm-pod-image'
     if (!this.url) {
@@ -41,6 +41,8 @@ class ImageWidget extends WidgetType {
     const img = document.createElement('img')
     img.src = this.url
     img.alt = this.src
+    // a picture that comes later changes the height of the lines below it
+    img.addEventListener('load', () => view.requestMeasure())
     // a picture that cannot be fetched leaves a quiet line rather than a broken
     // icon: the address is still readable above it, so nothing is lost
     img.addEventListener('error', () => {

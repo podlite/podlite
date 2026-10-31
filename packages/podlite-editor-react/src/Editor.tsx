@@ -32,6 +32,7 @@ import { podliteDecorations } from './podliteDecorations'
 import { podliteImages } from './imageDecorations'
 import { podliteDiagnostics } from './diagnostics'
 import type { EditorSessionState } from './types'
+import { PlaceRestore, scrollerOf, type PlaceOutcome } from './sessionPlace'
 import { HighlightedCode } from '@podlite/highlight'
 import { createImagePasteDropHandler } from './imagePasteHandler'
 import { SaveAssetCallback } from './imagePaste'
@@ -85,6 +86,11 @@ export interface IPodliteEditor extends CodeMirrorProps {
   initialEditorState?: EditorSessionState
   /** Called when editor state changes (cursor move, scroll, fold/unfold) */
   onEditorStateChange?: (state: EditorSessionState) => void
+  /** Give the editor focus once the place of `initialEditorState` is put back. @default `true` */
+  focusOnRestore?: boolean
+  /** Called once for each `initialEditorState`, when its place is reached, given up
+      because the person acted, or replaced by the next one before it was reached */
+  onPlaceRestored?: (outcome: PlaceOutcome) => void
   /** Save a pasted or dropped image file. Return the path to insert in
       `=picture`, or `null` to cancel (e.g. buffer not yet saved to disk). */
   onSaveAsset?: SaveAssetCallback
@@ -163,6 +169,8 @@ function PodliteEditorInternal(
     language = 'podlite',
     initialEditorState,
     onEditorStateChange,
+    focusOnRestore = true,
+    onPlaceRestored,
     onSaveAsset,
     includeReader,
     includeBaseDir,
@@ -205,6 +213,13 @@ function PodliteEditorInternal(
   // Stable refs for callbacks used in memoized extensions
   const onEditorStateChangeRef = useRef(onEditorStateChange)
   onEditorStateChangeRef.current = onEditorStateChange
+  const onPlaceRestoredRef = useRef(onPlaceRestored)
+  onPlaceRestoredRef.current = onPlaceRestored
+  const focusOnRestoreRef = useRef(focusOnRestore)
+  focusOnRestoreRef.current = focusOnRestore
+  const placeRestore = useRef<PlaceRestore | null>(null)
+  // the wrapper that scrolls when CodeMirror grows with its content
+  const editorWrapper = useCallback(() => containerEditor.current?.parentElement, [])
   const onOpenLinkRef = useRef(onOpenLink)
   onOpenLinkRef.current = onOpenLink
   const onSaveAssetRef = useRef(onSaveAsset)
@@ -354,6 +369,39 @@ function PodliteEditorInternal(
     [],
   )
 
+  // The scroll a message carries: what the restore intends while it is pending,
+  // else the element that scrolls now
+  const placeScrollTop = useCallback(
+    (view: EditorView): number | undefined =>
+      placeRestore.current ? placeRestore.current.scrollTopToReport() : scrollerOf(view, editorWrapper()).scrollTop,
+    [editorWrapper],
+  )
+  const placeOf = useCallback(
+    (view: EditorView): EditorSessionState => {
+      const scrollTop = placeScrollTop(view)
+      return {
+        cursorOffset: view.state.selection.main.head,
+        ...(scrollTop === undefined ? {} : { scrollTop }),
+        foldedRanges: serializeFoldedRanges(view),
+      }
+    },
+    [placeScrollTop, serializeFoldedRanges],
+  )
+
+  // One restorer for the life of the view; it listens for the person and the layout
+  useEffect(() => {
+    if (!editorView) return
+    const restorer = new PlaceRestore(editorView, editorWrapper, {
+      report: () => onEditorStateChangeRef.current?.(placeOf(editorView)),
+      restored: outcome => onPlaceRestoredRef.current?.(outcome),
+    })
+    placeRestore.current = restorer
+    return () => {
+      restorer.dispose()
+      if (placeRestore.current === restorer) placeRestore.current = null
+    }
+  }, [editorView, editorWrapper, placeOf])
+
   // Reset applied flag when initialEditorState changes (new file opened)
   useEffect(() => {
     initialStateApplied.current = false
@@ -365,6 +413,8 @@ function PodliteEditorInternal(
     const view = editorView
     if (!view) return
     initialStateApplied.current = true
+    // the intention comes first, so the messages of the cursor and the folds carry it
+    placeRestore.current?.begin(initialEditorState)
 
     // Restore cursor position
     if (initialEditorState.cursorOffset != null) {
@@ -382,14 +432,11 @@ function PodliteEditorInternal(
       view.dispatch({ effects: [...standing, ...wanted] })
     }
 
-    // Restore scroll position (after folds applied, so layout is correct)
-    // and focus the editor so the blinking cursor is visible
-    requestAnimationFrame(() => {
-      if (initialEditorState.scrollTop != null) {
-        view.scrollDOM.scrollTop = initialEditorState.scrollTop!
-      }
-      view.focus()
-    })
+    // once, with the cursor, so the blinking cursor is visible; a host that keeps
+    // the focus for itself turns it off
+    if (focusOnRestoreRef.current) view.focus()
+    // the scroll or the cursor line, once the editor is measured
+    placeRestore.current?.apply()
   }, [initialEditorState, editorView])
 
   // Expose editor state changes via callback
@@ -399,11 +446,7 @@ function PodliteEditorInternal(
     if (!view) return
 
     const emitState = (): void => {
-      onEditorStateChange({
-        cursorOffset: view.state.selection.main.head,
-        scrollTop: view.scrollDOM.scrollTop,
-        foldedRanges: serializeFoldedRanges(view),
-      })
+      onEditorStateChange(placeOf(view))
     }
 
     // Debounce scroll events
@@ -413,12 +456,14 @@ function PodliteEditorInternal(
       scrollTimer = setTimeout(emitState, 200)
     }
 
-    view.scrollDOM.addEventListener('scroll', handleScroll)
+    // either may be the one that scrolls; the other stays silent
+    const scrollers = [view.scrollDOM, editorWrapper()].filter(Boolean) as HTMLElement[]
+    scrollers.forEach(el => el.addEventListener('scroll', handleScroll))
     return () => {
-      view.scrollDOM.removeEventListener('scroll', handleScroll)
+      scrollers.forEach(el => el.removeEventListener('scroll', handleScroll))
       if (scrollTimer) clearTimeout(scrollTimer)
     }
-  }, [onEditorStateChange, editorView, serializeFoldedRanges])
+  }, [onEditorStateChange, editorView, placeOf, editorWrapper])
 
   const height = isFullscreen
     ? '100%'
@@ -658,7 +703,25 @@ function PodliteEditorInternal(
   // The handler runs inside a measure pass, where reading layout throws, so it
   // decides on focus alone. The two places that sync the preview to the editor
   // put the line where they want it themselves.
-  const keepScrollInside = React.useMemo(() => EditorView.scrollHandler.of(view => !view.hasFocus), [])
+  // The restore of a note's place sends a target of its own; the hook moves the
+  // element that scrolls for it, so nothing above the editor moves either.
+  const keepScrollInside = React.useMemo(
+    () =>
+      EditorView.scrollHandler.of((view, range, options) => {
+        const restorer = placeRestore.current
+        if (restorer && restorer.isOwnTarget(options)) return restorer.scrollOwnTarget(range.head)
+        return !view.hasFocus
+      }),
+    [],
+  )
+  // a change of the layout gives a pending place another try
+  const placeOnLayout = React.useMemo(
+    () =>
+      EditorView.updateListener.of(update => {
+        if (update.geometryChanged || update.heightChanged) placeRestore.current?.retryLater()
+      }),
+    [],
+  )
   // Create custom keymap that prevents the toggle comment shortcut
   const preventToggleComment = React.useMemo(
     () =>
@@ -738,15 +801,11 @@ function PodliteEditorInternal(
             )
             const hasCursorChange = update.selectionSet
             if (hasFoldChange || hasCursorChange) {
-              onEditorStateChangeRef.current?.({
-                cursorOffset: update.state.selection.main.head,
-                scrollTop: update.view.scrollDOM.scrollTop,
-                foldedRanges: serializeFoldedRanges(update.view),
-              })
+              onEditorStateChangeRef.current?.(placeOf(update.view))
             }
           })
         : [],
-    [!!onEditorStateChange, serializeFoldedRanges],
+    [!!onEditorStateChange, placeOf],
   )
 
   const linkTheme = React.useMemo(
@@ -844,6 +903,7 @@ function PodliteEditorInternal(
       podliteDecorations(),
       podliteImages({ show: showInlineImages, resolve: imageSrc, baseDir: imageBaseDir }),
       keepScrollInside,
+      placeOnLayout,
     ]
 
     if (language === 'podlite') {
@@ -877,6 +937,7 @@ function PodliteEditorInternal(
     autocompletionExt,
     enableFolding,
     keepScrollInside,
+    placeOnLayout,
     language,
     imagePasteDropHandler,
     showInlineImages,
