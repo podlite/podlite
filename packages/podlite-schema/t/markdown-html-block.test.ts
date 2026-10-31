@@ -50,6 +50,24 @@ describe('an =Html block of the author in markdown output', () => {
     expect(markdown('=begin Html\n\n=end Html\n=para A\n')).toBe('A\n\n')
   })
 
+  it('writes a table whose cell holds an =Html of the author as a frame with the body in a fence', () => {
+    const doc = '=begin table\n=begin row\n=begin cell\n=Html <b>x</b>\n=end cell\n=cell Tail\n=end row\n=end table\n'
+    expect(markdown(doc)).toBe(
+      '<table>\n<tr>\n<td>\n\n```\n<b>x</b>\n```\n\n</td>\n<td>\n\nTail\n\n</td>\n</tr>\n</table>\n\n',
+    )
+  })
+
+  it('writes nothing for a body of spaces only', () => {
+    expect(markdown('=begin Html\n   \n=end Html\n=para A\n')).toBe('A\n\n')
+  })
+
+  it('keeps raw a copy of a block that carries the mark of markdown', () => {
+    const tree = core.toAst(core.parse('Text <br> more\n', { mode: 'md' }))
+    const para = tree.content[0] as { content: object[] }
+    para.content = para.content.map(part => (typeof part === 'object' ? { ...part } : part))
+    expect(String(toMarkdown({}).use(toAnyRules('toMarkdown', core.getPlugins())).run(tree))).toBe('Text <br> more\n')
+  })
+
   it('fences an Html block a plugin put in later without the mark of markdown', () => {
     const tree = core.toAst(core.parse('=para Before\n', { podMode: 1 }))
     const html = { type: 'block', name: 'Html', margin: '', content: [{ type: 'verbatim', value: '<i>x</i>' }] }
@@ -79,6 +97,12 @@ describe('what stays as it was', () => {
 
   it('keeps a markdown table with HTML in a cell a pipe table', () => {
     expect(markdown('| a | b |\n| - | - |\n| x<br>y | c |\n', { mode: 'md' })).toContain('| x<br>y | c |')
+  })
+
+  it('writes HTML of markdown with a closing table tag inside a frame as text', () => {
+    const doc =
+      '=begin table\n=begin row\n=begin cell :colspan(2)\n=begin markdown\nA </table>&amp;\n=end markdown\n=end cell\n=end row\n=end table\n'
+    expect(markdown(doc)).toBe('<table>\n<tr>\n<td colspan="2">\n\nA &lt;/table>\\&\n\n</td>\n</tr>\n</table>\n\n')
   })
 
   it('writes HTML of markdown inside a frame with the sign of a tag escaped', () => {

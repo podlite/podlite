@@ -1,5 +1,5 @@
-import { frozenIds, getFromTree } from '@podlite/schema'
-import { podlite, readerFor } from '../src'
+import { frozenIds, getFromTree, validatePodliteAst } from '@podlite/schema'
+import { podlite, readerFor, writtenTree } from '../src'
 import { assembleIncludes, sourcesFromFiles } from '../src/assemble'
 
 const core = podlite({ importPlugins: true })
@@ -39,5 +39,14 @@ describe('the mark of markdown on the way through the core', () => {
     const tree = core.toAst(core.parse('A <b>x</b>\n', { mode: 'md' }))
     expect(html(frozenIds()(tree))[0].sourceFormat).toBe('markdown')
     expect(html(JSON.parse(JSON.stringify(tree)))[0].sourceFormat).toBe('markdown')
+  })
+
+  it('marks the tree a markdown file is written as, and leaves a document of the author valid and unmarked', () => {
+    const md = writtenTree(core, 'A <br> x\n', 'md')
+    expect(md.sourceFormat).toBe('markdown')
+    expect(html(md)[0].sourceFormat).toBe('markdown')
+    const pod = core.toAst(core.parse('=begin pod\n=para A\n=end pod\n', { podMode: 1 }))
+    expect(validatePodliteAst(pod)).toEqual([])
+    expect(JSON.stringify(pod)).not.toContain('sourceFormat')
   })
 })
