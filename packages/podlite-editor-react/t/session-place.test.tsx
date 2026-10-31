@@ -245,28 +245,41 @@ describe('the place of a note restored on the element that scrolls', () => {
 
   it('follows the cursor when text comes in before it before the measure', async () => {
     const m = await mount({ autoFocus: false, focusOnRestore: false })
-    const { outer } = wrapperScrolls(m, { scrollHeight: 8000 })
+    const { outer, inner } = wrapperScrolls(m, { scrollHeight: 8000 })
+    // the layout is not ready yet: CodeMirror holds the target until it has a height
+    inner.clientHeight = 0
+    const seen: Array<{ top: number; height: number }> = []
+    const lineBlockAt = m.view.lineBlockAt.bind(m.view)
+    m.view.lineBlockAt = (pos: number) => {
+      const block = lineBlockAt(pos)
+      if (pos === FAR + 180) seen.push({ top: block.top, height: block.height })
+      return block
+    }
     await m.open({ cursorOffset: FAR })
     await act(async () => {
       m.view.dispatch({ changes: { from: 0, insert: 'x\n\n'.repeat(60) } })
     })
+    inner.clientHeight = 8000
     await measure(m.view)
-    const line = m.view.lineBlockAt(FAR + 180)
     expect(m.view.state.selection.main.head).toBe(FAR + 180)
     expect(m.outcomes).toEqual(['reached'])
-    expect(outer.top).toBeLessThanOrEqual(line.top)
-    expect(outer.top + 300).toBeGreaterThanOrEqual(line.top + line.height)
+    // the line as the hook saw it when it wrote; the hook counts the padding above
+    // the document too, a few pixels
+    const centred = seen.map(line => Math.max(0, line.top - (300 - line.height) / 2))
+    expect(outer.writes.some(write => centred.some(at => Math.abs(write - at) <= 8))).toBe(true)
     await m.done()
   })
 
   it('ignores a target of its own left from a note opened before', async () => {
     const m = await mount({ autoFocus: false, focusOnRestore: false })
-    const { outer } = wrapperScrolls(m)
+    const { outer, inner } = wrapperScrolls(m)
+    inner.clientHeight = 0
     await m.open({ cursorOffset: FAR })
     // the next note comes before the first was measured
     await m.open({ scrollTop: 200 })
+    inner.clientHeight = 2000
     await measure(m.view)
-    expect(outer.top).toBe(200)
+    expect(outer.writes).toEqual([200])
     expect(m.outcomes).toEqual(['replaced', 'reached'])
     await m.done()
   })
