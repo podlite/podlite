@@ -131,6 +131,7 @@ describe('a table without merged cells whose cell holds a block in markdown outp
     const doc = '=begin table\n=begin row\n=begin cell\n=item one\n=end cell\n=cell C<a | b>\n=end row\n=end table\n'
     expect(markdown(doc)).toContain('<td>\n\n`a | b`\n\n</td>')
     expect(markdown('=para C<a | b> and K<c | d>\n')).toBe('`a | b` and `c | d`\n\n')
+    expect(markdown('=begin code :allow<B>\nx B<a | b> y\n=end code\n')).toBe('```\nx **a | b** y\n```\n')
   })
 
   it('writes a bar in code with a backslash only in the row of a pipe table inside the frame', () => {
@@ -150,6 +151,9 @@ describe('a table without merged cells that stays a pipe table', () => {
     expect(markdown(row('=para one'))).toContain('| one | b |')
     expect(markdown(row('B<bold> and C<a | b>'))).toContain('| **bold** and `a \\| b` | b |')
     expect(markdown(row('Z<hidden>'))).toContain('|  | b |')
+    expect(markdown('=begin table\n=begin row\n=begin cell\n=end cell\n=cell b\n=end row\n=end table\n')).toContain(
+      '|  | b |',
+    )
     expect(markdown(row('text N<note>'))).toContain('| text [^1] | b |')
     expect(markdown(row('text\n=comment hidden'))).toContain('| text | b |')
     expect(markdown('=begin table\na  b\nc  d\n=end table\n')).toContain('| a | b |')
