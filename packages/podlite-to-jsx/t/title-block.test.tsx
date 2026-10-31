@@ -76,6 +76,7 @@ describe('the =TITLE block in the output of to-jsx', () => {
   })
 
   it('keeps the spaces and the line break of S<>', () => {
+    expect(heading('=TITLE S<Alpha  Beta>\n')).toBe('Alpha\u00a0\u00a0Beta\n')
     expect(heading('=TITLE S<Alpha\nBeta>\n')).toBe('Alpha<br/>Beta\n')
     expect(heading('=TITLE S<B<Alpha\nBeta>>\n')).toBe('<strong>Alpha<br/>Beta</strong>\n')
   })
@@ -83,6 +84,47 @@ describe('the =TITLE block in the output of to-jsx', () => {
   it('shows a title written in the plural and a title after a paragraph the same way', () => {
     expect(html('=TITLES Plural\n')).toBe('<div><h1 class="TITLES" id="id">Plural\n</h1></div>')
     expect(html('=para Intro\n\n=TITLE Late\n')).toContain('<h1 class="TITLE" id="id">Late\n</h1>')
+  })
+
+  it('numbers the notes in the order of the source', () => {
+    const out = html('=begin TITLE\n=item point N<first>\n\nTitle N<second>\n=end TITLE\n')
+    expect(heading('=begin TITLE\n=item point N<first>\n\nTitle N<second>\n=end TITLE\n')).toContain('[2]')
+    expect(out).toContain('point <sup id="fnref:1"')
+  })
+
+  it('gives the table of contents a link to the id of the title', () => {
+    const out = html('=begin pod\n=toc TITLE\n\n=for TITLE :id<Spec>\nThe Specification\n=end pod\n')
+    expect(out).toContain('<a href="#Spec">')
+    expect(out).toContain('<h1 class="TITLE" id="Spec">')
+  })
+
+  it('hides the text of a masked paragraph of a tree that carries no marks of its own', () => {
+    const tree = {
+      type: 'block',
+      name: 'root',
+      margin: '',
+      content: [
+        {
+          type: 'block',
+          name: 'TITLE',
+          margin: '',
+          content: [
+            {
+              type: 'block',
+              name: 'para',
+              margin: '',
+              config: [{ name: 'masked', value: true, type: 'boolean' }],
+              content: [{ type: 'para', margin: '', content: [{ type: 'text', value: 'Secret' }] }],
+            },
+          ],
+        },
+      ],
+    }
+    const render = (renderMode: 'production' | 'draft') =>
+      renderToStaticMarkup(<PodliteRaw tree={{ interator: tree } as never} renderMode={renderMode} />)
+    expect(render('production')).toContain('██████')
+    expect(render('production')).not.toContain('Secret')
+    expect(render('draft')).toContain('Secret')
   })
 
   it('leaves the tree as it was', () => {
@@ -119,6 +161,11 @@ describe('titleParts', () => {
     ).toEqual(['part', 'code', 'alias', 'part', 'list'])
     const first = entries[0] as { kind: 'part'; content: any[] }
     expect(first.content).toBe(node.content[0].content)
+    const rest = entries.filter(entry => entry.kind === 'rest') as Array<{ kind: 'rest'; node: any }>
+    rest.forEach(entry => expect(node.content).toContain(entry.node))
+    expect(rest.map(entry => node.content.indexOf(entry.node))).toEqual(
+      [...rest.map(entry => node.content.indexOf(entry.node))].sort((a, b) => a - b),
+    )
     expect(JSON.stringify(entries.filter(entry => entry.kind === 'part'))).not.toContain('point')
   })
 })
