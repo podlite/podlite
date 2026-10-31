@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<=TITLE> (and C<=TITLES>) shows its content as the title of the document in one C<h1>, with the id of the block, instead of the word TITLE above the content: the paragraphs of the title stand in the heading one after another, code, lists and other blocks follow it, a directive inside acts from where it stands, and the content renders once, so a note in the title is counted once. An empty title shows no heading; with an C<:id> it keeps an empty anchor
+
 =item a C<=config> inside a nested block no longer folds that block or gives it its caption; it applies to the blocks that follow it
 
 =head1 0.0.84

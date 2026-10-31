@@ -597,12 +597,11 @@ it('accepts =TITLE', () => {
   expect(root.innerHTML).toMatchInlineSnapshot(`
     <div id="id">
       <div>
-        <h1 class="TITLE">
-          TITLE
-        </h1>
-        <p>
+        <h1 class="TITLE"
+            id="id"
+        >
           test
-        </p>
+        </h1>
       </div>
       <div id="id">
         <p>

@@ -22,6 +22,8 @@ import {
   frozenIds,
   JSXHelper,
   getSafeNodeId,
+  titleParts,
+  isTitleBlock,
   linkTarget,
   sameDocTarget,
 } from '@podlite/schema'
@@ -245,6 +247,28 @@ const previewOf = (node, ctx, index: Map<string, LinkPreviewTarget>): LinkPrevie
 
 // the words a test is shown by are hidden with the content they stand beside
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
+
+// A part of a title is seen when what it renders holds a visible character, a picture
+// or a component, whose output cannot be read before it renders.
+const isSeen = (result: unknown): boolean => {
+  if (result == null || typeof result === 'boolean') return false
+  if (typeof result === 'string') return /\S/.test(result)
+  if (typeof result === 'number') return true
+  if (Array.isArray(result)) return result.some(isSeen)
+  if (React.isValidElement(result)) {
+    if (result.type === 'img' || typeof result.type === 'function') return true
+    return isSeen((result.props as { children?: unknown }).children)
+  }
+  return false
+}
+
+// a paragraph a title takes apart keeps its own mask for the text it gives the title
+const maskedOwner = (owner, ctx): boolean => {
+  if (ctx?.maskMode || ctx?.renderMode === 'draft') return false
+  if (owner.guarded) return true
+  const conf = makeAttrs(owner, ctx || {})
+  return Boolean(conf.exists('masked') && conf.getFirstValue('masked'))
+}
 
 const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Partial<RulesStrict> => {
   const mkComponent = src => (writer, processor) => (node, ctx, interator) => {
@@ -1217,6 +1241,39 @@ function podlite(
         // skip named blocks
         if (isNamedBlock(node.name)) {
           return null
+        }
+        // =TITLE shows its content as the title of the document; an empty one shows nothing
+        if (isTitleBlock(node)) {
+          const heading: React.ReactNode[] = []
+          const rest: React.ReactNode[] = []
+          // one pass in the order of the source, so a directive acts from where it stands
+          titleParts(node).forEach(entry => {
+            if (entry.kind === 'rest') {
+              rest.push(interator([entry.node], ctx))
+              return
+            }
+            const masked = entry.owners.some(owner => maskedOwner(owner, ctx))
+            const part = interator(entry.content, masked ? { ...ctx, maskMode: true } : ctx)
+            if (isSeen(part)) heading.push(part)
+          })
+          const id = getSafeNodeId(node, ctx)
+          const title = heading.flatMap((part, index) => (index ? [' ', part] : [part]))
+          return makeComponent(
+            ({ key }) => (
+              <div key={key}>
+                {heading.length ? (
+                  <h1 className={node.name} id={id}>
+                    {title}
+                  </h1>
+                ) : getExplicitNodeId(node, ctx) ? (
+                  <span id={id} />
+                ) : null}
+                {rest}
+              </div>
+            ),
+            node,
+            [],
+          )
         }
         if (isSemanticBlock(node)) {
           return makeComponent(
