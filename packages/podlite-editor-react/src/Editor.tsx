@@ -84,7 +84,10 @@ export interface IPodliteEditor extends CodeMirrorProps {
   enableFolding?: boolean
   /** Initial editor session state to restore (cursor, scroll, folds) */
   initialEditorState?: EditorSessionState
-  /** Called when editor state changes (cursor move, scroll, fold/unfold) */
+  /** Called when editor state changes (cursor move, scroll, fold/unfold). The scroll
+      is reported 200 ms after it stops, and not at all while the line of the cursor
+      is being restored: a host that saves the place when the person leaves the note
+      reads it from the view at that moment instead of waiting for a message. */
   onEditorStateChange?: (state: EditorSessionState) => void
   /** Give the editor focus once the place of `initialEditorState` is put back. @default `true` */
   focusOnRestore?: boolean
@@ -405,6 +408,7 @@ function PodliteEditorInternal(
   // Reset applied flag when initialEditorState changes (new file opened)
   useEffect(() => {
     initialStateApplied.current = false
+    if (!initialEditorState) placeRestore.current?.drop()
   }, [initialEditorState])
 
   // Restore editor session state once after mount or file change

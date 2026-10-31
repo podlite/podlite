@@ -118,6 +118,12 @@ export class PlaceRestore {
         : null
   }
 
+  // A document opened with no place: what was pending for the last one must not
+  // move the new one.
+  drop(): void {
+    if (this.intention) this.finish('replaced')
+  }
+
   // After the cursor and the folds: an opening with nothing to scroll to is done.
   apply(): void {
     if (!this.intention) return this.hooks.restored('reached')

@@ -291,6 +291,47 @@ describe('the place of a note restored on the element that scrolls', () => {
   })
 })
 
+describe('a pending place and the next document', () => {
+  it('drops the place of the last note when a document comes with no place', async () => {
+    const m = await mount()
+    const { outer } = wrapperScrolls(m, { scrollHeight: 300, clientHeight: 200 })
+    await m.open({ scrollTop: 500 })
+    await measure(m.view)
+    await m.open(undefined)
+    expect(m.outcomes).toEqual(['replaced'])
+    outer.top = 0
+    outer.scrollHeight = 2000
+    await act(async () => resized())
+    await act(async () => {
+      window.document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await measure(m.view)
+    expect(outer.top).toBe(0)
+    await m.done()
+  })
+
+  it('tries again when CodeMirror measures a new height of its own', async () => {
+    const m = await mount()
+    const own = layout(m.view.scrollDOM, { scrollHeight: 300, clientHeight: 200 })
+    // CodeMirror measures the geometry only of an editor it sees on the screen
+    const box = { top: 0, bottom: 2000, left: 0, right: 800, width: 800, height: 2000, x: 0, y: 0 }
+    m.view.contentDOM.getBoundingClientRect = () => ({ ...box, toJSON: () => box } as DOMRect)
+    m.view.dom.getBoundingClientRect = () => ({ ...box, toJSON: () => box } as DOMRect)
+    m.view.scrollDOM.getBoundingClientRect = () => ({ ...box, toJSON: () => box } as DOMRect)
+    await m.open({ scrollTop: 500 })
+    await measure(m.view)
+    expect(m.outcomes).toEqual([])
+    // the editor got taller and its content longer: CodeMirror sees it in its own measure
+    own.clientHeight = 400
+    own.scrollHeight = 2000
+    await measure(m.view)
+    await measure(m.view)
+    expect(own.top).toBe(500)
+    expect(m.outcomes).toEqual(['reached'])
+    await m.done()
+  })
+})
+
 describe('the person acts before the place is reached', () => {
   const pending = async () => {
     const m = await mount()
