@@ -88,8 +88,10 @@ describe('a cell of a table with merged cells in markdown output', () => {
 })
 
 describe('what stays as it was', () => {
-  it('writes raw text of a block without a rule as HTML text inside the frame', () => {
-    expect(markdown(merged('=begin Unknown\nAudit </table> End\n=end Unknown'))).toContain('Audit &lt;/table> End')
+  it('writes a block without a rule in a fence inside the frame, so its closing tag stays text', () => {
+    expect(markdown(merged('=begin Unknown\nAudit </table> End\n=end Unknown'))).toContain(
+      '<td colspan="2">\n\n```\nAudit </table> End\n```\n\n</td>',
+    )
   })
 
   it('writes a table without merged cells as a pipe table', () => {
@@ -124,7 +126,7 @@ describe('a table without merged cells whose cell holds a block in markdown outp
 
   it('writes the table as a frame for a sample, a block without a rule and a table', () => {
     expect(markdown(blockIn('=input one'))).toContain('<td>\n\n```\none\n```\n\n</td>')
-    expect(markdown(blockIn('=begin Unknown\nraw <x>\n=end Unknown'))).toContain('<td>\n\nraw &lt;x>\n\n</td>')
+    expect(markdown(blockIn('=begin Unknown\nraw <x>\n=end Unknown'))).toContain('<td>\n\n```\nraw <x>\n```\n\n</td>')
     expect(markdown(blockIn('=begin table\n=begin row\n=cell x\n=end row\n=end table'))).toContain(
       '<td>\n\n| x |\n| --- |\n\n</td>',
     )

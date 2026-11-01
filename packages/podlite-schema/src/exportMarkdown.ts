@@ -201,7 +201,7 @@ const writeFenced = (writer, info: string, write: () => void) => {
 // is written as text, so its words stay in sight. Says whether a fence was written.
 const isBodyText = child => typeof child === 'string' || child.type === 'text' || child.type === 'verbatim'
 const bodyValue = child => (typeof child === 'string' ? child : child.value)
-const writeBodyAsWritten = (writer, node, ctx, interator): boolean => {
+const writeBodyAsWritten = (writer, node, ctx, interator, language = ''): boolean => {
   const children = node.content || []
   if (writer.quoteDepth > 0 || writer.cellDepth > 0) {
     children.forEach(child =>
@@ -214,7 +214,7 @@ const writeBodyAsWritten = (writer, node, ctx, interator): boolean => {
     return false
   }
   const masked = isCovered(node, ctx)
-  writeFenced(writer, '', () =>
+  writeFenced(writer, language, () =>
     children.forEach(child =>
       isBodyText(child)
         ? writeSource(writer, masked ? maskText(bodyValue(child)) : bodyValue(child))
@@ -222,6 +222,82 @@ const writeBodyAsWritten = (writer, node, ctx, interator): boolean => {
     ),
   )
   return true
+}
+
+// What a block writes, ended by one blank line, so the paragraph after it stands
+// on its own
+const writeWithBoundary = (writer, write: () => void) => {
+  const original = writer.output
+  if (typeof original !== 'function') {
+    write()
+    writer.writeRaw('\n')
+    return
+  }
+  const parts: string[] = []
+  writer.output = (str: string) => parts.push(str)
+  try {
+    write()
+  } finally {
+    writer.output = original
+  }
+  const text = parts.join('')
+  if (text === '') return
+  writer.writeRaw(text.endsWith('\n\n') ? text : text.endsWith('\n') ? `${text}\n` : `${text}\n\n`)
+}
+
+// A block no rule knows holds a body nobody has read: text only. Its names never come
+// from a rule, a semantic block or an =include, which is a directive.
+const isBareBody = node => {
+  const name = node.name || ''
+  if (node.type !== 'block' || name === name.toUpperCase()) return false
+  if (['root', 'caption', 'Html', 'include'].includes(name)) return false
+  const children = node.content
+  return Array.isArray(children) && children.length > 0 && children.every(isBodyText)
+}
+
+// the names the plugins give a picture and a block of Markdown, as an author may write them
+const isPluginPicture = node =>
+  (node.name === 'picture' || node.name === 'Image') &&
+  node.sourceFormat !== 'markdown' &&
+  Array.isArray(node.content) &&
+  node.content[0]?.type === 'image'
+const isPluginMarkdown = node =>
+  (node.name === 'markdown' || node.name === 'Markdown') &&
+  node.content &&
+  !Array.isArray(node.content) &&
+  node.content.name === 'root'
+
+// A block without a rule of its own is shown as written: a fence without a language,
+// the body as the source has it, a diagram marked mermaid unless it is hidden. A
+// picture from its plugin stands as a picture with its caption a paragraph after it;
+// a block of Markdown read by its plugin keeps its own structure. Each ends with a
+// blank line, so the paragraph after it does not join it.
+const blockWithoutRule = (writer, node, ctx, interator): boolean => {
+  if (isBareBody(node)) {
+    const body = node.content.map(bodyValue).join('')
+    if (body.trim() === '') return true
+    const diagram = (node.name === 'Mermaid' || node.name === 'Diagram') && !isCovered(node, ctx)
+    if (writeBodyAsWritten(writer, node, ctx, interator, diagram ? 'mermaid' : '')) writer.writeRaw('\n')
+    return true
+  }
+  if (isPluginPicture(node)) {
+    const [image, ...rest] = node.content
+    writeWithBoundary(writer, () => {
+      interator([image], ctx)
+      writer.writeRaw('\n')
+    })
+    rest.forEach(part =>
+      part?.type === 'block' && part.name === 'caption'
+        ? writeWithBoundary(writer, () => paragraph(writer, ctx, () => interator(part.content, ctx)))
+        : interator([part], ctx),
+    )
+    return true
+  }
+  if (isPluginMarkdown(node)) {
+    writeWithBoundary(writer, () => interator(node.content, ctx))
+    return true
+  }
+  return false
 }
 
 // Input and output are written as code a reader keeps as written.
@@ -765,6 +841,7 @@ const toMarkdown = opt =>
           return isTypeBlock && name === name.toUpperCase()
         }
 
+        if (blockWithoutRule(writer, node, ctx, interator)) return
         if (isSemanticBlock(node)) {
           const name = node.name
           writer.writeRaw('# ')
