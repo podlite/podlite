@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the HTML output shows the content of C<=TITLE> (and C<=TITLES>) as the title of the document in one C<h1> with the id of the block, instead of the word TITLE above the content, as C<to-jsx> does: its paragraphs stand in the heading one after another, other blocks follow it, a directive inside acts from where it stands, and the content is written once. An empty title writes nothing; with an C<:id> it keeps an empty anchor. An entry of C<=toc TITLE> now leads to the heading of a title written without an C<:id>
+
 =item C<titleParts> splits the content of a C<=TITLE> block into the parts of its title line and the blocks that follow, in the order of the source and with the nodes of the tree; C<isTitleBlock> tells a C<=TITLE> or C<=TITLES> block
 
 =item the Markdown output writes the body of an C<=Html> block an author wrote in a fence, with a blank line after it, as a block without a rule is shown: written raw, a style could hide the paragraph after it and an open comment could take the rest of the document. HTML of Markdown, marked with C<sourceFormat: 'markdown'>, stays raw as before; inside a quote or a cell of a pipe table the body is written as text. A block has the optional field C<sourceFormat>, rows and cells of a table too; a tree from an earlier C<@podlite/markdown> has no mark, and its HTML is fenced

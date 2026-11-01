@@ -15,6 +15,7 @@ import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
 import { isCovered } from './guard'
+import { titleParts, isTitleBlock } from './title'
 import htmlWriter from './writerHtml'
 import clean_plugin from './plugin-clean-location'
 import { expandAlias } from './helpers/alias'
@@ -77,6 +78,58 @@ const atLine = (node): string => {
 const label = (value: unknown): string => (typeof value === 'string' ? value : '?')
 
 const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? maskText(text) : text)
+
+// What a part of the output writes, kept aside instead of written
+const writtenAside = (writer, write: () => void): string => {
+  const original = writer.output
+  const parts: string[] = []
+  writer.output = (str: string) => parts.push(str)
+  try {
+    write()
+  } finally {
+    writer.output = original
+  }
+  return parts.join('')
+}
+
+// A part of a title is seen when it shows a character or a picture
+const seenHtml = (html: string): boolean =>
+  /<img\b/.test(html) || /\S/.test(decodeHTMLStrict(html.replace(/<[^>]*>/g, '')))
+
+// a paragraph a title takes apart keeps its own mask for the text it gives the title
+const maskedOwner = (owner, ctx): boolean => {
+  if (ctx?.maskMode || ctx?.renderMode === 'draft') return false
+  if (owner.guarded) return true
+  const conf = makeAttrs(owner, ctx || {})
+  return Boolean(conf.exists('masked') && conf.getFirstValue('masked'))
+}
+
+// =TITLE shows its content as the title of the document, as to-jsx does: its paragraphs
+// in one heading, other blocks after it, a directive acting from where it stands. An
+// empty title shows nothing; with an :id it keeps an empty anchor.
+const titleBlock = (writer, node, ctx, interator) => {
+  const heading: string[] = []
+  const rest: string[] = []
+  titleParts(node).forEach(entry => {
+    if (entry.kind === 'rest') {
+      rest.push(writtenAside(writer, () => interator([entry.node], ctx)))
+      return
+    }
+    const masked = entry.owners.some(owner => maskedOwner(owner, ctx))
+    const part = writtenAside(writer, () => interator(entry.content, masked ? { ...ctx, maskMode: true } : ctx))
+    if (seenHtml(part)) heading.push(part)
+  })
+  const id = getSafeNodeId(node, ctx)
+  const anchor = id ? ` id="${id}"` : ''
+  if (heading.length) {
+    writer.writeRaw('<h1 class="')
+    writer.write(node.name)
+    writer.writeRaw(`"${anchor}>${heading.join(' ')}</h1>`)
+  } else if (getExplicitNodeId(node, ctx) !== null) {
+    writer.writeRaw(`<span${anchor}></span>`)
+  }
+  rest.forEach(html => writer.writeRaw(html))
+}
 
 const openTag = (tag: string, node, ctx, attrs = '') => {
   const id = anchorOf(node, ctx)
@@ -575,6 +628,7 @@ const toHtml = opt =>
           return true
         }
 
+        if (isTitleBlock(node)) return titleBlock(writer, node, ctx, interator)
         if (isSemanticBlock(node)) {
           const name = node.name
           writer.writeRaw('<h1 class="')

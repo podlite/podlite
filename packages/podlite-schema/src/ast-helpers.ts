@@ -3,6 +3,7 @@ import { getTextContentFromNode } from '.'
 import makeAttrsPod from './helpers/config'
 import { collectText, maskText } from './helpers/handlers'
 import { Node } from './types'
+import { isTitleBlock } from './title'
 
 export const getNodeId = (node, ctx) => {
   const conf = makeAttrsPod(node, ctx)
@@ -479,6 +480,11 @@ export const buildBindingIndex = (tree: unknown, style: AnchorStyle = htmlStyle)
       for (const key of [raw == null ? null : String(raw), explicit]) {
         if (key) written.push([key.normalize('NFC').trim(), node, 'explicit-id'])
       }
+    }
+    // a title with no :id is reached by the id its parse gave it, which the outputs
+    // write on its heading; an entry of the contents that picks the title asks for it
+    if (isTitleBlock(node) && typeof node.id === 'string' && getExplicitNodeId(node, {}) === null) {
+      written.push([node.id, node, 'explicit-id'])
     }
     if (node.name !== 'head') return
     const name = getTextContentFromNode(node).normalize('NFC').trim()
