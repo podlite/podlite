@@ -47,9 +47,10 @@ const markdownAnchors = ctx => {
   return byMode.get(mode)
 }
 
-// a reader takes `&copy;` in an address or a title for the sign unless a backslash keeps it
+// a reader takes `&copy;` in an address, a title or the alternative text of a picture for
+// the sign; `&amp;` keeps it as written for every reader, where some do not take off a backslash
 const characterReference = /&(?=#?[A-Za-z0-9]+;)/g
-const keepReferences = (text: string): string => text.replace(characterReference, '\\&')
+const keepReferences = (text: string): string => text.replace(characterReference, '&amp;')
 
 // the title of a link or a picture, after its address in quotes
 const quotedTitle = (title: string, inCode = false) => {

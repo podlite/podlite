@@ -41,7 +41,7 @@ describe('markdown read and written again', () => {
   it('writes a title with quotes, a backslash and character references a reader takes back as it was', () => {
     const source = '![a](x "q \\"r\\" \\\\ &amp;copy; &amp;#65;")\n'
     const written = markdown(source, md)
-    expect(written).toBe('![a](x "q \\"r\\" \\\\ \\&copy; \\&#65;")\n')
+    expect(written).toBe('![a](x "q \\"r\\" \\\\ &amp;copy; &amp;#65;")\n')
     expect(titleOf(written)).toBe('q "r" \\ &copy; &#65;')
     expect(titleOf(written)).toBe(titleOf(source))
   })

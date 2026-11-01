@@ -24,7 +24,7 @@
 
 =item the Markdown output writes the first visible line of a paragraph without its indent, so a paragraph indented by four spaces or a tab, on its own, in a quote, in a table cell or after a hidden first line, is no longer read as a code block
 
-=item the Markdown output keeps a character reference such as C<&copy;> in the address of a link or a picture, in a link title and in the alternative text of a picture as written, with a backslash before the ampersand, and doubles a backslash of an address or a title, so a reader no longer turns them into the sign. A link inside code is written as before
+=item the Markdown output keeps a character reference such as C<&copy;> in the address of a link or a picture, in a link title, in the title and in the alternative text of a picture as written, its ampersand written as C<&amp;>, which every reader takes back, and doubles a backslash of an address or a title, so a reader no longer turns them into the sign. A link inside code is written as before
 
 =item the Markdown output writes a code block in a fence one backtick longer than any run of backticks in its body, so a line of three backticks in the code no longer ends it, and opens the fence on the line of the marker of an item or on a line of its own after the term of a definition. A code block without a final line break is closed on a line of its own
 
