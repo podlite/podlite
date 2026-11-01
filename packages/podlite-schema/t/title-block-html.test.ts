@@ -1,5 +1,5 @@
 import { podlite } from '../../core/src'
-import { toHtml, toMarkdown, toAnyRules } from '../src'
+import { toHtml, toMarkdown, toAnyRules, getSafeNodeId, indexAnchors } from '../src'
 
 // the path of the command line: the core with its plugins
 const core = podlite({ importPlugins: true })
@@ -67,6 +67,32 @@ describe('the =TITLE block in the HTML output', () => {
     const id = (out.match(/<h1 class="TITLE" id="([^"]+)"/) || [])[1]
     expect(href).toBeTruthy()
     expect(href).toBe(id)
+  })
+
+  it('gives the heading the id the anchors of the same tree give it', () => {
+    const parsed = tree('=begin pod\n=TITLE test\n=end pod\n')
+    const title = (parsed.content[0] as { content: any[] }).content.find(node => node.name === 'TITLE')
+    const expected = getSafeNodeId(title, { __anchors: indexAnchors(parsed) })
+    const out = String(toHtml({}).use(toAnyRules('toHtml', core.getPlugins())).run(parsed))
+    expect(out).toContain(`<h1 class="TITLE" id="${expected}">`)
+  })
+
+  it('gives no link to a title with nothing to show and no id', () => {
+    for (const body of ['', 'Z<hidden>', 'E<32>', 'N<>']) {
+      const out = html(`=begin pod\n=toc TITLE\n\n=TITLE ${body}\n=end pod\n`)
+      const hrefs = [...out.matchAll(/href="#([^"]+)"/g)].map(found => found[1])
+      const ids = [...out.matchAll(/ id="([^"]+)"/g)].map(found => found[1])
+      expect(hrefs.filter(href => !ids.includes(href))).toEqual([])
+    }
+  })
+
+  it('lets each alias act from its place and numbers the notes in the order of the source', () => {
+    expect(heading('=begin TITLE\n=alias L First\n\nA<L>\n\n=alias L Second\n\nA<L>\n=end TITLE\n')).toBe(
+      'First\n Second\n',
+    )
+    const out = html('=begin TITLE\n=item point N<first>\n\nTitle N<second>\n=end TITLE\n')
+    expect(heading('=begin TITLE\n=item point N<first>\n\nTitle N<second>\n=end TITLE\n')).toContain('[2]')
+    expect(out).toMatch(/point <sup[^>]*><a[^>]*>\[1\]/)
   })
 
   it('leads an entry of the contents to the id the author gave the title', () => {
