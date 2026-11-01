@@ -112,8 +112,8 @@ describe('what stays as it was', () => {
     expect(html('=SUBTITLE Sub\n')).toBe('<h1 class="SUBTITLE">SUBTITLE</h1><p>Sub\n</p>')
   })
 
-  it('leaves the markdown output of a title as it was', () => {
+  it('writes the markdown output of a title as its heading', () => {
     const out = String(toMarkdown({}).use(toAnyRules('toMarkdown', core.getPlugins())).run(tree('=TITLE test\n')))
-    expect(out).toBe('# TITLE\n\ntest\n\n')
+    expect(out).toBe('# test\n\n')
   })
 })

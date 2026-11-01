@@ -124,8 +124,8 @@ bar
   describe('semantic blocks', () => {
     it('TITLE block', () => {
       const result = render('=begin pod\n=TITLE My Document\n=end pod\n')
-      expect(result).toContain('TITLE')
-      expect(result).toContain('My Document')
+      expect(result).toContain('# My Document')
+      expect(result).not.toContain('TITLE')
     })
   })
 

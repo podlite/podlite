@@ -3,7 +3,7 @@ import { getTextContentFromNode } from '.'
 import makeAttrsPod from './helpers/config'
 import { collectText, maskText } from './helpers/handlers'
 import { Node } from './types'
-import { isTitleBlock } from './title'
+import { isTitleBlock, titleParts } from './title'
 
 export const getNodeId = (node, ctx) => {
   const conf = makeAttrsPod(node, ctx)
@@ -108,26 +108,61 @@ export const decodeEntities = (content: unknown): string =>
 // it at once. The markdown export writes the characters of E<> and nothing for Z<>, a
 // footnote as its number, and S<> with unbreakable spaces, which a reader drops from
 // the address.
-const markdownText = (node: unknown, masked: boolean, footnotes: Map<object, number>, covered = false): string => {
-  if (typeof node === 'string') return covered && masked ? maskText(node) : node
-  if (Array.isArray(node)) return node.map(child => markdownText(child, masked, footnotes, covered)).join('')
+// The line of a heading is one line: a line break of code is a space, one S<> keeps is
+// a tag the reader drops, and every other one, with the spaces around it, is a space.
+const codeNames = ['C', 'K', 'T']
+const markdownText = (
+  node: unknown,
+  masked: boolean,
+  footnotes: Map<object, number>,
+  covered = false,
+  inCode = false,
+): string => {
+  const line = (text: string) => (inCode ? text.replace(/\n/g, ' ') : text)
+  if (typeof node === 'string') return line(covered && masked ? maskText(node) : node)
+  if (Array.isArray(node)) return node.map(child => markdownText(child, masked, footnotes, covered, inCode)).join('')
   if (!node || typeof node !== 'object') return ''
   const n = node as TreeNode
   const hidden = covered || n.guarded === true
+  const code = inCode || (n.type === 'fcode' && codeNames.includes(String(n.name)))
   if (n.type === 'fcode') {
-    if (n.name === 'G' && masked) return maskText(collectText(n.content))
+    if (n.name === 'G' && masked) return line(maskText(collectText(n.content)))
     if (n.name === 'E') {
       const text = decodeEntities(n.content)
-      return hidden && masked ? maskText(text) : text
+      return line(hidden && masked ? maskText(text) : text)
     }
     if (n.name === 'Z') return ''
     if (n.name === 'N') return String(footnotes.get(node) ?? '')
-    if (n.name === 'S') return markdownText(n.content, masked, footnotes, hidden).replace(/ /g, '\u00a0')
+    if (n.name === 'S')
+      return markdownText(n.content, masked, footnotes, hidden, code).replace(/ /g, '\u00a0').replace(/\n/g, '')
   }
   if ((n.type === 'text' || n.type === 'verbatim') && typeof n.value === 'string')
-    return hidden && masked ? maskText(n.value) : n.value
-  return markdownText(n.content, masked, footnotes, hidden)
+    return line(hidden && masked ? maskText(n.value) : n.value)
+  return markdownText(n.content, masked, footnotes, hidden, code)
 }
+
+const headingText = (text: string): string => text.replace(/[ \t]*\n[ \t]*/g, ' ').trim()
+
+// The text of a =TITLE the markdown output writes as its heading: the paragraphs that
+// show something, one after another. A paragraph keeps its own mask.
+const titleText = (node: object, masked: boolean, footnotes: Map<object, number>): string =>
+  titleParts(node)
+    .flatMap(entry =>
+      entry.kind === 'part'
+        ? [
+            headingText(
+              markdownText(
+                entry.content,
+                masked,
+                footnotes,
+                entry.owners.some(owner => (owner as TreeNode).guarded === true),
+              ),
+            ),
+          ]
+        : [],
+    )
+    .filter(text => /\S/.test(text))
+    .join(' ')
 
 // Footnotes are numbered in the order the markdown export meets them in the text. It
 // writes nothing for a comment or a data block, reaches a footnote inside another one
@@ -240,9 +275,16 @@ const readerSlugs = (headings: Iterable<object>, masked: boolean, footnotes?: Fo
   for (const node of headings) {
     const n = node as TreeNode & { numberPrefix?: string }
     const prefix = n.numberPrefix
+    if (isTitleBlock(n) && !/\S/.test(titleText(n, masked, numbers))) {
+      // a title with nothing to show writes no heading and takes no address
+      slugs.push('')
+      continue
+    }
     const text =
       n.name === 'head'
-        ? `${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked, numbers)}`.trim()
+        ? headingText(`${prefix ? `${prefix} ` : ''}${markdownText(n.content, masked, numbers)}`)
+        : isTitleBlock(n)
+        ? titleText(n, masked, numbers)
         : n.guarded === true && masked
         ? maskText(String(n.name))
         : String(n.name)

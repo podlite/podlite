@@ -17,10 +17,20 @@ import { applyImageBase } from './image-base'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { expandAlias } from './helpers/alias'
-import { decodeEntities, getNodeId, linkTarget, readerAnchors, sameDocTarget, writtenValue } from './ast-helpers'
+import {
+  decodeEntities,
+  getExplicitNodeId,
+  getNodeId,
+  linkTarget,
+  readerAnchors,
+  sameDocTarget,
+  toMarkdownFragment,
+  writtenValue,
+} from './ast-helpers'
 import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, longestBacktickRun } from './test-display'
+import { titleParts, isTitleBlock } from './title'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
@@ -403,11 +413,60 @@ const writeText = (writer, node, ctx, value: string) => {
   if (ctx.keepSpaces) {
     // inside S<>: every space stays and does not break, a line break stays a line break
     const text = writer.escape(expandTabs(isCovered(node, ctx) ? maskText(value) : value, ctx.keepSpaces))
-    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
+    writer.writeRaw(text.replace(/ /g, '&nbsp;').replace(/\n/g, keptBreak(writer, ctx)))
   } else {
     const text = isCovered(node, ctx) ? maskText(value) : value
-    writer.write(writer.paraStart && !(writer.codeDepth > 0) ? text.replace(/^[ \t\n]+/, '') : text)
+    const shown = writer.paraStart && !(writer.codeDepth > 0) ? text.replace(/^[ \t\n]+/, '') : text
+    writer.write(ctx.headingLine && writer.codeDepth > 0 ? shown.replace(/\n/g, ' ') : shown)
   }
+}
+
+// A line break S<> keeps: two spaces before the break, and in the line of a heading,
+// which holds no break, the tag of one; inside code there it is a space, as code in
+// a line has no break of its own.
+const keptBreak = (writer, ctx): string => (!ctx.headingLine ? '  \n' : writer.codeDepth > 0 ? ' ' : '<br>')
+
+// The line of a heading is written aside and given back as one line: a break of code
+// or of S<> was settled when it was written, and every other break, with the spaces
+// around it, becomes one space. The break that ends the paragraph goes, and the
+// spaces before it stay, so a heading on one line is written as before.
+const headingLine = (writer, write: () => void): string => {
+  const line = writeAside(writer, write)
+  const ended = line.endsWith('\n')
+  return (ended ? line.slice(0, -1) : line).replace(/[ \t]*\n[ \t]*/g, ' ') + (ended ? '\n' : '')
+}
+
+// a paragraph a title takes apart keeps its own mask for the text it gives the title
+const maskedOwner = (owner, ctx): boolean => {
+  if (ctx?.maskMode || ctx?.renderMode === 'draft') return false
+  if (owner.guarded) return true
+  const conf = makeAttrs(owner, ctx || {})
+  return Boolean(conf.exists('masked') && conf.getFirstValue('masked'))
+}
+
+// =TITLE shows its content as the title of the document, as HTML and to-jsx do: its
+// paragraphs in one heading of the first level, other blocks after it, a directive
+// acting from where it stands. A title with nothing to show writes no heading, and
+// an anchor only when the author named it.
+const titleBlock = (writer, node, ctx, interator) => {
+  const heading: string[] = []
+  const rest: string[] = []
+  titleParts(node).forEach(entry => {
+    if (entry.kind === 'rest') {
+      rest.push(writeAside(writer, () => interator([entry.node], ctx)))
+      return
+    }
+    const masked = entry.owners.some(owner => maskedOwner(owner, ctx))
+    const partCtx = { ...ctx, headingLine: true, ...(masked ? { maskMode: true } : {}) }
+    const part = headingLine(writer, () => interator(entry.content, partCtx)).trim()
+    if (/\S/.test(part)) heading.push(part)
+  })
+  // a link reaches a title by the name its author gave it, shaped as for a reader
+  const written = getExplicitNodeId(node, ctx)
+  const own = written === null ? '' : toMarkdownFragment(written).toLowerCase()
+  if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
+  if (heading.length) writer.writeRaw(`# ${heading.join(' ')}\n\n`)
+  rest.forEach(text => writer.writeRaw(text))
 }
 
 // HTML the markdown plugin finds inside a line comes as an Html block of one line
@@ -493,8 +552,13 @@ const rules = {
     const masked = maskText(collectText(node.content))
     // inside S<> the spaces of the hidden phrase stay and do not break, as all its text
     if (ctx.keepSpaces)
-      writer.writeRaw(writer.escape(expandTabs(masked, ctx.keepSpaces)).replace(/ /g, '&nbsp;').replace(/\n/g, '  \n'))
-    else writer.write(masked)
+      writer.writeRaw(
+        writer
+          .escape(expandTabs(masked, ctx.keepSpaces))
+          .replace(/ /g, '&nbsp;')
+          .replace(/\n/g, keptBreak(writer, ctx)),
+      )
+    else writer.write(ctx.headingLine && writer.codeDepth > 0 ? masked.replace(/\n/g, ' ') : masked)
   },
   'H<>': wrapContent('<sup>', '</sup>'),
   'J<>': wrapContent('<sub>', '</sub>'),
@@ -535,8 +599,9 @@ const rules = {
         gid,
         fnRefId: `fnref:${gid}`,
         fnId: `fn:${gid}`,
+        // the note is written at the end of the document, not in the line it is called from
         make: () => {
-          interator(node.content, ctx)
+          interator(node.content, ctx.headingLine ? { ...ctx, headingLine: false } : ctx)
         },
       })
     }
@@ -651,7 +716,9 @@ const rules = {
         if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
         writer.writeRaw(prefix)
         if (numberPrefix) writer.writeRaw(numberPrefix)
-        if (node.content) interator(node.content, ctx)
+        writer.writeRaw(
+          headingLine(writer, () => node.content && interator(node.content, { ...ctx, headingLine: true })),
+        )
         writer.writeRaw('\n')
       }
     }),
@@ -922,6 +989,7 @@ const toMarkdown = opt =>
         }
 
         if (blockWithoutRule(writer, node, ctx, interator)) return
+        if (isTitleBlock(node)) return titleBlock(writer, node, ctx, interator)
         if (isSemanticBlock(node)) {
           const name = node.name
           writer.writeRaw('# ')
