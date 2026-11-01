@@ -128,7 +128,10 @@ const covered = (node, ctx, text: string): string => (isCovered(node, ctx) ? mas
 
 const inlineCode = (text: string): string => {
   const ticks = '`'.repeat(longestBacktickRun(text) + 1)
-  const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : ''
+  // a reader takes one space off each side of code that has a space at both ends, so
+  // such code, as code at a backtick, gets one more space on each side
+  const spaced = /^ /.test(text) && / $/.test(text) && /[^ ]/.test(text)
+  const pad = text.startsWith('`') || text.endsWith('`') || spaced ? ' ' : ''
   return `${ticks}${pad}${text}${pad}${ticks}`
 }
 

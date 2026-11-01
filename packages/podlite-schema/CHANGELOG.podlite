@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the Markdown output writes the text inside code as it stands: inline code and the text of a markup code inside the fence of a sample no longer get a backslash before C<\ ` * _ [ ] #>, which a reader showed as written. A bar in code inside a cell of a pipe table keeps its backslash, so it does not divide the row. Code with a space at both ends gets one more space on each side, as a reader takes one off
+
 =item the Markdown output writes the content of C<=TITLE> (and C<=TITLES>) as the title of the document, one heading of the first level, instead of the word TITLE above the content: its paragraphs one after another, other blocks after it, notes in the order of the source; a title with nothing to show writes no heading, and an anchor only when the author named it. A heading holds one line: a line break inside its paragraph, with the spaces around it, becomes one space, a break of code a space and a break kept by C<S<>> a C<< <br> >>, so the rest of the heading no longer falls out of it. The addresses of Markdown headings count the title with the headings after it, and a title with nothing to show takes no address
 
 =item a picture has the optional field C<title>, the hint a reader shows over it, and a block the optional field C<markdownHtml> (C<'block'> or C<'inline'>). The Markdown output writes the title of a picture after its address in quotes, hidden as its text is, and stands HTML of Markdown that is a block between blank lines, adding only what is missing and nothing at the start or the end of a quote or an item, so the paragraph before it and the one after it stay apart and a tight list stays tight. The HTML output writes the title of a picture as its C<title> attribute

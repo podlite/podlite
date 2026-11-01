@@ -159,7 +159,7 @@ describe('text a markdown reader would take for markup', () => {
   })
 
   it('makes the fence of inline code longer than a backtick inside it', () => {
-    expect(markdown(`${allowE}=para\nC<a E<96> E<lt>Audit TitleE<gt>>`)).toContain('``a \\` <Audit Title>``')
+    expect(markdown(`${allowE}=para\nC<a E<96> E<lt>Audit TitleE<gt>>`)).toContain('``a ` <Audit Title>``')
   })
 
   it('writes angle brackets in code as they stand', () => {
