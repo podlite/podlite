@@ -62,6 +62,7 @@ describe('what stays as it was', () => {
     expect(markdown('=head1 One \n')).toBe('# One \n\n')
     expect(markdown('=head1 One ')).toBe('# One \n')
     expect(markdown('=head1 OneE<nbsp>\n')).toBe('# One \n\n')
+    expect(markdown('=TITLE E<nbsp>OneE<nbsp>\n')).toBe('# \u00a0One\u00a0\n\n')
   })
 
   it('writes the body of a note of a title as a note, not as a line of a heading', () => {

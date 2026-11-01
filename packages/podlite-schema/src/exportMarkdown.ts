@@ -458,7 +458,8 @@ const titleBlock = (writer, node, ctx, interator) => {
     }
     const masked = entry.owners.some(owner => maskedOwner(owner, ctx))
     const partCtx = { ...ctx, headingLine: true, ...(masked ? { maskMode: true } : {}) }
-    const part = headingLine(writer, () => interator(entry.content, partCtx)).trim()
+    // the line breaks and spaces at the edges of a paragraph go; a no-break space stays
+    const part = headingLine(writer, () => interator(entry.content, partCtx)).replace(/^[ \t\n]+|[ \t\n]+$/g, '')
     if (/\S/.test(part)) heading.push(part)
   })
   // a link reaches a title by the name its author gave it, shaped as for a reader
