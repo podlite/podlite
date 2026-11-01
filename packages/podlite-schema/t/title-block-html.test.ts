@@ -19,10 +19,10 @@ describe('the =TITLE block in the HTML output', () => {
     )
   })
 
-  it('shows nothing for an empty title, and an anchor when it has an id', () => {
-    expect(html('=TITLE\n\n=para Quick\n')).toBe('<p>Quick\n</p>')
+  it('shows nothing for an empty title but an anchor a link can lead to', () => {
+    expect(plain(html('=TITLE\n\n=para Quick\n'))).toBe('<span id="ID"></span><p>Quick\n</p>')
     expect(html('=begin TITLE :id<doc-title>\n=end TITLE\n')).toBe('<span id="doc-title"></span>')
-    expect(html('=TITLE Z<hidden>\n')).toBe('')
+    expect(plain(html('=TITLE Z<hidden>\n'))).toBe('<span id="ID"></span>')
   })
 
   it('writes the paragraphs in one heading and other blocks after it', () => {
@@ -30,7 +30,9 @@ describe('the =TITLE block in the HTML output', () => {
     expect(plain(html('=begin TITLE\nUsing\n\n=begin code\nx\n=end code\n=end TITLE\n'))).toBe(
       '<h1 class="TITLE" id="ID">Using\n</h1><pre><code>x\n</code></pre>',
     )
-    expect(html('=begin TITLE\n=begin code\nonly\n=end code\n=end TITLE\n')).toBe('<pre><code>only\n</code></pre>')
+    expect(plain(html('=begin TITLE\n=begin code\nonly\n=end code\n=end TITLE\n'))).toBe(
+      '<span id="ID"></span><pre><code>only\n</code></pre>',
+    )
   })
 
   it('puts the id the author wrote on the heading', () => {
@@ -77,11 +79,12 @@ describe('the =TITLE block in the HTML output', () => {
     expect(out).toContain(`<h1 class="TITLE" id="${expected}">`)
   })
 
-  it('gives no link to a title with nothing to show and no id', () => {
-    for (const body of ['', 'Z<hidden>', 'E<32>', 'N<>']) {
+  it('leads every link of the contents to an anchor that is written', () => {
+    for (const body of ['', 'Z<hidden>', 'E<32>', 'E<nbsp>', 'N<>', 'Q<>', 'E<0x110000>', 'test']) {
       const out = html(`=begin pod\n=toc TITLE\n\n=TITLE ${body}\n=end pod\n`)
       const hrefs = [...out.matchAll(/href="#([^"]+)"/g)].map(found => found[1])
       const ids = [...out.matchAll(/ id="([^"]+)"/g)].map(found => found[1])
+      expect(hrefs).toHaveLength(1)
       expect(hrefs.filter(href => !ids.includes(href))).toEqual([])
     }
   })

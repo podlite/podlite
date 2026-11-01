@@ -13,8 +13,10 @@ describe('the =TITLE block in the output of to-jsx', () => {
     expect(heading('=TITLE My B<Doc>\n')).toBe('My <strong>Doc</strong>\n')
   })
 
-  it('shows nothing for an empty title', () => {
-    expect(html('=TITLE\n\n=para Quick note\n')).toBe('<div></div><div id="id"><p>Quick note\n</p></div>')
+  it('shows nothing for an empty title but an anchor a link can lead to', () => {
+    expect(html('=TITLE\n\n=para Quick note\n')).toBe(
+      '<div><span id="id"></span></div><div id="id"><p>Quick note\n</p></div>',
+    )
   })
 
   it('writes the paragraphs of a title in one heading and other blocks under it', () => {

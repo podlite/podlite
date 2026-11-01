@@ -1265,7 +1265,8 @@ function podlite(
                   <h1 className={node.name} id={id}>
                     {title}
                   </h1>
-                ) : getExplicitNodeId(node, ctx) ? (
+                ) : id ? (
+                  // nothing to show, but an entry of the contents or a link may still lead here
                   <span id={id} />
                 ) : null}
                 {rest}

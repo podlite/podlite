@@ -105,8 +105,8 @@ const maskedOwner = (owner, ctx): boolean => {
 }
 
 // =TITLE shows its content as the title of the document, as to-jsx does: its paragraphs
-// in one heading, other blocks after it, a directive acting from where it stands. An
-// empty title shows nothing; with an :id it keeps an empty anchor.
+// in one heading, other blocks after it, a directive acting from where it stands. A
+// title with nothing to show keeps only an empty anchor, so a link to it has a target.
 const titleBlock = (writer, node, ctx, interator) => {
   const heading: string[] = []
   const rest: string[] = []
@@ -125,7 +125,8 @@ const titleBlock = (writer, node, ctx, interator) => {
     writer.writeRaw('<h1 class="')
     writer.write(node.name)
     writer.writeRaw(`"${anchor}>${heading.join(' ')}</h1>`)
-  } else if (getExplicitNodeId(node, ctx) !== null) {
+  } else if (anchor) {
+    // nothing to show, but an entry of the contents or a link may still lead here
     writer.writeRaw(`<span${anchor}></span>`)
   }
   rest.forEach(html => writer.writeRaw(html))
