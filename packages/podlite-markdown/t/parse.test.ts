@@ -193,15 +193,8 @@ it('[markdown]: parse image', () => {
                 Object {
                   "alt": "foo",
                   "src": "/url",
+                  "title": "title",
                   "type": "image",
-                },
-                Object {
-                  "content": Array [
-                    "title",
-                  ],
-                  "name": "caption",
-                  "sourceFormat": "markdown",
-                  "type": "block",
                 },
               ],
               "id": "id",
@@ -852,7 +845,29 @@ it('[markdown]: thematic_break', () => {
   const errorDescribe = isValidateError(r, tree)
   expect(process(pod)).toMatchInlineSnapshot(`
     Object {
-      "content": Array [],
+      "content": Array [
+        Object {
+          "config": Array [],
+          "content": Array [],
+          "id": "id",
+          "location": Object {
+            "end": Object {
+              "column": 4,
+              "line": 3,
+              "offset": 5,
+            },
+            "start": Object {
+              "column": 1,
+              "line": 3,
+              "offset": 2,
+            },
+          },
+          "margin": "",
+          "name": "boundary",
+          "sourceFormat": "markdown",
+          "type": "block",
+        },
+      ],
       "id": "id",
       "margin": "",
       "name": "root",

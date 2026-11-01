@@ -21,7 +21,6 @@ import {
 import { mkRootBlock } from '@podlite/schema'
 import { assignHeadingKeys } from '@podlite/schema'
 import { mkImage } from '@podlite/schema'
-import { mkCaption } from '@podlite/schema'
 import { mkFomattingCodeO } from '@podlite/schema'
 
 type Md2astArgs = { lineOffset?: number }
@@ -59,6 +58,16 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
     })
     .run(md_tree)
+
+  // HTML stands for a part of a line inside a paragraph, a heading, a cell or a span,
+  // and for a block anywhere else: the parent each piece of HTML has here is kept
+  const htmlParents = new WeakMap<object, string>()
+  const recordParents = (node: { type?: string; children?: any[] }): void =>
+    (node.children || []).forEach(child => {
+      if (child?.type === 'html') htmlParents.set(child, node.type || '')
+      recordParents(child)
+    })
+  recordParents(md_tree)
 
   // second stage - make Universal AST nodes
   const uast = []
@@ -160,7 +169,10 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
       },
       ':html': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
-        return mkBlock({ type: 'block', name: 'Html', location: applyLineOffset(position) }, [mkVerbatim(node.value)])
+        const markdownHtml = inlineParents.includes(htmlParents.get(node)) ? 'inline' : 'block'
+        return mkBlock({ type: 'block', name: 'Html', markdownHtml, location: applyLineOffset(position) }, [
+          mkVerbatim(node.value),
+        ])
       },
       ':code': (writer, processor) => (node, ctx, interator) => {
         const { children, position, lang, meta, ...attr } = node
@@ -185,12 +197,15 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
         (node, ctx, interator): BlockImage => {
           const { title, alt, url, position, ...attr } = node
           let config = []
-          const content: any[] = [mkImage(url, alt)]
-          if (title) content.push(mkCaption([title]))
-          return mkBlock({ type: 'block', name: 'Image', config, location: applyLineOffset(position) }, content)
+          // the title of a picture is the hint a reader shows over it, not a caption
+          const image = mkImage(url, alt)
+          if (typeof title === 'string') image.title = title
+          return mkBlock({ type: 'block', name: 'Image', config, location: applyLineOffset(position) }, [image])
         },
+      // a rule between blocks is the boundary of Podlite
       ':thematicBreak': (writer, processor) => (node, ctx, interator) => {
-        return null // TODO: add support for "thematic break"
+        const { position } = node
+        return mkBlock({ type: 'block', name: 'boundary', config: [], location: applyLineOffset(position) }, [])
       },
       ':blockquote': (writer, processor) => (node, ctx, interator) => {
         const { children, position, ...attr } = node
@@ -224,8 +239,9 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
         const { children, position, ...attr } = node
         return mkFomattingCodeO(interator(children, { ...ctx }))
       },
+      // a hard line break is a line break S<> keeps
       ':break': (writer, processor) => (node, ctx, interator) => {
-        return null
+        return mkFomattingCode({ name: 'S' }, ['\n'])
       },
     })
     .run(md_tree)
@@ -238,6 +254,8 @@ export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0
   markSource(tree)
   return tree
 }
+
+const inlineParents = ['paragraph', 'heading', 'tableCell', 'strong', 'emphasis', 'delete', 'link', 'linkReference']
 
 // Every block made here is marked as coming from Markdown: HTML of Markdown is a block
 // named Html as an author's =Html is, and a writer must keep the first raw.

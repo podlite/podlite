@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a picture shows its C<title> as the C<title> attribute of the image in HTML and JSX, hidden as its text is
+
 =item a picture whose source line follows a blank line shows the image and its caption; the source was taken from the blank line, so the image came out empty and the address went into the caption
 
 =head1 0.0.77

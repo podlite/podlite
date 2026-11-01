@@ -17,6 +17,10 @@ export const core = {
         if (alt !== undefined) {
           writer.writeRaw(` alt="${quoteAttribute(isCovered(node, ctx) ? maskText(alt) : alt)}"`)
         }
+        // the hint a reader shows over the picture, hidden as its text is
+        if (typeof node.title === 'string') {
+          writer.writeRaw(` title="${quoteAttribute(isCovered(node, ctx) ? maskText(node.title) : node.title)}"`)
+        }
         writer.writeRaw(`/>`)
       }
     },

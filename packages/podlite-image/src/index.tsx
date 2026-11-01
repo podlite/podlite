@@ -107,7 +107,10 @@ const Image: Plugin = {
           const altText = writtenValue(node.alt)
           const shown = altText !== undefined && isCovered(node, ctx) ? maskText(altText) : altText
           const alt = shown === undefined ? '' : ` alt="${quoteAttribute(shown)}"`
-          writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}/>`)
+          const hint =
+            typeof node.title === 'string' ? (isCovered(node, ctx) ? maskText(node.title) : node.title) : undefined
+          const title = hint === undefined ? '' : ` title="${quoteAttribute(hint)}"`
+          writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}${title}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')
           }
@@ -146,6 +149,9 @@ const Image: Plugin = {
           const isVideo = node.src.match(/(mp4|mov)$/)
           const written = writtenValue(node.alt)
           const alt = written !== undefined && isCovered(node, ctx) ? maskText(written) : written
+          // the hint a reader shows over the picture, hidden as its text is
+          const title =
+            typeof node.title === 'string' ? (isCovered(node, ctx) ? maskText(node.title) : node.title) : undefined
           return mkComponent(({ key }) => {
             const renderInner = (src: string) =>
               isVideo ? (
@@ -154,7 +160,7 @@ const Image: Plugin = {
                   <source src={src} type="video/mp4" />{' '}
                 </video>
               ) : (
-                <img key={key} src={src} alt={alt} />
+                <img key={key} src={src} alt={alt} title={title} />
               )
             const Img = hook ? (
               <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={baseDir} render={renderInner} />

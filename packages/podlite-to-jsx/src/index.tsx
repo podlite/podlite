@@ -172,10 +172,12 @@ type MapToReactOptions = {
 export const HookedImage: React.FC<{
   src: string
   alt?: string
+  // the hint a reader shows over the picture
+  title?: string
   hook: ImageSrcResolver
   baseDir?: string
   render?: (resolved: string) => React.ReactElement
-}> = ({ src, alt, hook, baseDir, render }) => {
+}> = ({ src, alt, title, hook, baseDir, render }) => {
   const initial = React.useMemo(() => {
     const r = hook(src, baseDir)
     return typeof r === 'string' ? r : null
@@ -193,7 +195,7 @@ export const HookedImage: React.FC<{
     }
   }, [src, baseDir, hook, initial])
   if (resolved == null) return null
-  return render ? render(resolved) : <img src={resolved} alt={alt} />
+  return render ? render(resolved) : <img src={resolved} alt={alt} title={title} />
 }
 
 // A title or a file name written on a link inside hidden content is hidden with it.
@@ -494,12 +496,13 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
       const hook = opts.imageSrc
       const written = writtenValue(node.alt)
       const alt = written === undefined ? undefined : covered(node, ctx, written)
+      const title = typeof node.title === 'string' ? covered(node, ctx, node.title) : undefined
       if (hook) {
         return mkComponent(({ key }) => (
-          <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={opts.imageBaseDir} />
+          <HookedImage key={key} src={node.src} alt={alt} title={title} hook={hook} baseDir={opts.imageBaseDir} />
         ))
       }
-      return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={alt} />)
+      return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={alt} title={title} />)
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {

@@ -604,7 +604,8 @@ const rules = {
     // one as "decorative", so an alternative text the author never wrote is left out
     const altText = writtenValue(node.alt)
     const alt = altText === undefined ? '' : ` alt="${quoteValue(covered(node, ctx, altText))}"`
-    writer.writeRaw(`<img src="${src}"${alt}/>`)
+    const title = typeof node.title === 'string' ? ` title="${quoteValue(covered(node, ctx, node.title))}"` : ''
+    writer.writeRaw(`<img src="${src}"${alt}${title}/>`)
   },
 }
 

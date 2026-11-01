@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a picture has the optional field C<title>, the hint a reader shows over it, and a block the optional field C<markdownHtml> (C<'block'> or C<'inline'>). The Markdown output writes the title of a picture after its address in quotes, hidden as its text is, and stands HTML of Markdown that is a block between blank lines, adding only what is missing and nothing at the start or the end of a quote or an item, so the paragraph before it and the one after it stay apart and a tight list stays tight. The HTML output writes the title of a picture as its C<title> attribute
+
 =item the Markdown output puts the sign of a quote on every line of the quote, a blank one too, and indents the lines of an item after its marker by the width of the marker: a second paragraph, a code block, a sample, a table, a list or a quote inside a quote or an item stays inside it, and a fence there keeps its lines. A list deeper than an item is written inside that item, and a hidden item does not hide it. A quote after the term of a definition starts a line of its own. A writer without a function for its output writes as before
 
 =item the Markdown output writes the body of a block without a rule of its own in a fence, as the source has it, with a blank line after it: a reader no longer takes its HTML for markup, its tags for elements or a line of backticks for the start of code, and the paragraph after it stands on its own. A C<=Mermaid> or C<=Diagram> block is marked C<mermaid> unless it is hidden. A C<=picture> or C<=Image> read by its plugin is written as the picture with its caption a paragraph after it, and a C<=markdown> block read by its plugin ends with a blank line

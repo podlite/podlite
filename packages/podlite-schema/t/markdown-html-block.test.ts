@@ -80,9 +80,11 @@ describe('an =Html block of the author in markdown output', () => {
 describe('what stays as it was', () => {
   it('keeps HTML of markdown raw, in the =markdown block and in a document read as markdown', () => {
     expect(markdown('=begin markdown\nText <br> more\n\n<div>\nx\n</div>\n=end markdown\n')).toBe(
-      'Text <br> more\n<div>\nx\n</div>\n\n',
+      'Text <br> more\n\n<div>\nx\n</div>\n\n',
     )
-    expect(markdown('Text <br> more\n\n<div>\nx\n</div>\n', { mode: 'md' })).toBe('Text <br> more\n<div>\nx\n</div>')
+    expect(markdown('Text <br> more\n\n<div>\nx\n</div>\n', { mode: 'md' })).toBe(
+      'Text <br> more\n\n<div>\nx\n</div>\n',
+    )
   })
 
   it('keeps HTML of markdown raw in a list, an emphasis, a link, a heading and a quote', () => {

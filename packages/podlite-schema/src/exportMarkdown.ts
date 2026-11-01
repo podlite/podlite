@@ -41,12 +41,16 @@ const markdownAnchors = ctx => {
 const characterReference = /&(?=#?[A-Za-z0-9]+;)/g
 const keepReferences = (text: string): string => text.replace(characterReference, '\\&')
 
+// the title of a link or a picture, after its address in quotes
+const quotedTitle = (title: string, inCode = false) => {
+  const text = inCode ? title : keepReferences(title.replace(/\\/g, '\\\\'))
+  return ` "${text.replace(/"/g, '\\"')}"`
+}
+
 // a title written on a link inside hidden content is hidden with it
 const linkTitle = (config, conceal: (text: string) => string = text => text, inCode = false) => {
   const { title } = readLinkConfig(config)
-  if (title === undefined) return ''
-  const text = inCode ? conceal(title) : keepReferences(conceal(title).replace(/\\/g, '\\\\'))
-  return ` "${text.replace(/"/g, '\\"')}"`
+  return title === undefined ? '' : quotedTitle(conceal(title), inCode)
 }
 
 // Markdown has no form for a link whose target the author never wrote — an empty
@@ -134,9 +138,11 @@ const within = (writer, depth: 'codeDepth' | 'htmlDepth' | 'cellDepth', write: (
 // from that piece.
 const writeAside = (writer, write: () => void): string => {
   const original = writer.output
-  const { lastWritten, lineText, paraStart } = writer
+  const { lastWritten, lineText, paraStart, trailingBreaks, pendingBreak } = writer
   const parts: string[] = []
   writer.output = (str: string) => parts.push(str)
+  // a blank line owed to the content outside is not written into the piece aside
+  if (pendingBreak) writer.pendingBreak = false
   try {
     write()
   } finally {
@@ -144,6 +150,8 @@ const writeAside = (writer, write: () => void): string => {
     writer.lastWritten = lastWritten
     writer.lineText = lineText
     writer.paraStart = paraStart
+    writer.trailingBreaks = trailingBreaks
+    writer.pendingBreak = pendingBreak
   }
   return parts.join('')
 }
@@ -157,6 +165,8 @@ const startLine = writer => {
   writer.lineText = ''
   writer.lastWritten = ''
   writer.paraStart = false
+  writer.trailingBreaks = null
+  writer.pendingBreak = false
 }
 
 // A quote is written aside, then every line of it gets the sign of each level, a blank
@@ -209,7 +219,11 @@ const writeIsland = (writer, open: string, close: string, write: () => void) => 
     writer.writeRaw(`\n\n${close}\n`)
     return
   }
-  const body = writeAside(writer, write).replace(/\n+$/, '')
+  // the content of a cell starts anew: a block at its start needs no blank line before it
+  const body = writeAside(writer, () => {
+    writer.trailingBreaks = null
+    write()
+  }).replace(/\n+$/, '')
   writer.writeRaw(body.trim() === '' ? `${open}${close}\n` : `${open}\n\n${body}\n\n${close}\n`)
 }
 
@@ -335,10 +349,23 @@ const sampleBlock = (writer, processor) => (node, ctx, interator) => {
 // HTML the reader of Markdown made stays as written. An author's =Html is shown, not run:
 // raw, a style could hide what follows it and an open comment could take the rest.
 const htmlBlock = (writer, processor) => (node, ctx, interator) => {
-  if (node.sourceFormat === 'markdown') return interator(node.content, ctx)
+  if (node.sourceFormat === 'markdown') return markdownHtml(writer, node, ctx, interator)
   const body = (node.content || []).map(child => (isBodyText(child) ? bodyValue(child) : ' ')).join('')
   if (body.trim() === '') return
   if (writeBodyAsWritten(writer, node, ctx, interator)) writer.writeRaw('\n')
+}
+
+// HTML of Markdown that stands for a block needs a blank line before it, or a reader
+// takes it into the paragraph above, and one before what follows it in the same
+// content, or a reader takes that into the HTML. Nothing is added at the start of
+// the content or at its end.
+const markdownHtml = (writer, node, ctx, interator) => {
+  if (node.markdownHtml !== 'block' || !ownsLines(writer) || writer.cellDepth > 0) return interator(node.content, ctx)
+  const missing = writer.trailingBreaks === null ? 0 : 2 - writer.trailingBreaks
+  if (missing > 0) writer.writeRaw('\n'.repeat(missing))
+  interator(node.content, ctx)
+  if (writer.trailingBreaks === 0) writer.writeRaw('\n')
+  writer.pendingBreak = true
 }
 
 // The first visible line of a paragraph is written without its indent. Inside an item
@@ -875,7 +902,8 @@ const rules = {
     const bracketed = covered(node, ctx, writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
     const alt = inCode ? bracketed : keepReferences(bracketed)
     const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''), inCode)
-    writer.writeRaw(`![${alt}](${src})`)
+    const title = typeof node.title === 'string' ? quotedTitle(covered(node, ctx, node.title), inCode) : ''
+    writer.writeRaw(`![${alt}](${src}${title})`)
   },
 }
 

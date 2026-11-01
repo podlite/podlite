@@ -63,6 +63,12 @@ class WriterMarkdown extends Writer {
   paraStart = false
   // what was written after the last line break
   lineText = ''
+  // the line breaks at the end of what was written; null before anything of the
+  // current content, where a block needs no blank line before it
+  trailingBreaks: number | null = null
+  // a block of HTML of Markdown wants a blank line before what comes after it in
+  // the same content; it is written when that comes, so a tight list stays tight
+  pendingBreak = false
   constructor(output?) {
     super(output)
   }
@@ -81,10 +87,20 @@ class WriterMarkdown extends Writer {
     return out + escapeText(text.slice(from))
   }
   writeRaw(str) {
+    if (this.pendingBreak && typeof str === 'string' && /[^\n]/.test(str)) {
+      this.pendingBreak = false
+      // the line breaks the piece starts with count, so the blank line is the same however
+      // the writing is split into pieces
+      const leading = str.length - str.replace(/^\n+/, '').length
+      const missing = 2 - (this.trailingBreaks ?? 2) - leading
+      if (missing > 0) this.writeRaw('\n'.repeat(missing))
+    }
     super.writeRaw(str)
     if (typeof str === 'string' && str !== '') {
       const end = str.lastIndexOf('\n')
       this.lineText = end === -1 ? this.lineText + str : str.slice(end + 1)
+      const breaks = str.length - str.replace(/\n+$/, '').length
+      this.trailingBreaks = breaks === str.length ? (this.trailingBreaks ?? 0) + breaks : breaks
     }
     if (this.paraStart && /[^ \t\n]/.test(str)) this.paraStart = false
   }

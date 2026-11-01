@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the reader of Markdown keeps what it dropped: a rule between blocks becomes a C<=boundary> block, a hard line break (two spaces or a backslash at the end of a line) a C<S<>> holding a line break, and the title of a picture stays on the picture as its C<title> field instead of becoming a caption. HTML of Markdown carries C<markdownHtml>: C<'inline'> inside a paragraph, a heading, a cell or a span, C<'block'> anywhere else
+
 =item every block the reader of Markdown makes carries C<sourceFormat: 'markdown'>, the root and the rows and cells of a table too, so a writer can tell HTML of Markdown from an C<=Html> block an author wrote. The field is optional and the other fields are as before; a tree built by an earlier version has no mark
 
 =head1 0.0.69

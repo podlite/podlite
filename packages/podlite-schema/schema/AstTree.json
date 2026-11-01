@@ -308,6 +308,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -430,6 +437,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "guarded": {
                     "type": "boolean"
                 },
@@ -454,6 +468,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -541,6 +562,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -605,6 +633,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -682,6 +717,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -745,6 +787,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -810,6 +859,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -873,6 +929,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -938,6 +1001,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -1001,6 +1071,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1075,6 +1152,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -1140,6 +1224,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -1203,6 +1294,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -1928,6 +2026,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -1994,6 +2099,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "config": {
                     "type": "array",
@@ -2135,6 +2247,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"
@@ -2345,6 +2464,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -2458,6 +2584,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -2550,6 +2683,13 @@
                     "type": "string",
                     "const": "block"
                 },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
+                },
                 "location": {
                     "$ref": "#/definitions/Location"
                 },
@@ -2600,6 +2740,9 @@
                 },
                 "link": {
                     "type": "string"
+                },
+                "title": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -2645,6 +2788,13 @@
                 "type": {
                     "type": "string",
                     "const": "block"
+                },
+                "markdownHtml": {
+                    "enum": [
+                        "block",
+                        "inline"
+                    ],
+                    "type": "string"
                 },
                 "location": {
                     "$ref": "#/definitions/Location"

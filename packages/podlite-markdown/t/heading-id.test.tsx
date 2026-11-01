@@ -62,6 +62,11 @@ it('[markdown]: a heading with no text of its own keeps a generated id', () => {
   expect(new Set(ids).size).toEqual(2)
 })
 
+it('[markdown]: a heading holding only a picture with a title keeps a generated id, not one of its title', () => {
+  const [id] = headingIds('# ![Logo](/logo.png "Tip")\n')
+  expect(id).toMatch(/^[A-Za-z0-9_-]{21}$/)
+})
+
 it('[markdown]: two headings with the same text get the same id and separate anchors', () => {
   expect(headingIds('# Setup\n\n## Setup\n')).toEqual(['Setup', 'Setup'])
   const html = render(`=begin markdown

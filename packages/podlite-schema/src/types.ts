@@ -132,6 +132,8 @@ export interface Image {
   src: string
   alt?: string
   link?: string
+  // the hint a reader shows over the picture, as Markdown writes it after the address
+  title?: string
 }
 
 // A paragraph the parser builds rather than reads: it carries its content and
@@ -487,6 +489,9 @@ export interface SourceFormatMark {
 
 export interface Block extends SourceFormatMark {
   type: 'block'
+  // HTML of Markdown inside a paragraph, a heading, a cell or a span is a part of the
+  // line; anywhere else it is a block, which needs a blank line before and after it
+  markdownHtml?: 'block' | 'inline'
   location: Location
   content: Array<Node>
   margin: string
