@@ -160,6 +160,20 @@ describe('what stays as it was', () => {
     )
   })
 
+  it('keeps deeper lists of two kinds after one item', () => {
+    expect(bare('=item1 a\n=item2 b\n=item2 # one\n=item2 # two\n=item1 c\n')).toBe(
+      '- a\n\n  - b\n\n  1. one\n\n  2. two\n\n- c\n\n',
+    )
+  })
+
+  it('keeps a fence of a markdown block after the term of a definition, in a cell too', () => {
+    const defn = '=begin defn\nTerm\n=begin markdown\n```\ncode\n```\n=end markdown\n=end defn\n'
+    expect(markdown(defn + After)).toBe('**Term:** \n```\ncode\n```\n\n\nAfter\n\n')
+    expect(
+      markdown(`=begin table\n=begin row\n=begin cell\n${defn}=end cell\n=cell Tail\n=end row\n=end table\n`),
+    ).toBe('<table>\n<tr>\n<td>\n\n**Term:** \n```\ncode\n```\n\n</td>\n<td>\n\nTail\n\n</td>\n</tr>\n</table>\n\n')
+  })
+
   it('does not hide a list after a hidden item', () => {
     expect(bare('=for item1 :masked\nsecret\n=item2 open\n=item1 next\n')).toBe('- ██████\n\n  - open\n\n- next\n\n')
   })
