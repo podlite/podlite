@@ -57,8 +57,7 @@ class WriterMarkdown extends Writer {
   codeDepth = 0
   // inside a frame of HTML around Markdown: raw text there could close the frame
   htmlDepth = 0
-  // open levels of a quote, and a table cell folded onto one line: a fence holds in neither
-  quoteDepth = 0
+  // a table cell folded onto one line: a fence does not hold there
   cellDepth = 0
   // a paragraph has begun and shown nothing yet: an indent here would make it code
   paraStart = false
@@ -94,13 +93,13 @@ class WriterMarkdown extends Writer {
     this.writeRaw(text)
   }
 
+  // the signs of a quote for a writer that writes as it goes; with a function for its
+  // output, the export writes a quote aside and puts the signs on every line of it
   _add_nesting(n) {
-    this.quoteDepth += Number(n)
     this.writeRaw('> '.repeat(n))
   }
   _remove_nesting(n) {
     // no closing tag needed for Markdown blockquotes
-    this.quoteDepth -= Number(n)
   }
 }
 export default WriterMarkdown

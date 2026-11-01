@@ -52,12 +52,10 @@ describe('what stays as it was', () => {
   })
 
   it('keeps the paragraphs of an item as they are', () => {
-    expect(markdown('=begin item\n=para first\n=para\n    B<second>\n=end item\n')).toBe(
-      '- first\n\n    **second**\n\n',
-    )
-    expect(markdown('=begin item :!checked\n=para\n    B<text> tail\n=end item\n')).toBe('- [ ]     **text** tail\n\n')
+    expect(markdown('=begin item\n=para first\n=para\n    B<second>\n=end item\n')).toBe('- first\n\n  **second**\n\n')
+    expect(markdown('=begin item :!checked\n=para\n    B<text> tail\n=end item\n')).toBe('- [ ] **text** tail\n\n')
     expect(markdown('=item parent\n=begin item2\n=para first\n    B<second> tail\n=end item2\n=item next\n')).toContain(
-      '  - first\n    **second** tail',
+      '  - first\n        **second** tail',
     )
   })
 
@@ -74,8 +72,10 @@ describe('what stays as it was', () => {
   })
 
   it('keeps the indent of a sample inside a quote', () => {
-    expect(markdown('=begin nested\n=input\n    sample\n=end nested\n')).toBe('>     sample\n\n')
-    expect(markdown('=begin nested\n=input\nE<32;32;32;32>sample\n=end nested\n')).toBe('>     sample\n\n')
+    expect(markdown('=begin nested\n=input\n    sample\n=end nested\n')).toBe('> ```\n>     sample\n> ```\n\n')
+    expect(markdown('=begin nested\n=input\nE<32;32;32;32>sample\n=end nested\n')).toBe(
+      '> ```\n>     sample\n> ```\n\n',
+    )
   })
 
   it('keeps the spaces between the parts of a paragraph', () => {

@@ -23,9 +23,9 @@ describe('an =Html block of the author in markdown output', () => {
     expect(markdown('=for Html :masked\nsecret\n', { podMode: 1 }, 'draft')).toBe('```\nsecret\n```\n\n')
   })
 
-  it('writes the body as text inside a quote', () => {
+  it('writes the body in a fence inside a quote', () => {
     expect(markdown('=begin nested\n=begin Html\n<style>x</style>\n=end Html\n=end nested\n')).toBe(
-      '> \\<style>x\\</style>\n\n',
+      '> ```\n> <style>x</style>\n> ```\n\n',
     )
   })
 
@@ -92,7 +92,7 @@ describe('what stays as it was', () => {
       '[<img src="b.svg">](https://example.org/)\n',
     )
     expect(markdown('# h <b>x</b>\n', { mode: 'md' })).toBe('# h <b>x</b>\n')
-    expect(markdown('> <div>q</div>\n', { mode: 'md' })).toBe('> <div>q</div>')
+    expect(markdown('> <div>q</div>\n', { mode: 'md' })).toBe('> <div>q</div>\n\n')
   })
 
   it('keeps a markdown table with HTML in a cell a pipe table', () => {

@@ -6,7 +6,7 @@ import {
   emptyContent,
   content,
   setFn,
-  handleNested,
+  handleNested as nestedLevels,
   maskText,
   expandTabs,
   collectText,
@@ -129,6 +129,63 @@ const within = (writer, depth: 'codeDepth' | 'htmlDepth' | 'cellDepth', write: (
   }
 }
 
+// What `write` writes is kept aside and returned. The line the writer stands on is not
+// touched: the caller writes the result as one piece, and the writer counts its line
+// from that piece.
+const writeAside = (writer, write: () => void): string => {
+  const original = writer.output
+  const { lastWritten, lineText, paraStart } = writer
+  const parts: string[] = []
+  writer.output = (str: string) => parts.push(str)
+  try {
+    write()
+  } finally {
+    writer.output = original
+    writer.lastWritten = lastWritten
+    writer.lineText = lineText
+    writer.paraStart = paraStart
+  }
+  return parts.join('')
+}
+
+// The markdown writer keeps the text of its line, so the lines of a quote and of an
+// item can be written aside and given their prefix when they are done.
+const ownsLines = writer => typeof writer.lineText === 'string' && typeof writer.output === 'function'
+
+// the content of a quote or an item starts on a line of its own
+const startLine = writer => {
+  writer.lineText = ''
+  writer.lastWritten = ''
+  writer.paraStart = false
+}
+
+// A quote is written aside, then every line of it gets the sign of each level, a blank
+// one too, so a fence, a list or a second paragraph stays inside. A quote opened in the
+// middle of a line, after the term of a definition, starts a line of its own. One blank
+// line outside the quote ends it.
+const quote = (writer, levels: number, write: () => void) => {
+  if (writer.lineText !== '') writer.writeRaw('\n')
+  const body = writeAside(writer, () => {
+    startLine(writer)
+    write()
+  })
+  const sign = '> '.repeat(levels)
+  const lines = body.replace(/\n+$/, '').split('\n')
+  writer.writeRaw(lines.map(line => (line === '' ? sign.trimEnd() : sign + line)).join('\n') + '\n\n')
+}
+
+// :nested(n) of a block: a quote of n levels around what the block writes
+const handleNested = (handler, implicitLevel?: number) => (writer, processor) => {
+  const plain = nestedLevels(handler, implicitLevel)(writer, processor)
+  const own = handler(writer, processor)
+  return (node, ctx, interator) => {
+    if (!ownsLines(writer)) return plain(node, ctx, interator)
+    const levels = Number(makeAttrs(node, ctx).getFirstValue('nested') || implicitLevel || 0)
+    if (!(levels > 0)) return own(node, ctx, interator)
+    quote(writer, levels, () => own(node, ctx, interator))
+  }
+}
+
 // a writer given by the caller may be a plain one, without a source of its own
 const writeSource = (writer, text: string) =>
   typeof writer.writeSource === 'function' ? writer.writeSource(text) : writer.writeRaw(text)
@@ -136,15 +193,8 @@ const writeSource = (writer, text: string) =>
 // Code in a line is written aside first: its fence is one backtick longer than any run
 // inside, so a backtick of the text does not end the code early.
 const codeSpan = (writer, processor) => (node, ctx, interator) => {
-  const parts: string[] = []
-  const original = writer.output
-  writer.output = (str: string) => parts.push(str)
-  try {
-    within(writer, 'codeDepth', () => node.content && interator(node.content, ctx))
-  } finally {
-    writer.output = original
-  }
-  writer.writeRaw(inlineCode(parts.join('')))
+  const code = writeAside(writer, () => within(writer, 'codeDepth', () => node.content && interator(node.content, ctx)))
+  writer.writeRaw(inlineCode(code))
 }
 
 const htmlText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -153,43 +203,27 @@ const htmlText = (text: string): string => text.replace(/&/g, '&amp;').replace(/
 // HTML before it and another one before the closing tag, so a reader takes what
 // lies between as Markdown. A cell with nothing to show closes on its own line.
 const writeIsland = (writer, open: string, close: string, write: () => void) => {
-  const original = writer.output
-  if (typeof original !== 'function') {
+  if (typeof writer.output !== 'function') {
     writer.writeRaw(`${open}\n\n`)
     write()
     writer.writeRaw(`\n\n${close}\n`)
     return
   }
-  const parts: string[] = []
-  writer.output = (str: string) => parts.push(str)
-  try {
-    write()
-  } finally {
-    writer.output = original
-  }
-  const body = parts.join('').replace(/\n+$/, '')
+  const body = writeAside(writer, write).replace(/\n+$/, '')
   writer.writeRaw(body.trim() === '' ? `${open}${close}\n` : `${open}\n\n${body}\n\n${close}\n`)
 }
 
 // a fence longer than any run of backticks in the body, opened at the start of a line
 const writeFenced = (writer, info: string, write: () => void) => {
-  const original = writer.output
-  if (typeof original !== 'function') {
+  if (typeof writer.output !== 'function') {
     writer.writeRaw('```' + info + '\n')
     within(writer, 'codeDepth', write)
     if (!writer.lastWritten.endsWith('\n')) writer.writeRaw('\n')
     writer.writeRaw('```\n')
     return
   }
-  const atLineStart = /^$|\n$|^(> )+$/.test(writer.lastWritten)
-  const parts: string[] = []
-  writer.output = (str: string) => parts.push(str)
-  try {
-    within(writer, 'codeDepth', write)
-  } finally {
-    writer.output = original
-  }
-  const body = parts.join('')
+  const atLineStart = /^$|\n$/.test(writer.lastWritten)
+  const body = writeAside(writer, () => within(writer, 'codeDepth', write))
   const fence = '`'.repeat(Math.max(3, longestBacktickRun(body) + 1))
   writer.writeRaw(`${atLineStart ? '' : '\n'}${fence}${info}\n`)
   if (body !== '') writer.writeRaw(body.endsWith('\n') ? body : `${body}\n`)
@@ -197,13 +231,13 @@ const writeFenced = (writer, info: string, write: () => void) => {
 }
 
 // A body shown as written goes into a fence a reader keeps as written. A fence holds only
-// on a line of its own and outside a quote or a cell folded onto a line; there the body
-// is written as text, so its words stay in sight. Says whether a fence was written.
+// on a line of its own and outside a cell folded onto a line; there the body is written
+// as text, so its words stay in sight. Says whether a fence was written.
 const isBodyText = child => typeof child === 'string' || child.type === 'text' || child.type === 'verbatim'
 const bodyValue = child => (typeof child === 'string' ? child : child.value)
 const writeBodyAsWritten = (writer, node, ctx, interator, language = ''): boolean => {
   const children = node.content || []
-  if (writer.quoteDepth > 0 || writer.cellDepth > 0) {
+  if (writer.cellDepth > 0) {
     children.forEach(child =>
       isBodyText(child)
         ? writeText(writer, typeof child === 'string' ? node : child, ctx, bodyValue(child))
@@ -227,20 +261,12 @@ const writeBodyAsWritten = (writer, node, ctx, interator, language = ''): boolea
 // What a block writes, ended by one blank line, so the paragraph after it stands
 // on its own
 const writeWithBoundary = (writer, write: () => void) => {
-  const original = writer.output
-  if (typeof original !== 'function') {
+  if (typeof writer.output !== 'function') {
     write()
     writer.writeRaw('\n')
     return
   }
-  const parts: string[] = []
-  writer.output = (str: string) => parts.push(str)
-  try {
-    write()
-  } finally {
-    writer.output = original
-  }
-  const text = parts.join('')
+  const text = writeAside(writer, write)
   if (text === '') return
   writer.writeRaw(text.endsWith('\n\n') ? text : text.endsWith('\n') ? `${text}\n` : `${text}\n\n`)
 }
@@ -603,36 +629,70 @@ const rules = {
       }
     }),
   ),
-  ':list': setFn((node, ctx) => {
-    return (writer, processor) => (node, ctx, interator) => {
-      // pass list type through context
-      const newCtx = {
-        ...ctx,
-        listType: node.list,
-        listCounter: { value: 1 },
-        listDepth: (ctx.listDepth || 0) + 1,
-      }
-      if (node.content) interator(node.content, newCtx)
+  // A list deeper than an item right after it belongs to that item: it is written inside
+  // the item, with the context of its own list, so a mask of the item does not reach it.
+  ':list': (writer, processor) => (node, ctx, interator) => {
+    // pass list type through context
+    const newCtx = {
+      ...ctx,
+      itemTail: undefined,
+      listType: node.list,
+      listCounter: { value: 1 },
+      listDepth: (ctx.listDepth || 0) + 1,
     }
-  }),
+    if (!node.content) return
+    if (!ownsLines(writer)) return interator(node.content, newCtx)
+    const children = node.content
+    for (let at = 0; at < children.length; at++) {
+      const child = children[at]
+      if (child?.type !== 'block' || child.name !== 'item') {
+        interator([child], newCtx)
+        continue
+      }
+      let last = at
+      for (let next = at + 1; next < children.length; next++) {
+        const after = children[next]
+        if (after?.type === 'list' && Number(after.level) > Number(child.level)) last = next
+        else if (after?.type !== 'blankline') break
+      }
+      const tail = children.slice(at + 1, last + 1)
+      interator([child], tail.length > 0 ? { ...newCtx, itemTail: { nodes: tail, ctx: newCtx } } : newCtx)
+      at = last
+    }
+  },
+  // The marker of an item stands on the first line of what the item writes; the lines
+  // after it are indented by the width of the marker, so they stay in the item.
   'item:block': (writer, processor) => (node, ctx, interator) => {
-    const indent = '  '.repeat(Math.max(0, (ctx.listDepth || 1) - 1))
     const listType = ctx.listType || 'unordered'
     let prefix
     if (listType === 'ordered') {
       const counter = ctx.listCounter || { value: 1 }
       prefix = `${counter.value}. `
       counter.value++
-    } else if (listType === 'variable') {
-      prefix = '- '
     } else {
       prefix = '- '
     }
-    if (node.checked !== undefined) {
-      prefix += node.checked ? '[x] ' : '[ ] '
+    const box = node.checked === undefined ? '' : node.checked ? '[x] ' : '[ ] '
+    if (!ownsLines(writer)) {
+      writer.writeRaw('  '.repeat(Math.max(0, (ctx.listDepth || 1) - 1)) + prefix + box)
+      if (node.content) interator(node.content, { ...ctx, inItem: true })
+      return
     }
-    writer.writeRaw(indent + prefix)
-    if (node.content) interator(node.content, { ...ctx, inItem: true })
+    const tail = ctx.itemTail
+    const body = writeAside(writer, () => {
+      startLine(writer)
+      if (box) writer.writeRaw(box)
+      if (node.content) interator(node.content, { ...ctx, itemTail: undefined })
+      if (tail) interator(tail.nodes, tail.ctx)
+    })
+    const indent = ' '.repeat(prefix.length)
+    const lines = body.replace(/\n+$/, '').split('\n')
+    // an item ends as its content does: a blank line after it keeps a loose list loose,
+    // and a tight list of markdown stays tight
+    const end = /\n\n$/.test(body) ? '\n\n' : '\n'
+    writer.writeRaw(
+      lines.map((line, i) => (i === 0 ? prefix + line : line === '' ? '' : indent + line)).join('\n') + end,
+    )
   },
   'comment:block': emptyContent,
   'test:block': (writer, processor) => (node, ctx, interator) => {
@@ -759,17 +819,8 @@ const rules = {
     // paragraph prints line breaks that would tear the row apart. The cell is
     // rendered aside and folded onto one line.
     const renderCell = cell => {
-      const parts: string[] = []
-      const original = writer.output
-      if (typeof original !== 'function') return null
-      writer.output = (str: string) => parts.push(str)
-      try {
-        within(writer, 'cellDepth', () => writeCellParts(cell, writer, interator, ctx))
-      } finally {
-        writer.output = original
-      }
-      return parts
-        .join('')
+      if (typeof writer.output !== 'function') return null
+      return writeAside(writer, () => within(writer, 'cellDepth', () => writeCellParts(cell, writer, interator, ctx)))
         .replace(/\s*\n+\s*/g, ' ')
         .trim()
     }

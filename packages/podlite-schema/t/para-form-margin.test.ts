@@ -55,7 +55,7 @@ describe('the virtual margin of an indented paragraph or abbreviated block', () 
   })
 
   it('writes an indented item to Markdown without the margin', () => {
-    expect(toMarkdown({}).run(inPod('  =item plain\n    deeper\n')).toString()).toBe('- plain\n  deeper\n\n')
+    expect(toMarkdown({}).run(inPod('  =item plain\n    deeper\n')).toString()).toBe('- plain\n    deeper\n\n')
   })
 
   it('takes the margin off lines that end in a lone carriage return', () => {

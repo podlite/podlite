@@ -48,7 +48,7 @@ describe('input and output blocks in markdown output', () => {
 
   it('opens the fence on a line of its own', () => {
     expect(markdown('=begin item\n=begin input\n<Audit Title>\n=end input\n=end item\n')).toBe(
-      '- \n```\n<Audit Title>\n```\n',
+      '- ```\n  <Audit Title>\n  ```\n',
     )
     expect(markdown('=begin defn\nTERM\n=begin input\n<Audit Title>\n=end input\n=end defn\n')).toContain(
       '**TERM:** \n```\n<Audit Title>\n```\n',
@@ -61,36 +61,37 @@ describe('input and output blocks in markdown output', () => {
   })
 })
 
-describe('a sample where a fence does not hold', () => {
-  it('writes a sample inside a quote as text', () => {
+describe('a sample inside a quote', () => {
+  it('writes a sample inside a quote as a fence with the sign of the quote on every line', () => {
     expect(markdown('=begin input :nested(2)\n<Audit Title>\nsecond\n=end input\n')).toBe(
-      '> > \\<Audit Title>\nsecond\n\n',
+      '> > ```\n> > <Audit Title>\n> > second\n> > ```\n\n',
     )
-    expect(markdown('=begin nested\n=input K<ls> -l\n=end nested\n')).toBe('> `ls` -l\n\n')
+    expect(markdown('=begin nested\n=input K<ls> -l\n=end nested\n')).toBe('> ```\n> `ls` -l\n> ```\n\n')
   })
 
-  it('writes a sample after a paragraph of the quote as text', () => {
-    expect(markdown('=begin nested\nFirst\n\n=input <Before>\n=end nested\n')).toBe('> First\n\n\\<Before>\n\n')
+  it('writes a sample after a paragraph of the quote inside the quote', () => {
+    expect(markdown('=begin nested\nFirst\n\n=input <Before>\n=end nested\n')).toBe(
+      '> First\n>\n> ```\n> <Before>\n> ```\n\n',
+    )
   })
 
-  it('writes a sample after the quote closes as a fence', () => {
+  it('writes a sample after the quote closes as a fence of its own', () => {
     expect(markdown('=begin nested\n=input <Before>\n=end nested\n\n=output <After>\n')).toBe(
-      '> \\<Before>\n\n```\n<After>\n```\n',
+      '> ```\n> <Before>\n> ```\n\n```\n<After>\n```\n',
     )
     const twoLevels =
       '=begin nested\n=begin nested\n=input <Deep>\n=end nested\n=input <Mid>\n=end nested\n\n=output <After>\n'
-    const out = markdown(twoLevels)
-    expect(out).toContain('\\<Mid>')
-    expect(out).toContain('```\n<After>\n```\n')
-    expect(out.match(/```/g)).toHaveLength(2)
+    expect(markdown(twoLevels)).toBe('> > ```\n> > <Deep>\n> > ```\n>\n> ```\n> <Mid>\n> ```\n\n```\n<After>\n```\n')
   })
 
   it('hides the text of a masked sample inside a quote', () => {
     expect(markdown('=begin nested\n=for input :masked\nsecret K<word> E<lt>\n=end nested\n')).toBe(
-      '> ██████ `████` █\n\n',
+      '> ```\n> ██████ `████` █\n> ```\n\n',
     )
   })
+})
 
+describe('a sample where a fence does not hold', () => {
   it('writes a table whose cell holds a sample as a frame with the sample in a fence', () => {
     expect(markdown(inCell('=output a | b'))).toContain('<td>\n\n```\na | b\n```\n\n</td>\n<td>\n\nTail\n\n</td>')
     expect(markdown(inCell('=output a \\| b'))).toContain('```\na \\| b\n```')

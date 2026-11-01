@@ -140,11 +140,13 @@ export const handleNested = (defaultHandler: RuleHandler, implicitLevel?: number
         writer.addLevel(nesting)
       }
 
-      defaultHandlerInited(node, ctx, interator)
-
-      // remove nesting level
-      if (nesting !== undefined) {
-        writer.removeLevel(nesting)
+      try {
+        defaultHandlerInited(node, ctx, interator)
+      } finally {
+        // remove nesting level
+        if (nesting !== undefined) {
+          writer.removeLevel(nesting)
+        }
       }
     }
   }

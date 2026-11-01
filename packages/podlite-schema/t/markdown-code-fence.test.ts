@@ -33,10 +33,10 @@ describe('the fence of a code block in markdown output', () => {
     expect(markdown('=code single')).toBe('```\nsingle\n```\n')
   })
 
-  it('opens on a line of its own after the prefix of an item', () => {
-    expect(markdown('=begin item\n=begin code\nx <y>\n=end code\n=end item\n')).toBe('- \n```\nx <y>\n```\n')
+  it('opens on the line of the marker of an item and stays inside the item', () => {
+    expect(markdown('=begin item\n=begin code\nx <y>\n=end code\n=end item\n')).toBe('- ```\n  x <y>\n  ```\n')
     expect(markdown('=begin nested\n=begin item\n=begin code\nx <y>\n=end code\n=end item\n=end nested\n')).toBe(
-      '> - \n```\nx <y>\n```\n',
+      '> - ```\n>   x <y>\n>   ```\n\n',
     )
   })
 
@@ -60,9 +60,11 @@ describe('what stays as it was', () => {
     expect(markdown(code('a\nb\n', ' :lang<sh>'))).toBe('```sh\na\nb\n```\n')
   })
 
-  it('writes a code block inside a quote after the sign of the quote', () => {
-    expect(markdown('=begin nested\n=begin code\nx\n=end code\n=end nested\n')).toBe('> ```\nx\n```\n')
-    expect(markdown('=begin nested :nested(2)\n=begin code\nx\n=end code\n=end nested\n')).toBe('> > ```\nx\n```\n')
+  it('writes a code block inside a quote with the sign of the quote on every line', () => {
+    expect(markdown('=begin nested\n=begin code\nx\n=end code\n=end nested\n')).toBe('> ```\n> x\n> ```\n\n')
+    expect(markdown('=begin nested :nested(2)\n=begin code\nx\n=end code\n=end nested\n')).toBe(
+      '> > ```\n> > x\n> > ```\n\n',
+    )
   })
 
   it('writes an empty code block and a body of tildes with three backticks', () => {

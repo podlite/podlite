@@ -47,8 +47,10 @@ describe('a block without a rule of its own in markdown output', () => {
     expect(bare('=begin Unknown\n\n=end Unknown\n=para A\n')).toBe('A\n\n')
   })
 
-  it('writes the body as text inside a quote', () => {
-    expect(bare('=begin nested\n=begin Unknown\n<Title>\n=end Unknown\n=end nested\n')).toBe('> \\<Title>\n\n')
+  it('writes the body in a fence inside a quote', () => {
+    expect(bare('=begin nested\n=begin Unknown\n<Title>\n=end Unknown\n=end nested\n')).toBe(
+      '> ```\n> <Title>\n> ```\n\n',
+    )
   })
 
   it('writes the body of a block inside a frame of a table as written', () => {
