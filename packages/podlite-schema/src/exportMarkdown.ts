@@ -263,6 +263,7 @@ const isPluginPicture = node =>
   node.content[0]?.type === 'image'
 const isPluginMarkdown = node =>
   (node.name === 'markdown' || node.name === 'Markdown') &&
+  node.sourceFormat !== 'markdown' &&
   node.content &&
   !Array.isArray(node.content) &&
   node.content.name === 'root'

@@ -76,6 +76,12 @@ describe('a block without a rule of its own in markdown output', () => {
     expect(markdown('=picture x.png\n\n=para After\n')).toBe('![](x.png)\n\nAfter\n\n')
   })
 
+  it('separates the caption of a picture in a cell of a frame', () => {
+    const doc =
+      '=begin table\n=begin row\n=begin cell\n=begin picture\nx.png\nCap\n=end picture\n=end cell\n=cell Tail\n=end row\n=end table\n'
+    expect(markdown(doc)).toContain('<td>\n\n![](x.png)\n\nCap\n\n</td>\n<td>\n\nTail\n\n</td>')
+  })
+
   it('ends a block of Markdown with a blank line', () => {
     expect(markdown('=begin markdown\n- item\n=end markdown\n\n=para After\n')).toBe('- item\n\nAfter\n\n')
     expect(markdown('=begin Markdown\n- item\n=end Markdown\n\n=para After\n')).toBe('- item\n\nAfter\n\n')
@@ -107,7 +113,27 @@ describe('what stays as it was', () => {
     expect(markdown('=para C P<x.png> tail\n')).toBe('C ![](x.png) tail\n\n')
   })
 
-  it('leaves an unresolved =include as it was', () => {
+  it('leaves an =include as it was, also one whose body is text only', () => {
     expect(bare('=include file:x.podlite\n')).not.toContain('```')
+    const tree = p.toAst(p.parse('=para A\n', { podMode: 1 }))
+    const include = {
+      type: 'block',
+      name: 'include',
+      margin: '',
+      content: [{ type: 'verbatim', value: 'file:x.podlite\n' }],
+    }
+    tree.content.push(include as never)
+    expect(String(p.toMarkdown(tree))).toBe('A\n\nfile:x.podlite\n')
+  })
+
+  it('walks a body that holds codes, as before', () => {
+    expect(markdown('=begin formula :allow<B>\nx B<y>\n=end formula\n')).toBe('x **y**\n')
+  })
+
+  it('leaves a block of Markdown the reader of Markdown made without a new boundary', () => {
+    const tree = core.toAst(core.parse('=para A\n', { podMode: 1 }))
+    const root = { type: 'block', name: 'root', margin: '', content: [{ type: 'text', value: 'X' }] }
+    tree.content = [{ type: 'block', name: 'Markdown', margin: '', sourceFormat: 'markdown', content: root } as never]
+    expect(String(toMarkdown({}).use(toAnyRules('toMarkdown', core.getPlugins())).run(tree))).toBe('X')
   })
 })
