@@ -49,8 +49,11 @@ describe('a link to a heading in markdown output, followed by two readers', () =
         '=TITLE S< >\n\n=head1 !!!\n\n=head1 ???\n\nL<second|#???>\n',
         '=begin comment\n=head1 Hidden\n=end comment\n\n=head1 Intro\n\n=head1 Intro\n\nL<second|#Intro-2>\n',
         '=head1 P<cap|x.png>\n\n=head1 cap\n\nL<see|#cap>\n',
+        '=alias NOTE N<note>\n\n=head1 Name A<NOTE>\n\n=head1 Name 1\n\nL<see|#Name 1>\n',
+        '=head1 Before C< one > after\n\n=head1 Before one after\n\nL<see|#Before one after>\n',
+        '=head1 P<|x.png>\n\n=head1 x\n\nL<see|#x>\n',
       ],
-      [[1], [0], [2], [1], [1]],
+      [[1], [0], [2], [1], [1], [1], [1], [1]],
     )
   })
 
