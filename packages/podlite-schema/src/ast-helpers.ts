@@ -328,6 +328,35 @@ export const indexAnchors = (tree: unknown, style: AnchorStyle = htmlStyle): Anc
   return { ...assignAnchors(heads, style, reserved), pageHeadings, footnotes }
 }
 
+// A heading whose code holds a link to this document reads its address as text, so that
+// address must not depend on reading it: the heading and the target of such a link take
+// the address the html index gave them.
+export const headingsWithCodeLinks = (tree: unknown, bindings?: BindingIndex): Set<object> => {
+  const found = new Set<object>()
+  const linksInCode = (node: unknown, inCode: boolean, out: string[]): void => {
+    if (Array.isArray(node)) return node.forEach(child => linksInCode(child, inCode, out))
+    if (!node || typeof node !== 'object') return
+    const n = node as TreeNode
+    if (n.type === 'fcode' && inCode && (n.name === 'L' || n.name === 'W')) {
+      const target = linkTarget(n as { meta?: unknown; content?: unknown })
+      if (typeof target === 'string' && target.startsWith('#') && target.length > 1) out.push(target.slice(1))
+    }
+    linksInCode(n.content, inCode || (n.type === 'fcode' && codeNames.includes(String(n.name))), out)
+  }
+  walkNodes(tree, node => {
+    if (node.type !== 'block' || (node.name !== 'head' && !isSemanticBlock(node))) return
+    const targets: string[] = []
+    linksInCode(node.content, false, targets)
+    if (targets.length === 0) return
+    found.add(node)
+    for (const target of targets) {
+      const bound = bindings ? bindTarget(target, bindings) : undefined
+      if (bound?.found) found.add(bound.node)
+    }
+  })
+  return found
+}
+
 // The same headings in the same order, shaped for another output.
 export const restyleAnchors = (index: AnchorIndex | undefined, style: AnchorStyle): AnchorIndex | undefined =>
   index && {
@@ -354,15 +383,53 @@ before each of them.
 
 =end pod
 */
-export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: string): AnchorIndex | undefined => {
+// The headings the markdown output wrote, in the order of the page, each with the text a
+// reader shows for its line; a node the output made itself, such as a heading an alias
+// brings, has no place in the tree but takes its place in the count.
+export type WrittenHeading = { node: object; text: string | null }
+
+const slugsOfWritten = (written: WrittenHeading[]): Map<object, string> => {
+  const occurrences = new Map<string, number>()
+  const slugOf = new Map<object, string>()
+  for (const { node, text } of written) {
+    if (text === null) continue
+    const base = toMarkdownFragment(text)
+    let slug = base
+    while (occurrences.has(slug)) {
+      const count = (occurrences.get(base) || 0) + 1
+      occurrences.set(base, count)
+      slug = `${base}-${count}`
+    }
+    occurrences.set(slug, 0)
+    slugOf.set(node, slug)
+  }
+  return slugOf
+}
+
+export const readerAnchors = (
+  index: AnchorIndex | undefined,
+  renderMode?: string,
+  written?: WrittenHeading[],
+  alsoNamed?: Set<object>,
+): AnchorIndex | undefined => {
   if (!index) return index
   const headings = index.pageHeadings || [...index.byNode.keys()]
-  const slugs = readerSlugs(headings, renderMode !== 'draft', index.footnotes)
   const slugOf = new Map<object, string>()
-  headings.forEach((node, at) => slugOf.set(node, slugs[at]))
-  const named = new Set<object>([...index.byNode.keys()].filter(hasOwnAddress))
+  if (written) slugsOfWritten(written).forEach((slug, node) => slugOf.set(node, slug))
+  else {
+    const slugs = readerSlugs(headings, renderMode !== 'draft', index.footnotes)
+    headings.forEach((node, at) => slugOf.set(node, slugs[at]))
+  }
+  const named = new Set<object>([...index.byNode.keys()].filter(node => hasOwnAddress(node) || alsoNamed?.has(node)))
+  // Every heading the output writes keeps the address the reader builds from its text,
+  // a named one too. With the texts the output wrote, a named anchor moves off every such
+  // address of another heading; without them, a heading whose address meets a named one
+  // is named as well, as before.
+  const builtBy = new Map<string, object>()
+  if (written)
+    for (const { node, text } of written) if (text !== null) builtBy.set((slugOf.get(node) || '').toLowerCase(), node)
   const namedAddresses = () => new Set([...named].map(node => (index.byNode.get(node) || '').toLowerCase()))
-  for (let changed = true; changed; ) {
+  for (let changed = !written; changed; ) {
     changed = false
     const taken = namedAddresses()
     for (const node of index.byNode.keys()) {
@@ -374,6 +441,10 @@ export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: strin
   const byNode = new Map<object, string>()
   const byName = new Map<string, string>()
   const namesGiven = new Set<string>()
+  const takenByOther = (anchor: string, node: object) => {
+    const owner = builtBy.get(anchor)
+    return owner !== undefined && owner !== node
+  }
   for (const [node, ownAddress] of index.byNode) {
     // lowercased: a reader such as GitHub finds a named anchor by the lowercased
     // address, and one written in capitals is not reached. Two addresses apart only
@@ -382,13 +453,30 @@ export const readerAnchors = (index: AnchorIndex | undefined, renderMode?: strin
     if (named.has(node)) {
       const base = ownAddress.toLowerCase()
       anchor = base
-      for (let count = 1; namesGiven.has(anchor); ) anchor = `${base}-${++count}`
+      for (let count = 1; namesGiven.has(anchor) || takenByOther(anchor, node); ) anchor = `${base}-${++count}`
       namesGiven.add(anchor)
+      // a named address the reader builds for this very heading needs no anchor of its own:
+      // a second one would give the page the same address twice
+      if (written && builtBy.get(anchor) === node && !alsoNamed?.has(node)) named.delete(node)
     }
     byNode.set(node, anchor)
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
   }
+  // a title or a block named in capitals the author gave an id is reached by a named
+  // anchor, under the same rule
+  if (written)
+    for (const node of headings) {
+      if (index.byNode.has(node) || !hasExplicitId(node)) continue
+      const own = makeAttrsPod(node, {}).getFirstValue('id')
+      if (own == null) continue
+      const base = toMarkdownFragment(String(own).replace(/\s/g, '-')).toLowerCase()
+      let anchor = base
+      for (let count = 1; namesGiven.has(anchor) || takenByOther(anchor, node); ) anchor = `${base}-${++count}`
+      namesGiven.add(anchor)
+      named.add(node)
+      byNode.set(node, anchor)
+    }
   return {
     byNode,
     byName,

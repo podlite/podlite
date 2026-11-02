@@ -23,6 +23,8 @@ const transformIgnores = [
   'remark',
   'zwitch',
   'nanoid',
+  // the reader of markdown the schema builds the addresses of headings with, a module only
+  'marked',
 ].join('|')
 
 // Coverage counts what a person wrote and can change. Build output under lib/

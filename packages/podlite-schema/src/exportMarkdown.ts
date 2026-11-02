@@ -19,8 +19,11 @@ import clean_plugin from './plugin-clean-location'
 import { expandAlias } from './helpers/alias'
 import {
   decodeEntities,
+  bindTarget,
   getExplicitNodeId,
   getNodeId,
+  headingsWithCodeLinks,
+  WrittenHeading,
   linkTarget,
   readerAnchors,
   sameDocTarget,
@@ -31,19 +34,34 @@ import { quoteAttribute } from './helpers/html-attr'
 import { readLinkConfig } from './helpers/link-config'
 import { testCaption, longestBacktickRun } from './test-display'
 import { titleParts, isTitleBlock } from './title'
+import { headingTextOf } from './markdown-heading-text'
 
 // A markdown reader builds the anchor out of the heading itself, by its own rules,
 // so a link written here has to match what that reader will produce.
 // Built once per document and mode: a hidden block renders with a copy of the context,
 // and a cache kept on the context itself would be rebuilt for every one of them.
 const readerAnchorsCache = new WeakMap<object, Map<string, ReturnType<typeof readerAnchors>>>()
+// The walk that learns the lines notes each heading where the page has it, and fills in
+// its line when it is written; a title holds blocks written before its own line.
+const noteHeading = (ctx, node): ((line: string | null) => void) => {
+  const lines = ctx?.__headingLines
+  if (!lines) return () => {}
+  const at = lines.push({ node, line: null }) - 1
+  return line => {
+    lines[at].line = line
+  }
+}
+
+// With the texts of the headings read from the lines the output wrote, the addresses are
+// the reader's own; the walk that learns those lines builds them from the tree.
 const markdownAnchors = ctx => {
   const index = ctx?.__anchors
   if (!index) return undefined
   const mode = ctx.renderMode === 'draft' ? 'draft' : 'production'
-  let byMode = readerAnchorsCache.get(index)
-  if (!byMode) readerAnchorsCache.set(index, (byMode = new Map()))
-  if (!byMode.has(mode)) byMode.set(mode, readerAnchors(index, mode))
+  const key = ctx.__readerTexts || index
+  let byMode = readerAnchorsCache.get(key)
+  if (!byMode) readerAnchorsCache.set(key, (byMode = new Map()))
+  if (!byMode.has(mode)) byMode.set(mode, readerAnchors(index, mode, ctx.__readerTexts, ctx.__codeLinkHeadings))
   return byMode.get(mode)
 }
 
@@ -81,6 +99,12 @@ const linkWrap = (node, ctx, inCode = false) => {
   const target = linkTarget(node)
   if (target === undefined) return wrapContent('', '')
   const resolved = sameDocTarget(target, ctx, markdownAnchors(ctx), node)
+  // a link to this document in the code of a heading line is read as text: the heading
+  // and the target of the link take named anchors, so the text stays as it is
+  if (inCode && ctx.__codeLinks && ctx.__headingNode && typeof target === 'string' && target.startsWith('#')) {
+    const bound = ctx.__bindings ? bindTarget(target.slice(1), ctx.__bindings) : undefined
+    if (bound?.found) ctx.__codeLinks.add(bound.node).add(ctx.__headingNode)
+  }
   // Markdown has no anchor without an address either, so a refused link keeps its
   // text and loses the brackets.
   if (resolved === undefined) return wrapContent('', '')
@@ -461,6 +485,7 @@ const maskedOwner = (owner, ctx): boolean => {
 // acting from where it stands. A title with nothing to show writes no heading, and
 // an anchor only when the author named it.
 const titleBlock = (writer, node, ctx, interator) => {
+  const note = noteHeading(ctx, node)
   const heading: string[] = []
   const rest: string[] = []
   titleParts(node).forEach(entry => {
@@ -469,15 +494,18 @@ const titleBlock = (writer, node, ctx, interator) => {
       return
     }
     const masked = entry.owners.some(owner => maskedOwner(owner, ctx))
-    const partCtx = { ...ctx, headingLine: true, ...(masked ? { maskMode: true } : {}) }
+    const partCtx = { ...ctx, headingLine: true, __headingNode: node, ...(masked ? { maskMode: true } : {}) }
     // the line breaks and spaces at the edges of a paragraph go; a no-break space stays
     const part = headingLine(writer, () => interator(entry.content, partCtx)).replace(/^[ \t\n]+|[ \t\n]+$/g, '')
     if (/\S/.test(part)) heading.push(part)
   })
-  // a link reaches a title by the name its author gave it, shaped as for a reader
+  // a link reaches a title by the name its author gave it, shaped as for a reader and kept
+  // off the addresses the reader builds for the headings
   const written = getExplicitNodeId(node, ctx)
-  const own = written === null ? '' : toMarkdownFragment(written).toLowerCase()
+  const own =
+    written === null ? '' : markdownAnchors(ctx)?.byNode.get(node) ?? toMarkdownFragment(written).toLowerCase()
   if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
+  note(heading.length ? heading.join(' ') : null)
   if (heading.length) writer.writeRaw(`# ${heading.join(' ')}\n\n`)
   rest.forEach(text => writer.writeRaw(text))
 }
@@ -533,7 +561,8 @@ const rules = {
             interator(tree, ctx)
           }
         },
-        message => console.warn(`[podlite] ${message}`),
+        // the walk that learns the lines of the headings stays quiet: the walk after it speaks
+        message => ctx.__headingLines || console.warn(`[podlite] ${message}`),
       ).expanded
     if (!expanded) writer.write(`A<${covered(node, ctx, term)}>`)
   },
@@ -729,9 +758,14 @@ const rules = {
         if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
         writer.writeRaw(prefix)
         if (numberPrefix) writer.writeRaw(numberPrefix)
-        writer.writeRaw(
-          headingLine(writer, () => node.content && interator(node.content, { ...ctx, headingLine: true })),
+        const note = noteHeading(ctx, node)
+        const line = headingLine(
+          writer,
+          () => node.content && interator(node.content, { ...ctx, headingLine: true, __headingNode: node }),
         )
+        // a reader of Markdown has six levels of headings; a line of more signs is a paragraph
+        note(level <= 6 ? numberPrefix + line.replace(/\n$/, '') : null)
+        writer.writeRaw(line)
         writer.writeRaw('\n')
       }
     }),
@@ -987,9 +1021,49 @@ const rules = {
   },
 }
 
+// The output walks the document aside to learn the line it writes for each heading, and
+// builds the addresses of its links from the text a reader shows for those lines. When a
+// heading line holds a link to this document in code, the line depends on the addresses:
+// the heading and its target are named, and the walk is repeated until the texts stay.
+// The walk aside writes as the writer of the walk does when that writer writes Markdown.
+const asideWriter = writer => (writer instanceof writerMarkdown ? writer.constructor : writerMarkdown)
+const prepare = (tree, context, walk) => {
+  const named: Set<object> = headingsWithCodeLinks(tree, context.__bindings)
+  let written: WrittenHeading[] | undefined
+  let stable = false
+  // each walk can settle one more link of a chain of such headings
+  for (let read = 1; read <= named.size + 3; read++) {
+    const lines: Array<{ node: object; line: string | null }> = []
+    const codeLinks = new Set<object>()
+    walk(
+      { ...context, __headingLines: lines, __codeLinks: codeLinks, __codeLinkHeadings: named, __readerTexts: written },
+      asideWriter,
+    )
+    const next = lines.map(({ node, line }) => ({ node, text: line === null ? null : headingTextOf(line) }))
+    const before = named.size
+    codeLinks.forEach(node => named.add(node))
+    // a heading an alias brings is a new node on every walk: the texts are compared
+    const same =
+      written !== undefined &&
+      written.length === next.length &&
+      written.every((entry, at) => entry.text === next[at].text)
+    written = next
+    // without links in code, no line depends on an address and one walk is enough
+    if (codeLinks.size === 0 || (same && named.size === before)) {
+      stable = true
+      break
+    }
+  }
+  if (!stable)
+    console.warn('[podlite] the addresses of the markdown headings do not settle; a link may lead to the wrong one')
+  context.__codeLinkHeadings = named
+  context.__readerTexts = written
+}
+
 const toMarkdown = opt =>
   toAny({
     writer: writerMarkdown,
+    prepare,
     ...opt,
     context: { renderMode: opt?.renderMode || 'production', base: opt?.base, ...(opt?.context || {}) },
   })
@@ -1004,10 +1078,12 @@ const toMarkdown = opt =>
         if (blockWithoutRule(writer, node, ctx, interator)) return
         if (isTitleBlock(node)) return titleBlock(writer, node, ctx, interator)
         if (isSemanticBlock(node)) {
-          const name = node.name
-          writer.writeRaw('# ')
-          writer.write(covered(node, ctx, String(name)))
-          writer.writeRaw('\n\n')
+          const name = writeAside(writer, () => writer.write(covered(node, ctx, String(node.name))))
+          noteHeading(ctx, node)(name)
+          const anchors = markdownAnchors(ctx)
+          const own = anchors?.named?.has(node) ? anchors.byNode.get(node) : undefined
+          if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
+          writer.writeRaw(`# ${name}\n\n`)
         }
         if (node.hasOwnProperty('content')) {
           interator(node.content, ctx)

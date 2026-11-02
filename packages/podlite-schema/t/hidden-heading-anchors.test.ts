@@ -112,8 +112,14 @@ describe('the markdown output writes an address the reader cannot build', () => 
   })
 
   it('writes a named anchor in lowercase, the way a reader looks it up', () => {
-    const out = markdown('=for head1 :id<Custom-blocks>\nCustom blocks\n\nSee L<jump|#Custom-blocks>.')
+    const out = markdown('=for head1 :id<Custom-blocks>\nBlocks of your own\n\nSee L<jump|#Custom-blocks>.')
     expect(out).toContain('<a name="custom-blocks"></a>')
+    expect(out).toContain('[jump](#custom-blocks)')
+  })
+
+  it('writes no anchor for an id a reader builds for the same heading', () => {
+    const out = markdown('=for head1 :id<Custom-blocks>\nCustom blocks\n\nSee L<jump|#Custom-blocks>.')
+    expect(out).not.toContain('<a name=')
     expect(out).toContain('[jump](#custom-blocks)')
   })
 
@@ -191,10 +197,10 @@ describe('the markdown output writes an address the reader cannot build', () => 
     expect(out).toContain('[jump](#note-1)')
   })
 
-  it('gives a heading its own anchor when its address falls on an author id', () => {
+  it('moves the anchor of an author id off the address a reader builds for another heading', () => {
     const out = markdown('=for head1 :id<target>\nNamed\n\n=head1 target\n\nL<first|#target> L<second|#target-2>')
-    expect(out).toContain('<a name="target-2"></a>\n\n# target')
-    expect(out).toContain('[first](#target) [second](#target-2)')
+    expect(out).toContain('<a name="target-2"></a>\n\n# Named')
+    expect(out).toContain('[first](#target-2) [second](#target)')
   })
 
   it('counts a hidden heading by the text the page shows in each mode', () => {

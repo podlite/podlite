@@ -9,6 +9,14 @@ export type Options = {
   processor?: any
   writer?: any
   context?: Record<string, unknown>
+  // Called before the walk with its context: an exporter may walk the tree once on its
+  // own (walk), with a fresh writer of the class it names and the context it gives, to
+  // learn what it will write, and put what it learned into the context of the walk.
+  prepare?: (
+    tree: any,
+    context: Record<string, unknown>,
+    walk: (context: Record<string, unknown>, writerClass: (writer: any) => any) => void,
+  ) => void
 }
 
 export const toAny = (options: Options = {}, plugins = []) => {
@@ -64,6 +72,17 @@ export const toAny = (options: Options = {}, plugins = []) => {
     const interator = makeInterator(newFns.map(rule => makeRule(rule.rule, rule.fn(writer, processor, tree))).reverse())
     // Every exporter needs the same anchors: assigned once, before the walk starts.
     const context = { __anchors: indexAnchors(tree), __bindings: buildBindingIndex(tree), ...(options.context || {}) }
+    if (options.prepare) {
+      const walkAside = (asideContext: Record<string, unknown>, writerClass: (writer: any) => any) => {
+        const WriterClass = writerClass(writer)
+        const aside = new WriterClass(() => {})
+        const walk = makeInterator(newFns.map(rule => makeRule(rule.rule, rule.fn(aside, processor, tree))).reverse())
+        aside.startWrite(tree)
+        walk(tree, asideContext)
+        aside.endWrite()
+      }
+      options.prepare(tree, context, walkAside)
+    }
     writer.startWrite(tree)
     const result = interator(tree, context)
     writer.endWrite()
