@@ -216,9 +216,17 @@ const writeSource = (writer, text: string) =>
 
 // Code in a line is written aside first: its fence is one backtick longer than any run
 // inside, so a backtick of the text does not end the code early.
+// A cell of a pipe table is divided at every bar, before code is read, unless an odd run of
+// backslashes stands before the bar; the reader then takes one backslash off. So a bar of
+// code gets a backslash of its own after an even run, and one more after an odd run: the
+// reader shows the code as written after an even run and one backslash more after an odd one.
+// The whole code is taken at once, as a backslash may come from another piece of it.
+const keepBarsInCell = (code: string): string =>
+  code.replace(/(\\*)\|/g, (match, run: string) => `${run}${run.length % 2 ? '\\' : ''}\\|`)
+
 const codeSpan = (writer, processor) => (node, ctx, interator) => {
   const code = writeAside(writer, () => within(writer, 'codeDepth', () => node.content && interator(node.content, ctx)))
-  writer.writeRaw(inlineCode(code))
+  writer.writeRaw(inlineCode(writer.cellDepth > 0 ? keepBarsInCell(code) : code))
 }
 
 const htmlText = (text: string): string => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
