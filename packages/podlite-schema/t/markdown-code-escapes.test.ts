@@ -32,11 +32,17 @@ describe('code in markdown output', () => {
     expect(markdown('=begin table\n=begin row\n=cell C<a|b|c>\n=cell x\n=end row\n=end table\n')).toContain(
       '| `a\\|b\\|c` |',
     )
+    // a backslash of the code right before a bar is doubled, so the bar stays escaped
+    expect(markdown('=begin table\n=begin row\n=cell C<a\\|b> and C<c\\d>\n=cell x\n=end row\n=end table\n')).toContain(
+      '| `a\\\\\\|b` and `c\\d` | x |',
+    )
   })
 
   it('keeps the spaces at both ends of code a reader would take off', () => {
     expect(markdown('=para C< a_b >\n')).toBe('`  a_b  `\n\n')
     expect(markdown('=para C< a>\n')).toBe('` a`\n\n')
+    expect(markdown('=para C< \n >\n')).toBe('` \n `\n\n')
+    expect(markdown('=para C<\na_b >\n')).toBe('` \na_b  `\n\n')
   })
 })
 

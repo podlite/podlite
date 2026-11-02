@@ -75,8 +75,11 @@ class WriterMarkdown extends Writer {
   escape(string) {
     const text = string + ''
     // inside code a reader shows a backslash as written, so nothing is escaped there; only
-    // a bar in a cell of a pipe table needs one, or it divides the row before code is read
-    if (this.codeDepth > 0) return this.cellDepth > 0 ? text.replace(/\|/g, '\\|') : text
+    // a bar in a cell of a pipe table needs one, or it divides the row before code is read.
+    // A bar is taken as escaped after an odd run of backslashes, so the backslashes of the
+    // text before a bar are doubled as well.
+    if (this.codeDepth > 0)
+      return this.cellDepth > 0 ? text.replace(/\\*\|/g, run => run.slice(0, -1).replace(/\\/g, '\\\\') + '\\|') : text
     // a sign a reader takes for a block only at the start of a line gets a backslash there
     const marks = lineStartMarks(text, this.lineText)
     let out = ''
