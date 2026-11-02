@@ -27,3 +27,11 @@ describe('an include with no source in JSX', () => {
     expect([count(html, '1.0.0'), count(html, '2.0.0')]).toEqual([2, 2])
   })
 })
+
+describe('the id of a block included from the same document in JSX', () => {
+  it('gives the copy an id of its own, made from the id of the block', () => {
+    const ids = (html: string) => [...html.matchAll(/ id="([^"]*)"/g)].map(match => match[1])
+    expect(ids(render('=para One\n\n=include para\n'))).toEqual(['id', 'id-1'])
+    expect(ids(render('=TITLE Name\n\n=include TITLE\n'))).toEqual(['id', 'id-1'])
+  })
+})

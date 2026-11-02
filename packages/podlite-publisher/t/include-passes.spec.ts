@@ -350,3 +350,19 @@ describe('a table of contents entry through the two passes', () => {
     expect(entries).toEqual(given)
   })
 })
+
+describe('copies of a block across the passes', () => {
+  it('gives each copy of a block an id of its own when the last pass places a copy that waited', () => {
+    const page = processFile(
+      'site/page.podlite',
+      '=begin pod\n=for TITLE :kind<a>\nName\n\n=include TITLE\n\n=include TITLE[:kind(in doc:Vocab | defn)]\n=end pod\n',
+    )
+    const vocab = processFile('virtual/vocab.podlite', '=begin pod\n=NAME Vocab\n\n=defn a\n=end pod\n')
+    const { first, last } = includePasses({ catalogue: [page], late: ['Vocab'] })
+    const early = quietly(() => first[0]([page]))
+    const [done] = quietly(() => last[0]([...early, vocab]))
+    const ids = getFromTree(done.node, 'TITLE').map(node => (node as { id?: string }).id)
+    expect(ids).toHaveLength(4)
+    expect(new Set(ids).size).toBe(4)
+  })
+})

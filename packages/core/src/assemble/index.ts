@@ -962,11 +962,35 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
   // A block found in the state, copied for one place: each node remembers the node
   // of the state it copies, and a failure, a reading on its own and the marks it
   // carries come with it, so a copy is read as the block it copies.
+  // A copy of a block stands in the output beside the block it copies, so it takes an id
+  // of its own, made from the id of that block: the next number not yet taken in the
+  // tree, which may already hold copies from an earlier pass. A heading keeps the id of
+  // its text, as the parser gives it, and a caption has none.
+  let takenIds: Set<string> | undefined
+  const idOfCopy = (id: string): string => {
+    if (!takenIds) {
+      takenIds = new Set()
+      const collect = (node: any): void => {
+        if (Array.isArray(node)) return node.forEach(collect)
+        if (!node || typeof node !== 'object') return
+        if (typeof node.id === 'string') takenIds!.add(node.id)
+        collect(node.content)
+      }
+      collect(tree)
+    }
+    let count = 1
+    while (takenIds.has(`${id}-${count}`)) count++
+    const copy = `${id}-${count}`
+    takenIds.add(copy)
+    return copy
+  }
   const copyPlaced = (node: any): any => {
     if (Array.isArray(node)) return node.map(copyPlaced)
     if (!node || typeof node !== 'object') return node
     const copy: any = {}
     for (const key of Object.keys(node)) copy[key] = key === 'location' ? node[key] : copyPlaced(node[key])
+    if (node.type === 'block' && typeof node.id === 'string' && node.name !== 'head' && node.name !== 'caption')
+      copy.id = idOfCopy(node.id)
     if (node[WAITING]) copy[WAITING] = true
     if (node[PLACEMENT]) copy[PLACEMENT] = node[PLACEMENT]
     placedFrom.set(copy, placedFrom.get(node) ?? node)

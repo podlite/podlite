@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a block included from the same document takes an id of its own, made from the id of the block it copies (C<id-1>, C<id-2>), so the output no longer holds two elements with one id; a heading keeps the address of its text and an id the author wrote stays as written
+
 =head1 0.0.92
 
 =item an C<=include> with no source, as C<=include VERSION>, brings the blocks of the document itself: every such include selects from the document with its includes of other sources in and its own includes with no source as written, so none of them brings what another one brought, and one that would bring a block it stands inside brings nothing, with a C<cycle> reported. Before, the selector could not be read. C<hasSameDocumentInclude> tells whether a tree holds one, and C<assembleIncludes> takes C<onlySameDocument> for a host with no files to give; C<podlite lint> resolves such includes in text given with no files
