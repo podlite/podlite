@@ -81,6 +81,34 @@ describe('a copy and its marks', () => {
 })
 
 describe('what stays as it was', () => {
+  it('leads a link by name to the first placed block', () => {
+    const tree = assembled('=include head1\n\n=head1 Name\n\n=para L<first|#Name>\n')
+    const html = String(toHtml({}).run(tree))
+    expect(html).toContain('<h1 id="Name">')
+    expect(html).toContain('<a href="#Name">first</a>')
+  })
+
+  it('writes an anchor for each of two empty titles', () => {
+    const html = String(toHtml({}).run(assembled('=TITLE Z<gone>\n\n=include TITLE\n')))
+    const anchors = [...html.matchAll(/<span id="([^"]+)"><\/span>/g)].map(match => match[1])
+    expect(anchors).toHaveLength(2)
+    expect(new Set(anchors).size).toBe(2)
+  })
+
+  it('writes a paragraph and its copy without an id in HTML, and keeps ids when a done tree is assembled again', () => {
+    const tree = assembled('=para One\n\n=include para\n')
+    expect(String(toHtml({}).run(tree))).toBe('<p>One\n</p><p>One\n</p>')
+    const before = blocks(tree).map(block => block.id)
+    const again = assembleIncludes(tree, {
+      sources: sourcesFromFiles({}),
+      context: '',
+      file: 'main.podlite',
+      parse: read,
+      tolerant: true,
+    })
+    expect(blocks(again).map(block => block.id)).toEqual(before)
+  })
+
   it('keeps the address of a heading and the id the author wrote', () => {
     expect(String(toHtml({}).run(assembled('=head1 Name\n\n=include head1\n')))).toBe(
       '<h1 id="Name">Name\n</h1><h1 id="Name-2">Name\n</h1>',
