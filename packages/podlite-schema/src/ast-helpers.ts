@@ -228,6 +228,14 @@ const walkNodes = (node: unknown, visit: (n: any) => void): void => {
   if ('content' in (node as any)) walkNodes((node as any).content, visit)
 }
 
+// The nodes of a tree. A node the output makes as it writes, such as a heading an alias
+// brings, is not one of them: it is a new node on every walk.
+export const nodesOfTree = (tree: unknown): WeakSet<object> => {
+  const nodes = new WeakSet<object>()
+  walkNodes(tree, node => nodes.add(node))
+  return nodes
+}
+
 // A heading with hidden text gets a name made of nothing it hides, and it takes no
 // place in the numbering of repeats: otherwise the number of an open neighbour would
 // say that a hidden heading above carries the same name.
@@ -445,20 +453,23 @@ export const readerAnchors = (
     const owner = builtBy.get(anchor)
     return owner !== undefined && owner !== node
   }
+  // A named place takes its own address, moved off the addresses named before it and off
+  // the address a reader builds for another heading. The address the reader builds for
+  // this very heading needs no anchor: a second one would give the page the address twice.
+  // The address a link writes is the same either way, so a line that holds it keeps its text.
+  const nameAnchor = (node: object, base: string): string => {
+    let anchor = base
+    for (let count = 1; namesGiven.has(anchor) || takenByOther(anchor, node); ) anchor = `${base}-${++count}`
+    namesGiven.add(anchor)
+    if (written && builtBy.get(anchor) === node) named.delete(node)
+    else named.add(node)
+    return anchor
+  }
   for (const [node, ownAddress] of index.byNode) {
     // lowercased: a reader such as GitHub finds a named anchor by the lowercased
     // address, and one written in capitals is not reached. Two addresses apart only
     // by case would then meet, so a repeat gets a number, as the reader numbers slugs.
-    let anchor = slugOf.get(node) || ''
-    if (named.has(node)) {
-      const base = ownAddress.toLowerCase()
-      anchor = base
-      for (let count = 1; namesGiven.has(anchor) || takenByOther(anchor, node); ) anchor = `${base}-${++count}`
-      namesGiven.add(anchor)
-      // a named address the reader builds for this very heading needs no anchor of its own:
-      // a second one would give the page the same address twice
-      if (written && builtBy.get(anchor) === node && !alsoNamed?.has(node)) named.delete(node)
-    }
+    const anchor = named.has(node) ? nameAnchor(node, ownAddress.toLowerCase()) : slugOf.get(node) || ''
     byNode.set(node, anchor)
     const id = getNodeId(node, {})
     if (id != null && !hidesText(node) && !byName.has(id.toString())) byName.set(id.toString(), anchor)
@@ -470,12 +481,7 @@ export const readerAnchors = (
       if (index.byNode.has(node) || !hasExplicitId(node)) continue
       const own = makeAttrsPod(node, {}).getFirstValue('id')
       if (own == null) continue
-      const base = toMarkdownFragment(String(own).replace(/\s/g, '-')).toLowerCase()
-      let anchor = base
-      for (let count = 1; namesGiven.has(anchor) || takenByOther(anchor, node); ) anchor = `${base}-${++count}`
-      namesGiven.add(anchor)
-      named.add(node)
-      byNode.set(node, anchor)
+      byNode.set(node, nameAnchor(node, toMarkdownFragment(String(own).replace(/\s/g, '-')).toLowerCase()))
     }
   return {
     byNode,

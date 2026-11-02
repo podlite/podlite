@@ -22,11 +22,23 @@ const targetsByBoth = (docs: string[]) =>
       encoding: 'utf8',
     }),
   )
+// every link reaches the heading wanted, and no address of the page is given twice
 const expectTargets = (docs: string[], wanted: number[][]) =>
-  targetsByBoth(docs).forEach((read: { marked: number[]; remark: number[] }, at: number) => {
+  targetsByBoth(docs).forEach((read: { marked: number[]; remark: number[]; repeated: string[] }, at: number) => {
     expect(read.marked).toEqual(wanted[at])
     expect(read.remark).toEqual(wanted[at])
+    expect(read.repeated).toEqual([])
   })
+// a warning the output gives while it writes a document
+const warningsOf = (doc: string): string[] => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    markdown(doc)
+    return warn.mock.calls.map(call => String(call[0]))
+  } finally {
+    warn.mockRestore()
+  }
+}
 
 describe('a link to a heading in markdown output, followed by two readers', () => {
   it('reaches the heading the author named, whatever the text the output wrote for the headings', () => {
@@ -50,8 +62,18 @@ describe('a link to a heading in markdown output, followed by two readers', () =
     const doc =
       '=config C<> :allow<L>\n\n=head1 Target\n\n=head1 Go C<L<there|#Target>>\n\n=head1 Target\n\nL<back|#Target>\n'
     const out = markdown(doc)
-    expect(out).toMatch(/<a name="[^"]+"><\/a>\n\n# Target/)
+    expect(out).toContain('# Go `[there](#target)`')
     expectTargets([doc], [[0]])
+  })
+
+  it('writes no anchor for the address a reader builds for the very heading it names', () => {
+    const doc = '=config C<> :allow<L>\n\n=head1 Target\n\n=head1 Go C<L<there|#Target>>\n\nL<back|#Target>\n'
+    expect(markdown(doc)).not.toContain('<a name="target">')
+    expectTargets([doc, '=for TITLE :id<x>\nx\n\n=head1 Other\n\nL<see|#x>\n'], [[0], [0]])
+  })
+
+  it('follows a link inside a heading', () => {
+    expectTargets(['=head1 L<go|#Target>\n\n=head1 Target\n\nL<see|#Target>\n'], [[1, 1]])
   })
 })
 
@@ -103,6 +125,20 @@ describe('the cases where the line of a heading depends on the addresses', () =>
     } finally {
       warn.mockRestore()
     }
+  })
+
+  it('settles a heading an alias brings with a link in its code', () => {
+    const doc =
+      '=alias H =config C<> :allow<L>\n=        =head1 C<L<go|#Target>>\n\nA<H>\n\n=head1 Target\n\nL<see|#Target>\n'
+    expect(warningsOf(doc)).toEqual([])
+    expectTargets([doc], [[1]])
+  })
+
+  it('ends and warns once where two headings hold links to each other in code', () => {
+    // the address a reader builds for each line is the address of the other heading, so a
+    // number moves both and they meet again: a limit, told out loud
+    const doc = '=config C<> :allow<L>\n\n=for head1 :id<x>\nC<L<!|#y>>\n\n=for head1 :id<y>\nC<L<?|#x>>\n\nL<see|#x>\n'
+    expect(warningsOf(doc).filter(text => text.includes('do not settle'))).toHaveLength(1)
   })
 
   it('writes the named anchor of a block named in capitals the author gave an id', () => {

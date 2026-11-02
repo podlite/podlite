@@ -23,6 +23,7 @@ import {
   getExplicitNodeId,
   getNodeId,
   headingsWithCodeLinks,
+  nodesOfTree,
   WrittenHeading,
   linkTarget,
   readerAnchors,
@@ -502,8 +503,15 @@ const titleBlock = (writer, node, ctx, interator) => {
   // a link reaches a title by the name its author gave it, shaped as for a reader and kept
   // off the addresses the reader builds for the headings
   const written = getExplicitNodeId(node, ctx)
+  const anchors = markdownAnchors(ctx)
   const own =
-    written === null ? '' : markdownAnchors(ctx)?.byNode.get(node) ?? toMarkdownFragment(written).toLowerCase()
+    written === null
+      ? ''
+      : anchors?.byNode.has(node)
+      ? anchors.named?.has(node)
+        ? anchors.byNode.get(node)
+        : ''
+      : toMarkdownFragment(written).toLowerCase()
   if (own) writer.writeRaw(`<a name="${quoteAttribute(own)}"></a>\n\n`)
   note(heading.length ? heading.join(' ') : null)
   if (heading.length) writer.writeRaw(`# ${heading.join(' ')}\n\n`)
@@ -1029,20 +1037,24 @@ const rules = {
 const asideWriter = writer => (writer instanceof writerMarkdown ? writer.constructor : writerMarkdown)
 const prepare = (tree, context, walk) => {
   const named: Set<object> = headingsWithCodeLinks(tree, context.__bindings)
+  const ofTree = nodesOfTree(tree)
   let written: WrittenHeading[] | undefined
   let stable = false
-  // each walk can settle one more link of a chain of such headings
-  for (let read = 1; read <= named.size + 3; read++) {
+  // Each walk settles one more link of a chain of such headings, and a chain is no longer
+  // than the headings the first walk wrote: the number of walks is fixed by then.
+  for (let read = 1, limit = 2; read <= limit; read++) {
     const lines: Array<{ node: object; line: string | null }> = []
     const codeLinks = new Set<object>()
     walk(
       { ...context, __headingLines: lines, __codeLinks: codeLinks, __codeLinkHeadings: named, __readerTexts: written },
       asideWriter,
     )
+    if (read === 1) limit = lines.length + 2
     const next = lines.map(({ node, line }) => ({ node, text: line === null ? null : headingTextOf(line) }))
     const before = named.size
-    codeLinks.forEach(node => named.add(node))
-    // a heading an alias brings is a new node on every walk: the texts are compared
+    // a heading an alias brings is a new node on every walk: it cannot be named, and its
+    // text is compared, not the node
+    codeLinks.forEach(node => ofTree.has(node) && named.add(node))
     const same =
       written !== undefined &&
       written.length === next.length &&

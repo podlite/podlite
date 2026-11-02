@@ -50,7 +50,8 @@ const slugsOf = texts => {
 
 // for each link to a place in the document, the heading a reader takes it to: the number of
 // the heading in the page, by a named anchor before it or by the address built from its text.
-// Each reader is followed on its own: anchors and headings in the order it reads them.
+// Each reader is followed on its own: anchors and headings in the order it reads them. Also
+// the addresses the page gives more than once.
 const headingsOf = text => {
   const resolveWith = (headings, anchors) => {
     const slugs = slugsOf(headings)
@@ -86,7 +87,7 @@ const headingsOf = text => {
       ? node.value
       : (node.children || []).map(textOf).join('')
   const walk = node => {
-    if (node.type === 'heading') return remarkHeadings.push(textOf(node))
+    if (node.type === 'heading') remarkHeadings.push(textOf(node))
     if (node.type === 'html')
       for (const match of node.value.matchAll(/<a name="([^"]*)">/g))
         remarkAnchors.push([match[1], remarkHeadings.length])
@@ -94,7 +95,17 @@ const headingsOf = text => {
     ;(node.children || []).forEach(walk)
   }
   walk(unified().use(remarkParse).use(remarkGfm).parse(text))
-  return { marked: byMarked, remark: remarkLinks.map(resolveWith(remarkHeadings, remarkAnchors)) }
+  // an address the page gives twice, without regard to case: by two anchors, by an anchor and
+  // a heading, or by two headings — even when both stand at one place
+  const repeated = (headings, anchors) => {
+    const all = [...anchors.map(([name]) => name), ...slugsOf(headings)].map(address => address.toLowerCase())
+    return [...new Set(all.filter((address, at) => all.indexOf(address) !== at))]
+  }
+  return {
+    marked: byMarked,
+    remark: remarkLinks.map(resolveWith(remarkHeadings, remarkAnchors)),
+    repeated: [...new Set([...repeated(headings, anchors), ...repeated(remarkHeadings, remarkAnchors)])],
+  }
 }
 
 const read = text => {
