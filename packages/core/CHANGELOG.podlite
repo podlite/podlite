@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.94
+
 =item a block included from the same document takes an id of its own, made from the id of the block it copies (C<id-1>, C<id-2>), so the output no longer holds two elements with one id; a heading keeps the address of its text and an id the author wrote stays as written
 
 =head1 0.0.92

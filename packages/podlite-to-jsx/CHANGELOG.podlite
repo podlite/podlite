@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.85
+
 =item a picture shows its C<title> as the C<title> attribute of the image, hidden as its text is; C<HookedImage> takes a C<title>
 
 =item C<=TITLE> (and C<=TITLES>) shows its content as the title of the document in one C<h1>, with the id of the block, instead of the word TITLE above the content: the paragraphs of the title stand in the heading one after another, code, lists and other blocks follow it, a directive inside acts from where it stands, and the content renders once, so a note in the title is counted once. An empty title shows no heading, only an empty anchor a link can lead to

@@ -2,6 +2,81 @@
 
 =head1 Upcoming
 
+=head1 0.0.101
+
+
+=head2 podlite
+
+=item a block included from the same document takes an id of its own, made from the id of the block it copies (C<id-1>, C<id-2>), so the output no longer holds two elements with one id; a heading keeps the address of its text and an id the author wrote stays as written
+
+=head2 @podlite/editor-react
+
+=item the place of a note given in C<initialEditorState> is restored on the element that scrolls — the editor's own wrapper when CodeMirror grows with its content, CodeMirror when it has a height — and reported from it, so a saved scroll moves the view and a reported one is not always 0. The place is kept as an intention until it is reached: the editor tries again when its layout changes, the window is shown again or a picture loads, without counting frames. A place with a cursor and no scroll brings the line of the cursor into view, also without the focus, and the page around the editor still does not move. Typing, pasting, the wheel or a touch give the restore up and report where the editor is. New props: C<focusOnRestore> (default C<true>, the focus after a restore as before) and C<onPlaceRestored>, called once for each place with C<reached>, C<cancelled> or C<replaced>. While the line of the cursor is pending, a message carries no C<scrollTop>; a document opened with no place drops the place still pending for the last one
+
+=head2 @podlite/image
+
+=item a picture shows its C<title> as the C<title> attribute of the image in HTML and JSX, hidden as its text is
+
+=item a picture whose source line follows a blank line shows the image and its caption; the source was taken from the blank line, so the image came out empty and the address went into the caption
+
+=head2 @podlite/markdown
+
+=item the reader of Markdown keeps what it dropped: a rule between blocks becomes a C<=boundary> block, a hard line break (two spaces or a backslash at the end of a line) a C<S<>> holding a line break, and the title of a picture stays on the picture as its C<title> field instead of becoming a caption. HTML of Markdown carries C<markdownHtml>: C<'inline'> inside a paragraph, a heading, a cell or a span, C<'block'> anywhere else
+
+=item every block the reader of Markdown makes carries C<sourceFormat: 'markdown'>, the root and the rows and cells of a table too, so a writer can tell HTML of Markdown from an C<=Html> block an author wrote. The field is optional and the other fields are as before; a tree built by an earlier version has no mark
+
+=head2 @podlite/schema
+
+=item the Markdown output builds the address of a heading from the line it writes for that heading, read the way a reader of Markdown reads it, so a link reaches the heading the author named: an alias in a heading, a link inside code, a title with only a no-break space and a heading inside a block the output does not write no longer move the addresses of the headings after them. The text of a picture is not part of an address. A heading whose code holds a link to this document, and the heading it links to, are named, so the line does not depend on the address. A named anchor no longer takes the address a reader builds for another heading: it gets a number, as a repeat does; a title and a block named in capitals with an id follow the same rule, and no anchor is written where a reader builds the same address for that very heading. The schema reads these lines with C<marked>, held at one version. C<toAny> takes an optional C<prepare>, which lets an exporter walk the tree once aside before the walk
+
+=item the Markdown output writes the text inside code as it stands: inline code and the text of a markup code inside the fence of a sample no longer get a backslash before C<\ ` * _ [ ] #>, which a reader showed as written. A bar in code inside a cell of a pipe table keeps its backslash, so it does not divide the row. Code with a space at both ends gets one more space on each side, as a reader takes one off
+
+=item the Markdown output writes the content of C<=TITLE> (and C<=TITLES>) as the title of the document, one heading of the first level, instead of the word TITLE above the content: its paragraphs one after another, other blocks after it, notes in the order of the source; a title with nothing to show writes no heading, and an anchor only when the author named it. A heading holds one line: a line break inside its paragraph, with the spaces around it, becomes one space, a break of code a space and a break kept by C<S<>> a C<< <br> >>, so the rest of the heading no longer falls out of it. The addresses of Markdown headings count the title with the headings after it, and a title with nothing to show takes no address
+
+=item a picture has the optional field C<title>, the hint a reader shows over it, and a block the optional field C<markdownHtml> (C<'block'> or C<'inline'>). The Markdown output writes the title of a picture after its address in quotes, hidden as its text is, and stands HTML of Markdown that is a block between blank lines, adding only what is missing and nothing at the start or the end of a quote or an item, so the paragraph before it and the one after it stay apart and a tight list stays tight. The HTML output writes the title of a picture as its C<title> attribute
+
+=item the Markdown output puts the sign of a quote on every line of the quote, a blank one too, and indents the lines of an item after its marker by the width of the marker: a second paragraph, a code block, a sample, a table, a list or a quote inside a quote or an item stays inside it, and a fence there keeps its lines. A list deeper than an item is written inside that item, and a hidden item does not hide it. A quote after the term of a definition starts a line of its own. A writer without a function for its output writes as before
+
+=item the Markdown output writes the body of a block without a rule of its own in a fence, as the source has it, with a blank line after it: a reader no longer takes its HTML for markup, its tags for elements or a line of backticks for the start of code, and the paragraph after it stands on its own. A C<=Mermaid> or C<=Diagram> block is marked C<mermaid> unless it is hidden. A C<=picture> or C<=Image> read by its plugin is written as the picture with its caption a paragraph after it, and a C<=markdown> block read by its plugin ends with a blank line
+
+=item the HTML output shows the content of C<=TITLE> (and C<=TITLES>) as the title of the document in one C<h1> with the id of the block, instead of the word TITLE above the content, as C<to-jsx> does: its paragraphs stand in the heading one after another, other blocks follow it, a directive inside acts from where it stands, and the content is written once. A title with nothing to show writes only an empty anchor. An entry of C<=toc TITLE> now leads to the heading of a title written without an C<:id>
+
+=item C<titleParts> splits the content of a C<=TITLE> block into the parts of its title line and the blocks that follow, in the order of the source and with the nodes of the tree; C<isTitleBlock> tells a C<=TITLE> or C<=TITLES> block
+
+=item the Markdown output writes the body of an C<=Html> block an author wrote in a fence, with a blank line after it, as a block without a rule is shown: written raw, a style could hide the paragraph after it and an open comment could take the rest of the document. HTML of Markdown, marked with C<sourceFormat: 'markdown'>, stays raw as before; inside a cell of a pipe table the body is written as text. A block has the optional field C<sourceFormat>, rows and cells of a table too; a tree from an earlier C<@podlite/markdown> has no mark, and its HTML is fenced
+
+=item the Markdown output writes a table whose cell holds a block — a code block, a list, a quote, a heading, more than one paragraph, a sample, a block without a rule or a table — as a frame of HTML whose cells hold Markdown, as a table with merged cells is written; a pipe table could not hold such a cell, and a bar of a code block broke its row. A bar in code is escaped only in a cell of a pipe table, where it would divide the row. HTML inside a line of a Markdown table cell, such as C<< <br> >>, keeps the table a pipe table
+
+=item the Markdown output escapes a sign a reader would take for a block at the start of a line of text: a dash or a plus that starts an item, a quote sign, a number with a dot or a parenthesis that starts a list, a line of dashes or equal signs under a heading or as a rule, the line that aligns a table, also when the sign comes in several pieces. A tilde is escaped everywhere outside code, so a line of tildes no longer opens a code block and two tildes no longer strike text through; a tilde inside an address in the text is kept
+
+=item the Markdown output writes the first visible line of a paragraph without its indent, so a paragraph indented by four spaces or a tab, on its own, in a quote, in a table cell or after a hidden first line, is no longer read as a code block
+
+=item the Markdown output keeps a character reference such as C<&copy;> in the address of a link or a picture, in a link title, in the title and in the alternative text of a picture as written, its ampersand written as C<&amp;>, which every reader takes back, and doubles a backslash of an address or a title, so a reader no longer turns them into the sign. A link inside code is written as before
+
+=item the Markdown output writes a code block in a fence one backtick longer than any run of backticks in its body, so a line of three backticks in the code no longer ends it, and opens the fence on the line of the marker of an item or on a line of its own after the term of a definition. A code block without a final line break is closed on a line of its own
+
+=item the Markdown output writes a table with merged cells as an HTML frame whose cells hold Markdown: each cell stands between blank lines, so a reader takes its links, emphasis, lists and code blocks as Markdown instead of showing their signs. A cell with nothing to show is written as an empty tag. The raw text of a block without a Markdown rule inside such a cell is still written with C<&lt;> and C<&amp;>, so it cannot close the frame
+
+=item the Markdown output writes C<=input> and C<=output> as a fenced code block, as C<=code> is written: the fence no longer closes on the second line, and the sample keeps its lines, its spaces and its signs as written. Markup codes inside the fence are written as their Markdown and shown as such. Inside a table cell written on one line, where a fence does not hold, the sample is written as text
+
+=item a simple table held apart by spaces alone splits a row or a header written on several lines at two whitespace characters, as a row on one line splits; it took three before. Tables with bars or pluses are read as before
+
+=item a simple table held apart by spaces alone splits a row or a header written on several lines by the gaps of its own lines, as a row on one line splits: a line of another row no longer closes a gap of the header or of a row. A gap of any width is one separator, so a cell left empty inside such a row is read as in a row on one line, and the row is padded at its end
+
+=item in a simple table a markup code whose opening and matching closing delimiters are on the same line is part of one cell: a C<|>, a C<+> or a run of whitespace inside it does not divide the row, and the separator type of a line is taken from outside such codes. Where a code ends follows the codes a cell of the table reads, from C<:allow> and C<=config>
+
+=item the Markdown output writes the characters of C<E<>> where it wrote nothing: in text, in table cells, inside C<C<>> configured with C<:allow<E>>, inside C<S<>> and in headings, whose Markdown addresses are built from those characters; an entity is written and hidden as text in the same place is. C<decodeEntities> is exported, and a number that is not a Unicode scalar value gives nothing instead of a wrong character
+
+=item the Markdown output escapes C<< < >> in text as C<< \< >>, and C<&> as C<\&> where it would start a character reference, so a reader does not take text such as C<< <Audit Title> >> or C<&copy;> for HTML or for a character; a table written as HTML has a blank line after it, so the text that follows is not read as HTML. Inline code gets a fence longer than any run of backticks inside it
+
+=head2 @podlite/to-jsx
+
+=item a picture shows its C<title> as the C<title> attribute of the image, hidden as its text is; C<HookedImage> takes a C<title>
+
+=item C<=TITLE> (and C<=TITLES>) shows its content as the title of the document in one C<h1>, with the id of the block, instead of the word TITLE above the content: the paragraphs of the title stand in the heading one after another, code, lists and other blocks follow it, a directive inside acts from where it stands, and the content renders once, so a note in the title is counted once. An empty title shows no heading, only an empty anchor a link can lead to
+
+=item a C<=config> inside a nested block no longer folds that block or gives it its caption; it applies to the blocks that follow it
+
 =head1 0.0.100
 
 
