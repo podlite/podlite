@@ -2460,7 +2460,7 @@ __metadata:
     glob: ^7.2.0
     json-pointer: ^0.6.2
     marked: 16.4.2
-    nanoid: 3.1.30
+    nanoid: ^3.3.20
     npm-run-all: ^4.1.5
     pegmill: 0.1.2
     slugify: ^1.6.6
@@ -8222,12 +8222,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:3.1.30":
-  version: 3.1.30
-  resolution: "nanoid@npm:3.1.30"
+"nanoid@npm:^3.3.20":
+  version: 3.3.20
+  resolution: "nanoid@npm:3.3.20"
   bin:
     nanoid: bin/nanoid.cjs
-  checksum: 276d0d4b0c41c46aeefec5f09f093e4085a2352d06881c845db22b84f8ef72cc8defae6d76bfb1d8a2a128eb2dec42ab148d16582be4e7754c97905806ef57b6
+  checksum: e5061282c25412663f527abe382b3dc7165585f18b5edb7c6500a5f56d9570b1de8b26500c231ae5e28e299f20d3877f839268ed5c302f997b5627237a04dcf9
   languageName: node
   linkType: hard
 
@@ -8768,7 +8768,7 @@ __metadata:
     "@types/jest": ^26.0.21
     "@types/node": ^17.0.7
     esbuild: ^0.15.16
-    nanoid: 3.1.30
+    nanoid: ^3.3.20
     npm-run-all: ^4.1.5
     pegmill: 0.1.2
     typescript: 4.5.5
