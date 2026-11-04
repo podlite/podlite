@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.86
+
 =item C<mermaid> 11.16.1 or later is required, and only as a dependency of the package: version 11.16.1 fixes prototype pollution, CSS injection and loops on crafted diagrams, and an application can no longer supply an older C<mermaid> in its place. The lock file of the monorepo resolves C<dompurify> under C<mermaid> to 3.4.17; an application with its own lock file keeps the version it has until it updates it
 
 =head1 0.0.75
