@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the CommonJS entry loads the C<@podlite/schema> the application installed instead of a copy built into it, so a fix in the schema reaches it without a new build of this package; like the schema, it needs Node 20.19 or later (22.12 or later on Node 22)
+
 =head1 0.0.74
 
 =item the reader of Markdown keeps what it dropped: a rule between blocks becomes a C<=boundary> block, a hard line break (two spaces or a backslash at the end of a line) a C<S<>> holding a line break, and the title of a picture stays on the picture as its C<title> field instead of becoming a caption. HTML of Markdown carries C<markdownHtml>: C<'inline'> inside a paragraph, a heading, a cell or a span, C<'block'> anywhere else

@@ -4,6 +4,9 @@
   "description": "Bidirectional Markdown support for Podlite — parse .md files, embed Markdown blocks",
   "main": "./lib/index.cjs",
   "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
