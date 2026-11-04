@@ -3,22 +3,25 @@ import * as path from 'path'
 import { parseText, processFile } from '../src/node-utils'
 import { catalogueOf, idOfFile } from '../src/catalogue'
 import { withSource } from '../src/source'
+import { readFrontMatter } from '../src/front-matter'
+import matter from 'gray-matter'
 
 // front matter whose code, if it ran, would set a mark on the global object
 const running = (language: string, before = '', after = '') =>
   `${before}---${language}${after}\n(globalThis.__frontMatterRan = 1, { title: 'Run' })\n---\n# Body\n`
-const mark = () => (globalThis as any).__frontMatterRan
+const mark = () => Reflect.get(globalThis, '__frontMatterRan')
 
 // the three ways the publisher reads front matter: a Markdown tree, the attributes
 // of a file, the text of a record the catalogue gives an include
 const readers: { [name: string]: (file: string, text: string) => unknown } = {
   parseText: (file, text) => parseText(file, text),
   processFile: (file, text) => processFile(file, text),
-  catalogue: (file, text) => catalogueOf([withSource({ type: 'page' } as any, file, text)]).textOf(idOfFile(file)),
+  catalogue: (file, text) =>
+    catalogueOf([withSource(processFile(file, '# Body\n'), file, text)]).textOf(idOfFile(file)),
 }
 
 beforeEach(() => {
-  delete (globalThis as any).__frontMatterRan
+  Reflect.deleteProperty(globalThis, '__frontMatterRan')
 })
 
 describe('front matter in a language other than YAML or JSON', () => {
@@ -69,8 +72,22 @@ describe('front matter in YAML or JSON reads as before', () => {
     })
 
   it('keeps a date of YAML a date', () => {
-    const { readFrontMatter } = require('../src/front-matter')
     expect(readFrontMatter(`---\n${yamlHead}---\nBody`).data.pubdate).toBeInstanceOf(Date)
+  })
+
+  it('keeps the body after front matter in YAML and in JSON', () => {
+    expect(readFrontMatter(`---\n${yamlHead}---\n# Hello\n`).content).toBe('# Hello\n')
+    expect(readFrontMatter('---json\n{ "title": "Hello" }\n---\n# Hello\n').content).toBe('# Hello\n')
+  })
+
+  it('keeps the date of JSON front matter as written', () => {
+    const record = processFile('a.md', '---json\n{ "title": "Hello", "pubdate": "2026-11-04" }\n---\n# Hello\n')
+    expect(record.pubdate).toBe('2026-11-04')
+  })
+
+  it('gives no fields for front matter that holds no mapping', () => {
+    expect(readFrontMatter('---\n42\n---\nBody').data).toEqual({})
+    expect(readFrontMatter('---\n- a\n---\nBody').data).toEqual({})
   })
 
   for (const head of ['---json', '---JSON'])
@@ -81,13 +98,11 @@ describe('front matter in YAML or JSON reads as before', () => {
     })
 
   it('leaves a text without front matter whole', () => {
-    const { readFrontMatter } = require('../src/front-matter')
     for (const text of ['', '# Title\nBody\n', '----\nBody\n', '﻿﻿---yaml\ntitle: t\n---\nBody'])
-      expect(readFrontMatter(text)).toEqual(pick(require('gray-matter')(text, {})))
+      expect(readFrontMatter(text)).toEqual(pick(matter(text, {})))
   })
 
   it('reads front matter after one byte order mark', () => {
-    const { readFrontMatter } = require('../src/front-matter')
     expect(readFrontMatter('﻿---yaml\ntitle: t\n---\nBody')).toEqual({ data: { title: 't' }, content: 'Body' })
   })
 

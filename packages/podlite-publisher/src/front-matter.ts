@@ -10,10 +10,14 @@ const languages = new Map<string, 'yaml' | 'json'>([
   ['yml', 'yaml'],
   ['json', 'json'],
 ])
-type Engine = { parse: (text: string) => object }
+type Fields = { [name: string]: unknown }
+type Engine = { parse: (text: string) => Fields }
+// front matter that holds no mapping, a single number, word or list, gives no fields
+const fieldsOf = (value: unknown): Fields =>
+  typeof value === 'object' && value !== null && !Array.isArray(value) ? Object.fromEntries(Object.entries(value)) : {}
 const engineOf: { [kind: string]: Engine } = {
-  yaml: { parse: (text: string) => yaml.safeLoad(text) as object },
-  json: { parse: (text: string) => JSON.parse(text) },
+  yaml: { parse: (text: string) => fieldsOf(yaml.safeLoad(text)) },
+  json: { parse: (text: string) => fieldsOf(JSON.parse(text)) },
 }
 const refused: Engine = {
   parse: () => {
@@ -33,10 +37,7 @@ const languageOf = (text: string): { name: string; line: string } | null => {
 
 // The front matter of a Markdown text and the text after it; a text without front
 // matter comes back whole.
-export const readFrontMatter = (
-  text: string,
-  file = 'the text',
-): { data: { [name: string]: any }; content: string } => {
+export const readFrontMatter = (text: string, file = 'the text'): { data: Fields; content: string } => {
   const found = languageOf(text)
   const engines: { [name: string]: Engine } = { ...engineOf, javascript: refused }
   if (found) {
