@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<@modelcontextprotocol/sdk> 1.32 or later is required: it fixes requests and redirects of its HTTP and OAuth clients. Its stdio transport takes a message of at most 10 MiB; a larger one closes the session with an error, where 1.29 read it
+
 =head1 0.0.29
 
 =item C<podlite_validate> applies the document's C<:lint-ignore>: a rule the attribute names is silenced inside its block, and a mute that names no rule or silences nothing is reported, as C<podlite lint> does

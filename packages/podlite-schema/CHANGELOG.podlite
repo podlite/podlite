@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<json-pointer> 0.6.2 or later is required: 0.6.1 let a crafted pointer pollute the prototype through C<set>; the schema only reads with C<get>
+
 =head1 0.0.81
 
 =item the Markdown output builds the address of a heading from the line it writes for that heading, read the way a reader of Markdown reads it, so a link reaches the heading the author named: an alias in a heading, a link inside code, a title with only a no-break space and a heading inside a block the output does not write no longer move the addresses of the headings after them. The text of a picture is not part of an address. A heading whose code holds a link to this document, and the heading it links to, are named, so the line does not depend on the address. A named anchor no longer takes the address a reader builds for another heading: it gets a number, as a repeat does; a title and a block named in capitals with an id follow the same rule, and no anchor is written where a reader builds the same address for that very heading. The schema reads these lines with C<marked>, held at one version. C<toAny> takes an optional C<prepare>, which lets an exporter walk the tree once aside before the walk
