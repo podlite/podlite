@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the front matter of a Markdown file is read only in YAML or JSON: front matter in JavaScript or in any other language is an error that names the file, where JavaScript used to run as code inside the build; an empty front matter in such a language is an error too. YAML is read by C<js-yaml> 3.15.2 or later, and C<JSON> in capitals is read as JSON
+
 =head1 0.0.61
 
 =item the type C<neighbourRecord> names a neighbour as the links to the next and previous entry give it: the record without its tree, with the C<label> of a neighbour without a title

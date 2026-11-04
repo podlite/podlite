@@ -16,7 +16,7 @@ import path from 'path'
 import glob from 'glob'
 import { getAllArticles, isExistsPubdate, makeAstFromSrc } from './shared'
 import { parseMd } from '@podlite/markdown'
-import matter from 'gray-matter'
+import { readFrontMatter } from './front-matter'
 import { pubRecord, publishRecord } from './record'
 import { nodeOrigin, withSource } from './source'
 import { readRecordText } from './reading'
@@ -275,7 +275,7 @@ export function parseText(filePath: string, text: string, mime?: MimeTypes) {
       asDocument(readRecordText(src, filePath, undefined, { format: 'podlite' })),
     //@ts-ignore TODO: fix this
     [PARSER_TYPES.MARKDOWN]: (src: string) => {
-      const { content } = matter(src)
+      const { content } = readFrontMatter(src, filePath)
       return parseMd(content)
     },
     [PARSER_TYPES.DEFAULT]: (src: string) =>
@@ -431,7 +431,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
   const attr: { [name: string]: any } = ((f, node) => {
     if (getParserTypeforFile(f, mime) === PARSER_TYPES.MARKDOWN) {
       // try to extract from markdown front matter
-      const { data } = matter(text)
+      const { data } = readFrontMatter(text, f)
       return data
     } else {
       return getDocumentAttributes(podlite_document, f)

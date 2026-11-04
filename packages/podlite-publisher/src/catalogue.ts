@@ -23,7 +23,7 @@ an include of it is left for a later pass.
 =end pod
 */
 import * as path from 'path'
-import matter from 'gray-matter'
+import { readFrontMatter } from './front-matter'
 import { filePathMatches, getDocIDs, mkRootBlock } from '@podlite/schema'
 import type { AstTree, PodliteDocument } from '@podlite/schema'
 import { formatOfFile, formatOfType } from 'podlite'
@@ -103,7 +103,9 @@ export const idOfFile = (file: string): string => path.resolve(file)
 
 // a Markdown text is read without its front matter, as the record was
 const readable = (source: RecordSource): string =>
-  getParserTypeforFile(source.file, source.mime) === PARSER_TYPES.MARKDOWN ? matter(source.text).content : source.text
+  getParserTypeforFile(source.file, source.mime) === PARSER_TYPES.MARKDOWN
+    ? readFrontMatter(source.text, source.file).content
+    : source.text
 
 /*
 =begin pod :kind<export>
