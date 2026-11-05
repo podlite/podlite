@@ -65,6 +65,20 @@ npm install @podlite/formula
 </td></tr></table>
 </div>
 
+## MathJax
+
+Formulas are drawn by MathJax 3.2.2, loaded from jsDelivr with the `integrity` hash of its file. To load it from elsewhere, set the source before the first formula:
+
+```js
+import { setMathJaxSource } from '@podlite/formula'
+
+setMathJaxSource({
+  chtml: { src: '/mathjax/tex-chtml-full.js', integrity: 'sha384-…', crossOrigin: 'anonymous' },
+})
+```
+
+`chtml` is the output Podlite documents use; `svg` is for `Tex2SVG`. A source without `integrity` is loaded unchecked. If MathJax does not load, each formula shows its source as text.
+
 ## Author
 
 Copyright (c) 2021–2026 Aliaksandr Zahatski

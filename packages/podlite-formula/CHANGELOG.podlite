@@ -2,6 +2,18 @@
 
 =head1 Upcoming
 
+=item MathJax is loaded at version 3.2.2, not the latest 3.x, with the C<integrity> hash of its file and C<crossorigin="anonymous">. CHTML and SVG each load their own file
+
+=item C<setMathJaxSource({ chtml, svg })> sets where MathJax comes from. A source replaces the previous one whole, so a source without its own C<integrity> is loaded unchecked. The source is read when the script is added, so set it before the first formula
+
+=item a formula whose MathJax did not load, or which MathJax could not convert, shows its source as text in its usual place instead of an empty box
+
+=item a configuration of MathJax the application sets in C<window.MathJax> before any script is kept, and the script is loaded; the formulas used to stay empty
+
+=item a script of MathJax already on the page, with the id C<mathjax-script> or C<MathJax-script>, is waited for; one without an C<onload> handler used to throw
+
+=item C<integrity> covers the first script only. Fonts and extensions MathJax loads itself come from the same pinned version without a hash; to control them, host MathJax and point C<setMathJaxSource> at it
+
 =item C<react-is> is no longer a dependency or a peer: the package does not load it
 
 =head1 0.0.58

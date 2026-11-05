@@ -2357,6 +2357,7 @@ __metadata:
   resolution: "@podlite/formula@workspace:packages/podlite-formula"
   dependencies:
     "@podlite/schema": "workspace:*"
+    mathjax: 3.2.2
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18
     react-dom: ^16.0.0 || ^17.0.0 || ^18
@@ -7420,6 +7421,13 @@ __metadata:
   version: 1.1.0
   resolution: "math-intrinsics@npm:1.1.0"
   checksum: 0e513b29d120f478c85a70f49da0b8b19bc638975eca466f2eeae0071f3ad00454c621bf66e16dd435896c208e719fc91ad79bbfba4e400fe0b372e7c1c9c9a2
+  languageName: node
+  linkType: hard
+
+"mathjax@npm:3.2.2":
+  version: 3.2.2
+  resolution: "mathjax@npm:3.2.2"
+  checksum: 8ad843cd72ef8543837270c34d83ed6a734a66047f1fbf9c463065ce7b7f9dfb8e02d76ac353199217a036f963c7bcee8e7c9cc213cbe36dd0f511c8d4f1f6e8
   languageName: node
   linkType: hard
 
