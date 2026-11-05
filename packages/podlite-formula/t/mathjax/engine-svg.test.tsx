@@ -22,4 +22,6 @@ it('shows the source of a formula whose extension did not load, and draws the ne
   await settle(() => failed.host.textContent === source, 'the source of the formula')
   const next = svg('y')
   await settle(() => drawn(next.host), 'the next formula')
+  failed.rerender(<Tex2SVGWithProvider latex="v" />)
+  await settle(() => drawn(failed.host), 'the formula written anew in the same place')
 })

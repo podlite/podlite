@@ -103,6 +103,33 @@ describe('the script of MathJax', () => {
     expect(scriptById('mathjax-script').src).toContain('mathjax@3.2.2')
   })
 
+  it('takes the SVG source the application sets and leaves the CHTML one alone', () => {
+    const f = fresh()
+    f.formula.setMathJaxSource({ svg: { src: 'https://example.org/svg.js' } })
+    draw(f, f.React.createElement(f.mathJax.Tex2SVGWithProvider, { latex: 'x' }))
+    expect(scriptById('mathjax-script').src).toBe('https://example.org/svg.js')
+    expect(scriptById('mathjax-script').hasAttribute('integrity')).toBe(false)
+    scriptById('mathjax-script').remove()
+    const g = fresh()
+    g.formula.setMathJaxSource({ svg: { src: 'https://example.org/svg.js' } })
+    draw(g, g.React.createElement(g.mathJax.Tex2ChtmlWithProvider, { latex: 'x' }))
+    expect(scriptById('mathjax-script').getAttribute('integrity')).toBe(hashOf('chtml'))
+  })
+
+  it('takes the hash and the cross origin mode given to the provider', () => {
+    const f = fresh()
+    draw(
+      f,
+      f.React.createElement(f.formula.MathJaxProvider, {
+        src: 'https://example.org/prop.js',
+        integrity: 'sha384-prop',
+        crossOrigin: 'use-credentials',
+      }),
+    )
+    expect(scriptById('mathjax-script').getAttribute('integrity')).toBe('sha384-prop')
+    expect(scriptById('mathjax-script').getAttribute('crossorigin')).toBe('use-credentials')
+  })
+
   it('comes from the provider before the source set for the package', () => {
     const f = fresh()
     f.formula.setMathJaxSource({ chtml: { src: 'https://example.org/set.js', integrity: 'sha384-set' } })
@@ -175,6 +202,18 @@ describe('a formula whose script failed', () => {
     const frame = host.querySelector('div.formula')
     expect(frame?.firstChild?.textContent).toBe(`${'\u2588'.repeat(4)}\n`)
     expect(frame?.querySelector('.caption')?.textContent).toBe('\u2588'.repeat(4))
+    expect(scripts()).toHaveLength(0)
+  })
+
+  it('shows its source when the loader of a present engine fails', async () => {
+    const f = fresh()
+    window.MathJax = {
+      version: '3.2.2',
+      loader: { ready: () => Promise.reject(new Error('a component did not load')) },
+    }
+    const { host } = draw(f, f.React.createElement(f.mathJax.Tex2ChtmlWithProvider, { latex: 'q' }))
+    await f.act(async () => {})
+    expect(host.textContent).toBe('q')
     expect(scripts()).toHaveLength(0)
   })
 })

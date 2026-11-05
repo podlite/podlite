@@ -34,6 +34,8 @@ it('shows the source of a formula MathJax throws on, and draws the next one', as
     await settle(() => failed.host.textContent === 'boom', 'the source of the formula')
     const next = chtml('y')
     await settle(() => drawn(next.host), 'the next formula')
+    failed.rerender(<Tex2ChtmlWithProvider latex="v" />)
+    await settle(() => drawn(failed.host), 'the formula written anew in the same place')
   } finally {
     engine.tex2chtml = convert
   }

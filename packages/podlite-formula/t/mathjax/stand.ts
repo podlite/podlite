@@ -49,6 +49,7 @@ export const mount = (element: React.ReactElement) => {
   act(() => root.render(element))
   return {
     host,
+    rerender: (next: React.ReactElement) => act(() => root.render(next)),
     unmount: () => {
       act(() => root.unmount())
       host.remove()

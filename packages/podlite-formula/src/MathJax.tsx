@@ -103,7 +103,9 @@ export function useTexSVG({
 } = {}): [HTMLElement | null, { error: boolean; isLoading: boolean; failed: boolean }] {
   const state = useContext(MathJaxContext)
   const [html, setHtml] = useState<HTMLElement | null>(null)
-  const [failed, setFailed] = useState(false)
+  // a failure belongs to the formula it happened on
+  const [failedOn, setFailedOn] = useState<string | null>(null)
+  const failed = failedOn === latex
   const [isLoading, setIsLoading] = useState(false)
   const settled = useRef<string | null>(null)
   const error = !!html?.outerHTML.match(/data-mjx-error/)
@@ -115,7 +117,7 @@ export function useTexSVG({
       const found = await engineFor('svg', state)
       if (cancelled || found === 'wait') return
       settled.current = latex
-      if (found === 'fail') return setFailed(true)
+      if (found === 'fail') return setFailedOn(latex)
       setIsLoading(true)
       const mathJaxElement: HTMLElement = await found.tex2svgPromise(latex)
       if (!cancelled) setHtml(mathJaxElement)
@@ -124,7 +126,7 @@ export function useTexSVG({
     setMathJaxHTML()
       .catch(e => {
         reportFailure(latex, e)
-        if (!cancelled) setFailed(true)
+        if (!cancelled) setFailedOn(latex)
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -206,7 +208,9 @@ export function useTexChtml({
 } = {}): [HTMLElement | null, { error: boolean; isLoading: boolean; failed: boolean }] {
   const state = useContext(MathJaxContext)
   const [html, setHtml] = useState<HTMLElement | null>(null)
-  const [failed, setFailed] = useState(false)
+  // a failure belongs to the formula it happened on
+  const [failedOn, setFailedOn] = useState<string | null>(null)
+  const failed = failedOn === latex
   const [isLoading, setIsLoading] = useState(false)
   const settled = useRef<string | null>(null)
   const error = !!html?.outerHTML.match(/data-mjx-error/)
@@ -218,7 +222,7 @@ export function useTexChtml({
       const found = await engineFor('chtml', state)
       if (cancelled || found === 'wait') return
       settled.current = latex
-      if (found === 'fail') return setFailed(true)
+      if (found === 'fail') return setFailedOn(latex)
       setIsLoading(true)
       let produced = false
       await typeset(() => {
@@ -233,7 +237,7 @@ export function useTexChtml({
     setMathJaxHTML()
       .catch(e => {
         reportFailure(latex, e)
-        if (!cancelled) setFailed(true)
+        if (!cancelled) setFailedOn(latex)
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
