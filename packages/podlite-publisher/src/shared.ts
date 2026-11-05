@@ -9,10 +9,8 @@ import {
 } from '@podlite/schema'
 import { pubRecord, publishRecord } from './record'
 import { podlite as podlite_core } from 'podlite'
-// now we add base60 letters
 
-import translit from 'iso_9'
-import base60 from 'newbase60'
+import { dayInBase60, latinOf } from './slug'
 
 export const getLangFromFilename = (filename?: string) => {
   if (!filename) return
@@ -123,7 +121,7 @@ export const addUrl = (items: publishRecord[]) => {
     const { file: f } = i
     const attrs = i
     const pubDate = new Date(i.pubdate)
-    const sxd = base60.DateToSxg(pubDate)
+    const sxd = dayInBase60(pubDate)
     const type = i.type === 'note' ? 'n' : 'a'
     // make short name from title
     let words: string[] = (attrs.title || '').split(/\s/)
@@ -134,7 +132,7 @@ export const addUrl = (items: publishRecord[]) => {
     }
     let shortTitle = res.join(' ')
     // translit only cyrillic
-    const translit2 = /[а-яА-ЯЁё]/.test(shortTitle) ? translit(shortTitle, 5) : shortTitle
+    const translit2 = /[а-яА-ЯЁё]/.test(shortTitle) ? latinOf(shortTitle) : shortTitle
     // make url clean
     const slug = ((translit2.replace(/`/, '') || '').replace(/\W+/g, '-') || '')
       .replace(/(^[-]+|[-]+$)/g, '')

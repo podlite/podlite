@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the short address and the slug of a record are made by code of the package: C<iso_9> and C<newbase60>, whose licences do not fit a package under MIT, are no longer dependencies; every address comes out as before
+
 =head1 0.0.63
 
 =item the front matter of a Markdown file is read only in YAML or JSON: front matter in JavaScript or in any other language is an error that names the file, where JavaScript used to run as code inside the build; an empty front matter in such a language is an error too. YAML is read by C<js-yaml> 3.15.2 or later, and C<JSON> in capitals is read as JSON; front matter that holds no mapping, a single number, word or list, gives no fields

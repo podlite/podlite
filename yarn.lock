@@ -2439,9 +2439,7 @@ __metadata:
     crc-32: ^1.2.2
     glob: ^7.2.0
     gray-matter: ^4.0.3
-    iso_9: ^1.0.4
     js-yaml: ^3.15.2
-    newbase60: ^1.3.1
     npm-run-all: ^4.1.5
     podlite: "workspace:*"
     ts-node: ^9.1.1
@@ -6440,13 +6438,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iso_9@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "iso_9@npm:1.0.4"
-  checksum: f3cee79b339417339336f7a64ae279383b3607b022f4cbcc7f7b2f364404be37c1ca7a70e61782ab44847af9303fe6c8582e84ebaffd9799581c4c2bcb80a215
-  languageName: node
-  linkType: hard
-
 "istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0":
   version: 3.2.2
   resolution: "istanbul-lib-coverage@npm:3.2.2"
@@ -8256,13 +8247,6 @@ __metadata:
   version: 2.6.2
   resolution: "neo-async@npm:2.6.2"
   checksum: deac9f8d00eda7b2e5cd1b2549e26e10a0faa70adaa6fdadca701cc55f49ee9018e427f424bac0c790b7c7e2d3068db97f3093f1093975f2acb8f8818b936ed9
-  languageName: node
-  linkType: hard
-
-"newbase60@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "newbase60@npm:1.3.1"
-  checksum: 40483a596b93341f5302c1daf98b5bf9221be080bfc39476f35fc907badf967f683dfc4437dbfc93070531d259586888b1f49503577dec921954931c486cecfb
   languageName: node
   linkType: hard
 
