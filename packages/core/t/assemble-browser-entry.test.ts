@@ -15,12 +15,14 @@ describe('the include assembly entry', () => {
     expect(result.outputFiles[0].text).not.toMatch(/require\(["'](fs|path|node:[a-z]+)["']\)/)
   })
 
-  it('makes ids in a browser once it is loaded', async () => {
-    // loading alone runs no id: the generator runs when a block is made
+  it('makes ids in a browser with the id pass of the core', async () => {
     const result = await build({
       stdin: {
-        contents:
-          "import { mkBlock } from '@podlite/schema'; import './src/assemble/index'; window.__ids = () => [mkBlock({ name: 'para' }, []).id, mkBlock({ name: 'para' }, []).id]",
+        contents: [
+          "import ids from './src/ids'",
+          "import { mkBlock } from '@podlite/schema'",
+          "window.__ids = () => ids()({ type: 'block', name: 'root', margin: '', content: [mkBlock({ name: 'para' }, []), mkBlock({ name: 'para' }, [])] }).content.map(block => block.id)",
+        ].join('\n'),
         resolveDir: path.resolve(__dirname, '..'),
         loader: 'ts',
       },
@@ -28,12 +30,15 @@ describe('the include assembly entry', () => {
       platform: 'browser',
       format: 'iife',
       write: false,
+      metafile: true,
       logLevel: 'silent',
     })
+    expect(Object.keys(result.metafile?.inputs ?? {}).some(input => input.endsWith('core/src/ids.ts'))).toBe(true)
     const dom = new JSDOM('<!doctype html><body></body>', { runScripts: 'outside-only' })
     dom.window.eval(result.outputFiles[0].text)
-    const [first, second]: string[] = JSON.parse(String(dom.window.eval('JSON.stringify(window.__ids())')))
-    expect(first).toMatch(/^[A-Za-z0-9_-]{21}$/)
-    expect(first).not.toBe(second)
+    const made: string[] = JSON.parse(String(dom.window.eval('JSON.stringify(window.__ids())')))
+    expect(made).toHaveLength(2)
+    for (const id of made) expect(id).toMatch(/^[A-Za-z0-9_-]{21}$/)
+    expect(made[0]).not.toBe(made[1])
   })
 })
