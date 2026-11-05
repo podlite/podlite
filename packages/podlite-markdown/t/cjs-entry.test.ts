@@ -9,7 +9,8 @@ describe('the CommonJS entry', () => {
     const inputs = Object.keys(metafile?.inputs ?? {})
     expect(inputs.filter(input => /podlite-schema|node_modules\/(nanoid|json-pointer|ajv)\//.test(input))).toEqual([])
     expect(inputs.some(input => /node_modules\/unified\//.test(input))).toBe(true)
-    expect(inputs.some(input => /node_modules\/remark-parse\//.test(input))).toBe(true)
+    for (const name of ['remark-parse', 'remark-gfm', 'remark-math'])
+      expect(inputs.some(input => input.includes(`node_modules/${name}/`))).toBe(true)
   })
 
   it('builds the tree with the schema the application installed', () => {

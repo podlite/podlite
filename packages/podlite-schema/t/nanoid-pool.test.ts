@@ -3,8 +3,7 @@ import { mkBlock } from '../src'
 
 describe('the ids of new blocks', () => {
   it('stay apart after another caller asks nanoid for a fractional size', () => {
-    // nanoid keeps one pool for the process; before 3.3.8 a fractional size left it
-    // handing the same id to every next call
+    // a fractional size used to stall the pool nanoid shares across the process
     nanoid(1.5)
     const first = mkBlock({ name: 'para' }, []).id
     const second = mkBlock({ name: 'para' }, []).id

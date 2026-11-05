@@ -1,9 +1,7 @@
 import { build, BuildOptions } from 'esbuild'
 import { join } from 'path'
 
-// The file `require` loads. React and the schema stay outside: the schema is the one the
-// application installed, so a fix in it reaches this entry without a new build of this
-// package. Remark and unified are bundled, being modules only `import` can load.
+// the schema stays outside so the installed one is used; remark is ESM only and stays inside
 export const cjsOptions: BuildOptions = {
   absWorkingDir: join(__dirname, '..'),
   bundle: true,

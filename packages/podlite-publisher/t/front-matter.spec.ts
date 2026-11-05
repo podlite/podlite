@@ -11,8 +11,7 @@ const running = (language: string, before = '', after = '') =>
   `${before}---${language}${after}\n(globalThis.__frontMatterRan = 1, { title: 'Run' })\n---\n# Body\n`
 const mark = () => Reflect.get(globalThis, '__frontMatterRan')
 
-// the three ways the publisher reads front matter: a Markdown tree, the attributes
-// of a file, the text of a record the catalogue gives an include
+// the three ways the publisher reads front matter
 const readers: { [name: string]: (file: string, text: string) => unknown } = {
   parseText: (file, text) => parseText(file, text),
   processFile: (file, text) => processFile(file, text),

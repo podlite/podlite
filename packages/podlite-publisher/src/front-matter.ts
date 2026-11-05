@@ -1,9 +1,7 @@
 import matter from 'gray-matter'
 import yaml from 'js-yaml'
 
-// A Markdown document names the language of its front matter itself, and gray-matter
-// runs a front matter written in JavaScript. So the language is looked up first:
-// YAML and JSON are read, any other language is refused with the name of the file.
+// gray-matter runs front matter in JavaScript, so only YAML and JSON are let through
 const languages = new Map<string, 'yaml' | 'json'>([
   ['', 'yaml'],
   ['yaml', 'yaml'],
@@ -25,8 +23,7 @@ const refused: Engine = {
   },
 }
 
-// The front matter the way gray-matter finds it: after one byte order mark, three
-// dashes not followed by a fourth, then the language up to the end of the line.
+// found as gray-matter finds it: one byte order mark, three dashes, no fourth
 const DELIMITER = '---'
 const languageOf = (text: string): { name: string; line: string } | null => {
   const body = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text
@@ -35,8 +32,7 @@ const languageOf = (text: string): { name: string; line: string } | null => {
   return { name: matter.language(rest).name, line: rest.split(/\r?\n/, 1)[0].trim() }
 }
 
-// The front matter of a Markdown text and the text after it; a text without front
-// matter comes back whole.
+// a text without front matter comes back whole
 export const readFrontMatter = (text: string, file = 'the text'): { data: Fields; content: string } => {
   const found = languageOf(text)
   const engines: { [name: string]: Engine } = { ...engineOf, javascript: refused }
