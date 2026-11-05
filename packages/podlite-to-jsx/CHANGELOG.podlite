@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<react-is> is no longer a dependency: the package does not load it
+
 =head1 0.0.85
 
 =item a picture shows its C<title> as the C<title> attribute of the image, hidden as its text is; C<HookedImage> takes a C<title>

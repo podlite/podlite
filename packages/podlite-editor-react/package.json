@@ -96,7 +96,6 @@
     "@uiw/codemirror-themes": "^4.23.8",
     "dom-to-image-more": "^3.7.2",
     "podlite": "workspace:*",
-    "react-is": "^18.0.0",
     "shiki": "^3.21.0",
     "tslib": "^2.8.1"
   },

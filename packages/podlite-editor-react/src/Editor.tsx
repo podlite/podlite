@@ -12,7 +12,6 @@ import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap } from '@codemirror/commands'
 import { foldGutter, foldKeymap, foldedRanges, foldEffect, unfoldEffect } from '@codemirror/language'
 import { search } from '@codemirror/search'
-import { isElement } from 'react-is'
 import { Node, Rules } from '@podlite/schema'
 import { autocompletion, snippet } from '@codemirror/autocomplete'
 import dictionary from './dict'
@@ -1190,7 +1189,7 @@ function PodliteEditorInternal(
     if (!enablePreview) return null
     const preview = makePreviewComponent ? makePreviewComponent(value) : defaultPreview(value)
     if (!preview) return null
-    return isElement(preview.result) ? (
+    return React.isValidElement(preview.result) ? (
       <div className="content">{preview.result}</div>
     ) : (
       <div dangerouslySetInnerHTML={{ __html: preview.result as string }} className="content"></div>

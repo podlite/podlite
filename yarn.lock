@@ -2310,11 +2310,9 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:*"
     mermaid: ^11.16.1
-    react-is: ^18.0.0
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18
     react-dom: ^16.0.0 || ^17.0.0 || ^18
-    react-is: "*"
   languageName: unknown
   linkType: soft
 
@@ -2343,7 +2341,6 @@ __metadata:
     "@uiw/codemirror-themes": ^4.23.8
     dom-to-image-more: ^3.7.2
     podlite: "workspace:*"
-    react-is: ^18.0.0
     shiki: ^3.21.0
     tslib: ^2.8.1
   peerDependencies:
@@ -2360,11 +2357,9 @@ __metadata:
   resolution: "@podlite/formula@workspace:packages/podlite-formula"
   dependencies:
     "@podlite/schema": "workspace:*"
-    react-is: ^18.0.0
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18
     react-dom: ^16.0.0 || ^17.0.0 || ^18
-    react-is: "*"
   languageName: unknown
   linkType: soft
 
@@ -2403,9 +2398,6 @@ __metadata:
     "@podlite/schema": "workspace:*"
     esbuild: ^0.15.16
     npm-run-all: ^4.1.5
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
-    react-is: ^18.0.0
     remark-gfm: ^3.0.1
     remark-math: 5.1.1
     remark-parse: ^10.0.1
@@ -2478,7 +2470,6 @@ __metadata:
     "@podlite/toc": "workspace:*"
     entities: ^4.5.0
     podlite: "workspace:*"
-    react-is: ^18.0.0
     shiki: ^3.21.0
   peerDependencies:
     "@podlite/diagram": "*"
@@ -2494,9 +2485,6 @@ __metadata:
   resolution: "@podlite/toc@workspace:packages/podlite-toc"
   dependencies:
     "@podlite/schema": "workspace:*"
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
-    react-is: ^18.0.0
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18
     react-dom: ^16.0.0 || ^17.0.0 || ^18
@@ -8935,7 +8923,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.3.1, react-dom@npm:^16.0.0 || ^17.0.0 || ^18":
+"react-dom@npm:18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -8961,7 +8949,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:18.3.1, react@npm:^16.0.0 || ^17.0.0 || ^18":
+"react@npm:18.3.1":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:

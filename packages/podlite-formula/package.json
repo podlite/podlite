@@ -63,13 +63,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@podlite/schema": "workspace:*",
-    "react-is": "^18.0.0"
+    "@podlite/schema": "workspace:*"
   },
   "peerDependencies": {
     "react": "^16.0.0 || ^17.0.0 || ^18",
-    "react-dom": "^16.0.0 || ^17.0.0 || ^18",
-    "react-is": "*"
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
   },
   "module": "./esm/index.js",
   "types": "./lib/index.d.ts"
