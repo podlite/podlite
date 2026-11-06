@@ -2311,8 +2311,8 @@ __metadata:
     "@podlite/schema": "workspace:*"
     mermaid: ^11.16.1
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2347,8 +2347,8 @@ __metadata:
     "@podlite/highlight": "*"
     "@podlite/schema": "*"
     "@podlite/to-jsx": "*"
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2359,8 +2359,8 @@ __metadata:
     "@podlite/schema": "workspace:*"
     mathjax: 3.2.2
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2372,8 +2372,8 @@ __metadata:
     shiki: ^3.21.0
   peerDependencies:
     "@podlite/schema": "*"
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
     shiki: ^3.0.0
   peerDependenciesMeta:
     shiki:
@@ -2387,8 +2387,8 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:^"
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2404,8 +2404,8 @@ __metadata:
     remark-parse: ^10.0.1
     unified: 10.1.2
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2476,8 +2476,8 @@ __metadata:
     "@podlite/diagram": "*"
     "@podlite/highlight": "*"
     "@podlite/schema": "*"
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -2487,8 +2487,8 @@ __metadata:
   dependencies:
     "@podlite/schema": "workspace:*"
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -8753,8 +8753,8 @@ __metadata:
     pegmill: 0.1.2
     typescript: 4.5.5
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18
-    react-dom: ^16.0.0 || ^17.0.0 || ^18
+    react: ^16.0.0 || ^17.0.0 || ^18 || ^19
+    react-dom: ^16.0.0 || ^17.0.0 || ^18 || ^19
   bin:
     podlite: ./bin/podlite.js
   languageName: unknown
