@@ -160,11 +160,13 @@ export const Tex2SVG: React.FC<Tex2SVGProps> = ({
   const [html, { error, failed }] = useTexSVG({ latex, onError, onSuccess })
 
   useEffect(() => {
-    if (html && !error) {
+    // the container the node went into, not the one that took its place
+    const container = ref.current
+    if (html && !error && container) {
       Object.keys(props).map(key => html.setAttribute(key, props[key]))
-      ref.current?.appendChild(html)
+      container.appendChild(html)
       return () => {
-        ref.current?.removeChild(html)
+        if (html.parentNode === container) container.removeChild(html)
       }
     }
 
@@ -266,11 +268,13 @@ export const Tex2Chtml: React.FC<Tex2SVGProps> = ({
   const ref = useRef<HTMLElement | null>(null)
   const [html, { error, failed }] = useTexChtml({ latex, onError, onSuccess, inline })
   useEffect(() => {
-    if (html && !error) {
+    // the container the node went into, not the one that took its place
+    const container = ref.current
+    if (html && !error && container) {
       Object.keys(props).map(key => html.setAttribute(key, props[key]))
-      ref.current?.appendChild(html)
+      container.appendChild(html)
       return () => {
-        ref.current?.removeChild(html)
+        if (html.parentNode === container) container.removeChild(html)
       }
     }
 

@@ -48,3 +48,22 @@ it('shows the source of an SVG formula the engine cannot draw, and draws the nex
   const next = chtml('w')
   await settle(() => drawn(next.host), 'the next CHTML formula')
 })
+
+it('draws a formula again in the same place after a failing one took its place', async () => {
+  const engine = window.MathJax
+  const convert = engine.tex2chtml
+  engine.tex2chtml = (latex: string, options: object) => {
+    if (latex === 'boom') throw new Error('conversion failed')
+    return convert(latex, options)
+  }
+  try {
+    const place = chtml('a')
+    await settle(() => drawn(place.host), 'the formula')
+    place.rerender(<Tex2ChtmlWithProvider latex="boom" />)
+    await settle(() => place.host.textContent === 'boom', 'the source of the failing formula')
+    place.rerender(<Tex2ChtmlWithProvider latex="a" />)
+    await settle(() => drawn(place.host), 'the formula again')
+  } finally {
+    engine.tex2chtml = convert
+  }
+})

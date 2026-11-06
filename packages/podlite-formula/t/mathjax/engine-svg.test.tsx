@@ -25,3 +25,20 @@ it('shows the source of a formula whose extension did not load, and draws the ne
   failed.rerender(<Tex2SVGWithProvider latex="v" />)
   await settle(() => drawn(failed.host), 'the formula written anew in the same place')
 })
+
+it('draws a formula again in the same place after a failing one took its place', async () => {
+  const engine = window.MathJax
+  const convert = engine.tex2svgPromise
+  engine.tex2svgPromise = (latex: string) =>
+    latex === 'boom' ? Promise.reject(new Error('conversion failed')) : convert(latex)
+  try {
+    const place = svg('a')
+    await settle(() => drawn(place.host), 'the formula')
+    place.rerender(<Tex2SVGWithProvider latex="boom" />)
+    await settle(() => place.host.textContent === 'boom', 'the source of the failing formula')
+    place.rerender(<Tex2SVGWithProvider latex="a" />)
+    await settle(() => drawn(place.host), 'the formula again')
+  } finally {
+    engine.tex2svgPromise = convert
+  }
+})
