@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item C<WrapElement> returns C<React.ReactElement> instead of the global C<JSX.Element>, which the types of React 19 no longer have. C<TestBlock>, C<TestPodlite> and C<BlockBoundary> name their return types, so the declarations read the same with the types of React 16 to 19
+
+=item on React 19 server rendering puts a C<preload> link for each image at the start of the markup. React does this, not Podlite
+
 =item C<react-is> is no longer a dependency: the package does not load it
 
 =head1 0.0.85

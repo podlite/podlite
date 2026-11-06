@@ -67,7 +67,7 @@ export class BlockBoundary extends React.Component<
   componentDidCatch(error: Error) {
     console.warn(`[to-jsx] block '${this.props.blockName || ''}' failed to render: ${error?.message}`)
   }
-  render() {
+  render(): React.ReactNode {
     if (this.state.failed) {
       return <span className="podlite-render-error">[block {this.props.blockName || ''} failed to render]</span>
     }
@@ -132,7 +132,7 @@ const helperMakeReact = ({
 }
 
 export interface WrapElement {
-  (node: PodNode, children: React.ReactNode[] | React.ReactNode, ctx: any): JSX.Element
+  (node: PodNode, children: React.ReactNode[] | React.ReactNode, ctx: any): React.ReactElement
 }
 export const Podlite: React.FC<{
   [key: string]: any
@@ -937,7 +937,7 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
         c.config.some((a: any) => a.name === 'header' && a.value !== false)
       const hasHeader = content.some(isHeaderRow)
 
-      let renderTable: (extraKey: string | number) => JSX.Element
+      let renderTable: (extraKey: string | number) => React.ReactElement
       if (!hasHeader) {
         const rendered = interator(content, tableCtx)
         renderTable = extraKey => (
@@ -1338,7 +1338,7 @@ function podlite(
 }
 
 // this is a helper function for using in unit test
-export const TestPodlite = ({ children, ...options }) => {
+export const TestPodlite = ({ children, ...options }): React.ReactElement => {
   let podlite = podlite_core({ importPlugins: true })
 
   // its replace all ids with "id"
@@ -1348,7 +1348,7 @@ export const TestPodlite = ({ children, ...options }) => {
 
 export const makeTestPodlite =
   (podlite = podlite_core({ importPlugins: true })) =>
-  ({ children, ...options }) => {
+  ({ children, ...options }): React.ReactElement => {
     let treeAfterParsed = podlite.parse(children)
 
     // its replace all ids with "id"

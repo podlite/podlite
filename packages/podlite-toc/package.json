@@ -55,8 +55,8 @@
     "sidebar"
   ],
   "peerDependencies": {
-    "react": "^16.0.0 || ^17.0.0 || ^18",
-    "react-dom": "^16.0.0 || ^17.0.0 || ^18"
+    "react": "^16.0.0 || ^17.0.0 || ^18 || ^19",
+    "react-dom": "^16.0.0 || ^17.0.0 || ^18 || ^19"
   },
   "dependencies": {
     "@podlite/schema": "workspace:*"

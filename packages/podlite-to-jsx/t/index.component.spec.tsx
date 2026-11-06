@@ -1,10 +1,11 @@
 import { TestPodlite as Podlite, Podlite as PodliteRaw } from '../src/index'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { withoutImagePreload } from './without-image-preload'
 
 const root = { innerHTML: '' }
 function render(jsx) {
-  root.innerHTML = renderToStaticMarkup(jsx)
+  root.innerHTML = withoutImagePreload(renderToStaticMarkup(jsx))
   return root.innerHTML
 }
 

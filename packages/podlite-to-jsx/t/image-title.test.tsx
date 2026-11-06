@@ -1,6 +1,9 @@
 import { Podlite, HookedImage } from '../src/index'
 import React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { renderToStaticMarkup as renderMarkup } from 'react-dom/server'
+import { withoutImagePreload } from './without-image-preload'
+
+const renderToStaticMarkup = (element: React.ReactElement) => withoutImagePreload(renderMarkup(element))
 
 const img = (out: string) => (out.match(/<img[^>]*>/) || [''])[0]
 const hook = (src: string) => `r/${src}`

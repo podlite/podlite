@@ -14,7 +14,7 @@ class NoResize {
 Reflect.set(global, 'ResizeObserver', NoResize)
 Reflect.set(global, 'IS_REACT_ACT_ENVIRONMENT', true)
 
-const previewOf = (result: JSX.Element | string): HTMLElement => {
+const previewOf = (result: React.ReactElement | string): HTMLElement => {
   const host = window.document.createElement('div')
   window.document.body.appendChild(host)
   const root = createRoot(host)

@@ -13,7 +13,7 @@ const Formula = ({
   caption?: string
   id?: string
   isInline: boolean
-}) => {
+}): React.ReactElement => {
   const element = (
     <>
       <Tex2ChtmlWithProvider className={`${isInline ? 'f-code' : 'formula'}`} latex={formula} inline={isInline} />

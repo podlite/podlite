@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item the formula component names its return type, so its declaration reads the same with the types of React 16 to 19
+
 =item MathJax is loaded at version 3.2.2, not the latest 3.x, with the C<integrity> hash of its file and C<crossorigin="anonymous">. CHTML and SVG each load their own file
 
 =item C<setMathJaxSource({ chtml, svg })> sets where MathJax comes from. A source replaces the previous one whole, so a source without its own C<integrity> is loaded unchecked. The source is read when the script is added, so set it before the first formula

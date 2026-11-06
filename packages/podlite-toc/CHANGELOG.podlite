@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
 =item C<react>, C<react-dom> and C<react-is> are no longer dependencies: the package does not load them; React stays a peer
 
 =head1 0.0.71

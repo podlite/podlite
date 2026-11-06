@@ -163,7 +163,7 @@ const PodliteCodeMirror = React.forwardRef<CodeMirrorRef, CodeMirrorProps>((prop
   // added from onCreateEditor. What is installed is whatever the constructor was
   // handed - not whatever this effect happens to see, which can already be newer
   // if the callback moved a prop
-  const installed = React.useRef<Extension[]>()
+  const installed = React.useRef<Extension[] | undefined>(undefined)
   React.useEffect(() => {
     if (!view || installed.current === configured) return
     installed.current = configured

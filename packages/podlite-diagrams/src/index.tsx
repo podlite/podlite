@@ -32,7 +32,7 @@ const loadMermaid = async (): Promise<MermaidApi> => {
   return api
 }
 
-const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?: string }) => {
+const Diagram = ({ chart, caption, id }: { chart: string; caption?: string; id?: string }): React.ReactElement => {
   const inputEl = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [unavailable, setUnavailable] = useState(false)

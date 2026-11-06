@@ -53,7 +53,7 @@ type CardPlace = { top: number; left: number }
 // the gap a card keeps from the right edge of the window
 const EDGE = 12
 
-export const TestBlock = ({ id, caption, folded, children }: TestBlockProps) => {
+export const TestBlock = ({ id, caption, folded, children }: TestBlockProps): React.ReactElement => {
   const details = React.useRef<HTMLDetailsElement>(null)
   const [card, setCard] = React.useState<CardPlace | null>(null)
   const hideTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)

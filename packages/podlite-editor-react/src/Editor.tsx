@@ -49,7 +49,7 @@ function useDebouncedEffect(fn, deps, time) {
 /* set window title */
 export interface ConverterResult {
   errors?: any
-  result: JSX.Element | string //React.ReactNode
+  result: React.ReactElement | string //React.ReactNode
 }
 
 export interface IPodliteEditor extends CodeMirrorProps {

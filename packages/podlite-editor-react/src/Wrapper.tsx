@@ -6,7 +6,7 @@ type WindowWrapperProps = {
   enableCopyPng?: boolean
 }
 
-const WindowWrapper = ({ children, title = '', enableCopyPng = false }: WindowWrapperProps) => {
+const WindowWrapper = ({ children, title = '', enableCopyPng = false }: WindowWrapperProps): React.ReactElement => {
   const windowRef = useRef<HTMLDivElement>(null)
   const copyBtnRef = useRef<HTMLButtonElement>(null)
   const [isCopied, setIsCopied] = useState(false)

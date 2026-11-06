@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
 =item C<react>, C<react-dom> and C<react-is> are no longer dependencies: the package does not load them; React stays a peer
 
 =item the CommonJS entry loads the C<@podlite/schema> the application installed instead of a copy built into it, so a fix in the schema reaches it without a new build of this package; like the schema, it needs Node 20.19 or later (22.12 or later on Node 22)

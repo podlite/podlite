@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item the result a preview returns is typed C<React.ReactElement> or a string, and C<WindowWrapper> names its return type, so the declarations read the same with the types of React 16 to 19
+
 =item the preview tells a React element from html by C<React.isValidElement> of the application's React instead of C<react-is>; C<react-is> is no longer a dependency
 
 =head1 0.0.87
