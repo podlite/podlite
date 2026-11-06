@@ -178,8 +178,8 @@ describe('a markup code closed on its line is part of one cell', () => {
     expect(codes).toContain('table-mixed-separators')
   })
 
-  it('reads a table of three cells written with bars and a code', () => {
-    expect(table('=table\nC<a | b> + desc | note\n').rows).toEqual([['C<a | b>', 'desc', 'note']])
+  it('splits a line holding a bar and a plus by its bars', () => {
+    expect(table('=table\nC<a | b> + desc | note\n').rows).toEqual([['C<a | b> + desc', 'note']])
   })
 
   it('reads the control lines of the measurement', () => {
@@ -289,11 +289,8 @@ describe('what stays as it was', () => {
     ])
   })
 
-  it('keeps the spaces of cells cut by column positions in a table without codes', () => {
+  it('keeps the empty cells an edge bar stands for in a table without codes', () => {
     const { tree } = parse('=table\n  | x | y |\n')
-    const values = cellsOf(rowsOf(tree)[0]).map(cell =>
-      Array.isArray(cell.content) && isNode(cell.content[0]) ? cell.content[0].value : undefined,
-    )
-    expect(values).toEqual([' x', ' y |'])
+    expect(cellsOf(rowsOf(tree)[0]).map(cell => textOf(cell.content))).toEqual(['', 'x', 'y', ''])
   })
 })

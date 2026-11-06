@@ -301,34 +301,14 @@ it('spec: 07-tables 2', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " mouse   ",
+                  "mouse",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " mice",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  " horse   ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " horses",
+                  "mice",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -341,14 +321,34 @@ it('spec: 07-tables 2', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " elephant",
+                  "horse",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " elephants",
+                  "horses",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "elephant",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "elephants",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -411,21 +411,21 @@ it('spec: 07-tables 3', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Animal",
+                  "Animal",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Legs",
+                  "Legs",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  "    Eats",
+                  "Eats",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -443,48 +443,21 @@ it('spec: 07-tables 3', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Zebra ",
+                  "Zebra",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  "   4 ",
+                  "4",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " Cookies",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  " Human ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  "   2 ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  "   Pizza",
+                  "Cookies",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -497,21 +470,48 @@ it('spec: 07-tables 3', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " Shark ",
+                  "Human",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  "   0 ",
+                  "2",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  "    Fish",
+                  "Pizza",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [
+                  "Shark",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "0",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "Fish",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -912,21 +912,49 @@ it('spec: 07-tables 6', () => {
             "content": Array [
               Object {
                 "content": Array [
-                  " X",
+                  "X",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " O",
+                  "O",
+                ],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [],
+                "name": "cell",
+                "type": "block",
+              },
+            ],
+            "name": "row",
+            "type": "block",
+          },
+          Object {
+            "text": "   ---+---+---
+    ",
+            "type": "separator",
+          },
+          Object {
+            "content": Array [
+              Object {
+                "content": Array [],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [
+                  "X",
                 ],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " ",
+                  "O",
                 ],
                 "name": "cell",
                 "type": "block",
@@ -943,54 +971,18 @@ it('spec: 07-tables 6', () => {
           Object {
             "content": Array [
               Object {
-                "content": Array [
-                  "  ",
-                ],
+                "content": Array [],
+                "name": "cell",
+                "type": "block",
+              },
+              Object {
+                "content": Array [],
                 "name": "cell",
                 "type": "block",
               },
               Object {
                 "content": Array [
-                  " X",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " O",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-            ],
-            "name": "row",
-            "type": "block",
-          },
-          Object {
-            "text": "   ---+---+---
-    ",
-            "type": "separator",
-          },
-          Object {
-            "content": Array [
-              Object {
-                "content": Array [
-                  "  ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  "  ",
-                ],
-                "name": "cell",
-                "type": "block",
-              },
-              Object {
-                "content": Array [
-                  " X",
+                  "X",
                 ],
                 "name": "cell",
                 "type": "block",

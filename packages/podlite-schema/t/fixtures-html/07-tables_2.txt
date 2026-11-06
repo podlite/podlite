@@ -3,4 +3,4 @@
     horse    | horses
     elephant | elephants
 ~~~~~~~
-"<table><tr><td> mouse   </td><td> mice</td></tr><tr><td> horse   </td><td> horses</td></tr><tr><td> elephant</td><td> elephants</td></tr></table>"
+"<table><tr><td>mouse</td><td>mice</td></tr><tr><td>horse</td><td>horses</td></tr><tr><td>elephant</td><td>elephants</td></tr></table>"

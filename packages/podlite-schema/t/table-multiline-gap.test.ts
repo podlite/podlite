@@ -266,8 +266,8 @@ describe('what stays as it was', () => {
       ['gg', 'hh  ii'],
     ])
     expect(table(simple('Name | Age   City', 'Alice | 30   London')).rows).toEqual([
-      ['Name', 'Age', 'City'],
-      ['Alice', '30', 'London'],
+      ['Name', 'Age   City'],
+      ['Alice', '30   London'],
     ])
   })
 

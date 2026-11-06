@@ -516,6 +516,14 @@ const splitLineByWhitespace = (line: string, mask = line): string[] =>
     .map(c => c.trim())
     .filter(c => c !== '')
 
+// A line of a table split line by line keeps every piece: the empty cell
+// between two bars and the one an edge bar stands for. A bar wins over a plus,
+// so a plus written in the text of a barred line stays text.
+const splitVisibleLine = (line: string, mask = line): string[] => {
+  const separator = detectLineSeparator(mask) === 'plus' ? /(?<=^|\s)\+(?=\s|$)/g : /(?<=^|\s)\|(?=\s|$)/g
+  return cutAt(line, mask, separator).map(c => c.trim())
+}
+
 const splitLineCells = (line: string, mask = line): string[] => {
   const trimmed = line.trim()
   if (trimmed === '') return []
@@ -717,9 +725,13 @@ export default (opt: { config?: ConfigScope } = {}) =>
 
         // collect text rows
         let textRows = []
+        let headRows = []
         makeTransformer({
           'row:text': row => {
             textRows.push(row.value)
+          },
+          'head:text': head => {
+            headRows.push(head.value)
           },
         })(node)
 
@@ -733,17 +745,26 @@ export default (opt: { config?: ConfigScope } = {}) =>
         // Routing: a whitespace-separated row on one line splits by its own
         // gaps. In a table held apart by spaces alone a row on several lines
         // takes its columns from its own lines, so a line of another row does
-        // not close its gaps. Rows with a visible separator keep the shared
-        // mask: an edge `|` carries a real empty cell that per-line splitting
-        // would drop.
+        // not close its gaps. A table whose every line carries a bar or a plus,
+        // and whose header and rows each stand on one line, splits each line by
+        // its own separators. Other tables with a visible separator keep the
+        // shared mask, which lines up the continuation lines of a row.
         const columnTemplate = makeMask(masks, separators)
         const seenSeparatorKinds = new Set(masks.map(detectLineSeparator))
         const spacedOnly = seenSeparatorKinds.size === 1 && seenSeparatorKinds.has('whitespace')
         const useMixedSplitting =
           (seenSeparatorKinds.has('pipe') || seenSeparatorKinds.has('plus')) && seenSeparatorKinds.has('whitespace')
+        const lineCount = (value: string) => value.split(/\r?\n/).filter(l => l.trim() !== '').length
+        // the only text row of a table turns each of its lines into a row
+        const byLines =
+          !spacedOnly &&
+          !useMixedSplitting &&
+          headRows.every(value => lineCount(value) <= 1) &&
+          (textRows.length === 1 || textRows.every(value => lineCount(value) <= 1))
         const splitsItself = (line: string) => useMixedSplitting || detectLineSeparator(protect(line)) === 'whitespace'
         const splitToCells = (rowValue: string): string[] => {
           const rowLines = rowValue.split(/\r?\n/).filter(l => l.trim() !== '')
+          if (byLines) return rowLines.length ? splitVisibleLine(rowLines[0], protect(rowLines[0])) : []
           if (rowLines.length <= 1 && splitsItself(rowValue)) return rowToCells(rowValue, protect)
           const template = spacedOnly ? makeMask(rowLines.map(protect), separators) : columnTemplate
           return extractColumnsByTemplate(rowValue, template)
@@ -751,11 +772,13 @@ export default (opt: { config?: ConfigScope } = {}) =>
         const res = makeTransformer({
           'row:text': row => {
             if (textRows.length == 1) {
-              // No separator blocks: each line of the only text row becomes its own row
+              // the only text row of the table: each of its lines becomes its own row
               const textRowsLines = flattenDeep([row.value].map(splitToLines))
               return textRowsLines.map(line =>
                 makeRow(
-                  (splitsItself(line)
+                  (byLines
+                    ? splitVisibleLine(line, protect(line))
+                    : splitsItself(line)
                     ? splitLineCells(line, protect(line))
                     : extractColumnsByTemplate(line, columnTemplate)
                   ).map(makeCell),

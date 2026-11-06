@@ -74,6 +74,6 @@ describe('table nested inside a cell', () => {
 
   it('keeps a top-level pipe table unchanged', () => {
     const html = renderHtml('=begin table\nA | B\n1 | 2\n=end table\n')
-    expect(html).toContain('<tr><td> A</td><td> B</td></tr>')
+    expect(html).toContain('<tr><td>A</td><td>B</td></tr>')
   })
 })
