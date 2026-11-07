@@ -87,7 +87,7 @@
     "@podlite/markdown": "workspace:*",
     "@podlite/schema": "workspace:*",
     "crc-32": "^1.2.2",
-    "glob": "^7.2.0",
+    "glob": "^14.0.4",
     "gray-matter": "^4.0.3",
     "js-yaml": "^3.15.2",
     "podlite": "workspace:*"

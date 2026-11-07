@@ -13,7 +13,7 @@ import {
 } from '@podlite/schema'
 import * as fs from 'fs'
 import path from 'path'
-import glob from 'glob'
+import { filesOf } from './files-of'
 import { getAllArticles, isExistsPubdate, makeAstFromSrc } from './shared'
 import { parseMd } from '@podlite/markdown'
 import { readFrontMatter } from './front-matter'
@@ -121,8 +121,7 @@ export const convertFileLinksToUrl = (records: publishRecord[], additinalMap = {
 
 export function parseFiles(path: string) {
   let count = 0
-  const allFiles = glob
-    .sync(path)
+  const allFiles = filesOf(path)
     .map((f: any) => {
       count++
       const testData = fs.readFileSync(f).toString()
@@ -458,8 +457,7 @@ export function processFile(f: string, content?: string, mime?: MimeTypes) {
 }
 export function parseSources(path: string): publishRecord[] {
   let count = 0
-  const allFiles = glob
-    .sync(path)
+  const allFiles = filesOf(path)
     .map((f: any) => {
       count++
       return processFile(f)
