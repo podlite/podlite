@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.64
+
 =item the short address and the slug of a record are made by code of the package: C<iso_9> and C<newbase60>, whose licences do not fit a package under MIT, are no longer dependencies; every address comes out as before
 
 =head1 0.0.63

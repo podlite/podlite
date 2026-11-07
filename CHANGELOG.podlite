@@ -2,6 +2,99 @@
 
 =head1 Upcoming
 
+=head1 0.0.103
+
+
+=head2 podlite
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item C<nanoid> 3.3.20 or later instead of exactly 3.1.30: in 3.1.30 a call with a fractional size anywhere in the process left every next id the same
+
+=head2 @podlite/diagram
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item the diagram component names its return type, so its declaration reads the same with the types of React 16 to 19
+
+=item C<react-is> is no longer a dependency or a peer: the package does not load it
+
+=head2 @podlite/editor-react
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item the result a preview returns is typed C<React.ReactElement> or a string, and C<WindowWrapper> names its return type, so the declarations read the same with the types of React 16 to 19
+
+=item the preview tells a React element from html by C<React.isValidElement> of the application's React instead of C<react-is>; C<react-is> is no longer a dependency
+
+=head2 @podlite/formula
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item the formula component names its return type, so its declaration reads the same with the types of React 16 to 19
+
+=item MathJax is loaded at version 3.2.2, not the latest 3.x, with the C<integrity> hash of its file and C<crossorigin="anonymous">. CHTML and SVG each load their own file
+
+=item C<setMathJaxSource({ chtml, svg })> sets where MathJax comes from. A source replaces the previous one whole, so a source without its own C<integrity> is loaded unchecked. The source is read when the script is added, so set it before the first formula
+
+=item a formula whose MathJax did not load, or which MathJax could not convert, shows its source as text in its usual place instead of an empty box
+
+=item a configuration of MathJax the application sets in C<window.MathJax> before any script is kept, and the script is loaded; the formulas used to stay empty
+
+=item a script of MathJax already on the page, with the id C<mathjax-script> or C<MathJax-script>, is waited for; one without an C<onload> handler used to throw
+
+=item C<integrity> covers the first script only. Fonts and extensions MathJax loads itself come from the same pinned version without a hash; to control them, host MathJax and point C<setMathJaxSource> at it
+
+=item C<react-is> is no longer a dependency or a peer: the package does not load it
+
+=head2 @podlite/highlight
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=head2 @podlite/image
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=head2 @podlite/markdown
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item C<react>, C<react-dom> and C<react-is> are no longer dependencies: the package does not load them; React stays a peer
+
+=item the CommonJS entry loads the C<@podlite/schema> the application installed instead of a copy built into it, so a fix in the schema reaches it without a new build of this package; like the schema, it needs Node 20.19 or later (22.12 or later on Node 22)
+
+=head2 @podlite/mcp
+
+=item C<@modelcontextprotocol/sdk> 1.32 or later is required: it fixes requests and redirects of its HTTP and OAuth clients. Its stdio transport takes a message of at most 10 MiB; a larger one closes the session with an error, where 1.29 read it. A call with wrong arguments still fails with code -32602, and its message now names the problem in a sentence ("Required at text") instead of listing it as JSON
+
+=head2 @podlite/publisher
+
+=item the short address and the slug of a record are made by code of the package: C<iso_9> and C<newbase60>, whose licences do not fit a package under MIT, are no longer dependencies; every address comes out as before
+
+=head2 @podlite/schema
+
+=item A table drawn with C<|> or C<+> whose rows each stand on one line splits every line by its own separators: wide spaces stay inside a cell, the empty cells between bars and at an edge bar are kept, and a plus in the text of a barred line stays text
+
+=item C<nanoid> 3.3.20 or later instead of exactly 3.1.30: in 3.1.30 a call with a fractional size anywhere in the process left every next id the same
+
+=item C<json-pointer> 0.6.2 or later is required: 0.6.1 let a crafted pointer pollute the prototype through C<set>; the schema only reads with C<get>
+
+=head2 @podlite/to-jsx
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item C<WrapElement> returns C<React.ReactElement> instead of the global C<JSX.Element>, which the types of React 19 no longer have. C<TestBlock>, C<TestPodlite> and C<BlockBoundary> name their return types, so the declarations read the same with the types of React 16 to 19
+
+=item on React 19 server rendering puts a C<preload> link for each image at the start of the markup. React does this, not Podlite
+
+=item C<react-is> is no longer a dependency: the package does not load it
+
+=head2 @podlite/toc
+
+=item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
+
+=item C<react>, C<react-dom> and C<react-is> are no longer dependencies: the package does not load them; React stays a peer
+
 =head1 0.0.102
 
 

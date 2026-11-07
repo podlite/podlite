@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.96
+
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
 
 =item C<nanoid> 3.3.20 or later instead of exactly 3.1.30: in 3.1.30 a call with a fractional size anywhere in the process left every next id the same

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.17
+
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
 
 =head1 0.0.5

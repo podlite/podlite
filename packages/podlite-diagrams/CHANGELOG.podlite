@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.87
+
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
 
 =item the diagram component names its return type, so its declaration reads the same with the types of React 16 to 19
