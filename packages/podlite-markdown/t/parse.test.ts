@@ -1001,9 +1001,9 @@ Content in the first column | Content in the second column
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 2,
-                      "offset": 15,
+                      "offset": 14,
                     },
                     "start": Object {
                       "column": 1,
@@ -1028,9 +1028,9 @@ Content in the first column | Content in the second column
                       "offset": 29,
                     },
                     "start": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 2,
-                      "offset": 15,
+                      "offset": 14,
                     },
                   },
                   "margin": "",
@@ -1066,9 +1066,9 @@ Content in the first column | Content in the second column
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 22,
+                      "column": 21,
                       "line": 4,
-                      "offset": 80,
+                      "offset": 79,
                     },
                     "start": Object {
                       "column": 1,
@@ -1093,9 +1093,9 @@ Content in the first column | Content in the second column
                       "offset": 100,
                     },
                     "start": Object {
-                      "column": 22,
+                      "column": 21,
                       "line": 4,
-                      "offset": 80,
+                      "offset": 79,
                     },
                   },
                   "margin": "",
@@ -1131,9 +1131,9 @@ Content in the first column | Content in the second column
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 30,
+                      "column": 29,
                       "line": 5,
-                      "offset": 130,
+                      "offset": 129,
                     },
                     "start": Object {
                       "column": 1,
@@ -1158,9 +1158,9 @@ Content in the first column | Content in the second column
                       "offset": 159,
                     },
                     "start": Object {
-                      "column": 30,
+                      "column": 29,
                       "line": 5,
-                      "offset": 130,
+                      "offset": 129,
                     },
                   },
                   "margin": "",
@@ -1250,9 +1250,9 @@ it('[markdown]: parse table with empty header', () => {
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 6,
+                      "column": 5,
                       "line": 2,
-                      "offset": 6,
+                      "offset": 5,
                     },
                     "start": Object {
                       "column": 3,
@@ -1275,9 +1275,9 @@ it('[markdown]: parse table with empty header', () => {
                       "offset": 8,
                     },
                     "start": Object {
-                      "column": 6,
+                      "column": 5,
                       "line": 2,
-                      "offset": 6,
+                      "offset": 5,
                     },
                   },
                   "margin": "",
@@ -1313,9 +1313,9 @@ it('[markdown]: parse table with empty header', () => {
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 24,
+                      "column": 23,
                       "line": 4,
-                      "offset": 63,
+                      "offset": 62,
                     },
                     "start": Object {
                       "column": 3,
@@ -1340,9 +1340,9 @@ it('[markdown]: parse table with empty header', () => {
                       "offset": 83,
                     },
                     "start": Object {
-                      "column": 24,
+                      "column": 23,
                       "line": 4,
-                      "offset": 63,
+                      "offset": 62,
                     },
                   },
                   "margin": "",
@@ -1378,9 +1378,9 @@ it('[markdown]: parse table with empty header', () => {
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 32,
+                      "column": 31,
                       "line": 5,
-                      "offset": 115,
+                      "offset": 114,
                     },
                     "start": Object {
                       "column": 3,
@@ -1405,9 +1405,9 @@ it('[markdown]: parse table with empty header', () => {
                       "offset": 144,
                     },
                     "start": Object {
-                      "column": 32,
+                      "column": 31,
                       "line": 5,
-                      "offset": 115,
+                      "offset": 114,
                     },
                   },
                   "margin": "",
@@ -1522,9 +1522,9 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 3,
-                      "offset": 25,
+                      "offset": 24,
                     },
                     "start": Object {
                       "column": 1,
@@ -1544,14 +1544,14 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 3,
-                      "offset": 44,
+                      "offset": 43,
                     },
                     "start": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 3,
-                      "offset": 25,
+                      "offset": 24,
                     },
                   },
                   "margin": "",
@@ -1571,9 +1571,9 @@ More text    | Even more text   | And even more to the right
                       "offset": 50,
                     },
                     "start": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 3,
-                      "offset": 44,
+                      "offset": 43,
                     },
                   },
                   "margin": "",
@@ -1609,9 +1609,9 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 5,
-                      "offset": 126,
+                      "offset": 125,
                     },
                     "start": Object {
                       "column": 1,
@@ -1631,14 +1631,14 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 5,
-                      "offset": 145,
+                      "offset": 144,
                     },
                     "start": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 5,
-                      "offset": 126,
+                      "offset": 125,
                     },
                   },
                   "margin": "",
@@ -1658,9 +1658,9 @@ More text    | Even more text   | And even more to the right
                       "offset": 171,
                     },
                     "start": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 5,
-                      "offset": 145,
+                      "offset": 144,
                     },
                   },
                   "margin": "",
@@ -1696,9 +1696,9 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 6,
-                      "offset": 186,
+                      "offset": 185,
                     },
                     "start": Object {
                       "column": 1,
@@ -1718,14 +1718,14 @@ More text    | Even more text   | And even more to the right
                   "id": "id",
                   "location": Object {
                     "end": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 6,
-                      "offset": 205,
+                      "offset": 204,
                     },
                     "start": Object {
-                      "column": 15,
+                      "column": 14,
                       "line": 6,
-                      "offset": 186,
+                      "offset": 185,
                     },
                   },
                   "margin": "",
@@ -1745,9 +1745,9 @@ More text    | Even more text   | And even more to the right
                       "offset": 232,
                     },
                     "start": Object {
-                      "column": 34,
+                      "column": 33,
                       "line": 6,
-                      "offset": 205,
+                      "offset": 204,
                     },
                   },
                   "margin": "",

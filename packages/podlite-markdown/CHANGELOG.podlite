@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item Markdown is read by C<remark-parse> 11, C<remark-gfm> 4, C<remark-math> 6 and C<unified> 11, which follow CommonMark 0.31 and GFM more closely. Some documents read differently: a numbered line that does not start with 1 no longer starts a list inside a paragraph; a bare link no longer ends in a punctuation mark: a mark after it stays out of the address now also right before an html tag and when it is a C<]>, and a backslash before the mark stays in the link; a bare e-mail address or C<www.> address can become a link where it did not; emphasis next to symbols such as ® and strikethrough by one tilde next to symbols follow the newer rules; a line before C<---> can become a heading. The words of a document stay the same
+
+=item the location of a table cell no longer takes in the space before the next C<|>
+
 =head1 0.0.76
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>

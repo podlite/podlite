@@ -25,6 +25,8 @@ const transformIgnores = [
   'nanoid',
   // the reader of markdown the schema builds the addresses of headings with, a module only
   'marked',
+  // an ES module the readers of markdown need since unified 11
+  'devlop',
 ].join('|')
 
 // Coverage counts what a person wrote and can change. Build output under lib/
