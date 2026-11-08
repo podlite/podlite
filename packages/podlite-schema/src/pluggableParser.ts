@@ -11,6 +11,9 @@ import { assignHeadingKeys } from './helpers/headingKeys'
 import { placeInSource, lineStarts } from './codes/place'
 export { cleanIds, frozenIds, headingId } from './helpers/ids'
 
+// what the parser did to a table; a report that something written is missing is not one of them
+const TABLE_REPAIRS = ['table-row-cells', 'table-mixed-separators', 'table-cell-outside-row']
+
 export interface podlitePluggableOpt {
   plugins?: Plugins
 }
@@ -78,15 +81,15 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     // one mistake inside a value reports twice: for the value and for the whole
     // attribute around it. The narrower report names the place to fix. Two reports of
     // one place keep the first; a warning about a markup code is about the code, not
-    // a value, and stays
-    const isCodeWarning = (d: { code: string }) => d.code.startsWith('markup-code-')
+    // a value, and stays, as does a warning about what was done to a row of a table
+    const stays = (d: { code: string }) => d.code.startsWith('markup-code-') || TABLE_REPAIRS.includes(d.code)
     const innermost = diagnostics.filter(
       (d, k) =>
-        isCodeWarning(d) ||
+        stays(d) ||
         !diagnostics.some(
           (other, j) =>
             other !== d &&
-            !isCodeWarning(other) &&
+            !stays(other) &&
             other.location.start.offset >= d.location.start.offset &&
             other.location.end.offset <= d.location.end.offset &&
             (other.location.start.offset !== d.location.start.offset ||

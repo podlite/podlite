@@ -67,7 +67,7 @@ describe('table error recovery (design notes Rules 2-4)', () => {
     expect(rows).toHaveLength(2)
     expect(cellsOf(rows[0])).toHaveLength(3)
     expect(cellsOf(rows[1])).toHaveLength(3)
-    expect(said(/row has 2 of 3 cells, padded/)).toBe(true)
+    expect(said(/row 2 has 2 of 3 cells, padded/)).toBe(true)
   })
 
   it('Rule 2: truncates long structured rows', () => {
@@ -92,7 +92,7 @@ describe('table error recovery (design notes Rules 2-4)', () => {
     expect(rows).toHaveLength(2)
     expect(cellsOf(rows[0])).toHaveLength(2)
     expect(cellsOf(rows[1])).toHaveLength(2)
-    expect(said(/row has 4 of 2 cells, dropped 2/)).toBe(true)
+    expect(said(/row 2 has 4 of 2 cells, dropped 2/)).toBe(true)
   })
 
   it('Rule 2: header row determines expected count over data row maximum', () => {

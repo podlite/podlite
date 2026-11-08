@@ -35,6 +35,14 @@ describe('table-shape rule', () => {
     expect(v[0].message).toContain('dropped 1')
   })
 
+  it('flags both a mix of separators and the row it left short', () => {
+    const v = check('=begin table\nA | B | C\nx    y\n=end table\n')
+    expect(v.map(x => x.message.split('.')[0])).toEqual([
+      'table mixes separator styles: pipe, whitespace',
+      'table row 2 has 2 of 3 cells, padded with 1 empty',
+    ])
+  })
+
   it('flags a table that mixes separator styles', () => {
     const v = check('=begin table\n A | B\n ==|==\n 1   2\n=end table\n')
     expect(v.some(x => x.message.includes('separator styles'))).toBe(true)

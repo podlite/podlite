@@ -250,8 +250,11 @@ export function normalizeCellCounts(tableNode, source = 'table', report = noRepo
   if (expected === 0) return tableNode
 
   let mutated = false
+  // a report names its row by its place among the rows, the header and even rows counted
+  let rowNumber = 0
   const newContent = tableNode.content.map(child => {
     if (!child || child.type !== 'block' || child.name !== 'row') return child
+    rowNumber++
     const cells = cellsOf(child)
     if (cells.length === expected) return child
 
@@ -260,7 +263,7 @@ export function normalizeCellCounts(tableNode, source = 'table', report = noRepo
       for (let i = cells.length; i < expected; i++) padding.push(buildCellBlock(''))
       report(
         'table-row-cells',
-        `${source} row has ${cells.length} of ${expected} cells, padded with ${padding.length} empty. A row continued on the next line needs a blank line before the next row`,
+        `${source} row ${rowNumber} has ${cells.length} of ${expected} cells, padded with ${padding.length} empty. A row continued on the next line needs a blank line before the next row`,
         tableNode,
       )
       mutated = true
@@ -269,7 +272,11 @@ export function normalizeCellCounts(tableNode, source = 'table', report = noRepo
 
     // cells.length > expected → truncate
     const dropped = cells.length - expected
-    report('table-row-cells', `${source} row has ${cells.length} of ${expected} cells, dropped ${dropped}`, tableNode)
+    report(
+      'table-row-cells',
+      `${source} row ${rowNumber} has ${cells.length} of ${expected} cells, dropped ${dropped}`,
+      tableNode,
+    )
     mutated = true
     // Keep non-cell entries (e.g. blanklines) and the first `expected` cells
     let keepCells = expected
