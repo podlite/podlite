@@ -107,13 +107,6 @@ const formatBlocks = (format: QueryFormat, matches: Match[], sections: WeakMap<o
   throw new Error(`Unknown output format: ${format}`)
 }
 
-const STDIN = '<stdin>'
-
-type Diagnostic = { code: string; message: string; location: { start: { offset: number } } }
-
-// the line of a place in the text, whatever ends its lines
-const lineAt = (text: string, offset: number): number => (text.slice(0, offset).match(/\r\n|\r|\n/g) ?? []).length + 1
-
 export type QueryResult = {
   output: string
   matchCount: number
@@ -145,7 +138,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
       const text = diskProvider.read(path.resolve(name))
       if (text !== null) sources.push({ file: name, text })
     }
-    const given = [...(opts.stdinContent !== undefined ? [STDIN] : []), ...opts.files]
+    const given = [...(opts.stdinContent !== undefined ? ['<stdin>'] : []), ...opts.files]
     if (given.length > 0) problems.push(`the selector names its own source; not read: ${given.join(', ')}`)
     if (sources.length === 0 && !(masked && !anchor)) {
       problems.push(masked ? `no block has the address ${anchor}: ${shown}` : `the source does not resolve: ${shown}`)
@@ -154,7 +147,7 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
     emptyMask = sources.length === 0
   } else {
     if (opts.stdinContent !== undefined) {
-      sources.push({ file: STDIN, text: opts.stdinContent, fromStdin: true })
+      sources.push({ file: '<stdin>', text: opts.stdinContent, fromStdin: true })
     }
     for (const f of opts.files) {
       sources.push({ file: f, text: fs.readFileSync(f, 'utf-8') })
@@ -226,25 +219,10 @@ export const runQuery = (opts: QueryOptions): QueryResult => {
   }
   const reader = queryReader()
   const sections = new WeakMap<object, any>()
-  // a line the parser could not read as a directive leaves blocks out of the tree:
-  // the selection over that file is not known to be whole, and it is said once a place
-  const unread = new Set<string>()
-  const noteUnread = (tree: { diagnostics?: Diagnostic[] }, text: string, file: string): void => {
-    for (const d of tree.diagnostics ?? []) {
-      if (d.code !== 'directive-unreadable') continue
-      const offset = d.location.start.offset
-      const key = `${file === STDIN ? file : path.resolve(file)}@${offset}`
-      if (unread.has(key)) continue
-      unread.add(key)
-      failed = true
-      problems.push(`${file}:${lineAt(text, offset)}: ${d.message}`)
-    }
-  }
   // each file is read on its own before its includes, as convert reads it
   const toTree = (text: string, file: string, config?: ConfigScope, how?: { format?: ReadFormat }): any => {
     const tree = reader.toTree(text, file, config, { format: how?.format })
     markSections(tree, sections)
-    noteUnread(tree, text, file)
     return tree
   }
   // a file an operand names is relative to where the selector is written: the
