@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite query> names each line of a document it reads that the parser could not read as a directive, by path and line, and exits with 1; the blocks the selector matched are still printed
+
 =head1 0.0.96
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
