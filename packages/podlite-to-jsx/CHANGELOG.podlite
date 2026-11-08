@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item a path in an included file is read from the directory of that file, as C<convert> reads it
+
+=item with an absolute C<includeBaseDir> the host is asked for a file by its path from the base, or by its absolute path when the file lies outside the base; without one, by its path from the directory of the document
+
+=item without an absolute C<includeBaseDir>, an absolute path that C<expandPaths> returns for a relative mask is left out with a warning
+
 =head1 0.0.87
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>

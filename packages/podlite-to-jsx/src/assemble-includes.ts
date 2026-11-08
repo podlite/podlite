@@ -48,6 +48,47 @@ const deepCopy = (node: any): any => {
 // the name the document itself goes by among the files on the way
 const DOCUMENT = ''
 
+const isAbsolute = (p: string): boolean => p.startsWith('/')
+
+// a path with its . and .. steps taken; a relative one keeps the .. it cannot take
+const normalize = (p: string): string => {
+  const parts: string[] = []
+  for (const part of p.split('/')) {
+    if (part === '' || part === '.') continue
+    if (part !== '..') parts.push(part)
+    else if (parts.length && parts[parts.length - 1] !== '..') parts.pop()
+    else if (!isAbsolute(p)) parts.push('..')
+  }
+  return isAbsolute(p) ? `/${parts.join('/')}` : parts.join('/')
+}
+
+const joinPath = (dir: string, p: string): string => normalize(isAbsolute(p) || dir === '' ? p : `${dir}/${p}`)
+
+const dirOf = (p: string): string => {
+  const at = p.lastIndexOf('/')
+  return at === -1 ? '' : at === 0 ? '/' : p.slice(0, at)
+}
+
+const stepsOf = (p: string): string[] => p.split('/').filter(Boolean)
+
+// the way from one directory to a path, when it can be told from the two
+const relativeTo = (from: string, to: string): string | undefined => {
+  if (isAbsolute(from) !== isAbsolute(to)) return undefined
+  const a = stepsOf(from)
+  const b = stepsOf(to)
+  let same = 0
+  while (same < a.length && same < b.length && a[same] === b[same]) same++
+  if (a.slice(same).includes('..')) return undefined
+  return [...a.slice(same).map(() => '..'), ...b.slice(same)].join('/')
+}
+
+// the part of a mask before its first step with a mask, as the disk provider of the core takes it
+const fixedPrefix = (written: string): string => {
+  const parts = written.split('/')
+  const upto = parts.findIndex(isGlobPattern)
+  return parts.slice(0, upto === -1 ? parts.length : upto).join('/')
+}
+
 /*
 =begin pod :kind<export>
 
@@ -76,31 +117,59 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   // an answer was not known yet: what is said now would be said again later
   let waiting = false
 
+  // With an absolute base a file is its absolute path, as for convert; without
+  // one it is its path from the directory of the document.
+  const given = opts.includeBaseDir
+  const base = given !== undefined && isAbsolute(given) ? normalize(given) : undefined
+  const documentContext = base ?? ''
+  const contextOf = (file: string): string => (file === DOCUMENT ? documentContext : dirOf(file))
+  // the path the host is asked by: from the base when the file is under it
+  const hostPath = (id: string): string => {
+    if (base === undefined) return id
+    if (base === '/') return id.slice(1)
+    return id.startsWith(`${base}/`) ? id.slice(base.length + 1) : id
+  }
+  const unplaced = new Set<string>()
+
   const sources: Sources = {
-    locate: (written, _context, plain, at) => {
+    locate: (written, context, plain, at) => {
+      const dir = String(context)
       const masked = !plain && isGlobPattern(written) && Boolean(opts.expandPaths)
-      let paths = [written]
-      if (masked && opts.expandPaths) {
-        let expanded: string[] | undefined
-        try {
-          expanded = opts.expandPaths(written, opts.includeBaseDir)
-        } catch (e) {
-          return { masked, sources: [], failed: String((e as Error)?.message ?? e) }
-        }
-        if (expanded === undefined) {
-          waiting = true
-          return undefined
-        }
-        paths = expanded
-        if (at) expansions.set(stepOf(at.file, at.location?.start?.offset), paths)
+      if (!masked || !opts.expandPaths) {
+        const id = joinPath(dir, written)
+        return { masked, sources: [{ id, name: written, context: dirOf(id) }] }
       }
-      // a file is known to the host by its path as written, and paths written
-      // inside it are read the same way
-      return { masked, sources: paths.map(path => ({ id: path, name: path, context: path })) }
+      let expanded: string[] | undefined
+      try {
+        expanded = opts.expandPaths(hostPath(joinPath(dir, written)), opts.includeBaseDir)
+      } catch (e) {
+        return { masked, sources: [], failed: String((e as Error)?.message ?? e) }
+      }
+      if (expanded === undefined) {
+        waiting = true
+        return undefined
+      }
+      const prefix = fixedPrefix(written)
+      const found = expanded.flatMap(answer => {
+        const id = joinPath(documentContext, answer)
+        const rest = relativeTo(joinPath(dir, prefix), id)
+        if (rest === undefined) {
+          unplaced.add(answer)
+          return []
+        }
+        // the fixed part is glued as written, so the selector matches the name back
+        return [{ id, name: prefix ? `${prefix}/${rest}` : rest, context: dirOf(id) }]
+      })
+      if (at)
+        expansions.set(
+          stepOf(at.file, at.location?.start?.offset),
+          found.map(source => hostPath(source.id)),
+        )
+      return { masked, sources: found }
     },
     read: source => {
       try {
-        const text = opts.includeReader(source.id, opts.includeBaseDir)
+        const text = opts.includeReader(hostPath(source.id), opts.includeBaseDir)
         if (text === undefined) waiting = true
         return text
       } catch (e) {
@@ -116,6 +185,8 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   const said = (problem: IncludeProblem): string => {
     const lost = problem.lost?.length ? `; =set assignments not applied: ${names(problem.lost)}` : ''
     const written = parseSelector(problem.target)?.document ?? ''
+    const dir = contextOf(problem.chain[problem.chain.length - 1]?.file ?? DOCUMENT)
+    const reasonOf = (path: string): string | undefined => reasons.get(joinPath(dir, path))
     const base = (): string => {
       if (problem.kind === 'set-target') return `=set before =include has no target block: ${names(problem.lost)}`
       if (problem.kind === 'unparsed-selector' && !problem.target) return 'include selector cannot be read: (empty)'
@@ -125,12 +196,13 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
       if (problem.kind === 'source') {
         const cut = problem.message.split('; =set assignments not applied:')[0]
         if (cut.startsWith('include target not found')) {
-          return reasons.has(written)
-            ? `include target cannot be read: ${written}: ${reasons.get(written)}`
+          const reason = reasonOf(written)
+          return reason !== undefined
+            ? `include target cannot be read: ${written}: ${reason}`
             : `include is not resolved: ${problem.target}`
         }
-        const file = cut.replace('include target cannot be read: ', '')
-        return reasons.has(file) ? `${cut}: ${reasons.get(file)}` : cut
+        const reason = reasonOf(cut.replace('include target cannot be read: ', ''))
+        return reason !== undefined ? `${cut}: ${reason}` : cut
       }
       return problem.message.split('; =set assignments not applied:')[0]
     }
@@ -145,7 +217,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     const steps = (where.via ?? '').split('>')
     // the file each directive brought: the file the next one is written in, or the node's own
     const files = [...steps.slice(1).map(step => step.slice(0, step.lastIndexOf('@'))), where.file]
-    return steps.flatMap((step, i) => expansions.get(step) ?? [files[i]])
+    return steps.flatMap((step, i) => expansions.get(step) ?? [hostPath(files[i])])
   }
   const markStacks = (node: any): void => {
     if (!node || typeof node !== 'object') return
@@ -179,7 +251,7 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
   const problems: IncludeProblem[] = []
   const assembled = assemble(deepCopy(tree), {
     sources,
-    context: DOCUMENT,
+    context: documentContext,
     file: DOCUMENT,
     parse: readerFor(opts.parser),
     origin,
@@ -188,7 +260,12 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): Assembly => 
     onError: problem => problems.push(problem),
     onWarning: problem => problems.push(problem),
   })
-  if (!waiting) problems.forEach(problem => warn(said(problem)))
+  if (!waiting) {
+    problems.forEach(problem => warn(said(problem)))
+    unplaced.forEach(answer =>
+      warn(`include mask gave a path that cannot be matched without an absolute base directory: ${answer}`),
+    )
+  }
   const hasIncluded = (node: any): boolean => {
     if (!node || typeof node !== 'object') return false
     if (Array.isArray(node)) return node.some(hasIncluded)
