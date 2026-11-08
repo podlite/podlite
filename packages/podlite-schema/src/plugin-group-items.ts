@@ -25,7 +25,8 @@ export default () => tree => {
     let result = a.reduce((a, i) => {
       // skip items out of level
       if (i.name === 'item' && i.type === 'block' && i.level < level) {
-        return [...a, i]
+        a.push(i)
+        return a
       }
       if (
         i.name === 'item' &&

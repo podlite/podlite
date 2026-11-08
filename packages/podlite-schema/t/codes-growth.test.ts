@@ -1,4 +1,5 @@
 import { podlitePluggable } from '../src/pluggableParser'
+import groupItems from '../src/plugin-group-items'
 
 describe('a paragraph with thousands of markup codes', () => {
   const parser = podlitePluggable()
@@ -33,5 +34,29 @@ describe('a paragraph with thousands of markup codes', () => {
         return () => parser.toAst(tree)
       }),
     ).toBeLessThan(30)
+  })
+})
+
+describe('a list with thousands of items at one level', () => {
+  const items = (count: number) =>
+    Array.from({ length: count }, () => ({ type: 'block', name: 'item', level: 1, content: [] }))
+  const time = (run: () => unknown) => {
+    const started = process.hrtime.bigint()
+    run()
+    return Number(process.hrtime.bigint() - started) / 1e6
+  }
+
+  // grouping changes the tree it is given, so every run takes a tree built before the clock starts
+  it('is grouped in time that grows with the list', () => {
+    const runs = 10
+    const small = Array.from({ length: runs }, () => items(2000))
+    const large = Array.from({ length: runs }, () => items(16000))
+    const times: { small: number[]; large: number[] } = { small: [], large: [] }
+    for (let i = 0; i < runs; i++) {
+      const s = time(() => groupItems()(small[i]))
+      const l = time(() => groupItems()(large[i]))
+      if (i >= 3) times.small.push(s), times.large.push(l)
+    }
+    expect(Math.min(...times.large) / Math.min(...times.small)).toBeLessThan(30)
   })
 })
