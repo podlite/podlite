@@ -239,7 +239,7 @@ error_para = $(!EOL .)+ EOL
 #  Number            :key(42)                  :key(2.3)
 */
 
-array_codes = code:FCode hs+ codes:array_codes {return flattenDeep([code,codes])}/ code:FCode { return [code] }
+array_codes = first:FCode rest:( hs+ c:FCode { return c } )* { return flattenDeep([ first, ...rest ]) }
 FCode = $(char)
 
 // A bracketed value may go on where the configuration itself goes on: a line
@@ -250,9 +250,8 @@ gap = ( [ \t] / cont_glue )*
 
 // Define array: '1 2 3' or '1,2,3'
 array_items =
-          code:item ( hs+ / gap ',' gap ) codes:array_items
-                            { return flattenDeep([ code, codes ]) }
-          / code:item { return [code] }
+          first:item rest:( ( hs+ / gap ',' gap ) i:item { return i } )*
+                            { return flattenDeep([ first, ...rest ]) }
 
 identifierKey = $([a-zA-Z0-9]+[a-zA-Z0-9_-]*)
 

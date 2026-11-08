@@ -60,3 +60,33 @@ describe('a list with thousands of items at one level', () => {
     expect(Math.min(...times.large) / Math.min(...times.small)).toBeLessThan(30)
   })
 })
+
+describe('an attribute holding a list of thousands of elements', () => {
+  const parser = podlitePluggable()
+  const time = (run: () => unknown) => {
+    const started = process.hrtime.bigint()
+    run()
+    return Number(process.hrtime.bigint() - started) / 1e6
+  }
+  // the least of seven runs, sizes taken in turn after a warm-up; the list grows eight times
+  const growth = (doc: (count: number) => string) => {
+    const small = doc(500)
+    const large = doc(4000)
+    const run = (text: string) => () => parser.parse(text, { podMode: 1 })
+    for (let i = 0; i < 3; i++) run(small)(), run(large)()
+    const times: { small: number[]; large: number[] } = { small: [], large: [] }
+    for (let i = 0; i < 7; i++) {
+      times.small.push(time(run(small)))
+      times.large.push(time(run(large)))
+    }
+    return Math.min(...times.large) / Math.min(...times.small)
+  }
+
+  it('is parsed in time that grows with the list, in parentheses', () => {
+    expect(growth(n => `=for para :k(${Array(n).fill(1).join(',')})\nx\n`)).toBeLessThan(30)
+  })
+
+  it('is parsed in time that grows with the list, in :allow', () => {
+    expect(growth(n => `=for para :allow<${Array(n).fill('B').join(' ')}>\nx\n`)).toBeLessThan(30)
+  })
+})

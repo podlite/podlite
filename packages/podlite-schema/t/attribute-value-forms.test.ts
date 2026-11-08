@@ -296,3 +296,43 @@ describe('value forms the norm does not have', () => {
     expect(value(':k(:align<right>)')).toMatchObject({ value: ':align<right>', type: 'string' })
   })
 })
+
+describe('lists in parentheses and in :allow', () => {
+  const config = (attrs: string) => {
+    const p = podlitePluggable()
+    const tree = p.parse(`=for para ${attrs}\ntext\n`, { podMode: 1 })
+    return { config: findBlock(tree, 'para')[0]?.config, codes: (tree.diagnostics || []).map(d => d.code) }
+  }
+  const list = (name: string, value: unknown[]) => ({ config: [{ name, type: 'array', value }], codes: [] })
+
+  it('read elements separated by a comma, spaces or a comma before a continued line', () => {
+    expect(config(':k(1,2)')).toEqual(list('k', [1, 2]))
+    expect(config(':k(1 2)')).toEqual(list('k', [1, 2]))
+    expect(config(':k(1,\n=  2)')).toEqual(list('k', [1, 2]))
+    expect(config(`:k("a",'b')`)).toEqual(list('k', ['a', 'b']))
+    expect(config(':k(True, 2.5)')).toEqual(list('k', [true, 2.5]))
+  })
+
+  it('leave a trailing space to the closing bracket and drop a value with a separator and no element', () => {
+    expect(config(':k(1 )')).toEqual({ config: [{ name: 'k', type: 'number', value: 1 }], codes: [] })
+    expect(config(':k(1,)')).toEqual({ config: [], codes: ['value-unreadable'] })
+    expect(config(':k(1 , 2)')).toEqual({ config: [], codes: ['value-unreadable'] })
+  })
+
+  it('read the codes of :allow separated by spaces', () => {
+    expect(config(':allow<B>').config).toEqual([{ name: 'allow', value: ['B'], type: 'array' }])
+    expect(config(':allow<B  I>').config).toEqual([{ name: 'allow', value: ['B', 'I'], type: 'array' }])
+    expect(config(':allow<B I C>').config).toEqual([{ name: 'allow', value: ['B', 'I', 'C'], type: 'array' }])
+    expect(config(':allow<B >').config).toEqual([{ name: 'allow', value: 'B', type: 'string' }])
+  })
+
+  it('keep 16000 elements', () => {
+    const many = Array.from({ length: 16000 }, (_, i) => i)
+    expect(config(`:k(${many.join(',')})`)).toEqual(list('k', many))
+    const codes = Array.from({ length: 16000 }, () => 'B')
+    expect(config(`:allow<${codes.join(' ')}>`)).toEqual({
+      config: [{ name: 'allow', value: codes, type: 'array' }],
+      codes: [],
+    })
+  })
+})
