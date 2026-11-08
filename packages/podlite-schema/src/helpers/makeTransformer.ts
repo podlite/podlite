@@ -1,4 +1,5 @@
 import { makeRule, makePlug } from './makeQuery'
+import { flattenDeep } from './flatten-deep'
 // the following names: MyBlock, myBlock are use for extending pod6
 export function isNamedBlock(name) {
   return name && name !== name.toLowerCase() && name !== name.toUpperCase()
@@ -9,10 +10,6 @@ export function isSemanticBlock(node) {
   const name = node.name || ''
   const isTypeBlock = (node.type || '') === 'block'
   return isTypeBlock && name === name.toUpperCase()
-}
-
-function flattenDeep(arr) {
-  return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), [])
 }
 
 export const makeTransformer = rule => {

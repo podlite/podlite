@@ -23,8 +23,19 @@
     return name === name.toUpperCase()
   }
 
+  // nested lists in one list, in time that grows with the items; a value that is not a list is taken as concat takes it
   function flattenDeep(arr) {
-   return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
+    const out = []
+    const walk = list => list.forEach(item => {
+      if (Array.isArray(item)) return walk(item)
+      const parts = [].concat(item)
+      for (let i = 0; i < parts.length; i++) {
+        if (Object.prototype.hasOwnProperty.call(parts, i)) out.push(parts[i])
+        else out.length++
+      }
+    })
+    walk(arr)
+    return out
   }
 
   function valueKind(v) {

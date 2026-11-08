@@ -8,10 +8,7 @@ import makeAttrs from './helpers/config'
 import { scanCodes, CodeSpan, ScanScope } from './codes/scan'
 import { walkConfigScopes, ConfigScope } from './helpers/configPropagation'
 import { codeConfigOwner } from './helpers/code-config'
-function flattenDeep(arr) {
-  return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), [])
-}
-
+import { flattenDeep } from './helpers/flatten-deep'
 // ─── CSV source for =table (spec §1672) ────────────────────────────────────
 // Parse CSV content per RFC 4180: comma delimiter, `"`-quoted fields with
 // `""` as embedded-quote escape. Supports LF or CRLF line endings. Leading

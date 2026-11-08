@@ -1,9 +1,7 @@
-function flattenDeep(arr) {
-  if (!Array.isArray(arr)) {
-    return arr
-  }
-  return arr.reduce((acc, val) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), [])
-}
+import { flattenDeep as flattenItems } from './flatten-deep'
+
+// a value that is not a list is passed on as it is
+const flattenDeep = arr => (Array.isArray(arr) ? flattenItems(arr) : arr)
 function thisFunc(rules) {
   function interator(node, context) {
     if (node == null) {
