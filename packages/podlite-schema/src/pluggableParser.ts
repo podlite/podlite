@@ -81,8 +81,9 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
     // one mistake inside a value reports twice: for the value and for the whole
     // attribute around it. The narrower report names the place to fix. Two reports of
     // one place keep the first; a warning about a markup code is about the code, not
-    // a value, and stays, as does a warning about what was done to a row of a table
-    const stays = (d: { code: string }) => d.code.startsWith('markup-code-') || TABLE_REPAIRS.includes(d.code)
+    // a value, and stays, as do warnings about a row of a table and about its source
+    const stays = (d: { code: string }) =>
+      d.code.startsWith('markup-code-') || d.code.startsWith('table-source-') || TABLE_REPAIRS.includes(d.code)
     const innermost = diagnostics.filter(
       (d, k) =>
         stays(d) ||

@@ -10,6 +10,8 @@
 
 =item a table reports every row it pads or truncates, with the row's number, also next to a report about mixed separators or an attribute value that could not be read
 
+=item a table read from a source says that the source cannot be read, is empty or is left to the renderer also next to an attribute value that could not be read; when the dropped value is the one the source needed, both are said
+
 =head1 0.0.83
 
 =item A table drawn with C<|> or C<+> whose rows each stand on one line splits every line by its own separators: wide spaces stay inside a cell, the empty cells between bars and at an edge bar are kept, and a plus in the text of a barred line stays text

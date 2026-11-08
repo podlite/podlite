@@ -108,7 +108,72 @@ describe('reports a table does not add', () => {
     expect(codes('=begin table\n A | B\n ==|==\n 1   2\n=end table\n')).toEqual(['table-mixed-separators'])
   })
 
-  it('does not say a written media type is missing when its value was dropped', () => {
-    expect(codes('=for data-table :mime-type(text/csv)\na,b\n')).toEqual(['value-unreadable'])
+  it('says a written media type is missing next to the report of its dropped value', () => {
+    expect(codes('=for data-table :mime-type(text/csv)\na,b\n')).toEqual([
+      'value-unreadable',
+      'table-source-unreadable',
+    ])
+  })
+})
+
+describe('the source of a table is reported next to an unreadable value of an attribute', () => {
+  const reports = (src: string) =>
+    (podlitePluggable().parse(src, { podMode: 1 }).diagnostics || []).map(d => [d.code, d.message])
+  const missing = ['table-source-unreadable', 'no =data block found for data:nope, table rendered as empty']
+  const dataTable = (attrs: string) => `=begin data-table ${attrs}\n=end data-table\n`
+
+  it('of the caption', () => {
+    expect(reports(dataTable(':caption(abc) :src<data:nope>'))).toEqual([
+      ['value-unreadable', 'Bare text in parentheses; quote it or use a number'],
+      missing,
+    ])
+  })
+
+  it('written on a continuation line', () => {
+    expect(reports(dataTable(':caption<abc>\n=   :width(abc) :src<data:nope>')).map(([code]) => code)).toEqual([
+      'value-unreadable',
+      'table-source-unreadable',
+    ])
+  })
+
+  it('the source does not read, the same as when that value is written right', () => {
+    for (const [broken, right] of [
+      [':columns[1,2]', ':columns(1,2)'],
+      [':rename(abc)', ':rename{a=>"A"}'],
+      [':mime-type(text/csv)', ':mime-type<text/csv>'],
+    ]) {
+      expect(reports(dataTable(`${right} :src<data:nope>`))).toEqual([missing])
+      expect(reports(dataTable(`${broken} :src<data:nope>`))[1]).toEqual(missing)
+    }
+  })
+
+  it('inside a hash, named like an attribute of the source', () => {
+    expect(reports(dataTable(':caption{:src(abc)} :src<data:nope>')).map(([code]) => code)).toEqual([
+      'value-unreadable',
+      'table-source-unreadable',
+    ])
+    expect(reports(dataTable(':rename{:a(abc)} :src<data:nope>')).map(([code]) => code)).toEqual([
+      'value-unreadable',
+      'table-source-unreadable',
+    ])
+  })
+
+  it('when the source is empty or left to the renderer', () => {
+    const empty = '=begin data :key<d> :mime-type<text/csv>\n=end data\n\n'
+    expect(reports(`${empty}${dataTable(':caption(abc) :src<data:d>')}`)[1]).toEqual([
+      'table-source-empty',
+      'CSV source has no rows, table rendered as empty',
+    ])
+    expect(reports('=begin table :width(abc)\nfile:x.csv\n=end table\n')[1]).toEqual([
+      'table-source-deferred',
+      'source file:x.csv is left to the renderer, the table holds no rows',
+    ])
+  })
+
+  it('of a table whose source is written in its body', () => {
+    expect(reports('=for table :columns[1,2]\ndata:nope\n').map(([code]) => code)).toEqual([
+      'value-unreadable',
+      'table-source-unreadable',
+    ])
   })
 })
