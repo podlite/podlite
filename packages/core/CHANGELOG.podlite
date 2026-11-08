@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<table-column-width> no longer compares the bars of a row with the places of the separator line, which need not line up; it keeps its name for what the parser reports under it
+
 =item C<podlite query> names each line of a document it reads that the parser could not read as a directive, by path and line, and exits with 1; the blocks the selector matched are still printed
 
 =head1 0.0.96

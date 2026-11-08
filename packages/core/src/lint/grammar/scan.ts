@@ -1,6 +1,5 @@
 import type { Violation, SourceRule } from '../types'
 import { VERBATIM_BLOCKS, isVerbatimBlock, type Location } from '@podlite/schema'
-import { scanTableColumns, tableColumnWidthRule } from '../rules/table-column-width'
 import { scanAbbreviatedAttrs, abbreviatedAttrsRule } from '../rules/abbreviated-attrs'
 import { scanMarkdownInPod, markdownInPodRule } from '../rules/markdown-in-pod'
 import { scanUnclosedMarkupCodes, unclosedMarkupCodeRule } from '../rules/unclosed-markup-code'
@@ -29,7 +28,6 @@ export const SOURCE_RULES: SourceRule[] = [
   attrNestedAngleRule,
   delimitedBlockBalanceRule,
   attrContinuationDroppedRule,
-  tableColumnWidthRule,
   abbreviatedAttrsRule,
   markdownInPodRule,
   unclosedMarkupCodeRule,
@@ -67,7 +65,6 @@ export function scanSourceRules(content: string, fileType: 'md' | 'podlite' | 'd
       location: item.location,
     })
   }
-  opts.diagnostics.push(...scanTableColumns(content))
   opts.diagnostics.push(...scanAbbreviatedAttrs(content))
   // text outside blocks in the default mode is neither Podlite nor Markdown
   if (fileType === 'podlite') opts.diagnostics.push(...scanMarkdownInPod(content))

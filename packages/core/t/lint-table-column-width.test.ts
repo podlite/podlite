@@ -1,7 +1,12 @@
-import { scanSourceRules } from '../src/lint/grammar/scan'
+import type { PodliteDocument } from '@podlite/schema'
+import { lintSource } from '../src/lint'
+import { runRules } from '../src/lint/engine'
+import { DEFAULT_RULES } from '../src/lint/rules'
 import { TABLE_COLUMN_WIDTH_RULE_ID, tableColumnWidthRule } from '../src/lint/rules/table-column-width'
+import type { LintContext } from '../src/lint/types'
 
-const check = (src: string) => scanSourceRules(src).filter(v => v.rule === TABLE_COLUMN_WIDTH_RULE_ID)
+const rules = (src: string) => lintSource(src, 'x.podlite', {}).violations.map(v => v.rule)
+const said = (src: string) => rules(src).filter(rule => rule === TABLE_COLUMN_WIDTH_RULE_ID)
 
 const table = (rows: string[]) => `=begin table\n${rows.join('\n')}\n=end table\n`
 
@@ -11,86 +16,66 @@ describe('table-column-width rule', () => {
     expect(tableColumnWidthRule.severity).toBe('warning')
   })
 
-  it('stays quiet on a table whose cells fit', () => {
-    expect(check(table([' Name  | Value', ' =====|=========', ' one  | two']))).toEqual([])
+  it('says nothing when a row draws its bar off the place of the separator bar', () => {
+    expect(said(table(['A | B', '==+==', 'longer | z']))).toEqual([])
   })
 
-  it('flags a cell wider than its column', () => {
-    const v = check(table([' Name  | Value', ' =====|=========', ' longcell| two']))
-    expect(v).toHaveLength(1)
-    expect(v[0].location?.start.line).toBe(4)
+  it('says nothing when a row held apart by spaces fills the place of a separator bar', () => {
+    expect(said(table(['  VERSIONING   DATE', '  =======|========', '  0.1          2026-08-12']))).toEqual([])
   })
 
-  it('flags a cell that ends on the column boundary', () => {
-    expect(check(table([' Name  | Value', ' =====|=========', ' wider| two']))).toHaveLength(1)
+  it('says nothing when rows on several lines line up their bars and the separator does not', () => {
+    expect(said(table(['Alpha | B', '==+======', 'bravo | c', 'delta | z', '', 'omega | q']))).toEqual([])
   })
 
-  it('accepts a bar that stands one place before the boundary', () => {
+  it('says nothing about a table written as an example inside a code block', () => {
     expect(
-      check(
-        table([
-          ' What                | Left edge',
-          ' =================== | ==========',
-          ' one                | 201 px',
-        ]),
-      ),
+      said(`=begin code :lang<podlite>\n${table([' Name  | Value', ' =====|=========', ' longcell| two'])}=end code\n`),
     ).toEqual([])
   })
 
-  it('ignores a table written as an example inside a code block', () => {
-    const src = `=begin code :lang<podlite>\n${table([
-      ' Name  | Value',
-      ' =====|=========',
-      ' longcell| two',
-    ])}=end code\n`
-    expect(check(src)).toEqual([])
+  it('leaves a bar written without a space before it to the report of the padded row', () => {
+    const found = rules(table([' Name  | Value', ' =====|=========', ' longcell| two']))
+    expect(found).not.toContain(TABLE_COLUMN_WIDTH_RULE_ID)
+    expect(found).toContain('table-shape')
   })
 
-  it('takes a bar inside a link as content, not as a column edge', () => {
-    const rows = [' Name | Link', ' ====|=================================', ' one | L<text|file:path.podlite> tail']
-    expect(check(table(rows))).toEqual([])
+  // the parser does not give this code yet, so a tree is built from its JSON form
+  const treeWith = (diagnostics: object[]): PodliteDocument =>
+    JSON.parse(JSON.stringify({ type: 'block', name: 'root', margin: '', content: [], diagnostics }))
+  const location = { start: { line: 2, column: 3, offset: 6 }, end: { line: 4, column: 1, offset: 30 } }
+  const ctx = (rules: Record<string, 'off' | 'warning' | 'error'> = {}): LintContext => ({
+    filePath: 'x.podlite',
+    fileType: 'podlite',
+    config: { rules },
   })
 
-  it('says nothing about a table separated by whitespace only', () => {
-    expect(check(table([' Name   Value', ' one   two']))).toEqual([])
+  it('passes on what the parser reports under its name, as reported', () => {
+    const ast = treeWith([
+      { severity: 'warning', code: 'table-row-cells', message: 'a row', location },
+      { severity: 'error', code: 'table-column-width', message: 'columns merged', location },
+      { severity: 'warning', code: 'table-column-width', message: 'no place' },
+    ])
+    expect(tableColumnWidthRule.check(ast, ctx())).toEqual([
+      { rule: 'table-column-width', severity: 'error', message: 'columns merged', location },
+      { rule: 'table-column-width', severity: 'warning', message: 'no place', location: undefined },
+    ])
   })
 
-  describe('rows held apart by spaces while the separator draws bars', () => {
-    it('lets a cell fill its column to the last place', () => {
-      const rows = ['  VERSION   DATE', '  =======|========', '  0.1       2026-08-12']
-      expect(check(table(rows))).toEqual([])
-    })
-
-    it('still flags content standing on the boundary', () => {
-      const rows = ['  VERSIONING   DATE', '  =======|========', '  0.1          2026-08-12']
-      expect(check(table(rows))).toHaveLength(1)
-    })
-
-    it('keeps flagging a row that draws its own bar with no space before it', () => {
-      const rows = ['  Name | Size', '  =====|=====', '  wider| two']
-      expect(check(table(rows))).toHaveLength(1)
-    })
-
-    it('accepts the same row once a space is left before the bar', () => {
-      const rows = ['  Name | Size', '  =====|=====', '  one  | two']
-      expect(check(table(rows))).toEqual([])
-    })
+  it('runs among the default rules and follows the setting of its name', () => {
+    const ast = treeWith([{ severity: 'warning', code: 'table-column-width', message: 'columns merged', location }])
+    const of = (rules: Record<string, 'off' | 'warning' | 'error'>) =>
+      runRules(ast, DEFAULT_RULES, ctx(rules))
+        .filter(v => v.rule === TABLE_COLUMN_WIDTH_RULE_ID)
+        .map(v => v.severity)
+    expect(of({})).toEqual(['warning'])
+    expect(of({ 'table-column-width': 'error' })).toEqual(['error'])
+    expect(of({ 'table-column-width': 'off' })).toEqual([])
   })
 
-  describe('the end of an abbreviated table', () => {
-    const rows = 'a | b\n--+--\nc | d\n=future abcdef\n'
-
-    it('ends a paragraph or abbreviated table at a directive line, as the parser does', () => {
-      expect(check(`=for table\n${rows}`)).toEqual([])
-      expect(check(`=table\n${rows}`)).toEqual([])
-    })
-
-    it('ends an abbreviated table at a directive line inside a delimited table', () => {
-      expect(check(`=begin table\n=for table\n${rows}=end table\n`)).toEqual([])
-    })
-
-    it('ends an abbreviated table at a blank line inside a delimited table', () => {
-      expect(check(`=begin table\n=for table\na | b\n--+--\nc | d\n\nabcdef\n=end table\n`)).toEqual([])
-    })
+  it('leaves a mute of its name with nothing to silence on a table split by its own bars', () => {
+    const src = '=begin table :lint-ignore<table-column-width>\nA | B\n==+==\nlonger | z\n=end table\n'
+    const report = lintSource(src, 'x.podlite', {})
+    expect(report.violations.map(v => v.message)).toEqual([':lint-ignore<table-column-width> silenced nothing here'])
   })
 })

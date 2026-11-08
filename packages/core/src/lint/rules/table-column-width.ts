@@ -1,122 +1,19 @@
-import { isVerbatimBlock } from '@podlite/schema'
-import type { Violation, SourceRule } from '../types'
+import type { PodliteDocument } from '@podlite/schema'
+import type { Rule, Violation, LintContext } from '../types'
 
 export const TABLE_COLUMN_WIDTH_RULE_ID = 'table-column-width'
 
-export const tableColumnWidthRule: SourceRule = {
+const named = (d: { code: string }): boolean => d.code === TABLE_COLUMN_WIDTH_RULE_ID
+
+// passes on what the parser reports under this name
+export const tableColumnWidthRule: Rule = {
   id: TABLE_COLUMN_WIDTH_RULE_ID,
   severity: 'warning',
-}
-
-const SEPARATOR_LINE = /^[\s=+|_-]*[|+][\s=+|_-]*$/
-const hasBar = (line: string) => line.includes('|') || line.includes('+')
-
-// A table with visible bars is cut by the column positions its separator line
-// sets, not by the bars in the row itself. A cell that reaches the boundary
-// pushes the column open for the whole table, so every row loses its last
-// column at once — and the document still parses, silently.
-const boundaries = (separator: string): number[] => {
-  const out: number[] = []
-  for (let i = 0; i < separator.length; i++) {
-    if (separator[i] === '|' || separator[i] === '+') out.push(i)
-  }
-  return out
-}
-
-const isEdge = (char: string) => char === '|' || char === '+' || char === ' '
-
-const collides = (line: string, boundary: number): boolean => {
-  if (boundary >= line.length) return false
-  // content standing on the boundary is wrong however the row is written
-  if (!isEdge(line[boundary])) return true
-  // pressed against the boundary only matters where the row draws a bar of its
-  // own: a row whose cells are held apart by spaces may fill its column to the
-  // last position, and the parser reads it correctly
-  const drawsBar = line[boundary] === '|' || line[boundary] === '+'
-  return drawsBar && boundary > 0 && !isEdge(line[boundary - 1])
-}
-
-type TableLine = { text: string; line: number }
-
-const checkTable = (lines: TableLine[]): Violation[] => {
-  const separator = lines.find(l => SEPARATOR_LINE.test(l.text) && hasBar(l.text))
-  if (!separator) return []
-  const columns = boundaries(separator.text)
-  if (columns.length === 0) return []
-
-  const violations: Violation[] = []
-  for (const row of lines) {
-    if (row === separator || row.text.trim() === '') continue
-    if (SEPARATOR_LINE.test(row.text)) continue
-    const hit = columns.find(b => collides(row.text, b))
-    if (hit === undefined) continue
-    violations.push({
+  check: (ast: PodliteDocument, _ctx: LintContext): Violation[] =>
+    (ast.diagnostics || []).filter(named).map(d => ({
       rule: TABLE_COLUMN_WIDTH_RULE_ID,
-      severity: 'warning',
-      message: `cell reaches the column boundary at column ${
-        hit + 1
-      }; leave a space before the bar or the table loses a column`,
-      location: {
-        start: { line: row.line, column: hit + 1, offset: 0 },
-        end: { line: row.line, column: hit + 1, offset: 0 },
-      },
-    })
-  }
-  return violations
-}
-
-export function scanTableColumns(content: string): Violation[] {
-  const lines = content.split(/\r?\n/)
-  // a table keeps its content verbatim too, and it is the one being read here
-  const verbatim = (name: string) => name !== 'table' && isVerbatimBlock(name)
-  const openBlocks: string[] = []
-  const violations: Violation[] = []
-  let table: TableLine[] | null = null
-  // the form of the table being read, not of a table around it: an abbreviated
-  // one ends where the parser ends it, inside a delimited table too
-  let abbreviatedForm = false
-
-  const closeTable = () => {
-    if (table) violations.push(...checkTable(table))
-    table = null
-  }
-
-  for (let i = 0; i < lines.length; i++) {
-    const text = lines[i]
-    const begin = text.match(/^\s*=begin\s+([\w-]+)/)
-    const end = text.match(/^\s*=end\s+([\w-]+)/)
-    const abbreviated = text.match(/^\s*=(?:for\s+)?table\b/)
-
-    // an abbreviated table ends at the first blank line or directive
-    if (table && abbreviatedForm && /^\s*=[A-Za-z]/.test(text)) closeTable()
-    if (table && abbreviatedForm && text.trim() === '') {
-      closeTable()
-      continue
-    }
-
-    if (end) {
-      if (end[1] === 'table') closeTable()
-      openBlocks.pop()
-      continue
-    }
-    if (begin) {
-      closeTable()
-      openBlocks.push(begin[1])
-      if (begin[1] === 'table' && !openBlocks.some(verbatim)) {
-        table = []
-        abbreviatedForm = false
-      }
-      continue
-    }
-    if (openBlocks.some(verbatim)) continue
-    if (abbreviated) {
-      closeTable()
-      table = []
-      abbreviatedForm = true
-      continue
-    }
-    if (table) table.push({ text, line: i + 1 })
-  }
-  closeTable()
-  return violations
+      severity: d.severity,
+      message: d.message,
+      location: d.location,
+    })),
 }
