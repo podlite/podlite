@@ -52,6 +52,8 @@ export function scanAbbreviatedAttrs(content: string): Violation[] {
 
     const [, name, rest] = abbreviated
     if (isVerbatimBlock(name)) continue
+    // the first line of a definition is the term being defined, and a term may look like an attribute
+    if (name === 'defn') continue
     if (!ONLY_ATTRIBUTES.test(rest.trim())) continue
     if (allEmpty(rest)) continue
 

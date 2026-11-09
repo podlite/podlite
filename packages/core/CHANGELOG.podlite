@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<abbreviated-attrs> no longer advises C<=for defn> for the first line of a definition, which is its term
+
 =item C<podlite lint> reads the rest of the line after an attribute in angles without copying the rest of the file, so the check of each attribute no longer grows with the lines that follow it
 
 =head1 0.0.97

@@ -66,4 +66,31 @@ describe('abbreviated-attrs rule', () => {
       expect(check('=head1 Title\n\n=item1 first\n=item1 second\n')).toEqual([])
     })
   })
+
+  describe('takes the first line of a definition as its term', () => {
+    it('leaves a term that looks like an attribute', () => {
+      expect(check('=defn :stdin<URI>\nThe address read from standard input.\n')).toEqual([])
+    })
+
+    it('leaves a term that would be a configuration on another block', () => {
+      expect(check('=defn :id<x>\nThe definition.\n')).toEqual([])
+    })
+
+    it('still reports a block named in another case', () => {
+      expect(check('=DEFN :stdin<URI>\ntext\n')).toHaveLength(1)
+    })
+
+    it('still reports a block whose name only starts with defn', () => {
+      expect(check('=defn1 :stdin<URI>\ntext\n')).toHaveLength(1)
+    })
+
+    it('still reports an item inside a delimited definition', () => {
+      expect(check('=begin defn\nTERM\n=item1 :id<x>\nthe item content\n=end defn\n')).toHaveLength(1)
+    })
+
+    it('leaves the paragraph and delimited forms of a definition', () => {
+      expect(check('=for defn :stdin<URI>\nTERM\ntext\n')).toEqual([])
+      expect(check('=begin defn :stdin<URI>\nTERM\ntext\n=end defn\n')).toEqual([])
+    })
+  })
 })
