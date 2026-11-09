@@ -13,8 +13,7 @@ const run = (input: string, extra: Partial<GrammarOptions> = {}): GrammarOptions
   return opts
 }
 
-// UTF-16 code units in the results of slice and in the strings split cuts;
-// substring, indexOf and other regular expressions are not counted
+// counts UTF-16 units returned by slice and cut by split, no other string method
 const unitsInSliceAndSplit = (input: string): { units: number; messages: number } => {
   const slice = String.prototype.slice
   const split = String.prototype.split
