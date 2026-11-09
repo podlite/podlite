@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<list-depth> passes on the parser report about a list nested deeper than 50 levels
+
 =item C<podlite lint> rule C<table-column-width> no longer compares the bars of a row with the places of the separator line, which need not line up; it keeps its name for what the parser reports under it
 
 =head1 0.0.96

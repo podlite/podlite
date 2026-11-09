@@ -6,6 +6,8 @@
 
 =item the items of a long list at one level are grouped in time that grows with their number
 
+=item a list is nested no deeper than 50 levels: deeper items stand in the 50th level with the level the author wrote, and the parser reports C<list-too-deep> once for each such list, instead of running out of stack
+
 =item once a separator stands between two groups of table rows, each group is one row, the last one and those of a table with no header too; a table with a single group keeps a row on each line
 
 =item a long list in an attribute value, in parentheses or in C<:allow>, is parsed in time that grows with its length; 16000 elements no longer overflow the stack

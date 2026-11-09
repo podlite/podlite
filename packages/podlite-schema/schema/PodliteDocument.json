@@ -2154,6 +2154,7 @@
                 "code": {
                     "enum": [
                         "directive-unreadable",
+                        "list-too-deep",
                         "markup-code-foreign-closer",
                         "markup-code-longer-run",
                         "markup-code-reserved",

@@ -213,6 +213,7 @@ export interface ParseDiagnostic {
     | 'markup-code-unsupported'
     | 'markup-code-unreadable'
     | 'markup-code-too-deep'
+    | 'list-too-deep'
   message: string
   location: Location
 }
