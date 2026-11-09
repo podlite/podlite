@@ -6,6 +6,8 @@
 
 =item the items of a long list at one level are grouped in time that grows with their number
 
+=item once a separator stands between two groups of table rows, each group is one row, the last one and those of a table with no header too; a table with a single group keeps a row on each line
+
 =item a long list in an attribute value, in parentheses or in C<:allow>, is parsed in time that grows with its length; 16000 elements no longer overflow the stack
 
 =item a table reports every row it pads or truncates, with the row's number, also next to a report about mixed separators or an attribute value that could not be read

@@ -395,6 +395,28 @@ const strbin = (str1, str2, cb) => {
 // fallback when a row spans multiple lines (continuation lines that align
 // content by character position rather than by separator). Returns a binary
 // string where `0` runs mark column ranges and `1` runs mark gaps.
+type RawRow = { name?: string; type?: string; value?: string }
+
+// the norm puts a separator between every row on several lines, so the lines after the last one are a row too
+const groupRows = <T extends RawRow>(content: T[]): T[] => {
+  const isTextRow = (c: T) => Boolean(c) && c.name === 'row' && c.type === 'text'
+  const groups: number[][] = [[]]
+  content.forEach((c, i) => {
+    if (isTextRow(c)) groups[groups.length - 1].push(i)
+    else if (c && c.type === 'separator' && groups[groups.length - 1].length) groups.push([])
+  })
+  const filled = groups.filter(g => g.length)
+  if (filled.length < 2) return content
+  const firstOf = new Map(filled.map(g => [g[0], g]))
+  const merged = new Set(filled.flatMap(g => g.slice(1)))
+  return content.flatMap((c, i) => {
+    if (merged.has(i)) return []
+    const group = firstOf.get(i)
+    if (!group || group.length === 1) return [c]
+    return [{ ...c, value: group.map(k => content[k].value ?? '').join('') }]
+  })
+}
+
 const makeMask = (lines: string[], separators: string[]): string => {
   const tmplLength = Math.max(...[...lines, ...separators].map(s => s.length))
   // a table held apart by spaces alone splits on two of them, as a row on one line
@@ -695,6 +717,8 @@ export default (opt: { config?: ConfigScope } = {}) =>
           const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
           return normalizeCellCounts({ ...attached, content: recursed }, 'table', report)
         }
+        const ownScope = scopes.get(node) || {}
+        node = { ...node, content: groupRows(node.content || []) }
         let rows = []
         const collectValues = row => {
           rows.push(row.value)
@@ -720,7 +744,7 @@ export default (opt: { config?: ConfigScope } = {}) =>
         // split each row into lines
         const lines = flattenDeep(rows.map(splitToLines))
         const separators = flattenDeep(seps.map(splitToLines))
-        const codeScope = codeScopeOf(node, scopes.get(node) || {})
+        const codeScope = codeScopeOf(node, ownScope)
         const protect = (line: string) => protectCodes(line, codeScope)
         const masks = lines.map(protect)
 
