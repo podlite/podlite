@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> reads the rest of the line after an attribute in angles without copying the rest of the file, so the check of each attribute no longer grows with the lines that follow it
+
 =head1 0.0.97
 
 =item C<podlite lint> rule C<list-depth> passes on the parser report about a list nested deeper than 50 levels

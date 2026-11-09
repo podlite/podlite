@@ -20,6 +20,13 @@
   options.closedEarly = options.closedEarly || ((rest, inHash) =>
     rest.indexOf('>') !== -1 && !(inHash ? /^[ \t\f]*[:,\x7d]/ : /^[ \t\f]*:/).test(rest));
   options.nestedAngleAdvice = 'use a non-conflicting delimiter ("...", (...), <<...>>) or plain text';
+  // the rest of the line from an offset, read without copying the rest of the file
+  options.lineFrom = options.lineFrom || (from => {
+    const lf = input.indexOf('\n', from);
+    let end = lf === -1 ? input.length : lf;
+    if (lf !== -1 && end > from && input.charAt(end - 1) === '\r') end--;
+    return input.slice(from, end);
+  });
 }
 
 start
@@ -50,7 +57,7 @@ attr_quoted_angle
   = option_start ":" identifier "<" qa_ws value:(qa_list / qa_quoted) qa_ws ">"
     &{ return value.quoted }
     {
-      if (options.closedEarly(input.slice(peg$savedPos + text().length).split(/\r?\n/)[0], options.inHash(location().start.offset))) {
+      if (options.closedEarly(options.lineFrom(peg$savedPos + text().length), options.inHash(location().start.offset))) {
         options.diagnostics.push({
           rule: 'attr-nested-angle',
           severity: 'error',
@@ -92,7 +99,7 @@ attr_nested_angle
     ":" name:identifier "<" !"<" value:$([^>\r\n]*) ">"
     {
       const advice = options.nestedAngleAdvice;
-      const rest = input.slice(peg$savedPos + text().length).split(/\r?\n/)[0];
+      const rest = options.lineFrom(peg$savedPos + text().length);
       const closedEarly = options.closedEarly(rest, options.inHash(location().start.offset));
       if (value.indexOf('<') !== -1) {
         options.diagnostics.push({

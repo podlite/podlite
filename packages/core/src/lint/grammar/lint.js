@@ -165,10 +165,7 @@ function peg$parse(input, options) {
     },
     peg$c9 = function (value) {
       if (
-        options.closedEarly(
-          input.slice(peg$savedPos + text().length).split(/\r?\n/)[0],
-          options.inHash(location().start.offset),
-        )
+        options.closedEarly(options.lineFrom(peg$savedPos + text().length), options.inHash(location().start.offset))
       ) {
         options.diagnostics.push({
           rule: 'attr-nested-angle',
@@ -228,7 +225,7 @@ function peg$parse(input, options) {
     peg$c42 = peg$classExpectation(['>', '\r', '\n'], true, false),
     peg$c43 = function (name, value) {
       const advice = options.nestedAngleAdvice
-      const rest = input.slice(peg$savedPos + text().length).split(/\r?\n/)[0]
+      const rest = options.lineFrom(peg$savedPos + text().length)
       const closedEarly = options.closedEarly(rest, options.inHash(location().start.offset))
       if (value.indexOf('<') !== -1) {
         options.diagnostics.push({
@@ -2188,6 +2185,15 @@ function peg$parse(input, options) {
     options.closedEarly ||
     ((rest, inHash) => rest.indexOf('>') !== -1 && !(inHash ? /^[ \t\f]*[:,\x7d]/ : /^[ \t\f]*:/).test(rest))
   options.nestedAngleAdvice = 'use a non-conflicting delimiter ("...", (...), <<...>>) or plain text'
+  // the rest of the line from an offset, read without copying the rest of the file
+  options.lineFrom =
+    options.lineFrom ||
+    (from => {
+      const lf = input.indexOf('\n', from)
+      let end = lf === -1 ? input.length : lf
+      if (lf !== -1 && end > from && input.charAt(end - 1) === '\r') end--
+      return input.slice(from, end)
+    })
 
   peg$result = peg$startRuleFunction()
 
