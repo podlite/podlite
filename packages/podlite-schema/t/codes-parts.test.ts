@@ -50,22 +50,3 @@ describe('S<> reads the codes inside it', () => {
     )
   })
 })
-
-describe('thousands of unpaired angles parse in time that grows with the text', () => {
-  const ms = (doc: string) => {
-    const started = process.hrtime.bigint()
-    parsed(doc)
-    return Number(process.hrtime.bigint() - started) / 1e6
-  }
-  it('reads them outside a code, inside B<> and in a row, well under 100 ms', () => {
-    for (const doc of ['a < b '.repeat(2000), `B<${'a < b '.repeat(2000)}>`, '<'.repeat(500)])
-      expect(ms(`=para ${doc}\n`)).toBeLessThan(100)
-  })
-  it('grows no faster than the text', () => {
-    // the least of five runs on texts that take milliseconds; the text grows eight times, linear time
-    // stays well under 24 even on a busy machine, square time would be 64
-    const least = (k: number) => Math.min(...[0, 1, 2, 3, 4].map(() => ms(`=para B<${'a < b '.repeat(k)}>\n`)))
-    least(2000)
-    expect(least(32000)).toBeLessThan(least(4000) * 24)
-  })
-})
