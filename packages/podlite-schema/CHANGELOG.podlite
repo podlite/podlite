@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.84
+
 =item a paragraph with thousands of markup codes is parsed and made into a document in time that grows with its length
 
 =item the items of a long list at one level are grouped in time that grows with their number

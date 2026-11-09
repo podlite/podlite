@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.65
+
 =item files are found with C<glob> 14 instead of the unsupported C<glob> 7. A path that names an existing file is taken as that file, even when the path would also read as a pattern (C<star*.podlite> is the file of that name, not every file it would match), and keeps its spelling, C<./> and C<..> included. A pattern gives files in the old order, keeps its case and a leading C<./> of the pattern itself, and leaves directories and broken links out; what changes for a pattern: a pattern that starts with C<**> once its braces are expanded (C<**/x.podlite>, C<{sub,**}/x.podlite>, not C<{sub/**,ok}/x.podlite>) no longer enters a linked directory, as in a shell; a C<./> inside braces is written out of the paths it gives; POSIX classes and extended patterns are read; C<sub/../> and C<./.> are written out of the paths it gives, and a file it names twice comes once; a directory that cannot be read, met while a pattern is walked, is passed over instead of failing the whole pattern; a pattern whose fixed part goes through such a directory still fails, as before. An empty path is an error, as before. On Node 21, C<glob> 14 warns that it does not list that version
 
 =head1 0.0.64

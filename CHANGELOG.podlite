@@ -2,6 +2,49 @@
 
 =head1 Upcoming
 
+=head1 0.0.104
+
+
+=head2 podlite
+
+=item C<podlite lint> rule C<list-depth> passes on the parser report about a list nested deeper than 50 levels
+
+=item C<podlite lint> rule C<table-column-width> no longer compares the bars of a row with the places of the separator line, which need not line up; it keeps its name for what the parser reports under it
+
+=head2 @podlite/markdown
+
+=item Markdown is read by C<remark-parse> 11, C<remark-gfm> 4, C<remark-math> 6 and C<unified> 11, which follow CommonMark 0.31 and GFM more closely. Some documents read differently: a numbered line that does not start with 1 no longer starts a list inside a paragraph; a bare link no longer ends in a punctuation mark: a mark after it stays out of the address now also right before an html tag and when it is a C<]>, and a backslash before the mark stays in the link; a bare e-mail address or C<www.> address can become a link where it did not; emphasis next to symbols such as ® and strikethrough by one tilde next to symbols follow the newer rules; a line before C<---> can become a heading. The words of a document stay the same
+
+=item the location of a table cell no longer takes in the space before the next C<|>
+
+=head2 @podlite/publisher
+
+=item files are found with C<glob> 14 instead of the unsupported C<glob> 7. A path that names an existing file is taken as that file, even when the path would also read as a pattern (C<star*.podlite> is the file of that name, not every file it would match), and keeps its spelling, C<./> and C<..> included. A pattern gives files in the old order, keeps its case and a leading C<./> of the pattern itself, and leaves directories and broken links out; what changes for a pattern: a pattern that starts with C<**> once its braces are expanded (C<**/x.podlite>, C<{sub,**}/x.podlite>, not C<{sub/**,ok}/x.podlite>) no longer enters a linked directory, as in a shell; a C<./> inside braces is written out of the paths it gives; POSIX classes and extended patterns are read; C<sub/../> and C<./.> are written out of the paths it gives, and a file it names twice comes once; a directory that cannot be read, met while a pattern is walked, is passed over instead of failing the whole pattern; a pattern whose fixed part goes through such a directory still fails, as before. An empty path is an error, as before. On Node 21, C<glob> 14 warns that it does not list that version
+
+=head2 @podlite/schema
+
+=item a paragraph with thousands of markup codes is parsed and made into a document in time that grows with its length
+
+=item the items of a long list at one level are grouped in time that grows with their number
+
+=item a list is nested no deeper than 50 levels: deeper items stand in the 50th level with the level the author wrote, and the parser reports C<list-too-deep> once for each such list, instead of running out of stack
+
+=item once a separator stands between two groups of table rows, each group is one row, the last one and those of a table with no header too; a table with a single group keeps a row on each line
+
+=item a long list in an attribute value, in parentheses or in C<:allow>, is parsed in time that grows with its length; 16000 elements no longer overflow the stack
+
+=item a table reports every row it pads or truncates, with the row's number, also next to a report about mixed separators or an attribute value that could not be read
+
+=item a table read from a source says that the source cannot be read, is empty or is left to the renderer also next to an attribute value that could not be read; when the dropped value is the one the source needed, both are said
+
+=head2 @podlite/to-jsx
+
+=item a path in an included file is read from the directory of that file, as C<convert> reads it
+
+=item with an absolute C<includeBaseDir> the host is asked for a file by its path from the base, or by its absolute path when the file lies outside the base; without one, by its path from the directory of the document
+
+=item without an absolute C<includeBaseDir>, an absolute path that C<expandPaths> returns for a relative mask is left out with a warning
+
 =head1 0.0.103
 
 
