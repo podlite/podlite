@@ -6,6 +6,9 @@
   // cannot be enumerated ahead of time
   options.isVerbatim = options.isVerbatim || (name => options.verbatimBlocks.indexOf(name) !== -1);
   if (typeof options._inDirective !== 'boolean') options._inDirective = false;
+  // the directive being read is the marker of the block on top of the stack, so the
+  // block's own options are checked even when its body is verbatim
+  if (typeof options._ownLine !== 'boolean') options._ownLine = false;
   // an option inside a hash follows its opening brace or a comma, across a continuation marker
   options.inHash = options.inHash || (offset => {
     let at = offset - 1;
@@ -48,7 +51,8 @@ rule_match
 // an option is written after whitespace, or after the brace or a comma of a hash
 option_start
   = &{
-      if (!options._inDirective || options._blockStack.some(b => options.isVerbatim(b.name))) return false;
+      const around = options._ownLine ? options._blockStack.slice(0, -1) : options._blockStack;
+      if (!options._inDirective || around.some(b => options.isVerbatim(b.name))) return false;
       return /[ \t\x7b,]/.test(input.charAt(location().start.offset - 1));
     }
 
@@ -142,10 +146,12 @@ delim_begin
           });
         }
         options._inDirective = false;
+        options._ownLine = false;
         return null;
       }
       options._blockStack.push({ name: name, location: location() });
       options._inDirective = true;
+      options._ownLine = true;
       return null;
     }
 
@@ -156,6 +162,7 @@ delim_end
       // a verbatim block runs to its own =end, so any other marker inside it is content
       if (top && top.name !== name && options.isVerbatim(top.name)) {
         options._inDirective = false;
+        options._ownLine = false;
         return null;
       }
       if (!top) {
@@ -194,6 +201,7 @@ delim_end
         options._blockStack.pop();
       }
       options._inDirective = false;
+      options._ownLine = false;
       return null;
     }
 
@@ -202,6 +210,7 @@ paragraph_directive
   = sol "=for" __ identifier
     {
       options._inDirective = true;
+      options._ownLine = false;
       return null;
     }
 
@@ -219,6 +228,8 @@ continuation_attr
           location: location()
         });
       }
+      // a line without = is the body, not the marker
+      options._ownLine = false;
       return null;
     }
 
@@ -237,6 +248,7 @@ blank_line_marker
   = sol [ \t]* "\n"
     {
       options._inDirective = false;
+      options._ownLine = false;
       return null;
     }
 
@@ -244,6 +256,7 @@ line_marker
   = sol .
     {
       options._inDirective = false;
+      options._ownLine = false;
       return null;
     }
 

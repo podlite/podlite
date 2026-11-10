@@ -233,3 +233,111 @@ describe('runLint attr-nested-angle integration', () => {
     expect(code).toBe(0)
   })
 })
+
+describe('attr-nested-angle on the marker of a verbatim block', () => {
+  const found = (src: string) => scanSourceRules(src).filter(v => v.rule === ATTR_NESTED_ANGLE_RULE_ID)
+  const at = (src: string) => found(src).map(v => [v.location?.start.line, v.location?.start.column])
+  const inPod = (lines: string[]) => ['=begin pod', '', ...lines, '', '=end pod', ''].join('\n')
+  const verbatim = [
+    'assert',
+    'code',
+    'comment',
+    'data',
+    'data-table',
+    'fixture',
+    'formula',
+    'input',
+    'markdown',
+    'output',
+    'picture',
+    'resource',
+    'table',
+    'Xhtml',
+  ]
+
+  describe('checks the options of the marker', () => {
+    it.each(verbatim)('of =begin %s', name => {
+      const src = inPod([`=begin ${name} :caption<Latency > 100>`, 'x', `=end ${name}`])
+      expect(at(src)).toEqual([[3, 9 + name.length]])
+      expect(found(src)[0].message).toMatch(/a > that closes/)
+    })
+
+    it('of a value with nested angles', () => {
+      const v = found(inPod(['=begin code :caption<a <b> c>', 'x', '=end code']))
+      expect(v).toHaveLength(1)
+      expect(v[0].message).toMatch(/a nested <…>/)
+    })
+
+    it('of a quoted value closed early', () => {
+      expect(at(inPod(["=begin code :k<'a' b> c>", 'x', '=end code']))).toEqual([[3, 13]])
+    })
+
+    it('on a continuation of the marker', () => {
+      expect(at(inPod(['=begin table', '= :caption<a > b>', 'x', '=end table']))).toEqual([[4, 3]])
+    })
+
+    it('of a block left open, next to the open block report', () => {
+      const v = scanSourceRules('=begin code :a<x > y>\nx\n')
+      expect(v.filter(d => d.rule === ATTR_NESTED_ANGLE_RULE_ID)).toHaveLength(1)
+      expect(v.filter(d => d.rule === 'delimited-block-balance')).toHaveLength(1)
+    })
+  })
+
+  describe('leaves the body alone', () => {
+    it.each([
+      ['\n', 'LF'],
+      ['\r\n', 'CRLF'],
+    ])('a line without = and a continuation after it, %#', eol => {
+      expect(found(['=begin code', '  :a<ok> :b<x > y>', '= :c<x > y>', '=end code', ''].join(eol))).toEqual([])
+    })
+
+    it.each([
+      ['=begin code\n\n= :a<x > y>\n=end code\n', 'blank line'],
+      ['=begin code\r\n\r\n= :a<x > y>\r\n=end code\r\n', 'blank line, CRLF'],
+      ['=begin code\n   \n= :a<x > y>\n=end code\n', 'line of spaces'],
+    ])('a continuation after a %#', src => {
+      expect(found(src)).toEqual([])
+    })
+
+    it('a =for right after the marker', () => {
+      expect(found('=begin code\n=for para :caption<a > b>\n=end code\n')).toEqual([])
+    })
+
+    it('a =begin and a continuation inside the body', () => {
+      expect(found('=begin code\n=begin table :caption<a > b>\n= :x<a > b>\n=end code\n')).toEqual([])
+    })
+
+    it('a stray =end and a continuation inside the body', () => {
+      expect(found('=begin code\n=end table :a<x > y>\n= :b<x > y>\n=end code\n')).toEqual([])
+    })
+
+    it('a continuation after a line of the body', () => {
+      expect(found('=begin code\nbody\n= :x<a > b>\n=end code\n')).toEqual([])
+    })
+
+    it('a verbatim block written inside another', () => {
+      expect(found('=begin comment\n=begin code :a<x > y>\nx\n=end code\n=end comment\n')).toEqual([])
+    })
+
+    it('a block of the same name written inside', () => {
+      const v = scanSourceRules('=begin code\n=begin code :a<x > y>\n=end code\n')
+      expect(v.filter(d => d.rule === ATTR_NESTED_ANGLE_RULE_ID)).toEqual([])
+      expect(v.filter(d => d.rule === 'delimited-block-balance')).toHaveLength(1)
+    })
+  })
+
+  describe('keeps the rest as it was', () => {
+    it.each(["=begin code :k<'a<b>'>", '=begin table :caption<Latency 100>'])('%s is clean', marker => {
+      expect(found(inPod([marker, 'x', `=end ${marker.split(' ')[1]}`]))).toEqual([])
+    })
+
+    it.each(['=begin nested', '=begin para', '=begin SYNOPSIS'])('%s reports as before', marker => {
+      const name = marker.split(' ')[1]
+      expect(at(inPod([`${marker} :caption<Latency > 100>`, 'x', `=end ${name}`]))).toEqual([[3, marker.length + 2]])
+    })
+
+    it('=for table reports as before', () => {
+      expect(at(inPod(['=for table :caption<Latency > 100>', 'x']))).toEqual([[3, 12]])
+    })
+  })
+})

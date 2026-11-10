@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<attr-nested-angle> checks the options on the C<=begin> line of a verbatim block such as C<=begin table> or C<=begin code>; their body is still not checked
+
 =item C<podlite lint> no longer fails on a very large report and keeps all its messages, those of includes too
 
 =item C<podlite lint> rules C<link-target-resolves>, C<link-file-resolves> and C<link-not-empty> no longer check links inside C<=comment>, which is not rendered

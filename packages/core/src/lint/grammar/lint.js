@@ -151,7 +151,8 @@ function peg$parse(input, options) {
     peg$startRuleFunction = peg$parsestart,
     peg$c0 = peg$anyExpectation(),
     peg$c1 = function () {
-      if (!options._inDirective || options._blockStack.some(b => options.isVerbatim(b.name))) return false
+      const around = options._ownLine ? options._blockStack.slice(0, -1) : options._blockStack
+      if (!options._inDirective || around.some(b => options.isVerbatim(b.name))) return false
       return /[ \t\x7b,]/.test(input.charAt(location().start.offset - 1))
     },
     peg$c2 = ':',
@@ -283,10 +284,12 @@ function peg$parse(input, options) {
           })
         }
         options._inDirective = false
+        options._ownLine = false
         return null
       }
       options._blockStack.push({ name: name, location: location() })
       options._inDirective = true
+      options._ownLine = true
       return null
     },
     peg$c59 = '=end',
@@ -296,6 +299,7 @@ function peg$parse(input, options) {
       // a verbatim block runs to its own =end, so any other marker inside it is content
       if (top && top.name !== name && options.isVerbatim(top.name)) {
         options._inDirective = false
+        options._ownLine = false
         return null
       }
       if (!top) {
@@ -347,12 +351,14 @@ function peg$parse(input, options) {
         options._blockStack.pop()
       }
       options._inDirective = false
+      options._ownLine = false
       return null
     },
     peg$c62 = '=for',
     peg$c63 = peg$literalExpectation('=for', false),
     peg$c64 = function () {
       options._inDirective = true
+      options._ownLine = false
       return null
     },
     peg$c65 = '!',
@@ -369,6 +375,8 @@ function peg$parse(input, options) {
           location: location(),
         })
       }
+      // a line without = is the body, not the marker
+      options._ownLine = false
       return null
     },
     peg$c68 = '(',
@@ -381,15 +389,20 @@ function peg$parse(input, options) {
     peg$c75 = peg$literalExpectation('=', false),
     peg$c76 = /^[ \t]/,
     peg$c77 = peg$classExpectation([' ', '\t'], false, false),
-    peg$c78 = '\n',
-    peg$c79 = peg$literalExpectation('\n', false),
-    peg$c80 = function () {
-      options._inDirective = false
+    peg$c78 = function () {
+      options._inDirective = true
       return null
     },
-    peg$c81 = peg$otherExpectation('identifier'),
-    peg$c82 = /^[a-zA-Z]/,
-    peg$c83 = peg$classExpectation(
+    peg$c79 = '\n',
+    peg$c80 = peg$literalExpectation('\n', false),
+    peg$c81 = function () {
+      options._inDirective = false
+      options._ownLine = false
+      return null
+    },
+    peg$c82 = peg$otherExpectation('identifier'),
+    peg$c83 = /^[a-zA-Z]/,
+    peg$c84 = peg$classExpectation(
       [
         ['a', 'z'],
         ['A', 'Z'],
@@ -397,13 +410,13 @@ function peg$parse(input, options) {
       false,
       false,
     ),
-    peg$c84 = /^[a-zA-Z0-9_\-]/,
-    peg$c85 = peg$classExpectation([['a', 'z'], ['A', 'Z'], ['0', '9'], '_', '-'], false, false),
-    peg$c86 = peg$otherExpectation('start-of-line'),
-    peg$c87 = function () {
+    peg$c85 = /^[a-zA-Z0-9_\-]/,
+    peg$c86 = peg$classExpectation([['a', 'z'], ['A', 'Z'], ['0', '9'], '_', '-'], false, false),
+    peg$c87 = peg$otherExpectation('start-of-line'),
+    peg$c88 = function () {
       return location().start.column === 1
     },
-    peg$c88 = peg$otherExpectation('whitespace'),
+    peg$c89 = peg$otherExpectation('whitespace'),
     peg$currPos = 0,
     peg$savedPos = 0,
     peg$posDetailsCache = [{ line: 1, column: 1 }],
@@ -1926,7 +1939,7 @@ function peg$parse(input, options) {
         }
         if (s3 !== peg$FAILED) {
           peg$savedPos = s0
-          s1 = peg$c64()
+          s1 = peg$c78()
           s0 = s1
         } else {
           peg$currPos = s0
@@ -1974,17 +1987,17 @@ function peg$parse(input, options) {
       }
       if (s2 !== peg$FAILED) {
         if (input.charCodeAt(peg$currPos) === 10) {
-          s3 = peg$c78
+          s3 = peg$c79
           peg$currPos++
         } else {
           s3 = peg$FAILED
           if (peg$silentFails === 0) {
-            peg$fail(peg$c79)
+            peg$fail(peg$c80)
           }
         }
         if (s3 !== peg$FAILED) {
           peg$savedPos = s0
-          s1 = peg$c80()
+          s1 = peg$c81()
           s0 = s1
         } else {
           peg$currPos = s0
@@ -2019,7 +2032,7 @@ function peg$parse(input, options) {
       }
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0
-        s1 = peg$c80()
+        s1 = peg$c81()
         s0 = s1
       } else {
         peg$currPos = s0
@@ -2039,35 +2052,35 @@ function peg$parse(input, options) {
     peg$silentFails++
     s0 = peg$currPos
     s1 = peg$currPos
-    if (peg$c82.test(input.charAt(peg$currPos))) {
+    if (peg$c83.test(input.charAt(peg$currPos))) {
       s2 = input.charAt(peg$currPos)
       peg$currPos++
     } else {
       s2 = peg$FAILED
       if (peg$silentFails === 0) {
-        peg$fail(peg$c83)
+        peg$fail(peg$c84)
       }
     }
     if (s2 !== peg$FAILED) {
       s3 = []
-      if (peg$c84.test(input.charAt(peg$currPos))) {
+      if (peg$c85.test(input.charAt(peg$currPos))) {
         s4 = input.charAt(peg$currPos)
         peg$currPos++
       } else {
         s4 = peg$FAILED
         if (peg$silentFails === 0) {
-          peg$fail(peg$c85)
+          peg$fail(peg$c86)
         }
       }
       while (s4 !== peg$FAILED) {
         s3.push(s4)
-        if (peg$c84.test(input.charAt(peg$currPos))) {
+        if (peg$c85.test(input.charAt(peg$currPos))) {
           s4 = input.charAt(peg$currPos)
           peg$currPos++
         } else {
           s4 = peg$FAILED
           if (peg$silentFails === 0) {
-            peg$fail(peg$c85)
+            peg$fail(peg$c86)
           }
         }
       }
@@ -2091,7 +2104,7 @@ function peg$parse(input, options) {
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED
       if (peg$silentFails === 0) {
-        peg$fail(peg$c81)
+        peg$fail(peg$c82)
       }
     }
 
@@ -2103,7 +2116,7 @@ function peg$parse(input, options) {
 
     peg$silentFails++
     peg$savedPos = peg$currPos
-    s0 = peg$c87()
+    s0 = peg$c88()
     if (s0) {
       s0 = void 0
     } else {
@@ -2113,7 +2126,7 @@ function peg$parse(input, options) {
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED
       if (peg$silentFails === 0) {
-        peg$fail(peg$c86)
+        peg$fail(peg$c87)
       }
     }
 
@@ -2154,7 +2167,7 @@ function peg$parse(input, options) {
     if (s0 === peg$FAILED) {
       s1 = peg$FAILED
       if (peg$silentFails === 0) {
-        peg$fail(peg$c88)
+        peg$fail(peg$c89)
       }
     }
 
@@ -2168,6 +2181,9 @@ function peg$parse(input, options) {
   // cannot be enumerated ahead of time
   options.isVerbatim = options.isVerbatim || (name => options.verbatimBlocks.indexOf(name) !== -1)
   if (typeof options._inDirective !== 'boolean') options._inDirective = false
+  // the directive being read is the marker of the block on top of the stack, so the
+  // block's own options are checked even when its body is verbatim
+  if (typeof options._ownLine !== 'boolean') options._ownLine = false
   // an option inside a hash follows its opening brace or a comma, across a continuation marker
   options.inHash =
     options.inHash ||
