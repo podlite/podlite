@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item C<podlite_validate> keeps every problem of a very large report: one with more than about a hundred thousand problems used to come back as a single syntax error
+=item C<podlite_validate> no longer fails on a very large report and returns all its problems
 
 =head1 0.0.33
 

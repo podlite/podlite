@@ -2,7 +2,7 @@
 
 =head1 Upcoming
 
-=item the parser keeps every diagnostic when there are more than about a hundred thousand of them, where it used to fail
+=item the parser no longer fails on a very large number of diagnostics
 
 =head1 0.0.84
 
