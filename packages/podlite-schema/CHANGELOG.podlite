@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<MARKUP_CODE_LETTERS> and C<isMarkupCodeLetter> name the letters of markup codes; the reader of codes takes its letters from them
+
 =item the parser no longer fails on a very large number of diagnostics
 
 =head1 0.0.84

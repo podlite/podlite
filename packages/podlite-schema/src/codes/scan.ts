@@ -18,6 +18,8 @@ that meets it again.
 =end pod
 */
 
+import { isMarkupCodeLetter } from '../markup-code-letters'
+
 export type Bracket = '<' | '«'
 
 export interface ScanScope {
@@ -88,8 +90,6 @@ interface Frame {
   waiting: number
 }
 
-const isLetter = (c: string): boolean => c >= 'A' && c <= 'Z'
-
 export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   const n = text.length
   // the end of the run of one bracket each position stands in: a run is measured once
@@ -105,7 +105,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   }
   const openerAt = (i: number, outer: string | null): { name: string; bracket: Bracket; length: number } | null => {
     const name = text[i]
-    if (!isLetter(name) || i + 1 >= n) return null
+    if (!isMarkupCodeLetter(name) || i + 1 >= n) return null
     const next = text[i + 1]
     if (next !== '<' && next !== '«') return null
     if (!fragmentAllows(name) || !codeAllows(outer, name)) return null

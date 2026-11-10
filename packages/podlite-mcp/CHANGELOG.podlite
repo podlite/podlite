@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_validate> warns when C<:allow> on a block holds something other than markup code letters
+
 =item C<podlite_validate> no longer fails on a very large report and returns all its problems
 
 =head1 0.0.33
