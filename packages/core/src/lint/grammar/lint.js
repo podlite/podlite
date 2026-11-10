@@ -375,7 +375,7 @@ function peg$parse(input, options) {
           location: location(),
         })
       }
-      // a line without = is the body, not the marker
+      // this rule takes the start of the line, so line_marker does not end the marker here
       options._ownLine = false
       return null
     },
@@ -2181,8 +2181,7 @@ function peg$parse(input, options) {
   // cannot be enumerated ahead of time
   options.isVerbatim = options.isVerbatim || (name => options.verbatimBlocks.indexOf(name) !== -1)
   if (typeof options._inDirective !== 'boolean') options._inDirective = false
-  // the directive being read is the marker of the block on top of the stack, so the
-  // block's own options are checked even when its body is verbatim
+  // the marker of the block on top of the stack: its options are checked even in a verbatim block
   if (typeof options._ownLine !== 'boolean') options._ownLine = false
   // an option inside a hash follows its opening brace or a comma, across a continuation marker
   options.inHash =
