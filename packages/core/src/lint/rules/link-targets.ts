@@ -15,7 +15,10 @@ export type LinkSite = {
 // Content is a bare string before the tree is processed and a node after it.
 const textOf = (value: unknown): string => {
   if (typeof value === 'string') return value
-  if (value && typeof value === 'object' && 'value' in value && typeof value.value === 'string') return value.value
+  if (value && typeof value === 'object') {
+    const inner: unknown = Reflect.get(value, 'value')
+    if (typeof inner === 'string') return inner
+  }
   return ''
 }
 
@@ -34,6 +37,8 @@ export const collectLinks = (node: unknown, at?: Violation['location']): LinkSit
   if (Array.isArray(node)) return node.flatMap(child => collectLinks(child, at))
   if (!node || typeof node !== 'object') return []
   const n = node as LinkNode & { type?: string }
+  // a comment is not rendered, so a link inside it leads nowhere and is not checked
+  if (n.type === 'block' && n.name === 'comment') return []
   const here = n.location || at
   const found = isLink(n) ? [{ target: linkTarget(n), at: here }] : []
   return [...found, ...collectLinks(n.content, here)]

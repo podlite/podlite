@@ -65,4 +65,14 @@ describe('link-not-empty rule', () => {
       expect(linkNotEmptyRule.check(processed, ctx)).toEqual([])
     })
   })
+
+  describe('inside a comment', () => {
+    it('leaves an empty link', () => {
+      expect(check('=begin comment\nSee L<> here.\n=end comment\n')).toEqual([])
+    })
+
+    it('still reports the same link outside a comment', () => {
+      expect(check('See L<> here.\n')).toHaveLength(1)
+    })
+  })
 })

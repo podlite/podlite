@@ -118,4 +118,14 @@ describe('link-file-resolves rule', () => {
       expect(check('=head1 Title\n\nplain prose\n')).toEqual([])
     })
   })
+
+  describe('inside a comment', () => {
+    it('leaves a link to a missing file', () => {
+      expect(check('=begin comment\nSee L<x|file:missing.podlite>.\n=end comment\n')).toEqual([])
+    })
+
+    it('still reports the same link outside a comment', () => {
+      expect(check('See L<x|file:missing.podlite>.\n')).toHaveLength(1)
+    })
+  })
 })
