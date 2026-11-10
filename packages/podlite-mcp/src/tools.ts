@@ -334,7 +334,7 @@ export const validateSource = (text: string, files?: Files): ValidateReport => {
       context: '',
       self: `/${virtualFile}`,
     }
-    problems.push(...runRules(ast, DEFAULT_RULES, ctx))
+    for (const problem of runRules(ast, DEFAULT_RULES, ctx)) problems.push(problem)
     // the document's own :lint-ignore silences the rules it names, as in podlite lint
     problems = applyMutes(problems, ast).kept
     if (asked.length) {

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the parser keeps every diagnostic when there are more than about a hundred thousand of them, where it used to fail
+
 =head1 0.0.84
 
 =item a paragraph with thousands of markup codes is parsed and made into a document in time that grows with its length

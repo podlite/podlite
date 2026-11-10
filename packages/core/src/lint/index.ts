@@ -36,7 +36,7 @@ export function lintSource(content: string, filePath: string, config: LintConfig
   try {
     const ast = parseContent(content, fileType)
     const ctx: LintContext = { filePath, fileType, config, source: content, fromDisk }
-    violations.push(...runRules(ast, DEFAULT_RULES, ctx))
+    for (const violation of runRules(ast, DEFAULT_RULES, ctx)) violations.push(violation)
     const muted = applyMutes(violations, ast)
     return { filePath, violations: applyConfig(muted.kept, config), silenced: muted.silenced }
   } catch (e) {

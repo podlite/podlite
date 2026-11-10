@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> keeps every message of a very large report: one with more than about a hundred thousand messages used to fail as a syntax error and lose them all; the reports of includes keep all their messages as well
+
 =item C<podlite lint> rules C<link-target-resolves>, C<link-file-resolves> and C<link-not-empty> no longer check links inside C<=comment>, which is not rendered
 
 =item C<podlite lint> rule C<abbreviated-attrs> no longer advises C<=for defn> for the first line of a definition, which is its term

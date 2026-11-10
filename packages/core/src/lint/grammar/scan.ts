@@ -65,9 +65,9 @@ export function scanSourceRules(content: string, fileType: 'md' | 'podlite' | 'd
       location: item.location,
     })
   }
-  opts.diagnostics.push(...scanAbbreviatedAttrs(content))
+  for (const found of scanAbbreviatedAttrs(content)) opts.diagnostics.push(found)
   // text outside blocks in the default mode is neither Podlite nor Markdown
-  if (fileType === 'podlite') opts.diagnostics.push(...scanMarkdownInPod(content))
-  opts.diagnostics.push(...scanUnclosedMarkupCodes(content))
+  if (fileType === 'podlite') for (const found of scanMarkdownInPod(content)) opts.diagnostics.push(found)
+  for (const found of scanUnclosedMarkupCodes(content)) opts.diagnostics.push(found)
   return opts.diagnostics
 }

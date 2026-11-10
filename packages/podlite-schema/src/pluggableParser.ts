@@ -101,7 +101,9 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
               j < k),
         ),
     )
-    diagnostics.splice(0, diagnostics.length, ...innermost)
+    // the caller holds this array, so it is refilled in place
+    diagnostics.length = 0
+    for (const d of innermost) diagnostics.push(d)
     const root = mkRootBlock({ margin: '' }, rawTree)
     // the parse is the one place that has the text the keys are fingerprinted from
     assignHeadingKeys(root, text)

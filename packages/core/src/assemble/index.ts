@@ -451,8 +451,9 @@ export const assembleIncludes = (tree: any, opts: AssembleOptions): any => {
     }
     const slot = slots[0]
     const at = slot ? held.indexOf(slot) : -1
-    if (at >= 0) held.splice(at, 0, ...entries)
-    else held.push(...entries)
+    const tail = at >= 0 ? held.splice(at) : []
+    for (const entry of entries) held.push(entry)
+    for (const entry of tail) held.push(entry)
   }
   const report = (problem: IncludeProblem): void => hold([{ problem, shown: true }])
   const flush = (): void => {
