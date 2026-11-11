@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<allow-value> also checks C<:allow> given by C<=config> or C<=set>, on each block it reaches
+
 =item C<podlite lint> rule C<dead-definitions> reads the document once to place the warnings about unused aliases, however many there are
 
 =item C<podlite lint> rule C<unclosed-markup-code> checks a paragraph with many markup codes in time that grows with its length

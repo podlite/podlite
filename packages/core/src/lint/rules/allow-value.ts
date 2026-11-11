@@ -3,7 +3,7 @@ import type { Rule, Violation, LintContext } from '../types'
 
 export const ALLOW_VALUE_RULE_ID = 'allow-value'
 
-type ConfigEntry = { name?: string; from?: string; value?: unknown }
+type ConfigEntry = { name?: string; from?: string; value?: unknown; dropped?: boolean }
 type BlockNode = { type?: string; name?: string; config?: unknown; location?: Violation['location'] }
 
 const shown = (item: unknown): string => (typeof item === 'string' ? JSON.stringify(item) : String(item))
@@ -21,24 +21,31 @@ const problemOf = (value: unknown): string | null => {
   return `:allow holds ${named}: a markup code is named by one letter, and the codes are listed with spaces, as in :allow<B I>; ${named} allows no code`
 }
 
-// Only what is written on a block is read: a value from =config or =set reaches the
-// block marked by where it came from, and the cells a table makes carry a copy with
-// no place of their own. The handler of a named block decides what its :allow means.
+// The parser keeps no place for =config and =set, so a value they give is reported on
+// each block it reached, marked by where it came from. A value =set gives to a block
+// only when the files are assembled is not in this tree and is not reported, as with
+// the notification attribute. The cells a table makes carry a copy with no place of
+// their own, and the handler of a named block decides what its :allow means.
+const sources: Array<string | undefined> = [undefined, 'config', 'set']
+
+// a paragraph or code written without a marker gets :allow only from =config or =set
+const receives = (node: BlockNode): boolean =>
+  node.type === 'para' || node.type === 'code' || (node.type === 'block' && !isNamedBlockName(node.name || ''))
+
 export const allowValueRule: Rule = {
   id: ALLOW_VALUE_RULE_ID,
   severity: 'warning',
   check: (ast: PodliteDocument, _ctx: LintContext): Violation[] =>
     getFromTree(ast, () => true).flatMap(node => {
       const block = node as BlockNode
-      if (!block || block.type !== 'block' || !block.location || !Array.isArray(block.config)) return []
-      if (isNamedBlockName(block.name || '')) return []
+      if (!block || !block.location || !Array.isArray(block.config) || !receives(block)) return []
       return (block.config as ConfigEntry[])
-        .filter(entry => entry && entry.name === 'allow' && !entry.from)
+        .filter(entry => entry && entry.name === 'allow' && !entry.dropped && sources.includes(entry.from))
         .flatMap(entry => {
-          const message = problemOf(entry.value)
-          return message
-            ? [{ rule: ALLOW_VALUE_RULE_ID, severity: 'warning' as const, message, location: block.location }]
-            : []
+          const problem = problemOf(entry.value)
+          if (!problem) return []
+          const message = entry.from ? problem.replace(/^:allow/, `:allow given by =${entry.from}`) : problem
+          return [{ rule: ALLOW_VALUE_RULE_ID, severity: 'warning' as const, message, location: block.location }]
         })
     }),
 }
