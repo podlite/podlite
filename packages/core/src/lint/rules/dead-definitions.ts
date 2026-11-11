@@ -19,12 +19,15 @@ const attr = (node: AnyNode, name: string): string | undefined => {
 }
 
 // An alias node carries no location, so the line is read back from the source;
-// a warning that cannot say where is a warning the author cannot act on.
-const aliasLine = (source: string, name: string): Violation['location'] | undefined => {
-  const lines = source.split(/\r?\n/)
-  const at = lines.findIndex(line => new RegExp(`^\\s*=alias\\s+${name}(\\s|$)`).test(line))
-  if (at === -1) return undefined
-  return { start: { line: at + 1, column: 1, offset: 0 }, end: { line: at + 1, column: 1, offset: 0 } }
+// a warning that cannot say where is a warning the author cannot act on. The
+// source is read once for all aliases, and the first line declaring a name wins.
+const aliasLines = (source: string): Map<string, number> => {
+  const lines = new Map<string, number>()
+  source.split(/\r?\n/).forEach((line, at) => {
+    const found = /^\s*=alias\s+(\S+)(\s|$)/.exec(line)
+    if (found && !lines.has(found[1])) lines.set(found[1], at + 1)
+  })
+  return lines
 }
 
 const definitions = (ast: PodliteDocument): Definition[] => {
@@ -78,6 +81,14 @@ export const deadDefinitionsRule: Rule = {
 
     const aliases = aliasUses(ast)
     const keys = dataUses(ctx.source || '')
+    let lines: Map<string, number> | undefined
+    const aliasLine = (name: string): Violation['location'] | undefined => {
+      lines = lines || aliasLines(ctx.source || '')
+      const line = lines.get(name)
+      return line === undefined
+        ? undefined
+        : { start: { line, column: 1, offset: 0 }, end: { line, column: 1, offset: 0 } }
+    }
 
     return declared
       .filter(item => !(item.kind === 'alias' ? aliases.has(item.name) : keys.has(item.name)))
@@ -88,7 +99,7 @@ export const deadDefinitionsRule: Rule = {
           item.kind === 'alias'
             ? `=alias ${item.name} is never used; A<${item.name}> appears nowhere in the document`
             : `=data :key<${item.name}> is never used; data:${item.name} appears nowhere in the document`,
-        location: item.location || (item.kind === 'alias' ? aliasLine(ctx.source || '', item.name) : undefined),
+        location: item.location || (item.kind === 'alias' ? aliasLine(item.name) : undefined),
       }))
   },
 }
