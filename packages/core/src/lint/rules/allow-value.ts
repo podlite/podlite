@@ -21,14 +21,10 @@ const problemOf = (value: unknown): string | null => {
   return `:allow holds ${named}: a markup code is named by one letter, and the codes are listed with spaces, as in :allow<B I>; ${named} allows no code`
 }
 
-// The parser keeps no place for =config and =set, so a value they give is reported on
-// each block it reached, marked by where it came from. A value =set gives to a block
-// only when the files are assembled is not in this tree and is not reported, as with
-// the notification attribute. The cells a table makes carry a copy with no place of
-// their own, and the handler of a named block decides what its :allow means.
+// =config and =set keep no place of their own, so the blocks they reached carry the report
 const sources: Array<string | undefined> = [undefined, 'config', 'set']
 
-// a paragraph or code written without a marker gets :allow only from =config or =set
+// the handler of a named block decides what its :allow means
 const receives = (node: BlockNode): boolean =>
   node.type === 'para' || node.type === 'code' || (node.type === 'block' && !isNamedBlockName(node.name || ''))
 
@@ -38,6 +34,7 @@ export const allowValueRule: Rule = {
   check: (ast: PodliteDocument, _ctx: LintContext): Violation[] =>
     getFromTree(ast, () => true).flatMap(node => {
       const block = node as BlockNode
+      // the cells a table makes carry a copy of :allow with no place of their own
       if (!block || !block.location || !Array.isArray(block.config) || !receives(block)) return []
       return (block.config as ConfigEntry[])
         .filter(entry => entry && entry.name === 'allow' && !entry.dropped && sources.includes(entry.from))
