@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<markdown-in-pod> no longer takes a lone C<#> that starts a list item, a heading or a definition for a Markdown heading: it numbers the block, or stands for itself under C<:!numbered>
+
 =item C<podlite lint> rule C<allow-value> also checks C<:allow> given by C<=config> or C<=set>, on each block it reaches
 
 =item C<podlite lint> rule C<dead-definitions> reads the document once to place the warnings about unused aliases, however many there are

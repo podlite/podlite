@@ -82,3 +82,76 @@ describe('the rule belongs to Podlite documents', () => {
     expect(scanSourceRules(src, 'podlite').filter(v => v.rule === MARKDOWN_IN_POD_RULE_ID).length).toBeGreaterThan(0)
   })
 })
+
+describe('markdown-in-pod and a lone # that starts an item, a heading or a definition', () => {
+  const HEADING = 'a heading written with hashes is text here; write =head1 and its levels'
+  const BOLD = 'a pair of asterisks is text here; bold is written as B<>'
+  const lines = (src: string) => check(src).map(v => [v.location?.start.line, v.message])
+
+  describe('leaves the # that numbers the block or stands for itself', () => {
+    it.each([
+      ['=for item1', '=for item1\n# Retreat to remote Himalayan monastery\n'],
+      ['=for item :!numbered', '=for item :!numbered\n# introduces a comment\n'],
+      ['=begin item', '=begin item\n# first\n=end item\n'],
+      ['=for head1', '=for head1\n# The Problem\n'],
+      ['=begin head1', '=begin head1\n# title\n=end head1\n'],
+      ['=item1 with nothing after it', '=item1\n# Visito\n'],
+      ['=item1 with trailing spaces', '=item1   \n# Visito\n'],
+      ['=item2 under a parent', '=item1 one\n\n=item2\n# Veni\n'],
+      ['=head86', '=head86\n# deep\n'],
+      ['a bare =head', '=head\n# title\n'],
+      ['=for defn', '=for defn\n# TERM\nDefinition.\n'],
+      ['=defn', '=defn\n# TERM\nDefinition.\n'],
+      ['=begin defn', '=begin defn\n# TERM\nDefinition.\n=end defn\n'],
+      ['=for item1 :numbered', '=for item1 :numbered\n# x\n'],
+      ['a continuation line', '=for item1\n= :caption<y>\n# x\n'],
+      ['a value over two lines', '=for item :caption(\n= "a b")\n# first\n'],
+      ['an indented marker', '  =for item\n  = :x<y>\n  # first\n'],
+      ['an item inside =begin pod', '=begin pod\n\n=for item1\n# first\n\n=end pod\n'],
+      ['a blank line inside =begin item', '=begin item\n\n# first\n=end item\n'],
+      ['a line of spaces inside =begin item', '=begin item\n \t\n# first\n=end item\n'],
+      ['a new marker after =for item', '=for item\n=for head1\n# title\n'],
+      ['=config inside =begin item', '=begin item\n=config para :lang<en>\n# first\n=end item\n'],
+      ['=config inside =begin head1', '=begin head1\n=config para :lang<en>\n# first\n=end head1\n'],
+      ['=alias inside =begin item', '=begin item\n=alias X word\n# A<X>\n=end item\n'],
+      ['=set inside =begin item', '=begin item\n=set :lang<en>\n# first\n=end item\n'],
+      ['an =alias over two lines inside =begin item', '=begin item\n  =alias X one\n  = two\n# A<X>\n=end item\n'],
+    ])('after %s', (_, src) => {
+      expect(lines(src)).toEqual([])
+    })
+
+    it('still reports bold on that line', () => {
+      expect(lines('=for item\n# **bold**\n')).toEqual([[2, BOLD]])
+    })
+
+    it('reports only the second # with CRLF lines', () => {
+      expect(lines('=for item\r\n# first\r\n# second\r\n')).toEqual([[3, HEADING]])
+    })
+  })
+
+  describe('reports every other #', () => {
+    it.each([
+      ['outside any block', '=pod\n\n# Heading\n', 3],
+      ['on the second line of an item', '=for item1\nfirst\n# second\n', 3],
+      ['after text on the line of =item1', '=item1 text\n# x\n', 2],
+      ['after an option on the line of =item', '=item :numbered\n# second\n', 2],
+      ['in the definition after its term', '=for defn\nTERM\n# definition\n', 3],
+      ['after a blank line that ends =for item', '=for item\n\n# outside\n', 3],
+      ['after a blank line that ends =item', '=item\n\n# outside\n', 3],
+      ['in the second paragraph of =begin item', '=begin item\nfirst\n\n# second\n=end item\n', 4],
+      ['after =end item', '=begin item\n=end item\n# outside\n', 3],
+      ['after a first line in code', '=begin item\nC<first>\n# second\n=end item\n', 3],
+      ['in a paragraph', '=for para\n# x\n', 2],
+      ['after the text of a heading', '=head3 tst\n# Part Activations\n', 2],
+      ['after =config ends =for item', '=for item\n=config para :lang<en>\n# outside\n', 3],
+      ['after =config once the item has begun', '=begin item\nfirst\n=config para :lang<en>\n# second\n=end item\n', 4],
+      ['on the second line of an item with CRLF lines', '=for item\r\nfirst\r\n# second\r\n', 3],
+    ])('%s', (_, src, line) => {
+      expect(lines(src as string)).toEqual([[line, HEADING]])
+    })
+
+    it.each(['##', '###', '####', '#####', '######'])('%s at the start of an item', hashes => {
+      expect(lines(`=for item\n${hashes} heading\n`)).toEqual([[2, HEADING]])
+    })
+  })
+})
