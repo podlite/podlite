@@ -1,3 +1,4 @@
+import { getFromTree } from '@podlite/schema'
 import { parseContent } from '../src/lint/loader'
 import { deadDefinitionsRule } from '../src/lint/rules/dead-definitions'
 import type { LintContext, Violation } from '../src/lint/types'
@@ -50,6 +51,34 @@ describe('dead-definitions reads the source once for the lines of unused aliases
     expect(large.matches / small.matches).toBeLessThanOrEqual(2.5)
     expect(small.found).toHaveLength(200)
     expect(large.found.map(v => v.location?.start.line)).toEqual(Array.from({ length: 400 }, (_, i) => i + 2))
+  })
+
+  it('does not read the source when every unused alias has a place of its own', () => {
+    const source = unused(3)
+    const ast = parseContent(source, 'podlite')
+    for (const node of getFromTree(ast, (n: { type?: string }) => n?.type === 'alias') as Array<{
+      location?: unknown
+    }>) {
+      node.location = { start: { line: 9, column: 1, offset: 0 }, end: { line: 9, column: 1, offset: 0 } }
+    }
+    const split = String.prototype.split
+    let splits = 0
+    let found: Violation[] = []
+    Object.defineProperty(String.prototype, 'split', {
+      configurable: true,
+      writable: true,
+      value: function (this: string, ...args: unknown[]) {
+        if (String(this) === source) splits += 1
+        return Reflect.apply(split, this, args)
+      },
+    })
+    try {
+      found = deadDefinitionsRule.check(ast, ctx(source))
+    } finally {
+      Object.defineProperty(String.prototype, 'split', { configurable: true, writable: true, value: split })
+    }
+    expect(splits).toBe(0)
+    expect(found.map(v => v.location?.start.line)).toEqual([9, 9, 9])
   })
 
   it('does not read the source when every alias is used', () => {

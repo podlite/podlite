@@ -76,6 +76,13 @@ describe('unclosed-markup-code work grows with the text', () => {
     expect(ratio).toBeLessThanOrEqual(2.5)
   })
 
+  it('places every code of a long paragraph on its own line', () => {
+    for (const n of [200, 400]) {
+      const found = scanUnclosedMarkupCodes('=for para\n' + 'B<x\n'.repeat(n))
+      expect(found.map(v => v.location?.start.line)).toEqual(Array.from({ length: n }, (_, i) => i + 2))
+    }
+  })
+
   it('reads the line of each code without going back to the start of the paragraph', () => {
     const found = scanUnclosedMarkupCodes('=for para\n' + 'B<x\n'.repeat(5))
     expect(found.map(v => v.location?.start.line)).toEqual([2, 3, 4, 5, 6])
