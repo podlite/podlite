@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> rule C<unclosed-markup-code> checks a paragraph with many markup codes in time that grows with its length
+
 =item C<podlite lint> rule C<allow-value> warns when C<:allow> on a block holds something other than markup code letters, such as C<< :allow<*> >> or C<< :allow<B,I> >>
 
 =item C<podlite lint> rule C<attr-nested-angle> checks the options on the C<=begin> line of a verbatim block such as C<=begin table> or C<=begin code>; their body is still not checked

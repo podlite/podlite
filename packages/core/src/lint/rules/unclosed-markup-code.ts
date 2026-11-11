@@ -26,15 +26,41 @@ export const unclosedMarkupCodeRule: SourceRule = {
 // reported — the worse of the two.
 const OPENER = /(^|[^A-Za-z])([A-Z])(<+|«)/g
 
+// For each length of a run of closing brackets, the last place a closer of that
+// length can start: a code opened with N brackets is closed if one starts after it.
+// Built once per fragment, so a long paragraph is not searched again for every code.
+const lastCloserStarts = (text: string): number[] => {
+  const bestEnd: number[] = [-1, -1]
+  let at = 0
+  while (at < text.length) {
+    if (text.charCodeAt(at) !== 62) {
+      at++
+      continue
+    }
+    const start = at
+    while (at < text.length && text.charCodeAt(at) === 62) at++
+    const length = at - start
+    while (bestEnd.length < length + 2) bestEnd.push(-1)
+    bestEnd[length] = Math.max(bestEnd[length], at)
+  }
+  // a longer run holds every shorter closer, ending where it ends
+  for (let length = bestEnd.length - 2; length >= 1; length--) {
+    bestEnd[length] = Math.max(bestEnd[length], bestEnd[length + 1])
+  }
+  return bestEnd.map((end, length) => (end === -1 ? -1 : end - length))
+}
+
 const unclosed = (text: string): Array<{ name: string; at: number }> => {
   const missing: Array<{ name: string; at: number }> = []
+  const closerStarts = lastCloserStarts(text)
+  const lastGuillemet = text.lastIndexOf('»')
   let match: RegExpExecArray | null
   OPENER.lastIndex = 0
   while ((match = OPENER.exec(text)) !== null) {
     const [whole, before, name, open] = match
-    const rest = text.slice(match.index + whole.length)
-    const closed = open === '«' ? rest.includes('»') : rest.includes('>'.repeat(open.length))
-    if (!closed) {
+    const from = match.index + whole.length
+    const closer = open === '«' ? lastGuillemet : closerStarts[open.length] ?? -1
+    if (closer < from) {
       missing.push({ name, at: match.index + before.length })
     }
   }
@@ -46,6 +72,7 @@ type Chunk = { text: string; line: number }
 export function scanUnclosedMarkupCodes(content: string): Violation[] {
   const lines = content.split(/\r?\n/)
   const open: string[] = []
+  let verbatimOpen = 0
   const violations: Violation[] = []
   let chunk: Chunk | null = null
   let inAbbreviatedVerbatim = false
@@ -53,9 +80,12 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
   const close = () => {
     if (!chunk) return
     const at = chunk
+    // the codes come in order, so the line is counted on from the one before
+    let line = at.line
+    let counted = 0
     for (const found of unclosed(at.text)) {
       const name = found.name
-      const line = at.line + at.text.slice(0, found.at).split('\n').length - 1
+      for (; counted < found.at; counted++) if (at.text.charCodeAt(counted) === 10) line++
       violations.push({
         rule: UNCLOSED_MARKUP_CODE_RULE_ID,
         severity: 'warning',
@@ -75,7 +105,8 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
     if (/^\s*=end\s+[\w-]+/.test(line)) {
       close()
       inAbbreviatedVerbatim = false
-      open.pop()
+      const closed = open.pop()
+      if (closed !== undefined && isVerbatimBlock(closed)) verbatimOpen--
       continue
     }
     const begin = line.match(/^\s*=begin\s+([\w-]+)/)
@@ -83,9 +114,10 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
       close()
       inAbbreviatedVerbatim = false
       open.push(begin[1])
+      if (isVerbatimBlock(begin[1])) verbatimOpen++
       continue
     }
-    if (open.some(isVerbatimBlock)) continue
+    if (verbatimOpen > 0) continue
 
     // a directive starts a chunk of its own; a blank line ends the one running
     if (/^\s*=/.test(line)) {
