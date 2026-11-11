@@ -1,3 +1,9 @@
+// node ids are random, and a short word checked to be absent could turn up inside one
+jest.mock('nanoid', () => {
+  let next = 0
+  return { nanoid: () => `id-${next++}` }
+})
+
 import { Podlite } from '../src/index'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'

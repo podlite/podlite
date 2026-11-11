@@ -1,3 +1,9 @@
+// node ids are random, and a short word checked to be absent could turn up inside one
+jest.mock('nanoid', () => {
+  let next = 0
+  return { nanoid: () => `id-${next++}` }
+})
+
 import { getFromTree, getNodeId, getTextContentFromNode, indexAnchors, makeInterator, PodNode } from '@podlite/schema'
 import { publishRecord } from '../src'
 import { processFile } from '../src/node'
