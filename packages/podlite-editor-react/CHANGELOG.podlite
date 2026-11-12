@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the body of a verbatim block written the short way, such as C<=for assert> or C<=for code :lang<js>>, keeps its highlighting when the editor parses a long or busy document in parts
+
 =head1 0.0.89
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>

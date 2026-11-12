@@ -329,7 +329,10 @@ export const podliteMarkdownExtension: any = {
         // `=for table` carries the name in blockName, `=table` in word
         const abbrevName = cont || TAKES_A_NAME.has(word) ? (word === 'for' ? blockName : '') : word
         if (abbrevName && !isMarkdownName(abbrevName) && isVerbatimBlock(abbrevName)) {
-          cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
+          // the marker, the lines its settings go on over and the body make one node, as a
+          // delimited block does: a parse picked up again in the middle would otherwise
+          // keep the marker and read the body after it as a paragraph
+          let end = markerEnd
           cx.nextLine()
           // only a marker line that takes settings can have them go on below it
           while (TAKES_SETTINGS.has(word) && cx.line) {
@@ -341,7 +344,8 @@ export const podliteMarkdownExtension: any = {
               const at2 = from + 1 + (a.index ?? 0)
               kids.push(cx.elt(a[0][0] === ':' ? 'PodAttrName' : 'PodAttrValue', at2, at2 + a[0].length))
             }
-            cx.addElement(cx.elt('PodDirective', from, cx.lineStart + cx.line.text.length, kids))
+            end = cx.lineStart + cx.line.text.length
+            children.push(cx.elt('PodDirective', from, end, kids))
             if (!cx.nextLine()) break
           }
           let bodyStart = -1
@@ -352,8 +356,11 @@ export const podliteMarkdownExtension: any = {
             bodyEnd = cx.lineStart + cx.line.text.length
             if (!cx.nextLine()) break
           }
-          if (bodyStart >= 0 && bodyEnd > bodyStart)
-            cx.addElement(cx.elt('PodVerbatim', bodyStart, bodyEnd, [cx.elt('PodCodeBody', bodyStart, bodyEnd)]))
+          if (bodyStart >= 0 && bodyEnd > bodyStart) {
+            children.push(cx.elt('PodVerbatim', bodyStart, bodyEnd, [cx.elt('PodCodeBody', bodyStart, bodyEnd)]))
+            end = bodyEnd
+          }
+          cx.addElement(cx.elt('PodDirective', start, end, children))
           return true
         }
         cx.addElement(cx.elt('PodDirective', start, markerEnd, children))
@@ -479,20 +486,9 @@ const bodyByName = (block: string, marker: string, settings: boolean, own: BodyL
 export const podliteCodeLanguage = (codeLanguages: any, own?: BodyLanguages): any => ({
   wrap: parseMixed((node: any, input: any) => {
     if (node.name !== 'PodCodeBody') return null
-    // a delimited block holds the body inside itself, so its marker is the parent.
-    // an abbreviated one puts the body next to the marker, and settings that go on
-    // over the next line become siblings of their own, so walk back over those
-    // until the marker line itself — anything before it belongs to another block
+    // every verbatim block holds its body inside the marker, settings lines included
     const body = node.node.parent
-    let head = body?.parent?.name === 'PodDirective' ? body.parent : null
-    if (!head) {
-      let prev = body?.prevSibling
-      while (prev?.name === 'PodDirective') {
-        head = prev
-        if (!/^=\s/.test(input.read(prev.from, Math.min(prev.from + 2, prev.to)))) break
-        prev = prev.prevSibling
-      }
-    }
+    const head = body?.parent?.name === 'PodDirective' ? body.parent : null
     const marker: string = input.read(head ? head.from : node.from, node.from)
     const opening = /^\s*=([A-Za-z][\w-]*)(?:[ \t]+([A-Za-z][\w-]*))?/.exec(marker)
     // only =begin and =for carry settings; the rest of an abbreviated line is data
