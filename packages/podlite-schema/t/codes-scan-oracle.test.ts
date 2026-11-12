@@ -11,18 +11,19 @@ type Read = { node: Node; closed: boolean; free: Array<[number, string]> } // fr
 
 const oracle = (text: string, scope: ScanScope): Node[] => {
   const n = text.length
-  const gate = (outer: string | null, name: string): boolean => {
+  // inside: the C<> and V<> codes around; each of their lists must allow the code
+  const gate = (inside: string[], name: string): boolean => {
     if (scope.allowed?.length && !scope.allowed.includes(name)) return false
-    if (outer !== 'C' && outer !== 'V') return true
-    return (scope.allowedIn?.[outer] || []).includes(name)
+    return inside.every(outer => (scope.allowedIn?.[outer] || []).includes(name))
   }
-  const opens = (i: number, outer: string | null): boolean =>
-    /[A-Z]/.test(text[i] || '') && /[<«]/.test(text[i + 1] || '') && gate(outer, text[i])
+  const opens = (i: number, inside: string[]): boolean =>
+    /[A-Z]/.test(text[i] || '') && /[<«]/.test(text[i + 1] || '') && gate(inside, text[i])
   const run = (i: number): string => (text.slice(i).match(/^(<+|>+|«|»)/) || [''])[0]
 
   // the code at p on its own: where it ends, what it holds, what it leaves free
-  const alone = (p: number): Read => {
+  const alone = (p: number, outside: string[]): Read => {
     const name = text[p]
+    const inside = name === 'C' || name === 'V' ? [...outside, name] : outside
     const open = text[p + 1] === '«' ? '«' : run(p + 1)
     const close = open === '«' ? '»' : '>'.repeat(open.length)
     const node: Node = { name, start: p, body: p + 1 + open.length, bodyEnd: n, end: n, own: false, kids: [] }
@@ -57,8 +58,8 @@ const oracle = (text: string, scope: ScanScope): Node[] => {
     }
     let i = node.body
     while (i < n) {
-      if (opens(i, name)) {
-        const child = alone(i)
+      if (opens(i, inside)) {
+        const child = alone(i, inside)
         if (child.closed) {
           node.kids.push(child.node)
           i = child.node.end
@@ -82,19 +83,23 @@ const oracle = (text: string, scope: ScanScope): Node[] => {
     }
     return { node, closed: false, free }
   }
-  const cutAt = (node: Node, at: number): Node => ({
-    ...node,
-    bodyEnd: Math.min(node.bodyEnd, at),
-    end: node.own && node.end <= at ? node.end : at,
-    own: node.own && node.end <= at,
-    kids: node.kids.filter(k => k.start < at).map(k => cutAt(k, at)),
-  })
+  // a cut only shortens a code, and its children end inside what is left of its body
+  const cutAt = (node: Node, at: number): Node => {
+    const bodyEnd = Math.min(node.bodyEnd, at)
+    return {
+      ...node,
+      bodyEnd,
+      end: node.own && node.end <= at ? node.end : Math.min(node.end, at),
+      own: node.own && node.end <= at,
+      kids: node.kids.filter(k => k.start < bodyEnd).map(k => cutAt(k, bodyEnd)),
+    }
+  }
 
   const top: Node[] = []
   let i = 0
   while (i < n) {
-    if (opens(i, null)) {
-      const read = alone(i)
+    if (opens(i, [])) {
+      const read = alone(i, [])
       top.push(read.node)
       if (!read.closed) break
       i = read.node.end
@@ -153,6 +158,48 @@ describe('scanCodes against a second reader of the same definition', () => {
       if (differs(text, scope) && failed.length < 5) failed.push(JSON.stringify([text, scope]))
     }
     expect(failed).toEqual([])
+  })
+})
+
+// whole openers and closers rather than characters, so a few of them reach three codes deep
+const TOKENS = ['C«', 'V<', 'I<', 'E<', '>', '»']
+const NESTED_SCOPES: ScanScope[] = [
+  { allowedIn: { C: ['I'] } },
+  { allowedIn: { C: ['V'], V: ['E'] } },
+  { allowedIn: { C: ['V', 'I'], V: ['I', 'E'] } },
+  { allowed: ['C', 'V', 'I', 'E'], allowedIn: { C: ['I'] } },
+]
+
+describe('scanCodes against the second reader inside C<> and V<>', () => {
+  it('agrees on every input of up to seven tokens', () => {
+    const failed: string[] = []
+    const walk = (prefix: string, left: number) => {
+      for (const scope of NESTED_SCOPES) {
+        if (differs(prefix, scope) && failed.length < 5) failed.push(JSON.stringify([prefix, scope]))
+      }
+      if (left > 0) for (const token of TOKENS) walk(prefix + token, left - 1)
+    }
+    walk('', 7)
+    expect(failed).toEqual([])
+  })
+
+  it.each<[string, ScanScope, string]>([
+    ['C«I<»I<E<>>', { allowedIn: { C: ['I'] } }, 'a code read again outside C<> after a cut'],
+    ['C«V<E<>>»', { allowedIn: { C: ['V'], V: ['E'] } }, 'a code both C<> and V<> allow'],
+    ['C<V<I<E<x>>>>', { allowedIn: { C: ['V', 'I'], V: ['I', 'E'] } }, 'a code V<> allows and C<> does not'],
+  ])('agrees on %s, %s', (text, scope) => {
+    expect(differs(text, scope)).toBe(false)
+  })
+
+  it('keeps a child that a cut shortened inside the body of its parent', () => {
+    const [outer] = oracle('E<V«I<I«>>', { allowedIn: { V: ['I'] } })
+    const check = (node: Node) => {
+      for (const kid of node.kids) {
+        expect(kid.end).toBeLessThanOrEqual(node.bodyEnd)
+        check(kid)
+      }
+    }
+    check(outer)
   })
 })
 

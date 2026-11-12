@@ -134,3 +134,18 @@ describe('the cost of finding boundaries', () => {
     expect(levels).toBe(depth)
   })
 })
+
+describe('a code inside C<> that the C<> list does not allow', () => {
+  it('stays text, so a bracket of its own ends the code around it', () => {
+    expect(spans('C<I<E«x>»>>', { allowedIn: { C: ['I'] } })).toEqual({
+      shape: 'C[I[E«x]»]>',
+      unclosed: [],
+      longer: [],
+    })
+    expect(spans('C<I<E<<x>>>>', { allowedIn: { C: ['I'] } })).toEqual({
+      shape: 'C[I[E<<x]]>>',
+      unclosed: [],
+      longer: [5],
+    })
+  })
+})

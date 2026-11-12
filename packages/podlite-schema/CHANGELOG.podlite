@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a code allowed inside C<C<>> or C<V<>> by C<=config> acts at any depth, and only if every C<C<>> and C<V<>> around it allows it, as the C<:allow> of a block already does; the bounds of codes nested in them, the cells of a table row and the warnings about them follow
+
 =item C<MARKUP_CODE_LETTERS> and C<isMarkupCodeLetter> name the letters of markup codes; the reader of codes takes its letters from them
 
 =item the parser no longer fails on a very large number of diagnostics

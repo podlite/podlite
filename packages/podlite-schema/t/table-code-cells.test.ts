@@ -215,6 +215,11 @@ describe('the codes a cell reads decide where a code ends', () => {
     ])
   })
 
+  it('does not let a code the C<> list leaves out keep the code open two levels deep', () => {
+    const doc = `=config C<> :allow<I>\n\n${simple('C<I<B«a>b»> | c>    desc\nx    y')}`
+    expect(table(doc).rows[0]).toEqual(['C<I<B«a>b»>', 'c>    desc'])
+  })
+
   it('reads settings that come with an included file', () => {
     const config: ConfigScope = { 'C<>': [{ name: 'allow', value: ['I'], type: 'array' }] }
     expect(table(simple(`${line}\nx    y`), config).rows[0]).toEqual(['C<I<a>b> | c>', 'desc'])

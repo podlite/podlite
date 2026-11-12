@@ -11,9 +11,10 @@ ended.
 A code ends at its own matching bracket. A code that never meets its own
 bracket inside an enclosing code ends at the first bracket that closes the
 enclosing code; at the top it runs to the end of the fragment. Whether a code
-meets its own bracket does not depend on what surrounds it, so each code is
-read once on its own, in isolation, and the result is kept for every place
-that meets it again.
+meets its own bracket depends only on where it starts and on which of C<C<>> and
+C<V<>> it stands inside, since their C<:allow> lists hold at any depth; so each
+code is read once for that place and that context, and the result is kept for
+every place that meets it again the same way.
 
 =end pod
 */
@@ -80,6 +81,8 @@ interface Frame {
   own: Piece[]
   passed: Piece[]
   kids: Array<{ frame: Frame; cut: number | null }>
+  // which of C<> and V<> the body stands inside, one bit each
+  inside: number
   // closing brackets of this code left unbalanced inside children closed by their own
   foreign: Array<{ at: number; length: number; inner: string }>
   done: boolean
@@ -99,21 +102,29 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   const runFrom = (i: number): number => runEnd[i] - i
 
   const fragmentAllows = (name: string): boolean => !scope.allowed?.length || scope.allowed.includes(name)
-  const codeAllows = (outer: string | null, name: string): boolean => {
-    if (outer === null || !VERBATIM_CODES.includes(outer)) return true
-    return (scope.allowedIn?.[outer] || []).includes(name)
+  // a code inside C<> or V<> is active only if every such code around it allows it
+  const codeAllows = (inside: number, name: string): boolean =>
+    VERBATIM_CODES.every((code, k) => !(inside & (1 << k)) || (scope.allowedIn?.[code] || []).includes(name))
+  const insideOf = (inside: number, name: string): number => {
+    const k = VERBATIM_CODES.indexOf(name)
+    return k === -1 ? inside : inside | (1 << k)
   }
-  const openerAt = (i: number, outer: string | null): { name: string; bracket: Bracket; length: number } | null => {
+  const keyOf = (start: number, inside: number): number => start * 4 + inside
+  const openerAt = (i: number, inside: number): { name: string; bracket: Bracket; length: number } | null => {
     const name = text[i]
     if (!isMarkupCodeLetter(name) || i + 1 >= n) return null
     const next = text[i + 1]
     if (next !== '<' && next !== '«') return null
-    if (!fragmentAllows(name) || !codeAllows(outer, name)) return null
+    if (!fragmentAllows(name) || !codeAllows(inside, name)) return null
     return { name, bracket: next, length: next === '«' ? 1 : runFrom(i + 1) }
   }
 
   const memo = new Map<number, Frame>()
-  const makeFrame = (start: number, opener: { name: string; bracket: Bracket; length: number }): Frame => {
+  const makeFrame = (
+    start: number,
+    opener: { name: string; bracket: Bracket; length: number },
+    outside: number,
+  ): Frame => {
     const bodyStart = start + 1 + opener.length
     return {
       ...opener,
@@ -130,6 +141,7 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
       bodyEnd: n,
       end: n,
       waiting: -1,
+      inside: insideOf(outside, opener.name),
     }
   }
   const finish = (frame: Frame, closed: boolean, bodyEnd: number, end: number) => {
@@ -203,9 +215,9 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
     let i = frame.at
     while (i < n) {
       const c = text[i]
-      const opener = openerAt(i, frame.name)
+      const opener = openerAt(i, frame.inside)
       if (opener) {
-        const child = memo.get(i)
+        const child = memo.get(keyOf(i, frame.inside))
         if (!child || !child.done) {
           frame.at = i
           return i
@@ -271,11 +283,11 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   }
 
   // reads the code at `start` and every code it needs first, without recursion
-  const read = (start: number, outer: string | null): Frame => {
-    const known = memo.get(start)
+  const read = (start: number, outside: number): Frame => {
+    const known = memo.get(keyOf(start, outside))
     if (known && known.done) return known
-    const first = makeFrame(start, openerAt(start, outer)!)
-    memo.set(start, first)
+    const first = makeFrame(start, openerAt(start, outside)!, outside)
+    memo.set(keyOf(start, outside), first)
     const stack: Frame[] = [first]
     while (stack.length) {
       const frame = stack[stack.length - 1]
@@ -284,8 +296,8 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
         stack.pop()
         continue
       }
-      const child = makeFrame(need, openerAt(need, frame.name)!)
-      memo.set(need, child)
+      const child = makeFrame(need, openerAt(need, frame.inside)!, frame.inside)
+      memo.set(keyOf(need, frame.inside), child)
       stack.push(child)
     }
     return first
@@ -295,8 +307,8 @@ export const scanCodes = (text: string, scope: ScanScope = {}): ScanResult => {
   const top: Array<{ frame: Frame; cut: number | null }> = []
   let i = 0
   while (i < n) {
-    if (openerAt(i, null)) {
-      const frame = read(i, null)
+    if (openerAt(i, 0)) {
+      const frame = read(i, 0)
       top.push({ frame, cut: frame.closed ? null : n })
       if (!frame.closed) break
       i = frame.end
