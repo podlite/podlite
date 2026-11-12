@@ -56,10 +56,12 @@ describe('dead-definitions reads the source once for the lines of unused aliases
   it('does not read the source when every unused alias has a place of its own', () => {
     const source = unused(3)
     const ast = parseContent(source, 'podlite')
-    for (const node of getFromTree(ast, (n: { type?: string }) => n?.type === 'alias') as Array<{
-      location?: unknown
-    }>) {
-      node.location = { start: { line: 9, column: 1, offset: 0 }, end: { line: 9, column: 1, offset: 0 } }
+    for (const node of getFromTree(ast, (n: { type?: string }) => n?.type === 'alias')) {
+      if (typeof node === 'object')
+        Reflect.set(node, 'location', {
+          start: { line: 9, column: 1, offset: 0 },
+          end: { line: 9, column: 1, offset: 0 },
+        })
     }
     const split = String.prototype.split
     let splits = 0

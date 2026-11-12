@@ -18,7 +18,7 @@ type Method = 'slice' | 'split' | 'includes' | 'indexOf' | 'lastIndexOf'
 // the span each string method may look through: what slice returns, the whole string
 // split cuts, and the part of the string a search starts in
 const span: Record<Method, (receiver: string, args: unknown[], result: unknown) => number> = {
-  slice: (_, __, result) => (result as string).length,
+  slice: (_, __, result) => String(result).length,
   split: receiver => receiver.length,
   includes: (receiver, args) => receiver.length - Math.min(Math.max(Number(args[1] ?? 0) || 0, 0), receiver.length),
   indexOf: (receiver, args) => receiver.length - Math.min(Math.max(Number(args[1] ?? 0) || 0, 0), receiver.length),
@@ -29,12 +29,14 @@ const span: Record<Method, (receiver: string, args: unknown[], result: unknown) 
         1,
 }
 
+const METHODS: Method[] = ['slice', 'split', 'includes', 'indexOf', 'lastIndexOf']
+
 const budget = (input: string): { units: number; messages: number } => {
   const saved = new Map<Method, Function>()
   let units = 0
   let messages = 0
-  for (const name of Object.keys(span) as Method[]) {
-    const original = String.prototype[name] as Function
+  for (const name of METHODS) {
+    const original: Function = Reflect.get(String.prototype, name)
     saved.set(name, original)
     Object.defineProperty(String.prototype, name, {
       configurable: true,
@@ -63,15 +65,15 @@ const growth = (make: (n: number) => string) => {
 }
 
 describe('unclosed-markup-code work grows with the text', () => {
-  it.each([
+  it.each<[string, (n: number) => string, number]>([
     ['unclosed codes', (n: number) => '=for para\n' + 'B<x\n'.repeat(n), 1],
     ['closed codes', (n: number) => '=for para\n' + 'B<x> '.repeat(n), 0],
     ['unclosed guillemets', (n: number) => '=for para\n' + 'B«x\n'.repeat(n), 1],
     ['unclosed doubled brackets', (n: number) => '=for para\n' + 'B<< x\n'.repeat(n), 1],
   ])('%s', (_, make, perCode) => {
-    const { small, large, ratio } = growth(make as (n: number) => string)
-    expect(small.messages).toBe(200 * (perCode as number))
-    expect(large.messages).toBe(400 * (perCode as number))
+    const { small, large, ratio } = growth(make)
+    expect(small.messages).toBe(200 * perCode)
+    expect(large.messages).toBe(400 * perCode)
     expect(small.units).toBeGreaterThan(0)
     expect(ratio).toBeLessThanOrEqual(2.5)
   })
@@ -103,7 +105,7 @@ describe('unclosed-markup-code work grows with the text', () => {
 describe('unclosed-markup-code reports as before', () => {
   const lines = (src: string) => scanUnclosedMarkupCodes(src).map(v => [v.location?.start.line, v.message.slice(0, 3)])
 
-  it.each([
+  it.each<[string, string, Array<[number, string]>]>([
     ['an unclosed code', 'B<x\n', [[1, 'B<>']]],
     ['a closed code', 'B<x>\n', []],
     ['doubled brackets closed by two', 'B<< x >>\n', []],
@@ -127,7 +129,7 @@ describe('unclosed-markup-code reports as before', () => {
       ],
     ],
   ])('%s', (_, src, expected) => {
-    expect(lines(src as string)).toEqual(expected)
+    expect(lines(src)).toEqual(expected)
   })
 
   it('keeps silent inside a verbatim block after an inner block closes', () => {

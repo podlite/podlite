@@ -130,7 +130,7 @@ describe('markdown-in-pod and a lone # that starts an item, a heading or a defin
   })
 
   describe('reports every other #', () => {
-    it.each([
+    it.each<[string, string, number]>([
       ['outside any block', '=pod\n\n# Heading\n', 3],
       ['on the second line of an item', '=for item1\nfirst\n# second\n', 3],
       ['after text on the line of =item1', '=item1 text\n# x\n', 2],
@@ -147,7 +147,7 @@ describe('markdown-in-pod and a lone # that starts an item, a heading or a defin
       ['after =config once the item has begun', '=begin item\nfirst\n=config para :lang<en>\n# second\n=end item\n', 4],
       ['on the second line of an item with CRLF lines', '=for item\r\nfirst\r\n# second\r\n', 3],
     ])('%s', (_, src, line) => {
-      expect(lines(src as string)).toEqual([[line, HEADING]])
+      expect(lines(src)).toEqual([[line, HEADING]])
     })
 
     it.each(['##', '###', '####', '#####', '######'])('%s at the start of an item', hashes => {

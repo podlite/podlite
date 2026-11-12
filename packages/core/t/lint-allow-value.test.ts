@@ -19,8 +19,8 @@ const csv = (attrs: string) => `=begin data-table ${attrs} :mime-type<text/csv>\
 
 // a csv table that was read: four cells and no report that its source could not be read
 const readTable = (src: string) => {
-  const ast = parseContent(src, 'podlite') as { diagnostics?: Array<{ code: string }> }
-  expect(getFromTree(ast as never, (n: { name?: string }) => n?.name === 'cell')).toHaveLength(4)
+  const ast = parseContent(src, 'podlite')
+  expect(getFromTree(ast, (n: { name?: string }) => n?.name === 'cell')).toHaveLength(4)
   expect((ast.diagnostics || []).map(d => d.code)).not.toContain('table-source-unreadable')
 }
 
