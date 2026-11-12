@@ -142,6 +142,7 @@ describe('a code inside C<> that the C<> list does not allow', () => {
       unclosed: [],
       longer: [],
     })
+    expect(scanCodes('C<I<E«x>»>>', { allowedIn: { C: ['I'] } }).issues.map(issue => issue.kind)).toEqual([])
     expect(spans('C<I<E<<x>>>>', { allowedIn: { C: ['I'] } })).toEqual({
       shape: 'C[I[E<<x]]>>',
       unclosed: [],
