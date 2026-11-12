@@ -38,10 +38,9 @@ export default () => tree => {
                   })
                 }
               }
-
-              applyNumberedShorthand(node)
             }
           }
+          applyNumberedShorthand(node)
         }
         visit(node.content)
       }

@@ -13,3 +13,15 @@ describe('a heading whose first word is a single #', () => {
     expect(render('=head2 C# tips')).toContain('<h2 id="id">C# tips\n</h2>')
   })
 })
+
+describe('a lone # at the start of the text of an item or a definition', () => {
+  it('numbers an item whose text starts after a blank line', () => {
+    expect(render('=begin item\n\n# first\n=end item')).toContain('<ol')
+  })
+
+  it('leaves the term of a numbered definition without the #', () => {
+    const html = render('=defn # TERM\nBody.')
+    expect(html).toContain('<dt>TERM</dt>')
+    expect(html).not.toContain('#')
+  })
+})

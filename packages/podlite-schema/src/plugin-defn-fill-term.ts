@@ -4,6 +4,7 @@
  * and the remaining content is treated as the definition for the term.
  */
 import makeTransformer from './helpers/makeTransformer'
+import { applyNumberedShorthand, isBeforeText } from './helpers/numberedShorthand'
 export default () => tree => {
   const transformer = makeTransformer({
     defn: node => {
@@ -14,6 +15,8 @@ export default () => tree => {
       const count = content.length
       let newContent = []
       let isFirstParaProcessed = false
+      // a leading # numbers the definition only when the term is the first text of the block
+      let termComesFirst = true
       for (let i = 0; i < count; i++) {
         const item = content[i]
         if (item.type === 'para' && !isFirstParaProcessed) {
@@ -30,6 +33,7 @@ export default () => tree => {
             text: term,
             content: [{ type: 'text', value: term }],
           }
+          if (termComesFirst) applyNumberedShorthand(node, newTermPara)
           newContent.push(newTermPara)
           if (!(splited.length == 1 && splited[0] === '')) {
             textNode.value = splited.join('\n')
@@ -38,6 +42,7 @@ export default () => tree => {
           }
           isFirstParaProcessed = true
         } else {
+          if (!isFirstParaProcessed && !isBeforeText(item)) termComesFirst = false
           newContent.push(item)
         }
       }
