@@ -478,6 +478,12 @@ describe('validateSource and podlite lint on the same files', () => {
     }
   }
 
+  it('drops the markdown-in-pod warning on a line of code before the mutes, in both', () => {
+    const { lint, validate } = both('=begin pod :lint-ignore<markdown-in-pod>\ntext\n\n  **code**\n=end pod\n')
+    expect(validate).toEqual(lint)
+    expect(lint.map(([rule]) => rule)).toEqual(['lint-ignore'])
+  })
+
   it('silences a rule on a single block', () => {
     const { lint, validate } = both('=head1 One\n\n=for head3 :lint-ignore<heading-hierarchy>\nThree\n')
     expect(validate).toEqual(lint)
@@ -544,5 +550,17 @@ describe('validateSource with a very long report', () => {
     })
     // doMock outlives isolateModules: take it back so no later test gets the stub
     jest.dontMock('podlite/lib/lint/grammar/scan')
+  })
+})
+
+describe('validateSource and implicit code', () => {
+  it('drops the markdown-in-pod warning on a line of code and counts what is left', () => {
+    const report = validateSource('=begin pod\ntext\n\n  **bold**\n\n# heading\n=end pod\n')
+    const rules = report.problems.map(p => p.rule)
+    expect(rules.filter(r => r === 'markdown-in-pod')).toHaveLength(1)
+    const counts = { error: 0, warning: 0, info: 0 }
+    for (const p of report.problems) counts[p.severity] += 1
+    expect(report.counts).toEqual(counts)
+    expect(report.ok).toBe(report.counts.error === 0)
   })
 })

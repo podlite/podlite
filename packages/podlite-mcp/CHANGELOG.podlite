@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite_validate> no longer reports C<markdown-in-pod> on lines the parser reads as implicit code
+
 =item C<podlite_validate> also checks C<:allow> given by C<=config> or C<=set>
 
 =item C<podlite_validate> warns when C<:allow> on a block holds something other than markup code letters

@@ -1,3 +1,4 @@
+import { lintSource } from '../src/lint'
 import { scanSourceRules } from '../src/lint/grammar/scan'
 import { MARKDOWN_IN_POD_RULE_ID, markdownInPodRule } from '../src/lint/rules/markdown-in-pod'
 
@@ -153,5 +154,72 @@ describe('markdown-in-pod and a lone # that starts an item, a heading or a defin
     it.each(['##', '###', '####', '#####', '######'])('%s at the start of an item', hashes => {
       expect(lines(`=for item\n${hashes} heading\n`)).toEqual([[2, HEADING]])
     })
+  })
+})
+
+describe('markdown-in-pod and implicit code', () => {
+  const report = (src: string) =>
+    lintSource(src, 'doc.podlite', {}).violations.map(v => [v.rule, v.location?.start.line, v.message.slice(0, 24)])
+  const mip = (src: string) => report(src).filter(([rule]) => rule === MARKDOWN_IN_POD_RULE_ID)
+
+  describe('leaves the lines the parser reads as implicit code', () => {
+    it.each([
+      ['=begin pod', '=begin pod\ntext\n\n  # comment\n=end pod\n'],
+      ['=pod', '=pod\n\ntext\n\n  # comment\n'],
+      ['=begin item', '=begin item\nfirst\n\n  # comment\n=end item\n'],
+      ['=begin nested', '=begin nested\ntext\n\n  # comment\n=end nested\n'],
+      ['=begin defn', '=begin defn\nTERM\nBody.\n\n  # comment\n=end defn\n'],
+      ['bold in =begin pod', '=begin pod\ntext\n\n  **bold**\n=end pod\n'],
+      ['code after =end para', '=begin pod\n=begin para\nx\n=end para\n  **code**\n=end pod\n'],
+      ['code after =set', '=begin pod\n=set :lang<en>\n  **code**\n=end pod\n'],
+      ['a code line without an indent', '=begin pod\ntext\n\n  first\n# second\n=end pod\n'],
+      ['the last line without a newline', 'first\n\n  **code**'],
+      ['CRLF lines', '=begin pod\r\ntext\r\n\r\n  # comment\r\n=end pod\r\n'],
+    ])('in %s', (_, src) => {
+      expect(mip(src)).toEqual([])
+    })
+
+    it('drops only its warning in a block left open, and keeps the others', () => {
+      const found = report('=begin pod\ntext\n\n  # comment\n')
+      expect(found.filter(([rule]) => rule === MARKDOWN_IN_POD_RULE_ID)).toEqual([])
+      expect(found.map(([rule]) => rule)).toContain('delimited-block-balance')
+    })
+  })
+
+  describe('keeps every other warning', () => {
+    it.each([
+      ['a heading without an indent', '=begin pod\n# heading\n=end pod\n', 2],
+      ['indented text in =begin para', '=begin para\nfirst\n\n  # x\n=end para\n', 4],
+      ['indented text in a semantic block, read as text', '=begin SYNOPSIS\nfirst\n\n  # x\n=end SYNOPSIS\n', 4],
+      ['a line after the code ends at its first column', '=begin pod\n  code\n=head1 **text**\n=end pod\n', 3],
+      ['a paragraph after code', '=begin pod\nfirst\n\n  **code**\n=para **text**\n=end pod\n', 5],
+      ['an abbreviated code block', '=for code\n# comment\n', 2],
+      ['a lone carriage return', '  code\r=head1 **text**\r', 1],
+    ])('%s', (_, src, line) => {
+      expect(mip(src).map(([, at]) => at)).toEqual([line])
+    })
+
+    it('keeps the order and the other rules on a line of code', () => {
+      const found = report('=begin pod\ntext\n\n  B<broken **bold**\n=end pod\n')
+      expect(found.filter(([rule]) => rule === MARKDOWN_IN_POD_RULE_ID)).toEqual([])
+      expect(found.filter(([rule]) => rule === 'unclosed-markup-code')).toHaveLength(1)
+    })
+
+    it('keeps the lone # of an item for T601 and warns about the next paragraph', () => {
+      expect(mip('=for item1\n# x\n\n# y\n').map(([, at]) => at)).toEqual([4])
+    })
+  })
+
+  it('counts a mute on the warnings it no longer has to silence as unused', () => {
+    const { violations, silenced } = lintSource(
+      '=begin pod :lint-ignore<markdown-in-pod>\ntext\n\n  **code**\n=end pod\n',
+      'doc.podlite',
+      {},
+    )
+    expect(violations.filter(v => v.rule === MARKDOWN_IN_POD_RULE_ID)).toEqual([])
+    expect(silenced).toBe(0)
+    expect(violations.map(v => [v.rule, v.message])).toEqual([
+      ['lint-ignore', ':lint-ignore<markdown-in-pod> silenced nothing here'],
+    ])
   })
 })

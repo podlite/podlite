@@ -6,6 +6,7 @@ import { runRules } from './engine'
 import { detectFileType, readFile, parseContent } from './loader'
 import { formatText, FileReport } from './formatters/text'
 import { formatJson } from './formatters/json'
+import { dropMarkdownInImplicitCode } from './implicit-code'
 import { scanSourceRules } from './grammar/scan'
 import { applyConfig, applyRuleFlags, ConfigError, findConfig, readConfig } from './config'
 import { STDIN_NAME } from './types'
@@ -37,7 +38,7 @@ export function lintSource(content: string, filePath: string, config: LintConfig
     const ast = parseContent(content, fileType)
     const ctx: LintContext = { filePath, fileType, config, source: content, fromDisk }
     for (const violation of runRules(ast, DEFAULT_RULES, ctx)) violations.push(violation)
-    const muted = applyMutes(violations, ast)
+    const muted = applyMutes(dropMarkdownInImplicitCode(violations, ast, content), ast)
     return { filePath, violations: applyConfig(muted.kept, config), silenced: muted.silenced }
   } catch (e) {
     violations.push(makeSyntaxViolation(e, filePath))
