@@ -180,9 +180,11 @@ describe('markdown-in-pod and implicit code', () => {
     })
 
     it('drops only its warning in a block left open, and keeps the others', () => {
-      const found = report('=begin pod\ntext\n\n  # comment\n')
-      expect(found.filter(([rule]) => rule === MARKDOWN_IN_POD_RULE_ID)).toEqual([])
-      expect(found.map(([rule]) => rule)).toContain('delimited-block-balance')
+      const found = lintSource('=begin pod\ntext\n\n  # comment\n', 'doc.podlite', {}).violations
+      expect(found.map(v => [v.rule, v.severity, v.location?.start.line, v.message])).toEqual([
+        ['delimited-block-balance', 'error', 1, '=begin pod is not closed before end of file'],
+        ['syntax-valid', 'warning', 1, 'Line could not be parsed as a directive or block: =begin pod'],
+      ])
     })
   })
 
@@ -194,9 +196,15 @@ describe('markdown-in-pod and implicit code', () => {
       ['a line after the code ends at its first column', '=begin pod\n  code\n=head1 **text**\n=end pod\n', 3],
       ['a paragraph after code', '=begin pod\nfirst\n\n  **code**\n=para **text**\n=end pod\n', 5],
       ['an abbreviated code block', '=for code\n# comment\n', 2],
-      ['a lone carriage return', '  code\r=head1 **text**\r', 1],
     ])('%s', (_, src, line) => {
       expect(mip(src).map(([, at]) => at)).toEqual([line])
+    })
+
+    it('keeps the whole report of a document with a lone carriage return', () => {
+      const found = lintSource('  code\r=head1 **text**\r', 'doc.podlite', {}).violations
+      expect(found.map(v => [v.rule, v.severity, v.location?.start.line, v.message])).toEqual([
+        ['markdown-in-pod', 'warning', 1, 'a pair of asterisks is text here; bold is written as B<>'],
+      ])
     })
 
     it('keeps the order and the other rules on a line of code', () => {
