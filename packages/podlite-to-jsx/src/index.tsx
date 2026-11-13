@@ -75,8 +75,8 @@ export class BlockBoundary extends React.Component<
   }
 }
 
-// the address a table of contents is given with :id, shaped as headings are
-const tocAnchorOf = (node: any, ctx: any): string | undefined => {
+// an author's :id as an anchor, shaped as headings are; a definition's target uses it too
+const anchorOf = (node: any, ctx: any): string | undefined => {
   const written = getExplicitNodeId(node, ctx)
   return written === null ? undefined : (ctx?.__anchors?.shape || toFragment)(written)
 }
@@ -601,22 +601,29 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     // =config does not reach a =boundary: only what is written on it counts
     'boundary:block': (writer, processor) => (node, ctx, interator) =>
       mkVoidComponent('hr')(writer, processor)(node, { ...ctx, config: {} }, interator),
-    defn: subUse(
-      [
-        // to avoid overlap para blocks handlers
-        // define general :para at first
-        {
-          // nesting and folding go inside the description, so the list keeps its terms and descriptions
-          ':para': (writer, processor) => {
-            const inner = handleFolded(handleNested(nodeContent))(writer, processor)
-            return (node, ctx, interator) =>
-              makeComponent('dd', node, inner(node, ctx, interator), { id: getSafeNodeId(node, ctx) }, ctx)
+    // the term opens the pair, so an :id on the definition lands on its <dt>
+    defn: setFn((owner, ownerCtx) => {
+      const id = anchorOf(owner, ownerCtx) || undefined
+      return subUse(
+        [
+          // to avoid overlap para blocks handlers
+          // define general :para at first
+          {
+            // nesting and folding go inside the description, so the list keeps its terms and descriptions
+            ':para': (writer, processor) => {
+              const inner = handleFolded(handleNested(nodeContent))(writer, processor)
+              return (node, ctx, interator) =>
+                makeComponent('dd', node, inner(node, ctx, interator), { id: getSafeNodeId(node, ctx) }, ctx)
+            },
           },
-        },
-        { 'term:para': mkComponent('dt') },
-      ],
-      nodeContent,
-    ),
+          {
+            'term:para': (writer, processor) => (node, ctx, interator) =>
+              makeComponent('dt', node, interator(node.content, { ...ctx }), { id }, ctx),
+          },
+        ],
+        nodeContent,
+      )
+    }),
     nested: handleNotificationBlock(handleNested(nodeContent, 1)),
     output: mkComponent(({ children, key }) => (
       <pre key={key}>
@@ -1056,9 +1063,9 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     },
     // table of content: the directive holds the table it made, and gives it its :id
     'toc:block': (writer, processor) => (node: any, ctx, interator) =>
-      interator(node.content, { ...ctx, tocAnchor: tocAnchorOf(node, ctx) }),
+      interator(node.content, { ...ctx, tocAnchor: anchorOf(node, ctx) }),
     'Toc:block': (writer, processor) => (node: any, ctx, interator) =>
-      interator(node.content, { ...ctx, tocAnchor: tocAnchorOf(node, ctx) }),
+      interator(node.content, { ...ctx, tocAnchor: anchorOf(node, ctx) }),
     ':toc': (writer, processor) => (node: Toc, ctx, interator) => {
       const tocAnchor = ctx.tocAnchor || undefined
       if (node.foldedLevels) {

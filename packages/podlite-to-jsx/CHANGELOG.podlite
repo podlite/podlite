@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the term of a definition with an C<:id> carries that id, as in HTML, so a link from a table of contents or from the text reaches it
+
 =head1 0.0.88
 
 =item a path in an included file is read from the directory of that file, as C<convert> reads it
