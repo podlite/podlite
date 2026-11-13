@@ -1,5 +1,6 @@
 import { isVerbatimBlock } from '@podlite/schema'
 import type { Violation, SourceRule } from '../types'
+import { lineStarts, placeAtLine } from '../line-starts'
 
 export const MARKDOWN_IN_POD_RULE_ID = 'markdown-in-pod'
 
@@ -36,6 +37,7 @@ const insideCode = (line: string): boolean => /C<[^>]*>/.test(line) || /`[^`]+`/
 
 export function scanMarkdownInPod(content: string): Violation[] {
   const lines = content.split(/\r?\n/)
+  const starts = lineStarts(content)
   const open: string[] = []
   const violations: Violation[] = []
   let abbreviatedTable = false
@@ -91,10 +93,7 @@ export function scanMarkdownInPod(content: string): Violation[] {
         rule: MARKDOWN_IN_POD_RULE_ID,
         severity: 'warning',
         message: foreign.says,
-        location: {
-          start: { line: i + 1, column: 1, offset: 0 },
-          end: { line: i + 1, column: 1, offset: 0 },
-        },
+        location: placeAtLine(starts, i + 1),
       })
       break
     }

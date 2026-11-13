@@ -478,6 +478,23 @@ describe('validateSource and podlite lint on the same files', () => {
     }
   }
 
+  it('silences a rule that reads the source only inside a muting block in the middle, in both', () => {
+    const doc = '=para before\n\n=begin pod :lint-ignore<markdown-in-pod>\ntext\n\n**in**\n=end pod\n\n**out**\n'
+    fs.writeFileSync(path.join(dir, 'input.podlite'), doc)
+    const lint = lintFile(path.join(dir, 'input.podlite'), {}).violations
+    const validate = validateSource(doc).problems.filter(p => p.rule !== 'schema-valid')
+    expect(validate).toEqual(lint)
+    const place = { line: 9, column: 1, offset: doc.indexOf('**out**') }
+    expect(lint).toEqual([
+      {
+        rule: 'markdown-in-pod',
+        severity: 'warning',
+        message: 'a pair of asterisks is text here; bold is written as B<>',
+        location: { start: place, end: place },
+      },
+    ])
+  })
+
   it('drops the markdown-in-pod warning on a line of code before the mutes, in both', () => {
     const { lint, validate } = both('=begin pod :lint-ignore<markdown-in-pod>\ntext\n\n  **code**\n=end pod\n')
     expect(validate).toEqual(lint)

@@ -1,5 +1,6 @@
 import { isVerbatimBlock } from '@podlite/schema'
 import type { Violation, SourceRule } from '../types'
+import { lineStarts, placeAtLine } from '../line-starts'
 
 export const ABBREVIATED_ATTRS_RULE_ID = 'abbreviated-attrs'
 
@@ -32,6 +33,7 @@ const allEmpty = (rest: string): boolean =>
 
 export function scanAbbreviatedAttrs(content: string): Violation[] {
   const lines = content.split(/\r?\n/)
+  const starts = lineStarts(content)
   const open: string[] = []
   const violations: Violation[] = []
 
@@ -66,10 +68,7 @@ export function scanAbbreviatedAttrs(content: string): Violation[] {
       rule: ABBREVIATED_ATTRS_RULE_ID,
       severity: 'warning',
       message: `=${name} takes the rest of its line as data, so ${rest.trim()} arrives as text; write =for ${name} to pass configuration`,
-      location: {
-        start: { line: i + 1, column: 1, offset: 0 },
-        end: { line: i + 1, column: 1, offset: 0 },
-      },
+      location: placeAtLine(starts, i + 1),
     })
   }
 

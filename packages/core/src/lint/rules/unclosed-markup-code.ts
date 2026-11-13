@@ -1,5 +1,6 @@
 import { isVerbatimBlock } from '@podlite/schema'
 import type { Violation, SourceRule } from '../types'
+import { lineStarts, placeAtLine } from '../line-starts'
 
 export const UNCLOSED_MARKUP_CODE_RULE_ID = 'unclosed-markup-code'
 
@@ -71,6 +72,7 @@ type Chunk = { text: string; line: number }
 
 export function scanUnclosedMarkupCodes(content: string): Violation[] {
   const lines = content.split(/\r?\n/)
+  const starts = lineStarts(content)
   const open: string[] = []
   let verbatimOpen = 0
   const violations: Violation[] = []
@@ -90,10 +92,7 @@ export function scanUnclosedMarkupCodes(content: string): Violation[] {
         rule: UNCLOSED_MARKUP_CODE_RULE_ID,
         severity: 'warning',
         message: `${name}<> is closed by the end of the block, not by its own bracket; the text goes out as written`,
-        location: {
-          start: { line, column: 1, offset: 0 },
-          end: { line, column: 1, offset: 0 },
-        },
+        location: placeAtLine(starts, line),
       })
     }
     chunk = null
