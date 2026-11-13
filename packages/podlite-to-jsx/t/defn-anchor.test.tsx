@@ -9,7 +9,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { indexAnchors, podlitePluggable, toFragment, toHtml } from '@podlite/schema'
 import { Podlite } from '../src/index'
 
-type Rule = (node: any, ctx: any, interator: any) => any
+type Ctx = Record<string, unknown>
+type Rule = (node: { content: unknown }, ctx: Ctx, it: (content: unknown, ctx: Ctx) => unknown) => unknown
 
 const render = (src: string, root?: Rule, includeReader?: (path: string) => string | null) =>
   renderToStaticMarkup(
@@ -19,7 +20,10 @@ const render = (src: string, root?: Rule, includeReader?: (path: string) => stri
   )
 const withoutIndex: Rule = (node, ctx, it) => it(node.content, { ...ctx, __anchors: undefined })
 const withShape: Rule = (node, ctx, it) =>
-  it(node.content, { ...ctx, __anchors: { ...ctx.__anchors, shape: (v: string) => 'custom-' + toFragment(v) } })
+  it(node.content, {
+    ...ctx,
+    __anchors: Object.assign({}, ctx.__anchors, { shape: (v: string) => 'custom-' + toFragment(v) }),
+  })
 
 // each term with the id on its own <dt>, in order
 const terms = (html: string) => [...html.matchAll(/<dt(?: id="([^"]*)")?>(.*?)<\/dt>/g)].map(m => [m[2], m[1]])
@@ -101,7 +105,7 @@ describe('the term of a definition carries its :id in JSX', () => {
   it.each([
     ['a quoted value with a space', '=for defn :id("a b")\nTERM\nBody.\n', 'a-b'],
     ['a list, by its first value', '=for defn :id<a b>\nTERM\nBody.\n', 'a'],
-    ['letters that are not latin', '=for defn :id<Кириллица>\nTERM\nBody.\n', 'Кириллица'],
+    ['letters that are not latin', '=for defn :id<Καλημέρα>\nTERM\nBody.\n', 'Καλημέρα'],
   ])('shapes %s as HTML does', (_, src, id) => {
     expect(terms(render(src))).toEqual([['TERM', id]])
   })
