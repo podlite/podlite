@@ -145,6 +145,8 @@ describe('what stays as it was', () => {
     expect(config.numbered(config.block('defn'))).toEqual([
       { name: 'numbered', value: true, type: 'boolean', from: 'config' },
     ])
+    const set = read('=set :numbered\n=defn TERM\nBody.\n')
+    expect(set.numbered(set.block('defn'))).toEqual([{ name: 'numbered', value: true, type: 'boolean', from: 'set' }])
   })
 
   it('keeps a checkbox read only at the very start, as before', () => {

@@ -1,4 +1,4 @@
-import { TestPodlite as Podlite } from '../src/index'
+import { Podlite as LivePodlite, TestPodlite as Podlite } from '../src/index'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -23,5 +23,12 @@ describe('a lone # at the start of the text of an item or a definition', () => {
     const html = render('=defn # TERM\nBody.')
     expect(html).toContain('<dt>TERM</dt>')
     expect(html).not.toContain('#')
+  })
+
+  it('lists a numbered definition in a table of contents by its own id', () => {
+    const html = renderToStaticMarkup(
+      <LivePodlite>{'=begin pod\n=toc defn[ :numbered ]\n\n=for defn :id<t>\n# TERM\nBody.\n=end pod\n'}</LivePodlite>,
+    )
+    expect(html).toContain('href="#t"')
   })
 })
