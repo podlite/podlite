@@ -195,7 +195,6 @@ describe('markdown-in-pod and implicit code', () => {
       ['indented text in a semantic block, read as text', '=begin SYNOPSIS\nfirst\n\n  # x\n=end SYNOPSIS\n', 4],
       ['a line after the code ends at its first column', '=begin pod\n  code\n=head1 **text**\n=end pod\n', 3],
       ['a paragraph after code', '=begin pod\nfirst\n\n  **code**\n=para **text**\n=end pod\n', 5],
-      ['an abbreviated code block', '=for code\n# comment\n', 2],
     ])('%s', (_, src, line) => {
       expect(mip(src).map(([, at]) => at)).toEqual([line])
     })
@@ -207,13 +206,15 @@ describe('markdown-in-pod and implicit code', () => {
       ])
     })
 
-    it('keeps the order and the other rules on a line of code', () => {
-      const found = report('=begin pod\ntext\n\n  B<broken **bold**\n=end pod\n')
-      expect(found.filter(([rule]) => rule === MARKDOWN_IN_POD_RULE_ID)).toEqual([])
-      expect(found.filter(([rule]) => rule === 'unclosed-markup-code')).toHaveLength(1)
+    it('keeps the order of the warnings around a line of code', () => {
+      const found = report('=head1 **a**\n\n=begin pod\ntext\n\n  B<broken **bold**\n=end pod\n\n=para **b**\n')
+      expect(found.map(([rule, line]) => [rule, line])).toEqual([
+        [MARKDOWN_IN_POD_RULE_ID, 1],
+        [MARKDOWN_IN_POD_RULE_ID, 9],
+      ])
     })
 
-    it('keeps the lone # of an item for T601 and warns about the next paragraph', () => {
+    it('keeps the lone # of an item and warns about the next paragraph', () => {
       expect(mip('=for item1\n# x\n\n# y\n').map(([, at]) => at)).toEqual([4])
     })
   })

@@ -495,6 +495,12 @@ describe('validateSource and podlite lint on the same files', () => {
     ])
   })
 
+  it('drops the unclosed-markup-code warning on a line of code, in both', () => {
+    const { lint, validate } = both('=begin pod\ntext\n\n  B<open\n=end pod\n\n=para B<out\n')
+    expect(validate).toEqual(lint)
+    expect(lint.map(([rule]) => rule)).toEqual(['unclosed-markup-code'])
+  })
+
   it('drops the markdown-in-pod warning on a line of code before the mutes, in both', () => {
     const { lint, validate } = both('=begin pod :lint-ignore<markdown-in-pod>\ntext\n\n  **code**\n=end pod\n')
     expect(validate).toEqual(lint)

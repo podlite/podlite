@@ -51,6 +51,8 @@ export function scanMarkdownInPod(content: string): Violation[] {
     const end = line.match(/^\s*=end\s+([\w-]+)/)
     if (end) {
       awaiting = null
+      // a short table inside a block ends with the block
+      abbreviatedTable = false
       open.pop()
       continue
     }

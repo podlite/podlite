@@ -20,7 +20,7 @@ import { runRules } from 'podlite/lib/lint/engine'
 import { parseContent } from 'podlite/lib/lint/loader'
 import { makeSyntaxViolation } from 'podlite/lib/lint/rules/syntax-valid'
 import { applyMutes } from 'podlite/lib/lint/mute'
-import { dropMarkdownInImplicitCode } from 'podlite/lib/lint/implicit-code'
+import { dropSourceWarningsInCode } from 'podlite/lib/lint/implicit-code'
 import { contentOf, isWrapper, jsonBlock, markSections, podliteText } from 'podlite/lib/query-blocks'
 import type { LintContext, Violation } from 'podlite/lib/lint/types'
 
@@ -337,7 +337,7 @@ export const validateSource = (text: string, files?: Files): ValidateReport => {
     }
     for (const problem of runRules(ast, DEFAULT_RULES, ctx)) problems.push(problem)
     // the document's own :lint-ignore silences the rules it names, as in podlite lint
-    problems = applyMutes(dropMarkdownInImplicitCode(problems, ast, text), ast).kept
+    problems = applyMutes(dropSourceWarningsInCode(problems, ast, text), ast).kept
     if (asked.length) {
       problems.push({
         rule: 'include-resolves',
