@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an item marked C<:!numbered>, given a false C<:numbered> such as C<:numbered(0)>, or made unnumbered by C<=config> or C<=set>, goes into an unordered list (a task list when it has a check box) instead of an ordered one; a numbered definition no longer shares a list with an unnumbered one next to it; C<=config defn> and C<=alias defn> stay beside the lists of definitions instead of inside them or in an empty list of their own
+
 =item a lone C<#> that starts a definition now numbers it and leaves its term, as for an item; the same C<#> numbers an item or a heading whose text starts after a blank line or a setting; the number of a definition is not drawn yet
 
 =item a code allowed inside C<C<>> or C<V<>> by C<=config> acts at any depth, and only if every C<C<>> and C<V<>> around it allows it, as the C<:allow> of a block already does; the bounds of codes nested in them, the cells of a table row and the warnings about them follow

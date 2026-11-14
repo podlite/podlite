@@ -32,3 +32,10 @@ describe('a lone # at the start of the text of an item or a definition', () => {
     expect(html).toContain('href="#t"')
   })
 })
+
+describe('items grouped by the value of numbered', () => {
+  it('writes an unnumbered item and a numbered one as two lists', () => {
+    const html = renderToStaticMarkup(<Podlite>{'=for item :!numbered\nA\n=for item :numbered\nB\n'}</Podlite>)
+    expect(html).toMatch(/<ul>.*A.*<\/ul><ol>.*B.*<\/ol>/s)
+  })
+})

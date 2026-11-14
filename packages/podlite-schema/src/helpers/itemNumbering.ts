@@ -2,7 +2,8 @@ import { ConfigItem, PodNode, PodliteDocument } from '../types'
 
 const truthy = (v: unknown): boolean => v === true || v === 1 || v === '1' || v === 'true'
 
-const isNumbered = (config: ConfigItem[] | undefined): boolean | null => {
+// the last numbered entry decides; false, 0, '0' and 'false' say not numbered, no entry says nothing
+export const numberedOf = (config: ConfigItem[] | undefined): boolean | null => {
   if (!Array.isArray(config)) return null
   let result: boolean | null = null
   for (const entry of config) {
@@ -24,7 +25,7 @@ const allItemsNumbered = (listNode: { content?: unknown }): boolean => {
     const c = child as { type?: string; name?: string; config?: ConfigItem[] }
     if (!c || c.type !== 'block' || c.name !== 'item') continue
     hasAny = true
-    if (isNumbered(c.config) !== true) return false
+    if (numberedOf(c.config) !== true) return false
   }
   return hasAny
 }

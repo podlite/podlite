@@ -1,4 +1,4 @@
-import makeAttrs from './helpers/config'
+import { numberedOf } from './helpers/itemNumbering'
 
 // lists nest no deeper than this: deeper trees overflow the stack of the renderers
 export const MAX_LIST_LEVEL = 50
@@ -13,7 +13,7 @@ export default (opt: { diagnostics?: unknown[] } = {}) =>
       isNumbered(n1) === isNumbered(n2) &&
       isChecked(n1) === isChecked(n2)
 
-    const isNumbered = node => Boolean(makeAttrs(node, {}).exists('numbered'))
+    const isNumbered = node => numberedOf(node.config) === true
     const isChecked = node => node.checked !== undefined
 
     // the level a list is built at; the level the author wrote stays on the item

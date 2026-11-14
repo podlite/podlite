@@ -1,17 +1,17 @@
-export default () => tree => {
-  const isNodesEqual = (n1, n2) =>
-    // if nodes items
-    (n1.name === 'item' || n1.name === 'defn') &&
-    n2.name === n1.name &&
-    n1['level'] === n2.level &&
-    isNumbered(n1) === isNumbered(n2)
+import { numberedOf } from './helpers/itemNumbering'
 
-  const isNumbered = node => Boolean(node.config && node.config.numbered)
+export default () => tree => {
+  // a =config defn or =alias defn carries the name too, but it is a directive, not a definition
+  const isDefn = node => node.type === 'block' && node.name === 'defn'
+  const isNodesEqual = (n1, n2) =>
+    isDefn(n1) && isDefn(n2) && n1['level'] === n2.level && isNumbered(n1) === isNumbered(n2)
+
+  const isNumbered = node => numberedOf(node.config) === true
 
   const group = a => {
     let lastItem = {}
     let result = a.reduce((a, i) => {
-      if (i.name === 'defn') {
+      if (isDefn(i)) {
         if (isNodesEqual(lastItem, i)) {
           // group items into arrays
           a[a.length - 1].push(i)

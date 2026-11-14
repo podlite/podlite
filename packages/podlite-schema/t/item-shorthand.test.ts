@@ -48,6 +48,7 @@ describe('an item marked :!numbered', () => {
     expect(numbered).toEqual([expect.objectContaining({ value: false })])
     expect(item.content[0].text).toBe('# introduces a comment\n')
     expect(html).toContain('# introduces a comment')
+    expect(html).toContain('<ul>')
   })
 })
 
