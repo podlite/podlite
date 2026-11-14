@@ -44,7 +44,8 @@ const allowsCodes = (node: unknown): boolean => {
 
 // the =for or =begin line and its = continuations are configuration, not body
 const HEADER = /^[ \t\f]*=(for|begin)[ \t]/
-const CONTINUATION = /^[ \t\f]*=(\s|$)/
+// a continuation is = and a space, then attributes; anything else after = stays in the body
+const CONTINUATION = /^[ \t\f]*=[ \t\f]+:/
 const bodyStart = (lines: string[], node: { type?: unknown }, first: number): number => {
   if (node.type !== 'block' || !HEADER.test(lines[first - 1] ?? '')) return first
   let line = first + 1
