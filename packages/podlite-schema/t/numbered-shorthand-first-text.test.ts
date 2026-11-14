@@ -149,9 +149,9 @@ describe('what stays as it was', () => {
     expect(set.numbered(set.block('defn'))).toEqual([{ name: 'numbered', value: true, type: 'boolean', from: 'set' }])
   })
 
-  it('keeps a checkbox read only at the very start, as before', () => {
+  it('reads a checkbox from the first text, as the # shorthand is read', () => {
     const { block } = read('=begin item\n\n[x] task\n=end item\n')
-    expect(textOf(block('item'))).toContain('[x] task')
+    expect(textOf(block('item'))).not.toContain('[x]')
   })
 
   it('keeps the carriage returns of a definition written with CRLF', () => {

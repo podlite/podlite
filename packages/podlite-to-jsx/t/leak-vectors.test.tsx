@@ -200,3 +200,12 @@ describe('the caption of a table =set gives on the page', () => {
     expect(page(folded('Public G<Secret>'), 'draft')).toContain('Secret')
   })
 })
+
+describe('the entry of an item whose text starts after a blank line', () => {
+  it('shows the open part and hides what G<> hides', () => {
+    const out = page('=toc item\n\n=begin item :id<a>\n\npublic G<Sekra>\n=end item')
+    expect(tocOf(out)).toContain('public')
+    expect(tocOf(out)).toContain('href="#a"')
+    expect(tocOf(out)).not.toContain('Sekra')
+  })
+})

@@ -1,4 +1,4 @@
-import { applyNumberedShorthand } from './helpers/numberedShorthand'
+import { applyNumberedShorthand, isBeforeText } from './helpers/numberedShorthand'
 import { stripMarker } from './helpers/stripMarker'
 
 export default () => tree => {
@@ -20,9 +20,10 @@ export default () => tree => {
             node.checked = checkedConfig.value !== false && checkedConfig.value !== 0 && checkedConfig.value !== '0'
           }
 
-          if (node.content[0]) {
-            const startText = node.content[0]
-            if (startText.text) {
+          // the first text of the item, as for the # shorthand: only a paragraph carries a check box
+          const startText = node.content.find(child => !isBeforeText(child))
+          if (startText?.type === 'para') {
+            if (typeof startText.text === 'string' && startText.text) {
               // Check for checkbox syntax [x] or [ ] at start of text
               if (!checkedConfig) {
                 const checkboxRe = /^\[( |x)\]\s*/

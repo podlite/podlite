@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the entry of an item is its first element after blank lines and settings, so an item whose text starts after a blank line is listed by its text
+
 =head1 0.0.76
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>

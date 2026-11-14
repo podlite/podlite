@@ -19,6 +19,7 @@ import {
   parseSelector,
   runSelector,
   SelectorError,
+  isBeforeText,
 } from '@podlite/schema'
 import { prepareDataForToc } from './helpers'
 import { PodNode } from '@podlite/schema'
@@ -68,7 +69,9 @@ const entryOf = (node: PodNode): TocEntry => {
       }
       if (node.type === 'block' && node.name === 'item') {
         if (Array.isArray(node.content) && node.content.length > 0) {
-          return { text: getTextContentFromNode(node.content[0]), source: [node.content[0]] }
+          // the first element that is not a blank line or a setting, of any type; text and source are one node
+          const first = node.content.find(child => !isBeforeText(child)) ?? node.content[0]
+          return { text: getTextContentFromNode(first), source: [first] }
         }
       }
       if (conf.exists('caption')) {
