@@ -10,10 +10,25 @@ const firstText = para => {
   return typeof first?.value === 'string' ? first.value : undefined
 }
 
-// what can stand before the text of a block without being its text
 const BEFORE_TEXT = ['blankline', 'config', 'alias', 'set']
 
-export const isBeforeText = (child): boolean => BEFORE_TEXT.includes(child?.type)
+/*
+=begin pod :kind<export>
+
+=head2 isBeforeText
+
+Whether a node of a block's content can stand before the text of the block
+without being its text: a blank line, or a C<=config>, C<=alias> or C<=set>
+directive. The first node of the content that is not one of these is where the
+text of an item, a heading or a definition starts — where a leading C<#> or a
+check box is read and where a table of contents takes the entry of an item.
+
+=end pod
+*/
+export const isBeforeText = (child: unknown): boolean => {
+  const type: unknown = typeof child === 'object' && child !== null ? Reflect.get(child, 'type') : undefined
+  return typeof type === 'string' && BEFORE_TEXT.includes(type)
+}
 
 // The shorthand counts as an option written on the block: one written there
 // decides, one given by =set gives way, and =config comes later and skips a
