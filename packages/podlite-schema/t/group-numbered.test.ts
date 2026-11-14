@@ -82,6 +82,24 @@ describe('definitions are grouped by their own numbering', () => {
     expect(top(src)).toEqual([['variable', ['A', 'B']]])
   })
 
+  it.each([
+    [
+      'numbered, then unnumbered, stays with a plain one',
+      '=for defn :numbered :!numbered\nA\na\n=defn B\nb\n',
+      [['variable', ['A', 'B']]],
+    ],
+    [
+      'unnumbered, then numbered, stands apart',
+      '=for defn :!numbered :numbered\nA\na\n=defn B\nb\n',
+      [
+        ['variable', ['A']],
+        ['variable', ['B']],
+      ],
+    ],
+  ])('reads the last numbered of a definition: %s', (_, src, lists) => {
+    expect(top(src)).toEqual(lists)
+  })
+
   it('splits definitions numbered by =config from one that says otherwise', () => {
     expect(top('=config defn :numbered\n\n=defn A\na\n=for defn :!numbered\nB\nb\n')).toEqual([
       ['config', 'defn'],
