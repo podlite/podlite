@@ -21,7 +21,6 @@ describe('markdown-in-pod in a verbatim block written the short way', () => {
     ['a continued configuration', '=for code\n= :lang<perl>\n# c\n'],
     ['a line of = and digits in the body', '=for code\n=123\n**body**\n'],
     ['CRLF', '=for code\r\n# c\r\n**b**\r\n'],
-    ['a table with a continued configuration', '=for table\n= :caption<x>\na|b\n--|--\n'],
   ])('is silent in %s', (_, src) => {
     expect(mip(src)).toEqual([])
   })
@@ -33,6 +32,8 @@ describe('markdown-in-pod in a verbatim block written the short way', () => {
     ['in a delimited block that follows', '=for code\n# c\n=begin pod\n# h\n=end pod\n', [4]],
     ['in a heading', '=head1 **x**\n', [1]],
     ['in the paragraph after a table', '=for table\na|b\n--|--\n\n**b**\n', [5]],
+    ['on a table separator after a continued configuration, as before', '=for table\n= :caption<x>\na|b\n--|--\n', [4]],
+    ['in the configuration of a short code block', '=for code :caption<**bad**>\nbody\n', [1]],
     ['in an item after its lone #', '=for item\n# x\n\n# y\n', [4]],
     ['after =for and a tab, which opens no block', '=for\tcode\n**body**\n', [2]],
     ['after =for and two spaces, which opens no block', '=for  code\n**body**\n', [2]],
@@ -57,6 +58,11 @@ describe('unclosed-markup-code in code', () => {
     ['a short code block with a line of =end after a no-break space', '=for code\n\u00a0=end pod\nB<open\n'],
     ['=code with a line separator in its text', '=code a\u2028b\n**body** B<open\n'],
     ['=for code with a line separator in a value', '=for code :caption("a\u2028b")\n**body** B<open\n'],
+    ['=code with no newline at the end', '=code **body**'],
+    ['=for code with a continued configuration and no newline at the end', '=for code\n= :lang<perl>\n# c'],
+    ['=for formula', '=for formula\n# body\n'],
+    ['a named block of another name', '=for Weird-Name\n# x\n'],
+    ['Markdown in a short code block that allows B', '=for code\n= :allow<B>\n**md**\n'],
     ['a code block with an =end of another name inside', '=begin code\n**b**\n=end Recipe\n**c** B<open\n=end code\n'],
   ])('is silent in %s', (_, src) => {
     expect(lint(src).violations).toEqual([])
@@ -87,4 +93,25 @@ it('leaves the report of a document with a lone carriage return as it was', () =
 
 it('keeps only the warning about the dropped attribute in a short code block the parser keeps', () => {
   expect(lint('=for code :lang<perl\n**body** B<open\n').violations.map(v => v.rule)).toEqual(['attr-value-dropped'])
+})
+
+describe('warnings the code does not hide', () => {
+  it.each([
+    [
+      'in the cells of a table with a continued configuration',
+      '=for table\n= :caption<x>\nB<open | **bold**\n',
+      [
+        ['markdown-in-pod', 3],
+        ['unclosed-markup-code', 3],
+      ],
+    ],
+    ['an open code a short code block allows', '=for code\n= :allow<B>\nB<open\n', [['unclosed-markup-code', 3]]],
+    [
+      'an open code implicit code allows through =config',
+      '=config code :allow<B>\n\n  B<open\n',
+      [['unclosed-markup-code', 3]],
+    ],
+  ])('%s', (_, src, found) => {
+    expect(lint(src).violations.map(v => [v.rule, v.location?.start.line])).toEqual(found)
+  })
 })
