@@ -13,8 +13,9 @@ type Place = { start: { line: number; column: number }; end: { line: number; col
 Takes out the C<markdown-in-pod> and C<unclosed-markup-code> warnings that stand on
 lines the parser read as code: implicit code, and the body of a verbatim block in
 any form (C<=begin code>, C<=for code>, C<=code>, C<=for markdown> and the like).
-The configuration lines of a C<=for> or C<=begin> header keep their warnings, a
-table is left to the scanners, and an open code in a block whose C<:allow> lets
+The header of a block and its configuration lines keep their warnings (the body is
+counted back from the end of the block by the lines of its text), a table is left
+to the scanners, and an open code in a block whose C<:allow> lets
 codes through is still reported.
 Those lines are shown as written, with no markup codes read, so Markdown or an open
 code in them is an example rather than a slip. The two rules read the source line by
@@ -42,21 +43,27 @@ const allowsCodes = (node: unknown): boolean => {
   return Array.isArray(config) && config.some(c => c && c.name === 'allow')
 }
 
-// the =for or =begin line and its = continuations are configuration, not body
-const HEADER = /^[ \t\f]*=(for|begin)[ \t]/
-// a continuation is = and a space, then attributes; anything else after = stays in the body
-const CONTINUATION = /^[ \t\f]*=[ \t\f]+:/
-const bodyStart = (lines: string[], node: { type?: unknown }, first: number): number => {
-  if (node.type !== 'block' || !HEADER.test(lines[first - 1] ?? '')) return first
-  let line = first + 1
-  while (CONTINUATION.test(lines[line - 1] ?? '')) line++
-  return line
+// the text a node holds, with the codes in it read as their text
+const textOf = (node: unknown): string => {
+  if (typeof node === 'string') return node
+  const value: unknown = Reflect.get(Object(node), 'value')
+  const content: unknown = Reflect.get(Object(node), 'content')
+  return (typeof value === 'string' ? value : '') + (Array.isArray(content) ? content.map(textOf).join('') : '')
 }
 
+// The body of a verbatim block is the last lines of the block, as many as its text has, before
+// an =end of a delimited one; the header and its continuations come before. The parser keeps the
+// body, not its place, so the place is counted back from the end, and the header is never read.
+const bodyLines = (node: { type?: unknown; text?: unknown; content?: unknown }, last: number): [number, number] => {
+  if (node.type === 'code') return [-Infinity, last]
+  const body = textOf({ content: node.content })
+  const count = body === '' ? 0 : body.split('\n').length - (body.endsWith('\n') ? 1 : 0)
+  const end = typeof node.text === 'string' && /^\s*=begin\b/.test(node.text) ? last - 1 : last
+  return [end - count + 1, end]
+}
 export function dropSourceWarningsInCode(violations: Violation[], ast: PodliteDocument, source: string): Violation[] {
   if (!violations.some(readsSource)) return violations
   if (/\r(?!\n)/.test(source)) return violations
-  const lines = source.split(/\r?\n/)
   // lines of code for each rule: an open code under :allow is still reported
   const markdown = new Set<number>()
   const unclosed = new Set<number>()
@@ -67,7 +74,8 @@ export function dropSourceWarningsInCode(violations: Violation[], ast: PodliteDo
     // a node that ends at the first column of a line does not hold that line
     const last = place.end.column > 1 ? place.end.line : place.end.line - 1
     const allowed = allowsCodes(node)
-    for (let line = bodyStart(lines, node, place.start.line); line <= last; line++) {
+    const [from, to] = bodyLines(node, last)
+    for (let line = Math.max(from, place.start.line); line <= to; line++) {
       markdown.add(line)
       if (!allowed) unclosed.add(line)
     }

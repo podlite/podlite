@@ -35,6 +35,7 @@ describe('markdown-in-pod in a verbatim block written the short way', () => {
     ['on a table separator after a continued configuration, as before', '=for table\n= :caption<x>\na|b\n--|--\n', [4]],
     ['in the configuration of a short code block', '=for code :caption<**bad**>\nbody\n', [1]],
     ['in the second line of a continued configuration', '=for code\n= :lang<perl>\n= :caption<**bad**>\nbody\n', [3]],
+    ['in a continued configuration written with no space after =', '=for code\n=:caption<**bad**>\nbody\n', [2]],
     ['in an item after its lone #', '=for item\n# x\n\n# y\n', [4]],
     ['after =for and a tab, which opens no block', '=for\tcode\n**body**\n', [2]],
     ['after =for and two spaces, which opens no block', '=for  code\n**body**\n', [2]],
