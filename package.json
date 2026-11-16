@@ -55,13 +55,10 @@
   "license": "MIT",
   "dependencies": {
     "codemirror": "5.63.3",
-    "jest-watch-typeahead": "^0.6.1",
     "podlite": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
-    "@babel/plugin-transform-modules-commonjs": "^7.13.8",
-    "@babel/preset-env": "^7.13.15",
     "@podlite/schema": "workspace:*",
     "@podlite/to-jsx": "workspace:*",
     "@types/jest": "^29.5.0",
