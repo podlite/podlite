@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.85
+
 =item a check box is read from the first text of an item, as the C<#> shorthand is: an item whose text starts after a blank line, C<=config> or C<=alias> becomes a task, and implicit code that starts an item no longer makes it one; C<isBeforeText> is exported, for what stands before the text of a block
 
 =item an item marked C<:!numbered>, given a false C<:numbered> such as C<:numbered(0)>, or made unnumbered by C<=config> or C<=set>, goes into an unordered list (a task list when it has a check box) instead of an ordered one; a numbered definition no longer shares a list with an unnumbered one next to it; C<=config defn> and C<=alias defn> stay beside the lists of definitions instead of inside them or in an empty list of their own

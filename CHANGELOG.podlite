@@ -2,6 +2,77 @@
 
 =head1 Upcoming
 
+=head1 0.0.105
+
+
+=head2 podlite
+
+=item C<podlite lint> rules C<markdown-in-pod> and C<unclosed-markup-code> no longer warn on lines the parser reads as code: implicit code and the body of a verbatim block in any form (C<=for code>, C<=code>, C<=for markdown> and the like, but not a table); an open code that C<:allow> lets through is still reported; a C<:lint-ignore> that only covered such lines is now reported as silencing nothing
+
+=item C<podlite lint> warnings of C<markdown-in-pod>, C<unclosed-markup-code> and C<abbreviated-attrs> carry the offset of their line, so C<:lint-ignore> on a block in the middle of a file silences them in that block only
+
+=item C<podlite lint> rule C<markdown-in-pod> no longer warns on lines the parser reads as implicit code, where Markdown is shown as written; a C<:lint-ignore<markdown-in-pod>> that only covered such lines is now reported as silencing nothing
+
+=item C<podlite lint> rule C<markdown-in-pod> no longer takes a lone C<#> that starts a list item, a heading or a definition for a Markdown heading: it numbers the block, or stands for itself under C<:!numbered>
+
+=item C<podlite lint> rule C<allow-value> also checks C<:allow> given by C<=config> or C<=set>, on each block it reaches
+
+=item C<podlite lint> rule C<dead-definitions> reads the document once to place the warnings about unused aliases, however many there are
+
+=item C<podlite lint> rule C<unclosed-markup-code> checks a paragraph with many markup codes in time that grows with its length
+
+=item C<podlite lint> rule C<allow-value> warns when C<:allow> on a block holds something other than markup code letters, such as C<< :allow<*> >> or C<< :allow<B,I> >>
+
+=item C<podlite lint> rule C<attr-nested-angle> checks the options on the C<=begin> line of a verbatim block such as C<=begin table> or C<=begin code>; their body is still not checked
+
+=item C<podlite lint> no longer fails on a very large report and keeps all its messages, those of includes too
+
+=item C<podlite lint> rules C<link-target-resolves>, C<link-file-resolves> and C<link-not-empty> no longer check links inside C<=comment>, which is not rendered
+
+=item C<podlite lint> rule C<abbreviated-attrs> no longer advises C<=for defn> for the first line of a definition, which is its term
+
+=item C<podlite lint> reads the rest of the line after an attribute in angles without copying the rest of the file, so the check of each attribute no longer grows with the lines that follow it
+
+=head2 @podlite/editor-react
+
+=item the body of a verbatim block written the short way, such as C<=for assert> or C<=for code :lang<js>>, keeps its highlighting when the editor parses a long or busy document in parts
+
+=head2 @podlite/mcp
+
+=item C<podlite_validate> no longer reports C<markdown-in-pod> or C<unclosed-markup-code> on lines the parser reads as code, as C<podlite lint> does
+
+=item C<podlite_validate> silences C<markdown-in-pod>, C<unclosed-markup-code> and C<abbreviated-attrs> by C<:lint-ignore> on a block in the middle of a file, as C<podlite lint> does
+
+=item C<podlite_validate> no longer reports C<markdown-in-pod> on lines the parser reads as implicit code
+
+=item C<podlite_validate> also checks C<:allow> given by C<=config> or C<=set>
+
+=item C<podlite_validate> warns when C<:allow> on a block holds something other than markup code letters
+
+=item C<podlite_validate> no longer fails on a very large report and returns all its problems
+
+=head2 @podlite/schema
+
+=item a check box is read from the first text of an item, as the C<#> shorthand is: an item whose text starts after a blank line, C<=config> or C<=alias> becomes a task, and implicit code that starts an item no longer makes it one; C<isBeforeText> is exported, for what stands before the text of a block
+
+=item an item marked C<:!numbered>, given a false C<:numbered> such as C<:numbered(0)>, or made unnumbered by C<=config> or C<=set>, goes into an unordered list (a task list when it has a check box) instead of an ordered one; a numbered definition no longer shares a list with an unnumbered one next to it; C<=config defn> and C<=alias defn> stay beside the lists of definitions instead of inside them or in an empty list of their own
+
+=item a lone C<#> that starts a definition now numbers it and leaves its term, as for an item; the same C<#> numbers an item or a heading whose text starts after a blank line or a setting; the number of a definition is not drawn yet
+
+=item a code allowed inside C<C<>> or C<V<>> by C<=config> acts at any depth, and only if every C<C<>> and C<V<>> around it allows it, as the C<:allow> of a block already does; the bounds of codes nested in them, the cells of a table row and the warnings about them follow
+
+=item C<MARKUP_CODE_LETTERS> and C<isMarkupCodeLetter> name the letters of markup codes; the reader of codes takes its letters from them
+
+=item the parser no longer fails on a very large number of diagnostics
+
+=head2 @podlite/to-jsx
+
+=item the term of a definition with an C<:id> carries that id, as in HTML, so a link from a table of contents or from the text reaches it
+
+=head2 @podlite/toc
+
+=item the entry of an item is its first element after blank lines and settings, so an item whose text starts after a blank line is listed by its text
+
 =head1 0.0.104
 
 

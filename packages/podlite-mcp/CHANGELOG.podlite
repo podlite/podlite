@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.35
+
 =item C<podlite_validate> no longer reports C<markdown-in-pod> or C<unclosed-markup-code> on lines the parser reads as code, as C<podlite lint> does
 
 =item C<podlite_validate> silences C<markdown-in-pod>, C<unclosed-markup-code> and C<abbreviated-attrs> by C<:lint-ignore> on a block in the middle of a file, as C<podlite lint> does

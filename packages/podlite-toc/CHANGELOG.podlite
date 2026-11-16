@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.78
+
 =item the entry of an item is its first element after blank lines and settings, so an item whose text starts after a blank line is listed by its text
 
 =head1 0.0.76
