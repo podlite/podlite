@@ -40,9 +40,9 @@ export const createServer = (): McpServer => {
     {
       title: 'Parse Podlite',
       description: 'Parse Podlite source into its AST: a JSON tree of typed blocks with line/column locations.',
-      inputSchema: {
+      inputSchema: z.strictObject({
         text: z.string().describe('Podlite source text'),
-      },
+      }),
     },
     async ({ text }) => {
       try {
@@ -59,10 +59,10 @@ export const createServer = (): McpServer => {
       title: 'Validate Podlite',
       description:
         'Check Podlite source: syntax, lint rules, and the AST schema. Returns a report with ok, counts, and problems; ok is true when the report contains no errors.',
-      inputSchema: {
+      inputSchema: z.strictObject({
         text: z.string().describe('Podlite source text'),
         files,
-      },
+      }),
     },
     async ({ text, files }) => {
       try {
@@ -78,11 +78,11 @@ export const createServer = (): McpServer => {
     {
       title: 'Render Podlite',
       description: 'Render Podlite source to HTML or Markdown.',
-      inputSchema: {
+      inputSchema: z.strictObject({
         text: z.string().describe('Podlite source text'),
         format: z.enum(['html', 'md']).describe('Output format'),
         files,
-      },
+      }),
     },
     async ({ text, format, files }) => {
       try {
@@ -100,12 +100,12 @@ export const createServer = (): McpServer => {
       title: 'Query Podlite',
       description:
         'Select blocks from Podlite source with a structural selector, e.g. "head1" or "*[:tags~<draft>]". Returns matches as Podlite source, JSON AST, HTML, or Markdown.',
-      inputSchema: {
+      inputSchema: z.strictObject({
         selector: z.string().describe('Block selector'),
         text: z.string().describe('Podlite source text'),
         format: z.enum(['podlite', 'json', 'html', 'md']).describe('Output format'),
         files,
-      },
+      }),
     },
     async ({ selector, text, format, files }) => {
       try {

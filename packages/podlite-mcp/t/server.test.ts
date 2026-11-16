@@ -19,6 +19,48 @@ describe('podlite mcp server', () => {
     await server.close()
   })
 
+  it('publishes closed argument schemas', async () => {
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const server = createServer()
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    await Promise.all([server.connect(serverTransport), client.connect(clientTransport)])
+    const { tools } = await client.listTools()
+    await client.close()
+    await server.close()
+    const text = { type: 'string', description: 'Podlite source text' }
+    const files = {
+      description: expect.stringContaining('Texts the document includes'),
+      type: 'object',
+      propertyNames: { type: 'string' },
+      additionalProperties: { type: 'string' },
+    }
+    const schema = (properties: Record<string, unknown>, required: string[]) => ({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      type: 'object',
+      properties,
+      required,
+      additionalProperties: false,
+    })
+    const byName = Object.fromEntries(tools.map(t => [t.name, t.inputSchema]))
+    expect(byName).toEqual({
+      podlite_parse: schema({ text }, ['text']),
+      podlite_validate: schema({ text, files }, ['text']),
+      podlite_render: schema(
+        { text, format: { type: 'string', enum: ['html', 'md'], description: 'Output format' }, files },
+        ['text', 'format'],
+      ),
+      podlite_query: schema(
+        {
+          selector: { type: 'string', description: 'Block selector' },
+          text,
+          format: { type: 'string', enum: ['podlite', 'json', 'html', 'md'], description: 'Output format' },
+          files,
+        },
+        ['selector', 'text', 'format'],
+      ),
+    })
+  })
+
   const call = async (name: string, args: Record<string, unknown>) => {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     const server = createServer()
@@ -69,6 +111,12 @@ describe('podlite mcp server', () => {
       'input.podlite:2: include scheme is not supported: doc:',
       'files were not given; includes not assembled: part.podlite',
     ])
+  })
+
+  it('refuses an argument the schema of the tool does not name', async () => {
+    const { isError, texts } = await call('podlite_parse', { text: '=para x\n', unused: true })
+    expect(isError).toBe(true)
+    expect(texts[0]).toContain('Unrecognized key: "unused"')
   })
 
   it('gives a warning of the assembly after the output', async () => {

@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item Moved to C<zod> 4.6.6 or later, which fixes memory exhaustion when validating oversized collections
+
+=item A tool call with an argument that the tool's schema does not name is now refused with an error
+
+=item The messages for invalid tool arguments have changed wording
+
 =head1 0.0.35
 
 =item C<podlite_validate> no longer reports C<markdown-in-pod> or C<unclosed-markup-code> on lines the parser reads as code, as C<podlite lint> does
