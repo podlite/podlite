@@ -582,7 +582,11 @@ draft,Draft
 paid,Paid
 =end data
 
-=begin data :key<one> :mime-type<text/csv>
+=begin data :key<one> :mime-type('text/csv; header=absent')
+paid
+=end data
+
+=begin data :key<heading> :mime-type<text/csv>
 paid
 =end data
 
@@ -640,6 +644,10 @@ xx
         vocabulary,
       ]),
     ]).toEqual([['b'], ['b']])
+  })
+
+  it('reads the only row of a CSV block without a header parameter as its heading, which is no value', () => {
+    expect(ids('| para[ :status(in data:heading) ]')).toEqual([])
   })
 
   it('tells a source that does not resolve from a format and an address', () => {

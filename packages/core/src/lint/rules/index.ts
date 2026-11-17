@@ -11,6 +11,7 @@ import { linkNotEmptyRule } from './link-not-empty'
 import { attrValueDroppedRule } from './attr-value-dropped'
 import { tableShapeRule } from './table-shape'
 import { tableColumnWidthRule } from './table-column-width'
+import { tableHeaderInvalidRule } from './table-header-invalid'
 import { listDepthRule } from './list-depth'
 import { markupCodeTooDeepRule } from './markup-code-too-deep'
 import { deadDefinitionsRule } from './dead-definitions'
@@ -33,6 +34,7 @@ export const DEFAULT_RULES: Rule[] = [
   attrValueDroppedRule,
   tableShapeRule,
   tableColumnWidthRule,
+  tableHeaderInvalidRule,
   listDepthRule,
   markupCodeTooDeepRule,
   deadDefinitionsRule,

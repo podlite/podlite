@@ -2148,8 +2148,11 @@
             "type": "object",
             "properties": {
                 "severity": {
-                    "type": "string",
-                    "const": "warning"
+                    "enum": [
+                        "error",
+                        "warning"
+                    ],
+                    "type": "string"
                 },
                 "code": {
                     "enum": [
@@ -2163,10 +2166,12 @@
                         "markup-code-unreadable",
                         "markup-code-unsupported",
                         "table-cell-outside-row",
+                        "table-header-invalid",
                         "table-mixed-separators",
                         "table-row-cells",
                         "table-source-deferred",
                         "table-source-empty",
+                        "table-source-not-csv",
                         "table-source-unreadable",
                         "value-unreadable"
                     ],

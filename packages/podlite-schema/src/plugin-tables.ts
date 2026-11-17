@@ -10,14 +10,20 @@ import { walkConfigScopes, ConfigScope } from './helpers/configPropagation'
 import { codeConfigOwner } from './helpers/code-config'
 import { flattenDeep } from './helpers/flatten-deep'
 // ─── CSV source for =table (spec §1672) ────────────────────────────────────
-// Parse CSV content per RFC 4180: comma delimiter, `"`-quoted fields with
-// `""` as embedded-quote escape. Supports LF or CRLF line endings. Leading
-// indentation typical of =data block bodies is stripped from each line.
+// Content that cannot be read as CSV. A table then shows the content as a code block.
+export class CsvError extends Error {}
+
+// Parse CSV content as the norm reads it: comma delimiter, `"`-quoted fields
+// with `""` as embedded-quote escape, a line ends at LF with or without CR
+// before it. No line is skipped and spaces belong to the field; a final LF
+// starts no row, and empty content has no rows. A `"` inside an unquoted
+// field and text after a closing quote are not CSV.
 export function parseCsv(text) {
   const rows = []
   let field = ''
   let row = []
   let inQuote = false
+  let quoted = false
   let i = 0
   while (i < text.length) {
     const c = text[i]
@@ -29,6 +35,7 @@ export function parseCsv(text) {
       }
       if (c === '"') {
         inQuote = false
+        quoted = true
         i++
         continue
       }
@@ -36,7 +43,12 @@ export function parseCsv(text) {
       i++
       continue
     }
-    if (c === '"' && field === '') {
+    if (c === '"') {
+      if (field !== '' || quoted) {
+        throw new CsvError(
+          quoted ? `text after a closing quote at offset ${i}` : `a quote inside an unquoted field at offset ${i}`,
+        )
+      }
       inQuote = true
       i++
       continue
@@ -44,6 +56,7 @@ export function parseCsv(text) {
     if (c === ',') {
       row.push(field)
       field = ''
+      quoted = false
       i++
       continue
     }
@@ -56,27 +69,43 @@ export function parseCsv(text) {
       rows.push(row)
       row = []
       field = ''
+      quoted = false
       i++
       continue
     }
+    if (quoted) throw new CsvError(`text after a closing quote at offset ${i}`)
     field += c
     i++
   }
-  if (field !== '' || row.length > 0) {
+  // a quoted empty field at the very end is a record too
+  if (field !== '' || row.length > 0 || quoted) {
     row.push(field)
     rows.push(row)
   }
-  // Drop rows that are entirely blank (empty content after trim).
-  return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
+  return rows
 }
 
 // Parse a TSV (tab-separated values) blob. Unlike CSV, TSV has no quoting
 // mechanism — fields are split strictly on tabs and `"` is a literal
-// character. Tabs and newlines inside fields are not representable in TSV.
+// character. A line ends at LF, with or without CR before it; a CR elsewhere
+// belongs to the field. No line is skipped, a final LF starts no row, and
+// empty content has no rows.
 export function parseTsv(text) {
-  const lines = text.split(/\r?\n/)
-  const rows = lines.map(line => line.split('\t'))
-  return rows.filter(r => !(r.length === 1 && r[0].trim() === ''))
+  if (text === '') return []
+  const parts = text.split('\n')
+  const lines = parts.map((line, i) => (i < parts.length - 1 && line.endsWith('\r') ? line.slice(0, -1) : line))
+  if (text.endsWith('\n')) lines.pop()
+  return lines.map(line => line.split('\t'))
+}
+
+// The `header` in force for CSV or TSV content: present or absent as written,
+// present when the parameter is omitted. Any other value, an empty one as
+// well, is an error, and the content is read with the default.
+export function headerInEffect(params: Record<string, string>): { present: boolean; error?: string } {
+  const written = params.header
+  if (written === undefined || written === 'present') return { present: true }
+  if (written === 'absent') return { present: false }
+  return { present: true, error: `header=${written} is neither present nor absent` }
 }
 
 // Parse a MIME type value into the bare type and a map of parameters
@@ -95,7 +124,11 @@ export function parseMimeType(raw): { type: string; params: Record<string, strin
   for (const p of parts) {
     if (!p) continue
     const eq = p.indexOf('=')
-    if (eq < 0) continue
+    // a parameter written without a value is written all the same
+    if (eq < 0) {
+      params[p.toLowerCase()] = ''
+      continue
+    }
     const key = p.slice(0, eq).trim().toLowerCase()
     let value = p.slice(eq + 1).trim()
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
@@ -192,14 +225,11 @@ function buildRowBlock(cells, isHeader) {
 }
 
 // Convert parsed CSV/TSV rows to plain `=row`/`=cell` blocks. When
-// `hasHeader` is true (signalled by the `header=present` MIME parameter on
-// the source `=data` block, per RFC 4180 §3), the first row is marked with
-// `:header`. Default behaviour leaves all rows unmarked, matching authors
-// who use a structured table with explicit `=begin row :header` or a
-// Markdown GFM table.
-export function csvToTableContent(csvRows, hasHeader = false, allow: string[] = []) {
+// `hasHeader` is true (the `header` in force, see headerInEffect), the first
+// row is marked with `:header`. A cell keeps its field as read, spaces too.
+export function csvToTableContent(csvRows, hasHeader: boolean, allow: string[] = []) {
   return csvRows.map((row, i) => {
-    const cells = row.map(v => buildCellBlock(v.trim(), allow))
+    const cells = row.map(v => buildCellBlock(v, allow))
     return buildRowBlock(cells, hasHeader && i === 0)
   })
 }
@@ -208,15 +238,15 @@ export function csvToTableContent(csvRows, hasHeader = false, allow: string[] = 
 
 // A table reports through the same channel as the parser: the report carries a
 // place and reaches the caller, instead of going straight to the console.
-export type TableReport = (code: string, message: string, node) => void
+export type TableReport = (code: string, message: string, node, severity?: 'warning' | 'error') => void
 
 export function makeTableReport(opt): TableReport {
   const diagnostics = opt && Array.isArray(opt.diagnostics) ? opt.diagnostics : null
-  return (code, message, node) => {
+  return (code, message, node, severity = 'warning') => {
     const location = node && node.location
     if (!diagnostics || !location) return
     const seen = diagnostics.some(d => d.message === message && d.location.start.offset === location.start.offset)
-    if (!seen) diagnostics.push({ severity: 'warning', code, message, location })
+    if (!seen) diagnostics.push({ severity, code, message, location })
   }
 }
 
@@ -230,7 +260,12 @@ const noReport: TableReport = () => {}
 // Skipped when any cell uses `:colspan` or `:rowspan`: a spanning cell
 // occupies multiple columns, so naive cell counting would misreport row
 // width and drop legitimate spanned cells.
-export function normalizeCellCounts(tableNode, source = 'table', report = noReport) {
+// The mode names how the table was written: `text` is a table typed as text,
+// where a short row usually means a row continued on the next line; `row` is a
+// table of =row blocks; `data` and `data-table` are read from CSV or TSV.
+export type TableMode = 'text' | 'row' | 'data' | 'data-table'
+
+export function normalizeCellCounts(tableNode, source = 'table', report = noReport, mode: TableMode = 'text') {
   if (!tableNode || !Array.isArray(tableNode.content)) return tableNode
   const rows = tableNode.content.filter(c => c && c.type === 'block' && c.name === 'row')
   if (rows.length === 0) return tableNode
@@ -260,7 +295,8 @@ export function normalizeCellCounts(tableNode, source = 'table', report = noRepo
       for (let i = cells.length; i < expected; i++) padding.push(buildCellBlock(''))
       report(
         'table-row-cells',
-        `${source} row ${rowNumber} has ${cells.length} of ${expected} cells, padded with ${padding.length} empty. A row continued on the next line needs a blank line before the next row`,
+        `${source} row ${rowNumber} has ${cells.length} of ${expected} cells, padded with ${padding.length} empty` +
+          (mode === 'text' ? '. A row continued on the next line needs a blank line before the next row' : ''),
         tableNode,
       )
       mutated = true
@@ -322,6 +358,51 @@ function buildCodeFromDataBlock(tableNode, dataBlock) {
     margin: tableNode.margin || '',
     content: Array.isArray(dataBlock.content) ? dataBlock.content : [],
     config: Array.isArray(tableNode.config) ? tableNode.config : [],
+  }
+}
+
+// Content that is not CSV is shown as it is written: a code block in place of
+// the table that read it, keeping the settings of the table, :masked among them,
+// but turned into markup by no :allow of the table or of =config code, since an
+// empty :allow of its own decides first.
+export function buildCodeFromText(tableNode, text: string) {
+  const own = (Array.isArray(tableNode.config) ? tableNode.config : []).filter(c => c && c.name !== 'allow')
+  return {
+    type: 'block',
+    name: 'code',
+    margin: tableNode.margin || '',
+    location: tableNode.location,
+    content: [{ type: 'verbatim', value: text }],
+    config: [...own, { name: 'allow', value: [], type: 'array' }],
+  }
+}
+
+// A wrong `header` is an error of the block it is written on, reported there
+// once, whether or not a table reads the block.
+export function reportHeaderOf(type: string, params: Record<string, string>, where: string, node, report: TableReport) {
+  if (type !== 'text/csv' && type !== 'text/tab-separated-values') return
+  const header = headerInEffect(params)
+  if (header.error) report('table-header-invalid', `${where}: ${header.error}, read as header=present`, node, 'error')
+}
+
+// Reads CSV or TSV content for a table with the `header` in force; content that
+// is not CSV comes back as null with its warning reported, so the caller shows
+// it as code.
+export function readTabular(
+  isCsv: boolean,
+  params: Record<string, string>,
+  text: string,
+  where: string,
+  node,
+  report: TableReport,
+): { rows: string[][]; hasHeader: boolean } | null {
+  const header = headerInEffect(params)
+  try {
+    return { rows: isCsv ? parseCsv(text) : parseTsv(text), hasHeader: header.present }
+  } catch (e) {
+    if (!(e instanceof CsvError)) throw e
+    report('table-source-not-csv', `${where} is not CSV (${e.message}), rendered as =code`, node)
+    return null
   }
 }
 // ─── Markup codes closed on their line (spec §Tables) ──────────────────────
@@ -642,9 +723,29 @@ export default (opt: { config?: ConfigScope } = {}) =>
     const report = makeTableReport(opt)
     // the settings in force where each table stands, as a cell of it will read them
     const scopes = new Map<object, ConfigScope>()
+    // a =data block read here has not yet been given what a =config sets on it,
+    // and a :masked set so must cover what is built out of it all the same
+    const dataScopes = new Map<object, ConfigScope>()
     walkConfigScopes(tree, opt.config || {}, (block, scope) => {
       if (block.name === 'table') scopes.set(block, { ...scope })
+      if (block.name === 'data') dataScopes.set(block, { ...scope })
     })
+    // the header of every =data block, the one a =config gives it as well
+    for (const [dataBlock, scope] of dataScopes) {
+      const own = makeAttrs(dataBlock, {})
+      const mime = own.exists('mime-type')
+        ? own.getFirstValue('mime-type')
+        : makeAttrs({ config: scope.data || [] }, {}).getFirstValue('mime-type')
+      const { type, params } = parseMimeType(mime)
+      const key = own.getFirstValue('key')
+      reportHeaderOf(type, params, key ? `=data :key<${key}>` : '=data', dataBlock, report)
+    }
+    const isMaskedData = dataBlock => {
+      const own = makeAttrs(dataBlock, {})
+      if (own.exists('masked')) return Boolean(own.getFirstValue('masked'))
+      const given = makeAttrs({ config: (dataScopes.get(dataBlock) || {}).data || [] }, {})
+      return Boolean(given.getFirstValue('masked'))
+    }
     const transformer = makeTransformer({
       table: (node, ctx, visiter) => {
         // CSV/data source reference (spec §1672):
@@ -673,15 +774,16 @@ export default (opt: { config?: ConfigScope } = {}) =>
           }
           // whatever is built out of a covered =data block is covered as well,
           // otherwise the table is a way to read what the cover hides
-          const carryCover = built =>
-            makeAttrs(dataBlock, {}).getFirstValue('masked') ? { ...built, guarded: true } : built
+          const carryCover = built => (isMaskedData(dataBlock) ? { ...built, guarded: true } : built)
           const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
           const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
           const isCsv = mimeType === 'text/csv'
           const isTsv = mimeType === 'text/tab-separated-values'
           if (isCsv || isTsv) {
             const text = extractDataText(dataBlock)
-            const rows = isCsv ? parseCsv(text) : parseTsv(text)
+            const read = readTabular(isCsv, mimeParams, text, `data:${ref.target}`, node, report)
+            if (!read) return carryCover(buildCodeFromText(node, text))
+            const { rows, hasHeader } = read
             if (rows.length === 0) {
               report(
                 'table-source-empty',
@@ -690,10 +792,9 @@ export default (opt: { config?: ConfigScope } = {}) =>
               )
               return { ...node, content: [] }
             }
-            const hasHeader = mimeParams.header === 'present'
             const allow = makeAttrs(node, {}).getAllValues('allow')
             const filledNode = { ...node, content: csvToTableContent(rows, hasHeader, allow) }
-            return carryCover(normalizeCellCounts(filledNode, `table data:${ref.target}`, report))
+            return carryCover(normalizeCellCounts(filledNode, `table data:${ref.target}`, report, 'data'))
           }
           // Rule 4: source not tabular → render as code block so content remains visible
           report(
@@ -715,7 +816,7 @@ export default (opt: { config?: ConfigScope } = {}) =>
           // a matched rule replaces the node without descending, so recurse
           // here or tables nested inside cells keep their raw text rows
           const recursed = visiter ? visiter(transformedContent, ctx) : transformedContent
-          return normalizeCellCounts({ ...attached, content: recursed }, 'table', report)
+          return normalizeCellCounts({ ...attached, content: recursed }, 'table', report, 'row')
         }
         const ownScope = scopes.get(node) || {}
         node = { ...node, content: groupRows(node.content || []) }
@@ -818,7 +919,7 @@ export default (opt: { config?: ConfigScope } = {}) =>
           'head:text': head => makeHeaderRow(splitToCells(head.value).map(makeCell)),
         })(node)
 
-        return normalizeCellCounts(res, 'table', report)
+        return normalizeCellCounts(res, 'table', report, 'text')
       },
     })
     return transformer(tree, {})

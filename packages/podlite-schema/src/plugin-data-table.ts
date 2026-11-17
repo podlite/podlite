@@ -1,20 +1,22 @@
 import makeTransformer from './helpers/makeTransformer'
 import makeAttrs from './helpers/config'
 import {
-  parseCsv,
-  parseTsv,
   parseMimeType,
   findDataBlockByKey,
   extractDataText,
   csvToTableContent,
   normalizeCellCounts,
   makeTableReport,
+  readTabular,
+  reportHeaderOf,
+  buildCodeFromText,
 } from './plugin-tables'
 
+// a MIME type inferred from a file extension has no parameters
 const extensionMimeMap: Record<string, string> = {
-  csv: 'text/csv; header=present',
-  tsv: 'text/tab-separated-values; header=present',
-  tab: 'text/tab-separated-values; header=present',
+  csv: 'text/csv',
+  tsv: 'text/tab-separated-values',
+  tab: 'text/tab-separated-values',
 }
 
 function inferMimeFromExtension(path: string): string | undefined {
@@ -23,6 +25,8 @@ function inferMimeFromExtension(path: string): string | undefined {
   return extensionMimeMap[m[1].toLowerCase()]
 }
 
+// The spaces around the items of a comma list are the syntax of the list; a
+// single value keeps its spaces, which are part of a column name.
 function parseColumnsList(values: any[]): string[] {
   if (!Array.isArray(values) || values.length === 0) return []
   if (values.length === 1 && typeof values[0] === 'string' && values[0].includes(',')) {
@@ -31,13 +35,12 @@ function parseColumnsList(values: any[]): string[] {
       .map(s => s.trim())
       .filter(s => s.length > 0)
   }
-  return values.map(v => String(v).trim()).filter(s => s.length > 0)
+  return values.map(v => String(v)).filter(s => s.trim().length > 0)
 }
 
 function resolveColumnIndex(col: string, headerRow: string[] | null, maxCols: number): number {
-  const trimmed = col.trim()
-  if (/^\d+$/.test(trimmed)) {
-    const n = parseInt(trimmed, 10)
+  if (/^\d+$/.test(col)) {
+    const n = parseInt(col, 10)
     const idx = n - 1
     if (idx < 0 || idx >= maxCols) {
       throw new Error(`column index ${n} out of range (1..${maxCols})`)
@@ -93,7 +96,8 @@ function processDataTable(node, tree, report) {
 
   let csvText: string
   let mimeType: string
-  let hasHeader: boolean
+  let mimeParams: Record<string, string>
+  let carryCover = built => built
 
   if (srcRaw) {
     const srcStr = String(srcRaw)
@@ -116,8 +120,12 @@ function processDataTable(node, tree, report) {
       }
       const parsed = parseMimeType(dataMime)
       mimeType = parsed.type
-      hasHeader = parsed.params.header === 'present'
+      mimeParams = parsed.params
+      // a header written on the source is reported at the source
+      if (own && own.from === undefined) reportHeaderOf(mimeType, mimeParams, '=data-table', node, report)
       csvText = extractDataText(dataBlock)
+      // whatever is built out of a covered =data block is covered as well
+      if (makeAttrs(dataBlock, {}).getFirstValue('masked')) carryCover = built => ({ ...built, guarded: true })
     } else {
       return node
     }
@@ -127,7 +135,8 @@ function processDataTable(node, tree, report) {
     }
     const parsed = parseMimeType(mimeAttr)
     mimeType = parsed.type
-    hasHeader = parsed.params.header === 'present'
+    mimeParams = parsed.params
+    reportHeaderOf(mimeType, mimeParams, '=data-table', node, report)
     csvText = bodyText
   }
 
@@ -137,10 +146,13 @@ function processDataTable(node, tree, report) {
     report('table-source-unreadable', `unsupported mime-type ${mimeType}, table rendered as empty`, node)
     return { ...node, name: 'table', content: [] }
   }
-  let rows = isCsv ? parseCsv(csvText) : parseTsv(csvText)
+  const read = readTabular(isCsv, mimeParams, csvText, srcRaw ? String(srcRaw) : 'the body', node, report)
+  if (!read) return carryCover(buildCodeFromText(node, csvText))
+  const hasHeader = read.hasHeader
+  let rows = read.rows
   if (rows.length === 0) {
     report('table-source-empty', `${isCsv ? 'CSV' : 'TSV'} source has no rows, table rendered as empty`, node)
-    return { ...node, name: 'table', content: [] }
+    return carryCover({ ...node, name: 'table', content: [] })
   }
 
   if (columns) {
@@ -156,7 +168,7 @@ function processDataTable(node, tree, report) {
     name: 'table',
     content: csvToTableContent(rows, hasHeader, attrs.getAllValues('allow')),
   }
-  return normalizeCellCounts(filledNode, 'data-table', report)
+  return carryCover(normalizeCellCounts(filledNode, 'data-table', report, 'data-table'))
 }
 
 export default (opt = {}) =>

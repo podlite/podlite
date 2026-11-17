@@ -194,9 +194,10 @@ export interface RootBlock extends Omit<Block, 'location'> {
 }
 
 // reported by the parser, not part of the document: a value that could not be
-// read is dropped together with its attribute
+// read is dropped together with its attribute; an error is a mistake the norm
+// names as one, after which the reading goes on
 export interface ParseDiagnostic {
-  severity: 'warning'
+  severity: 'warning' | 'error'
   code:
     | 'value-unreadable'
     | 'directive-unreadable'
@@ -206,6 +207,8 @@ export interface ParseDiagnostic {
     | 'table-source-unreadable'
     | 'table-source-empty'
     | 'table-source-deferred'
+    | 'table-source-not-csv'
+    | 'table-header-invalid'
     | 'markup-code-unclosed'
     | 'markup-code-longer-run'
     | 'markup-code-foreign-closer'

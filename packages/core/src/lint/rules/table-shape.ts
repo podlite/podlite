@@ -9,6 +9,7 @@ const TABLE_CODES = [
   'table-mixed-separators',
   'table-source-unreadable',
   'table-source-empty',
+  'table-source-not-csv',
 ]
 
 export const tableShapeRule: Rule = {

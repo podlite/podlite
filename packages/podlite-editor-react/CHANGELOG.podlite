@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the editor shows the parser diagnostics of severity C<error>, such as C<table-header-invalid>, as errors
+
 =head1 0.0.91
 
 =item the body of a verbatim block written the short way, such as C<=for assert> or C<=for code :lang<js>>, keeps its highlighting when the editor parses a long or busy document in parts

@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> has the rule C<table-header-invalid>, an error for a C<header> of CSV or TSV data the norm does not know, which switching off or muting C<table-shape> does not silence; content that is not CSV is a warning of C<table-shape>
+
+=item C<podlite convert> prints the reports of the tables of the document to stderr, with the file, the line and the severity
+
 =head1 0.0.98
 
 =item C<podlite lint> rules C<markdown-in-pod> and C<unclosed-markup-code> no longer warn on lines the parser reads as code: implicit code and the body of a verbatim block in any form (C<=for code>, C<=code>, C<=for markdown> and the like, but not a table); an open code that C<:allow> lets through is still reported; a C<:lint-ignore> that only covered such lines is now reported as silencing nothing

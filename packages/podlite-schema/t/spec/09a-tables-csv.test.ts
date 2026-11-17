@@ -55,10 +55,9 @@ sugar,1,cups
     expect(dataRowCells.map(cellText)).toEqual(['flour', '2', 'cups'])
   })
 
-  it('without `header` MIME parameter, no row is marked :header (default `absent`)', () => {
-    // Per RFC 4180 §3 (recognised on :mime-type by podlite-specs PR #25),
-    // header indication defaults to `absent`. Authors who need a header
-    // row must declare `header=present` in the MIME type.
+  it('without `header` MIME parameter, the first row is marked :header (default `present`)', () => {
+    // Per norm 3.0, Data blocks: if the parameter is omitted, its value is
+    // `present`. Authors whose first row is data declare `header=absent`.
     const src = `=for table
 data:people
 
@@ -73,7 +72,7 @@ Alice,30
     }>
     const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
       Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
-    expect(rows.every(r => !isHeader(r))).toBe(true)
+    expect(rows.map(isHeader)).toEqual([true, false])
   })
 
   it('CSV with `header=present` MIME parameter marks first row as :header', () => {
@@ -108,7 +107,7 @@ Mars,3390,2
     expect(headerCells.map(cellText)).toEqual(['name', 'radius_km', 'moons'])
   })
 
-  it('CSV with explicit `header=absent` is treated as no header (default behaviour)', () => {
+  it('CSV with explicit `header=absent` is treated as no header', () => {
     const src = `=for table
 data:people
 
@@ -126,7 +125,7 @@ Alice,30
     expect(rows.every(r => !isHeader(r))).toBe(true)
   })
 
-  it('CSV with unrecognised header value falls back to absent (lenient parsing)', () => {
+  it('CSV with an unrecognised header value is read with the default, the first row a header', () => {
     const src = `=for table
 data:people
 
@@ -141,7 +140,7 @@ Alice,30
     }>
     const isHeader = (r: { config?: Array<{ name: string; value: unknown }> }) =>
       Boolean(r.config?.some(c => c.name === 'header' && c.value === true))
-    expect(rows.every(r => !isHeader(r))).toBe(true)
+    expect(rows.map(isHeader)).toEqual([true, false])
   })
 
   it('TSV with `header=present` MIME parameter marks first row as :header', () => {
@@ -269,8 +268,9 @@ sugar,1
     expect(html).toMatch(/<table[\s>]/)
     expect(html).toMatch(/ingredient/)
     expect(html).toMatch(/flour/)
-    // Without a header marker, all rows render as <td> — no <th>
-    expect(html).not.toMatch(/<th[\s>]/)
+    // Without a header parameter the first row is the header
+    expect(html).toMatch(/<th[\s>]*>ingredient/)
+    expect(html).not.toMatch(/<th[\s>]*>flour/)
   })
 
   it('file: scheme is not resolved (deferred — host reader required)', () => {

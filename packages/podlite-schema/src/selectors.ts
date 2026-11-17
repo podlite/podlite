@@ -11,7 +11,15 @@ import {
 import { ConfigItem } from './types'
 import { parseAttributes } from './helpers/parseAttributes'
 import { blockNameOf, holderInside, Walked } from './helpers/blockName'
-import { extractDataText, findDataBlockByKey, parseCsv, parseMimeType, parseTsv } from './plugin-tables'
+import {
+  CsvError,
+  extractDataText,
+  findDataBlockByKey,
+  headerInEffect,
+  parseCsv,
+  parseMimeType,
+  parseTsv,
+} from './plugin-tables'
 
 /*
 =begin pod
@@ -740,10 +748,20 @@ const dataValues = (key: string, address: string | undefined, home: SelectorDoc[
   if (!mime) throw new SelectorError('format', `the data block ${key} declares no :mime-type: ${source}`)
   const { type, params } = parseMimeType(String(mime))
   const text = extractDataText(block)
-  const rows: string[][] | undefined =
-    type === 'text/csv' ? parseCsv(text) : type === 'text/tab-separated-values' ? parseTsv(text) : undefined
-  if (!rows) throw new SelectorError('address', `${type} content has no columns: ${source}`)
-  const header = params.header === 'present'
+  if (type !== 'text/csv' && type !== 'text/tab-separated-values')
+    throw new SelectorError('address', `${type} content has no columns: ${source}`)
+  // a header the norm does not know is an error of the format, not an empty column
+  const inEffect = headerInEffect(params)
+  if (inEffect.error) throw new SelectorError('format', `the data block ${key}: ${inEffect.error}: ${source}`)
+  let rows: string[][]
+  try {
+    rows = type === 'text/csv' ? parseCsv(text) : parseTsv(text)
+  } catch (e) {
+    if (e instanceof CsvError)
+      throw new SelectorError('format', `the data block ${key} is not CSV (${e.message}): ${source}`)
+    throw e
+  }
+  const header = inEffect.present
   const body = header ? rows.slice(1) : rows
   let column = 0
   if (address) {

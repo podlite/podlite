@@ -2,6 +2,20 @@
 
 =head1 Upcoming
 
+=item CSV and TSV data are read as norm 3.0 says, by C<=table data:>, C<=data-table> and a selector alike: an empty line and a line of spaces are rows, the spaces at the edge of a field belong to the cell and to the value a selector reads, a quoted empty field at the end of CSV is a row, and a CR in TSV ends a line only before an LF
+
+=item without a C<header> parameter the first row of CSV or TSV data is the header; another value, an empty one too, is reported once as the error C<table-header-invalid> at the block it is written on, read or not, and the data is read with the header, while a selector reading such a column fails as a format error
+
+=item CSV with a quote inside an unquoted field or text after a closing quote is shown as a code block in place of the table, with the warning C<table-source-not-csv>; the code block keeps C<:masked> and reads no markup codes; a selector fails on it as a format error
+
+=item C<ParseDiagnostic> may now have the severity C<error>, and the schemas name C<table-header-invalid> and C<table-source-not-csv>
+
+=item a value of C<:columns> in quotes keeps its edge spaces and names a column, even if it holds digits
+
+=item a table read from a C<=data> block that C<=config data> marks C<:masked> is covered, as is a C<=data-table> reading a covered block through C<:src>
+
+=item the warning about a padded row of a table read from CSV or TSV, or written with C<=row> blocks, no longer advises a blank line between rows
+
 =head1 0.0.85
 
 =item a check box is read from the first text of an item, as the C<#> shorthand is: an item whose text starts after a blank line, C<=config> or C<=alias> becomes a task, and implicit code that starts an item no longer makes it one; C<isBeforeText> is exported, for what stands before the text of a block

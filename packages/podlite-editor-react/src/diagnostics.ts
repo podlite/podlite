@@ -3,7 +3,7 @@ import type { Extension } from '@codemirror/state'
 import { podlite as podliteCore } from 'podlite'
 
 export type ParseDiagnostic = {
-  severity: 'warning'
+  severity: 'warning' | 'error'
   message: string
   location: { start: { offset: number; line: number }; end: { offset: number } }
 }
