@@ -17,7 +17,8 @@ export class CsvError extends Error {}
 // with `""` as embedded-quote escape, a line ends at LF with or without CR
 // before it. No line is skipped and spaces belong to the field; a final LF
 // starts no row, and empty content has no rows. A `"` inside an unquoted
-// field and text after a closing quote are not CSV.
+// field, text after a closing quote, a CR outside quotes that does not end a
+// line and a quote left open are not CSV.
 export function parseCsv(text) {
   const rows = []
   let field = ''
@@ -61,6 +62,7 @@ export function parseCsv(text) {
       continue
     }
     if (c === '\r') {
+      if (text[i + 1] !== '\n') throw new CsvError(`a carriage return outside quotes at offset ${i}`)
       i++
       continue
     }
@@ -77,6 +79,7 @@ export function parseCsv(text) {
     field += c
     i++
   }
+  if (inQuote) throw new CsvError('an unclosed quote')
   // a quoted empty field at the very end is a record too
   if (field !== '' || row.length > 0 || quoted) {
     row.push(field)

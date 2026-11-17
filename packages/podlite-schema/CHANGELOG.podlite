@@ -6,7 +6,7 @@
 
 =item without a C<header> parameter the first row of CSV or TSV data is the header; another value, an empty one too, is reported once as the error C<table-header-invalid> at the block it is written on, read or not, and the data is read with the header, while a selector reading such a column fails as a format error
 
-=item CSV with a quote inside an unquoted field or text after a closing quote is shown as a code block in place of the table, with the warning C<table-source-not-csv>; the code block keeps C<:masked> and reads no markup codes; a selector fails on it as a format error
+=item CSV with a quote inside an unquoted field, text after a closing quote, a quote left open or a carriage return outside quotes that does not end a line is shown as a code block in place of the table, with the warning C<table-source-not-csv>; the code block keeps C<:masked> and reads no markup codes; a selector fails on it as a format error
 
 =item C<ParseDiagnostic> may now have the severity C<error>, and the schemas name C<table-header-invalid> and C<table-source-not-csv>
 

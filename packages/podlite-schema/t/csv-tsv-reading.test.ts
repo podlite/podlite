@@ -1,5 +1,5 @@
 import { podlitePluggable, toHtml, toMarkdown, validateAstTree, validatePodliteAst } from '../src'
-import { parseCsv, parseTsv } from '../src/plugin-tables'
+import { CsvError, parseCsv, parseTsv } from '../src/plugin-tables'
 import { runSelector, SelectorDoc, SelectorError } from '../src/selectors'
 
 // CSV and TSV are read the same way by every reader: =table data:, =data-table
@@ -452,5 +452,84 @@ describe('covered data stays covered when it is shown as code', () => {
     const src = `=config data :masked\n\n=begin data :key<d> :mime-type('text/csv')\nh\n${SECRET}\n=end data\n\n=table data:d\n`
     expect(render(src, 'production')).not.toContain(SECRET)
     expect(render(src, 'draft')).toContain(SECRET)
+  })
+})
+
+describe('a quote left open and a CR outside quotes', () => {
+  const failureOf = (text: string) => {
+    try {
+      parseCsv(text)
+      return undefined
+    } catch (e) {
+      return [e instanceof CsvError, e instanceof Error ? e.message : String(e)]
+    }
+  }
+
+  it.each([
+    ['\ra,b', 0],
+    ['a\rb,c\n', 1],
+    ['a,b\rc,d', 3],
+    ['a,\rb', 2],
+    ['a,\r"b"', 2],
+    ['a\r"b"', 1],
+    ['"a"\r,b', 3],
+    ['a,b\r', 3],
+    ['\r', 0],
+    ['a\r\r\nb', 1],
+  ])('CSV %j has a CR outside quotes at offset %i', (text, offset) => {
+    expect(failureOf(text)).toEqual([true, `a carriage return outside quotes at offset ${offset}`])
+  })
+
+  it('keeps a CR inside quotes and ends a line at CRLF', () => {
+    expect(parseCsv('"a\rb",c\n')).toEqual([['a\rb', 'c']])
+    expect(parseCsv('"a\r\nb",c\r\n')).toEqual([['a\r\nb', 'c']])
+    expect(parseCsv('a\r\nb\r\n')).toEqual([['a'], ['b']])
+    expect(parseTsv('a\rb\tc')).toEqual([['a\rb', 'c']])
+  })
+
+  it.each([['"'], ['"unclosed'], ['h\n"a,b\n'], ['h\n"a,b\nz,w\n'], ['h,j\na,"tail'], ['"a""']])(
+    'CSV %j leaves a quote open',
+    text => {
+      expect(failureOf(text)).toEqual([true, 'an unclosed quote'])
+    },
+  )
+
+  it('reads an escaped quote before the closing one', () => {
+    expect(parseCsv('"a"""')).toEqual([['a"']])
+  })
+
+  it.each([
+    ['h\n"aaa\n', 'an unclosed quote'],
+    ['h\na\rb\n', 'a carriage return outside quotes at offset 3'],
+  ])('every table shows %j as code', (body, cause) => {
+    for (const src of Object.values(readers('text/csv; header=present', body))) {
+      const tree = parse(src)
+      expect(find(tree, 'table')).toEqual([])
+      const code = find(tree, 'code')
+      expect(code).toHaveLength(1)
+      expect(code[0].content).toEqual([{ type: 'verbatim', value: body }])
+      const reader = find(parse(src, true), src.includes('=table') ? 'table' : 'data-table')[0]
+      expect(spanOf(code[0])).toEqual(spanOf(reader))
+      const reports = (tree.diagnostics || []).map(d => [d.severity, d.code, d.message])
+      expect(reports).toEqual([['warning', 'table-source-not-csv', expect.stringContaining(cause)]])
+    }
+  })
+
+  it.each([
+    ['h\n"aaa\n', 'an unclosed quote'],
+    ['h\na\rb\n', 'a carriage return outside quotes'],
+  ])('a selector reading %j fails as a format error', (body, cause) => {
+    const doc = `=begin data :key<d> :mime-type('text/csv; header=present')\n${body}=end data\n\n=for Item :v<a>\nX.\n`
+    let failure: unknown
+    try {
+      runSelector('| Item[ :v(in data:d#h) ]', [{ file: 'x.podlite', node: parse(doc) }])
+    } catch (e) {
+      failure = e
+    }
+    expect(failure).toBeInstanceOf(SelectorError)
+    expect(failure instanceof SelectorError && [failure.kind, failure.message.includes(cause)]).toEqual([
+      'format',
+      true,
+    ])
   })
 })
