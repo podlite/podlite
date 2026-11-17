@@ -226,7 +226,7 @@ const hasTopLevelBar = (line: string): boolean => {
   return false
 }
 
-const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
+export const splitDirective = (line: string): { selector: string; mimeType?: string; unread?: boolean } => {
   // without the address of a source there is no place for a configuration: a
   // source is written with its scheme, or without one when a selection follows
   if (!/^[a-z][\w+.-]*:/i.test(line) && !hasTopLevelBar(line)) return { selector: line }

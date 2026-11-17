@@ -51,6 +51,7 @@ export { mergeConfigSettings, propagateConfigDefaults, walkConfigScopes } from '
 export { blockNameOf, holderInside, isDirectiveNode, isWrapper } from './helpers/blockName'
 export type { ConfigScope, ScopedBlock } from './helpers/configPropagation'
 import table_plug from './plugin-tables'
+export { detectSourceReference } from './plugin-tables'
 import data_table_plug from './plugin-data-table'
 
 export function toAst() {
@@ -258,6 +259,7 @@ export { default as Writer } from './writer'
 export {
   parseSelector,
   readSelector,
+  dataKeysOfSelector,
   runSelector,
   outermost,
   filePathMatches,

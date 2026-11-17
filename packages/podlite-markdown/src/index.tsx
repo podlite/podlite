@@ -22,5 +22,5 @@ export const PluginRegister: Plugins = {
   markdown: plugin,
 }
 
-export { md2ast as parseMd } from './tools'
+export { md2ast as parseMd, markdownLinkTargets } from './tools'
 export default plugin

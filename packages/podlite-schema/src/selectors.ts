@@ -219,6 +219,24 @@ const readInOperand = (operands: string): Operand | undefined => {
   return { selector }
 }
 
+// The keys of =data blocks a selector reads through `in data:KEY`, at any depth of
+// nested selectors; a literal such as `in 'data:k'` reads no block.
+export const dataKeysOfSelector = (selector: string): string[] => {
+  const keys: string[] = []
+  const walk = (parsed: ParsedSelector | undefined) => {
+    for (const pattern of parsed ? parsed.patterns : [])
+      for (const condition of pattern.predicate || []) {
+        if (!condition.valueSpec || condition.valueSpec.kind !== 'in') continue
+        const operand = readInOperand(condition.valueSpec.value)
+        if (!operand || !('selector' in operand)) continue
+        if (operand.selector.scheme === 'data' && operand.selector.document) keys.push(operand.selector.document)
+        else walk(operand.selector)
+      }
+  }
+  walk(parseSelector(selector))
+  return keys
+}
+
 // What follows the opening parenthesis is a value when the declaration grammar
 // reads it as one, and otherwise the name of an operation.
 const parenCondition = (modifier: Condition['modifier'], attrName: string, inner: string): Condition | undefined => {

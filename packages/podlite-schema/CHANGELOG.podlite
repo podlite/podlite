@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<dataKeysOfSelector> gives the keys of C<=data> blocks a selector reads through C<in data:KEY>, and C<detectSourceReference> is exported
+
 =item C<:rename> names columns of the source, by name or by place, whatever C<:columns> shows
 
 =item without a header row, C<:rename> labels the other columns by their place and keeps every row as data

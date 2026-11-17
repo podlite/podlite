@@ -175,7 +175,7 @@ export function extractDataText(dataNode) {
 // Detect whether the =table body is a single-line source reference like
 // `data:key` or `file:path` (spec §1672). Returns the parsed reference or
 // null if the body is ordinary table content.
-function detectSourceReference(tableNode) {
+export function detectSourceReference(tableNode) {
   const texts = []
   const walker = makeTransformer({
     'row:text': r => {

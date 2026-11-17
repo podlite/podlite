@@ -24,6 +24,18 @@ import { mkImage } from '@podlite/schema'
 import { mkFomattingCodeO } from '@podlite/schema'
 
 type Md2astArgs = { lineOffset?: number }
+// the destinations of links, images and reference definitions, read by the parser so that code holds none
+export const markdownLinkTargets = (src: string): string[] => {
+  const targets: string[] = []
+  const walk = (node: { type?: string; url?: unknown; children?: unknown }) => {
+    if (['link', 'image', 'definition'].includes(node.type || '') && typeof node.url === 'string')
+      targets.push(node.url)
+    if (Array.isArray(node.children)) node.children.forEach(walk)
+  }
+  walk(unified().use(markdown).use(remarkGfm).use(remarkMath).parse(src))
+  return targets
+}
+
 export const md2ast = (src: string, { lineOffset }: Md2astArgs = { lineOffset: 0 }): AstTree => {
   // first convert mardown to ast
   const md_tree = unified().use(markdown).use(remarkGfm).use(remarkMath).parse(src)

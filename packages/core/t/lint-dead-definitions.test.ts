@@ -85,3 +85,58 @@ describe('without the source text', () => {
     expect(found).toEqual([])
   })
 })
+
+describe('a data key is used only where the document reads it', () => {
+  const block = (key = 'k') => `=begin data :key<${key}> :mime-type<text/csv>\nname\nalpha\n=end data\n\n`
+  const count = (src: string) => check(src).length
+
+  it.each([
+    ['a comment', '=comment see data:k\n'],
+    ['prose', 'The data:k block holds the names.\n'],
+    ['code in a paragraph', 'Read C<data:k> here.\n'],
+    ['a code block', '=begin code\n=table data:k\n=end code\n'],
+    ['a caption', '=for para :caption<data:k>\ntext\n'],
+    ['a literal selector operand', "=include file:x.podlite | X[ :a(in 'data:k') ]\n"],
+    ['the label of a link elsewhere', 'L<data:k|https://example.org>\n'],
+    ['a picture code in a comment', '=comment P<data:k>\n'],
+    ['a link in Z<>', 'Z<L<data:k>>\n'],
+    ['a Markdown link in code', '=begin markdown\n```\n[x](data:k)\n[r]: data:k\n```\n=end markdown\n'],
+  ])('does not count %s', (_, use) => {
+    expect(count(`${block()}${use}`)).toBe(1)
+  })
+
+  it.each([
+    ['a table', '=table data:k\n'],
+    ['a data table', '=for data-table :src<data:k>\n'],
+    ['a source set for the next block', '=set :src<data:k>\n=for data-table\n'],
+    ['a picture', '=picture data:k\n'],
+    ['a picture source', '=for picture :src<data:k>\nalt\n'],
+    ['an inline picture', 'See P<alt|data:k>.\n'],
+    ['a link to a column', 'See L<x|data:k#name>.\n'],
+    ['a web link', 'See W<t|data:k>.\n'],
+    ['a link a code block allows', '=begin code :allow<L W>\nL<data:k>\n=end code\n'],
+    ['a selector operand', '=include file:x.podlite | X[ :a(in data:k) ]\n'],
+    ['a nested selector operand', '=include file:x.podlite | X[ :a(in file:g.podlite | defn[ :b(in data:k) ]) ]\n'],
+    ['a contents selector', '=toc X[ :a(in data:k#name) ]\n'],
+    ['an assertion', '=begin test :id<t>\n=for assert\nX[ :a(in data:k) ]\n=end test\n'],
+    ['a picture whose source follows a blank line', '=begin picture\n\ndata:k\n=end picture\n'],
+    ['a link an alias holds', '=alias R L<read|data:k>\n\nA<R>\n'],
+    ['a picture an alias holds', '=alias R P<alt|data:k>\n\nA<R>\n'],
+    ['a Markdown link and image', '=begin markdown\n[x](data:k) ![alt](data:k)\n=end markdown\n'],
+    ['a Markdown reference link', '=begin markdown\nSee [x][ref].\n\n[ref]: data:k\n=end markdown\n'],
+    ['a Markdown reference in a list', '=begin markdown\n- See [x][ref].\n\n  [ref]: data:k\n=end markdown\n'],
+    ['a Markdown image by reference in a quote', '=begin markdown\n> ![a][r]\n>\n> [r]: data:k\n=end markdown\n'],
+    ['a caption given by =set', '=set :caption L<read|data:k>\n=picture file:x.png\n'],
+  ])('counts %s', (_, use) => {
+    expect(count(`${block()}${use}`)).toBe(0)
+  })
+
+  it('takes the whole key, dots and all', () => {
+    expect(count(`${block('k.v2')}=table data:k.v2\n`)).toBe(0)
+    expect(count(`${block('Logo.png')}=picture data:Logo.png\n`)).toBe(0)
+  })
+
+  it('says the key is never used, without claiming its spelling appears nowhere', () => {
+    expect(check(`${block()}=comment data:k\n`)[0].message).toBe('=data :key<k> is never used')
+  })
+})
