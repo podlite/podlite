@@ -59,6 +59,19 @@ describe('lint', () => {
     ])
   })
 
+  it('reports a source next to a body as an error of its own rule, which table-shape does not silence', () => {
+    const conflict =
+      '=begin data :key<d> :mime-type<text/csv>\nh\nv\n=end data\n\n=begin data-table :src<data:d>\n\n=end data-table\n'
+    const r = lint(conflict)
+    expect(r.violations.map(v => [v.rule, v.severity, v.location.start.line])).toEqual([
+      ['table-source-conflict', 'error', 6],
+    ])
+    expect(r.status).toBe(1)
+    fs.writeFileSync(path.join(dir, 'lint.json'), JSON.stringify({ rules: { 'table-shape': 'off' } }))
+    const off = run(['lint', write(conflict), '--format', 'json', '--config', 'lint.json'])
+    expect(violationsOf(off.stdout).map(v => v.rule)).toEqual(['table-source-conflict'])
+  })
+
   it('reports content that is not CSV as a warning, and only that', () => {
     const r = lint(notCsv)
     expect(r.violations.map(v => [v.rule, v.severity])).toEqual([['table-shape', 'warning']])

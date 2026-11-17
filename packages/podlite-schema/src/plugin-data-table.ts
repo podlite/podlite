@@ -89,10 +89,16 @@ function processDataTable(node, tree, report) {
   const columnsPresent = attrs.exists('columns')
   const columns = columnsPresent ? parseColumnsList(attrs.getAllValues('columns')) : null
   const bodyText = extractDataText(node)
-  const hasInlineBody = bodyText.trim().length > 0
 
-  if (srcRaw && hasInlineBody) {
-    throw new Error(':src and inline body are mutually exclusive')
+  // a blank line is body content too, and an empty :src is an option all the same
+  if (attrs.exists('src') && bodyText.length > 0) {
+    report(
+      'table-source-conflict',
+      ':src and a body are both given; a data table takes its rows from one of them',
+      node,
+      'error',
+    )
+    return { ...node, name: 'table', content: [] }
   }
 
   if (columnsPresent && (!columns || columns.length === 0)) {

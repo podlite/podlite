@@ -208,6 +208,7 @@ export interface ParseDiagnostic {
     | 'table-source-empty'
     | 'table-source-deferred'
     | 'table-source-not-csv'
+    | 'table-source-conflict'
     | 'table-header-invalid'
     | 'markup-code-unclosed'
     | 'markup-code-longer-run'

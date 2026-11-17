@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> has the rule C<table-source-conflict>, an error for a data table given both C<:src> and a body; C<podlite test> does not hold C<:absent> over such a table
+
 =item C<podlite lint> rule C<dead-definitions> counts a C<data:> key as used only where the document may read it, not in prose, comments or code, and takes the whole key, dots included
 
 =item C<podlite lint> has the rule C<table-header-invalid>, an error for a C<header> of CSV or TSV data the norm does not know, which switching off or muting C<table-shape> does not silence; content that is not CSV is a warning of C<table-shape>

@@ -217,7 +217,11 @@ export const prepareDocument = (
     markSections(tree, undefined)
     const at = new Map<number, string>()
     for (const d of diagnostics) {
-      if (d.code === 'table-source-unreadable' || d.code === 'table-source-deferred') {
+      if (
+        d.code === 'table-source-unreadable' ||
+        d.code === 'table-source-deferred' ||
+        d.code === 'table-source-conflict'
+      ) {
         at.set(d.location.start.offset, d.message)
       }
     }

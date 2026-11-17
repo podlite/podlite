@@ -164,6 +164,21 @@ describe('an assertion', () => {
     expect([a.held, a.reason?.kind, a.matches]).toEqual([false, 'source-unsupported', undefined])
   })
 
+  it('does not hold under :absent over a data table given both a source and a body', () => {
+    const main = write(
+      'rules.podlite',
+      `=pod\n\n${aTest('conflict', [
+        block(
+          'fixture',
+          '=begin data :key<d> :mime-type<text/csv>\nh\nv\n=end data\n\n=begin data-table :src<data:d>\n\n=end data-table\n',
+        ),
+        block('assert', 'cell', ' :absent'),
+      ])}`,
+    )
+    const [a] = run(main).tests[0].asserts
+    expect([a.held, a.reason?.kind]).toEqual([false, 'source-unsupported'])
+  })
+
   it('does not hold under :absent over a data table whose data: source cannot be had', () => {
     const main = write(
       'rules.podlite',
