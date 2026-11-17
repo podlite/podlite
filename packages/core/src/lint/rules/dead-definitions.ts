@@ -70,41 +70,28 @@ const aliasUses = (ast: PodliteDocument): Set<string> => {
   return used
 }
 
-// the key of a `data:` address, without the column after `#`
-const keyOf = (address: unknown): string | undefined => {
-  const found = typeof address === 'string' ? /^\s*data:([^\s#]+)/.exec(address) : null
-  return found ? found[1] : undefined
-}
-
 // the text of a block as written: verbatim lines, or the text of the paragraph a directive holds
 const textOf = (node: AnyNode): string =>
   (Array.isArray(node.content) ? node.content : [])
     .map(c => (c && typeof c === 'object' ? (typeof c.value === 'string' ? c.value : textOf(c)) : ''))
     .join('')
 
-const keysBy = (pattern: RegExp, text: string): string[] => {
-  const keys: string[] = []
-  let match: RegExpExecArray | null
-  while ((match = pattern.exec(text)) !== null) keys.push(match[1])
-  return keys
-}
-
-// the keys a link, a web link or a picture code written as text points at
-const codedKeys = (text: string) => keysBy(/[LPW]<(?:[^<>|]*\|)?\s*data:([^\s>#|]+)/g, text)
-
-// the keys a Markdown link or image points at, read by the Markdown parser
-const markdownKeys = (text: string) => markdownLinkTargets(text).map(keyOf)
-
 const firstLine = (text: string): string => text.split('\n').find(line => line.trim() !== '') || ''
+
+// the text of a code that may point somewhere: what follows a bar, or the opening of L, P or W
+const codedTexts = (text: string): string[] => text.match(/(?:\||[LPW](?:<+|«))\s*data:[^\n]*/g) || []
 
 // A key counts as used wherever a document may read it: a source, a table
 // reference, a picture, a selector operand, a link. Prose, comments, code and
 // other attributes never read it. The block that reads a reference replaces it
 // while the tree is built, so the places of reading are found in the tree the
-// parser writes before its plugins, and codes in the finished tree.
-const dataUses = (ast: PodliteDocument, source: string, fileType: FileType): Set<string> => {
-  const used = new Set<string>()
-  const add = (key: string | undefined) => key && used.add(key)
+// parser writes before its plugins, and codes in the finished tree. What is
+// gathered is the text at those places; a key is found in it whole, so a key
+// with a space or a `#` in it is matched as the table reading it matches it.
+const readingTexts = (ast: PodliteDocument, source: string, fileType: FileType): string[] => {
+  const texts: string[] = []
+  const add = (text: unknown) => typeof text === 'string' && texts.push(text)
+  const isComment = (n: AnyNode) => n.type === 'block' && n.name === 'comment'
   // a Markdown document has no Podlite blocks to read before the plugins
   const raw =
     fileType === 'md' ? [] : podlitePluggable().parse(source, { podMode: fileType === 'default' ? 0 : 1, skipChain: 1 })
@@ -112,42 +99,56 @@ const dataUses = (ast: PodliteDocument, source: string, fileType: FileType): Set
     if (Array.isArray(node)) return node.forEach(walkRaw)
     if (!node || typeof node !== 'object') return
     const n = node as AnyNode
-    if (n.name === 'comment') return
-    for (const item of Array.isArray(n.config) ? n.config : []) if (item && item.name === 'src') add(keyOf(item.value))
+    if (isComment(n)) return
+    for (const item of Array.isArray(n.config) ? n.config : [])
+      if (item && (item.name === 'src' || item.name === 'link')) add(item.value)
     if (n.type === 'block' && n.name === 'table') {
       const ref = detectSourceReference(n)
-      if (ref && ref.scheme === 'data') add(keyOf(`data:${ref.target}`))
+      if (ref && ref.scheme === 'data') add(`data:${ref.target}`)
     }
     if (n.type === 'block' && n.name === 'picture') {
-      const [head, ...caption] = textOf(n)
+      const [head = '', ...caption] = textOf(n)
         .split('\n')
         .filter(line => line.trim() !== '')
-      add(keyOf(head))
-      codedKeys(caption.join('\n')).forEach(add)
+      // the address may follow a description on the first line
+      add(head.trim())
+      codedTexts(caption.join('\n')).forEach(add)
     }
     // an alias spells its codes as text until it is called
-    if (n.type === 'alias') codedKeys((Array.isArray(n.replacement) ? n.replacement : []).join('\n')).forEach(add)
-    if (n.type === 'block' && n.name === 'markdown') markdownKeys(textOf(n)).forEach(add)
-    if (n.type === 'block' && n.name === 'include')
-      dataKeysOfSelector(splitDirective(firstLine(textOf(n)).trim()).selector).forEach(add)
-    if (n.type === 'block' && n.name === 'toc') dataKeysOfSelector(firstLine(textOf(n)).trim()).forEach(add)
-    if (n.type === 'block' && n.name === 'assert') dataKeysOfSelector(textOf(n).trim()).forEach(add)
+    if (n.type === 'alias') codedTexts((Array.isArray(n.replacement) ? n.replacement : []).join('\n')).forEach(add)
+    if (n.type === 'block' && n.name === 'markdown') markdownLinkTargets(textOf(n)).forEach(add)
+    const selected = (selector: string) => dataKeysOfSelector(selector).forEach(key => add(`data:${key}`))
+    if (n.type === 'block' && n.name === 'include') selected(splitDirective(firstLine(textOf(n)).trim()).selector)
+    if (n.type === 'block' && n.name === 'toc') selected(firstLine(textOf(n)).trim())
+    if (n.type === 'block' && n.name === 'assert') selected(textOf(n).trim())
     if (Array.isArray(n.content)) n.content.forEach(walkRaw)
   }
   walkRaw(raw)
   const walk = (node: unknown) => {
     if (Array.isArray(node)) return node.forEach(walk)
     if (!node || typeof node !== 'object') return
-    const n = node as AnyNode & { src?: unknown; meta?: unknown; caption?: unknown }
-    if (n.name === 'comment' || (n.type === 'fcode' && n.name === 'Z')) return
-    if (n.type === 'fcode' && (n.name === 'L' || n.name === 'W')) add(keyOf(linkTarget(n)))
-    if (n.type === 'image') add(keyOf(n.src))
+    const n = node as AnyNode & { src?: unknown; caption?: unknown }
+    if (isComment(n) || (n.type === 'fcode' && n.name === 'Z')) return
+    if (n.type === 'fcode' && (n.name === 'L' || n.name === 'W')) add(linkTarget(n))
+    if (n.type === 'image') add(n.src)
     if (Array.isArray(n.content)) n.content.forEach(walk)
     // a caption parsed from an attribute sits beside the content
     if (n.caption && typeof n.caption === 'object') walk(n.caption)
   }
   walk(ast)
-  return used
+  return texts
+}
+
+// `data:KEY` stands in the text, ending where an address or a code ends
+const reads = (texts: string[], key: string): boolean => {
+  const address = `data:${key}`
+  return texts.some(text => {
+    for (let at = text.indexOf(address); at >= 0; at = text.indexOf(address, at + 1)) {
+      const next = text[at + address.length]
+      if ((at === 0 || /[\s|<«(]/.test(text[at - 1])) && (next === undefined || /[\s#|>»)\]]/.test(next))) return true
+    }
+    return false
+  })
 }
 
 export const deadDefinitionsRule: Rule = {
@@ -160,7 +161,7 @@ export const deadDefinitionsRule: Rule = {
     if (declared.length === 0) return []
 
     const aliases = aliasUses(ast)
-    const keys = ctx.source === undefined ? new Set<string>() : dataUses(ast, ctx.source, ctx.fileType)
+    const texts = ctx.source === undefined ? [] : readingTexts(ast, ctx.source, ctx.fileType)
     let lines: Map<string, number> | undefined
     const aliasLine = (name: string): Violation['location'] | undefined => {
       lines = lines || aliasLines(ctx.source || '')
@@ -171,7 +172,7 @@ export const deadDefinitionsRule: Rule = {
     }
 
     return declared
-      .filter(item => !(item.kind === 'alias' ? aliases.has(item.name) : keys.has(item.name)))
+      .filter(item => !(item.kind === 'alias' ? aliases.has(item.name) : reads(texts, item.name)))
       .map(item => ({
         rule: DEAD_DEFINITIONS_RULE_ID,
         severity: 'warning' as const,

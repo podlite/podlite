@@ -127,8 +127,21 @@ describe('a data key is used only where the document reads it', () => {
     ['a Markdown reference in a list', '=begin markdown\n- See [x][ref].\n\n  [ref]: data:k\n=end markdown\n'],
     ['a Markdown image by reference in a quote', '=begin markdown\n> ![a][r]\n>\n> [r]: data:k\n=end markdown\n'],
     ['a caption given by =set', '=set :caption L<read|data:k>\n=picture file:x.png\n'],
+    ['a picture address after its description', '=picture Logo data:k\n'],
+    ['a picture link', '=for picture :link<data:k>\nfile:x.png\n'],
+    ['a link with a coded label an alias holds', '=alias R L<B<read>|data:k>\n\nA<R>\n'],
+    ['a link in double angles an alias holds', '=alias R L<<data:k>>\n\nA<R>\n'],
+    ['a picture code in guillemets in a caption', '=picture file:x.png\nSee P«data:k»\n'],
+    ['a link an alias named comment holds', '=alias comment L<data:k>\n\nA<comment>\n'],
   ])('counts %s', (_, use) => {
     expect(count(`${block()}${use}`)).toBe(0)
+  })
+
+  it('matches a key with a space or a hash as the table reading it does', () => {
+    expect(
+      count("=begin data :key('k v') :mime-type<text/csv>\nname\n=end data\n\n=for data-table :src('data:k v')\n"),
+    ).toBe(0)
+    expect(count("=begin data :key('k#col') :mime-type<text/csv>\nname\n=end data\n\n=table data:k#col\n")).toBe(0)
   })
 
   it('takes the whole key, dots and all', () => {
