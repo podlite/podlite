@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item C<:rename> names columns of the source, by name or by place, whatever C<:columns> shows
+
+=item without a header row, C<:rename> labels the other columns by their place and keeps every row as data
+
+=item a C<:rename> key that the source or C<:columns> does not have is an error, as are two names for one column
+
 =item CSV and TSV data are read as norm 3.0 says, by C<=table data:>, C<=data-table> and a selector alike: an empty line and a line of spaces are rows, the spaces at the edge of a field belong to the cell and to the value a selector reads, a quoted empty field at the end of CSV is a row, and a CR in TSV ends a line only before an LF
 
 =item without a C<header> parameter the first row of CSV or TSV data is the header; another value, an empty one too, is reported once as the error C<table-header-invalid> at the block it is written on, read or not, and the data is read with the header, while a selector reading such a column fails as a format error

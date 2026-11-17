@@ -58,22 +58,27 @@ function resolveColumnIndex(col: string, headerRow: string[] | null, maxCols: nu
   return idx
 }
 
-function projectColumns(rows: string[][], columns: string[], hasHeader: boolean): string[][] {
-  if (rows.length === 0) return rows
-  const maxCols = rows[0].length
-  const headerRow = hasHeader ? rows[0] : null
-  const indices = columns.map(col => resolveColumnIndex(col, headerRow, maxCols))
-  return rows.map(row => indices.map(i => row[i] ?? ''))
-}
+// without a header the widest row sets the width, so no value of a longer row is lost
+const sourceWidth = (rows: string[][], hasHeader: boolean): number =>
+  hasHeader ? rows[0].length : rows.reduce((widest, row) => Math.max(widest, row.length), 0)
 
-function applyRename(rows: string[][], rename: Record<string, string>, hasHeader: boolean): string[][] {
-  if (!hasHeader || rows.length === 0) return rows
-  const headerRow = [...rows[0]]
+function renameLabels(
+  rename: Record<string, string>,
+  shown: number[],
+  headerRow: string[] | null,
+  width: number,
+): string[] {
+  const given = new Map<number, string>()
   for (const [key, newName] of Object.entries(rename)) {
-    const idx = resolveColumnIndex(key, headerRow, headerRow.length)
-    headerRow[idx] = String(newName)
+    const idx = resolveColumnIndex(key, headerRow, width)
+    if (!shown.includes(idx)) throw new Error(`:rename names column ${key}, which :columns leaves out`)
+    const earlier = given.get(idx)
+    if (earlier !== undefined && earlier !== String(newName)) {
+      throw new Error(`:rename gives column ${key} two names, "${earlier}" and "${newName}"`)
+    }
+    given.set(idx, String(newName))
   }
-  return [headerRow, ...rows.slice(1)]
+  return shown.map(i => given.get(i) ?? (headerRow ? headerRow[i] ?? '' : String(i + 1)))
 }
 
 function processDataTable(node, tree, report) {
@@ -149,24 +154,34 @@ function processDataTable(node, tree, report) {
   const read = readTabular(isCsv, mimeParams, csvText, srcRaw ? String(srcRaw) : 'the body', node, report)
   if (!read) return carryCover(buildCodeFromText(node, csvText))
   const hasHeader = read.hasHeader
-  let rows = read.rows
+  const rows = read.rows
+  const rename = renameMap ? Object.entries(renameMap as Record<string, string>) : []
   if (rows.length === 0) {
+    if (rename.length > 0) throw new Error(`:rename names column ${rename[0][0]}, which the source does not have`)
     report('table-source-empty', `${isCsv ? 'CSV' : 'TSV'} source has no rows, table rendered as empty`, node)
     return carryCover({ ...node, name: 'table', content: [] })
   }
 
-  if (columns) {
-    rows = projectColumns(rows, columns, hasHeader)
-  }
-
-  if (renameMap) {
-    rows = applyRename(rows, renameMap as Record<string, string>, hasHeader)
+  const width = sourceWidth(rows, hasHeader)
+  const headerRow = hasHeader ? rows[0] : null
+  const shown = columns ? columns.map(col => resolveColumnIndex(col, headerRow, width)) : null
+  const data = hasHeader ? rows.slice(1) : rows
+  const projected = shown ? data.map(row => shown.map(i => row[i] ?? '')) : data
+  let labels: string[] | null = headerRow && (shown ? shown.map(i => headerRow[i] ?? '') : headerRow)
+  // a :rename, an empty one too, labels the columns of a source without a header
+  if (attrs.exists('rename')) {
+    const all = Array.from({ length: width }, (_, i) => i)
+    labels = renameLabels(Object.fromEntries(rename), shown ?? all, headerRow, width)
   }
 
   const filledNode = {
     ...node,
     name: 'table',
-    content: csvToTableContent(rows, hasHeader, attrs.getAllValues('allow')),
+    content: csvToTableContent(
+      labels ? [labels, ...projected] : projected,
+      labels !== null,
+      attrs.getAllValues('allow'),
+    ),
   }
   return carryCover(normalizeCellCounts(filledNode, 'data-table', report, 'data-table'))
 }
