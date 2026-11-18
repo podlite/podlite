@@ -62,6 +62,18 @@ function resolveColumnIndex(col: string, headerRow: string[] | null, maxCols: nu
 const sourceWidth = (rows: string[][], hasHeader: boolean): number =>
   hasHeader ? rows[0].length : rows.reduce((widest, row) => Math.max(widest, row.length), 0)
 
+// A row of the source wider or narrower than the source is reported by its place
+// among the source records, the header row first; a table showing chosen columns
+// neither pads nor drops the row, so its report says only what the source holds.
+function reportSourceWidths(rows: string[][], width: number, projected: boolean, report, node) {
+  rows.forEach((row, i) => {
+    if (row.length === width) return
+    const place = `data-table ${projected ? 'source ' : ''}row ${i + 1} has ${row.length} of ${width} cells`
+    const repair = row.length < width ? `, padded with ${width - row.length} empty` : `, dropped ${row.length - width}`
+    report('table-row-cells', projected ? place : place + repair, node)
+  })
+}
+
 function renameLabels(
   rename: Record<string, string>,
   shown: number[],
@@ -153,9 +165,10 @@ function processDataTable(node, tree, report) {
 
   const isCsv = mimeType === 'text/csv'
   const isTsv = mimeType === 'text/tab-separated-values'
+  // content that is not tabular is shown as written, as =table shows it
   if (!isCsv && !isTsv) {
-    report('table-source-unreadable', `unsupported mime-type ${mimeType}, table rendered as empty`, node)
-    return { ...node, name: 'table', content: [] }
+    report('table-source-unreadable', `unsupported mime-type ${mimeType}, rendered as =code`, node)
+    return carryCover(buildCodeFromText(node, csvText))
   }
   const read = readTabular(isCsv, mimeParams, csvText, srcRaw ? String(srcRaw) : 'the body', node, report)
   if (!read) return carryCover(buildCodeFromText(node, csvText))
@@ -180,6 +193,9 @@ function processDataTable(node, tree, report) {
     labels = renameLabels(Object.fromEntries(rename), shown ?? all, headerRow, width)
   }
 
+  // reported once the columns and the labels are known to be readable
+  reportSourceWidths(rows, width, shown !== null, report, node)
+
   const filledNode = {
     ...node,
     name: 'table',
@@ -189,7 +205,8 @@ function processDataTable(node, tree, report) {
       attrs.getAllValues('allow'),
     ),
   }
-  return carryCover(normalizeCellCounts(filledNode, 'data-table', report, 'data-table'))
+  // the rows of the source are reported above, by their place in the source
+  return carryCover(normalizeCellCounts(filledNode, 'data-table', () => {}, 'data-table'))
 }
 
 export default (opt = {}) =>

@@ -89,7 +89,7 @@ describe(':rename without a header row', () => {
         ['', 'a'],
         ['z', 'x'],
       ],
-      reports: [],
+      reports: ['table-row-cells'],
     })
   })
 

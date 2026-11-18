@@ -2,6 +2,12 @@
 
 =head1 Upcoming
 
+=item a C<=data-table> reading content of a type that is not CSV or TSV shows it as a code block, as C<=table data:> does
+
+=item such a code block is literal and stands at the place of the table that reads it, covered when the source or the table is masked
+
+=item a C<=data-table> with C<:columns> reports the rows of its source that are wider or narrower than the source, numbered by their place in the source
+
 =item a C<=data-table> given both C<:src> and a body, a blank line too, is the error C<table-source-conflict> and an empty table
 
 =item C<dataKeysOfSelector> gives the keys of C<=data> blocks a selector reads through C<in data:KEY>, and C<detectSourceReference> is exported

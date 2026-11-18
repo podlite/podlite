@@ -448,6 +448,22 @@ describe('covered data stays covered when it is shown as code', () => {
     expect(render(src, 'draft')).toContain(SECRET)
   })
 
+  it.each([
+    [
+      'on the source',
+      `=begin data :key<d> :masked :mime-type<text/plain>\n${SECRET}\n=end data\n\n=for data-table :src<data:d>\n`,
+    ],
+    ['on the reading table', `=begin data-table :masked :mime-type<text/plain>\n${SECRET}\n=end data-table\n`],
+    [
+      'on the source of a table',
+      `=begin data :key<d> :masked :mime-type<text/plain>\n${SECRET}\n=end data\n\n=table data:d\n`,
+    ],
+  ])('content that is not tabular, masked %s, stays covered as code', (_, src) => {
+    expect(find(parse(src), 'code')).toHaveLength(1)
+    expect(render(src, 'production')).not.toContain(SECRET)
+    expect(render(src, 'draft')).toContain(SECRET)
+  })
+
   it('a table read from data masked by =config is covered too', () => {
     const src = `=config data :masked\n\n=begin data :key<d> :mime-type('text/csv')\nh\n${SECRET}\n=end data\n\n=table data:d\n`
     expect(render(src, 'production')).not.toContain(SECRET)

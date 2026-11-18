@@ -243,13 +243,30 @@ export function csvToTableContent(csvRows, hasHeader: boolean, allow: string[] =
 // place and reaches the caller, instead of going straight to the console.
 export type TableReport = (code: string, message: string, node, severity?: 'warning' | 'error') => void
 
+const keyOf = (message: string, offset: number) => `${offset} ${message}`
+
 export function makeTableReport(opt): TableReport {
   const diagnostics = opt && Array.isArray(opt.diagnostics) ? opt.diagnostics : null
+  // the reports already in the list, by place and message, so that a table with
+  // many uneven rows does not search the whole list for each of them
+  const keys = new Set<string>()
+  let counted = -1
   return (code, message, node, severity = 'warning') => {
     const location = node && node.location
     if (!diagnostics || !location) return
-    const seen = diagnostics.some(d => d.message === message && d.location.start.offset === location.start.offset)
-    if (!seen) diagnostics.push({ severity, code, message, location })
+    if (counted !== diagnostics.length) {
+      keys.clear()
+      for (const d of diagnostics) if (d && d.location) keys.add(keyOf(d.message, d.location.start.offset))
+    }
+    const key = keyOf(message, location.start.offset)
+    // a key seen is confirmed against the list, which another hand may have changed
+    const seen =
+      keys.has(key) && diagnostics.some(d => d.message === message && d.location.start.offset === location.start.offset)
+    if (!seen) {
+      diagnostics.push({ severity, code, message, location })
+      keys.add(key)
+    }
+    counted = diagnostics.length
   }
 }
 
@@ -281,7 +298,9 @@ export function normalizeCellCounts(tableNode, source = 'table', report = noRepo
   if (rows.some(rowHasSpan)) return tableNode
 
   const headerRow = rows.find(isHeaderRow)
-  const expected = headerRow ? cellsOf(headerRow).length : Math.max(...rows.map(r => cellsOf(r).length))
+  const expected = headerRow
+    ? cellsOf(headerRow).length
+    : rows.reduce((widest, r) => Math.max(widest, cellsOf(r).length), 0)
   if (expected === 0) return tableNode
 
   let mutated = false
@@ -351,20 +370,7 @@ function detectMixedSeparators(lines, report = noReport, node = null) {
   }
 }
 
-// Rule 4 — replace =table with =code block. Used when a referenced =data
-// source has a non-CSV mime type: the spec mandates the source be rendered
-// as a code block so the user can still see the underlying content.
-function buildCodeFromDataBlock(tableNode, dataBlock) {
-  return {
-    type: 'block',
-    name: 'code',
-    margin: tableNode.margin || '',
-    content: Array.isArray(dataBlock.content) ? dataBlock.content : [],
-    config: Array.isArray(tableNode.config) ? tableNode.config : [],
-  }
-}
-
-// Content that is not CSV is shown as it is written: a code block in place of
+// Content that is not CSV, or not tabular at all, is shown as it is written: a code block in place of
 // the table that read it, keeping the settings of the table, :masked among them,
 // but turned into markup by no :allow of the table or of =config code, since an
 // empty :allow of its own decides first.
@@ -805,7 +811,7 @@ export default (opt: { config?: ConfigScope } = {}) =>
             `=data :key<${ref.target}> has non-tabular mime-type ${rawMime || '(none)'}, rendered as =code`,
             node,
           )
-          return carryCover(buildCodeFromDataBlock(node, dataBlock))
+          return carryCover(buildCodeFromText(node, extractDataText(dataBlock)))
         }
 
         // structured mode: transform row children (wrap implicit cells), then
