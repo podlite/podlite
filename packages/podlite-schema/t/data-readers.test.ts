@@ -58,6 +58,15 @@ describe('a type given to the data block by =config', () => {
     expect(select(`${tsv}${block}\n=for Item :v<w>\nX.\n`, '| Item[ :v(in data:d#j) ]')).toBe(1)
   })
 
+  it('reads the CSV of the task the same way in a table, a data table and a selector', () => {
+    const csv = "=config data :mime-type('text/csv; header=present')\n\n=begin data :key<d>\nh\nv\n=end data\n"
+    expect(readers(csv)).toEqual([
+      [['h'], ['v']],
+      [['h'], ['v']],
+    ])
+    expect(select(`${csv}\n=for Item :v<v>\nX.\n`, '| Item[ :v(in data:d#h) ]')).toBe(1)
+  })
+
   it('yields to a type written on the data block', () => {
     const own = "=begin data :key<d> :mime-type('text/csv; header=present')\nh,j\nv,w\n=end data\n"
     expect(readers(`${tsv}${own}`)[0]).toEqual([
