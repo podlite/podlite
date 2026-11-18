@@ -39,3 +39,8 @@ A block with no `:lang` attribute is not highlighted: nothing declares what the
 code is, so no grammar is loaded for it.
 
 Grammars load one at a time, when a block asks for one.
+
+Podlite itself is highlighted too: `:lang<podlite>`, `:lang<pod6>` and `:lang<rakudoc>`
+take the grammar of [`@podlite/textmate`](https://www.npmjs.com/package/@podlite/textmate),
+fetched only when such a block is on the page. If it cannot be fetched, the block
+stays plain code, and the next block tries again.

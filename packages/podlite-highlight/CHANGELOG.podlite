@@ -2,6 +2,9 @@
 
 =head1 Upcoming
 
+=item blocks in C<:lang<podlite>>, C<:lang<pod6>> or C<:lang<rakudoc>> are highlighted with the grammar of
+C<@podlite/textmate>, loaded only when such a block is shown; until now they came out as plain text
+
 =head1 0.0.17
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>

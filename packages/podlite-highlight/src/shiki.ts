@@ -18,9 +18,13 @@ type CodeToHtmlOptions = {
   decorations?: DecorationItem[]
 }
 
+// A grammar shiki takes in place of a language name, described as loosely as shiki
+// itself needs so the package still type-checks without shiki installed
+export type LanguageRegistration = { name: string; scopeName: string }
+
 export type Highlighter = {
   codeToHtml: (code: string, options: CodeToHtmlOptions) => string
-  loadLanguage: (lang: BundledLanguage) => Promise<void>
+  loadLanguage: (lang: BundledLanguage | LanguageRegistration) => Promise<void>
 }
 
 type ShikiModule = {
@@ -55,6 +59,10 @@ const CONFIG: Config = {
 }
 
 export type ExtendedLanguage = BundledLanguage | 'txt'
+
+// Podlite has no grammar in shiki; these names load the one of @podlite/textmate
+const PODLITE = 'podlite'
+const podliteNames = new Set([PODLITE, 'pod6', 'rakudoc'])
 
 // Language aliases mapping
 const languageAliases: Record<string, ExtendedLanguage> = {
@@ -122,6 +130,8 @@ export async function normalizeLanguage(language?: string): Promise<ExtendedLang
   if (!language) return 'txt'
 
   const normalized = language.toLowerCase()
+  if (podliteNames.has(normalized)) return PODLITE
+
   const { bundledLanguages } = await loadShiki()
 
   if (normalized in bundledLanguages) {
@@ -163,8 +173,13 @@ async function ensureLanguageLoaded(instance: Highlighter, lang: ExtendedLanguag
 
   let pending = state.pendingLoads.get(lang)
   if (!pending) {
-    pending = instance
-      .loadLanguage(lang)
+    // the grammar module is fetched only when a block asks for Podlite, and a failed
+    // fetch is not remembered, so the next block tries again
+    const load =
+      lang === PODLITE
+        ? import('@podlite/textmate').then(({ podliteGrammar }) => instance.loadLanguage(podliteGrammar))
+        : instance.loadLanguage(lang)
+    pending = load
       .then(() => {
         state.loadedLanguages.add(lang)
       })

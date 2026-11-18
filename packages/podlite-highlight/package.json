@@ -23,7 +23,8 @@
     "test": "yarn g:jest  --passWithNoTests"
   },
   "dependencies": {
-    "@podlite/schema": "workspace:*"
+    "@podlite/schema": "workspace:*",
+    "@podlite/textmate": "workspace:*"
   },
   "exports": {
     ".": {
