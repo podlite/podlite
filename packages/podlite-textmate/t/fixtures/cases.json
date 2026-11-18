@@ -1,0 +1,1737 @@
+{
+ "quickstart": "quickstart-81-93.podlite",
+ "cases": [
+  {
+   "id": "table-opener",
+   "code": "=begin table :caption('X')\nA | B\n=end table\n",
+   "expect": [
+    {
+     "find": "=begin",
+     "nth": 0,
+     "has": "keyword.control.directive"
+    },
+    {
+     "find": "table",
+     "nth": 0,
+     "has": "entity.name.tag"
+    },
+    {
+     "find": "caption",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "('X')",
+     "nth": 0,
+     "has": "string.quoted.single"
+    }
+   ]
+  },
+  {
+   "id": "attribute-forms",
+   "code": "=for para :!flag :n(3) :q('a b') :w<x> :l[1,2] :h{a=>1} :s｢t｣ :k'str' :d\"str\"\ntext\n",
+   "expect": [
+    {
+     "find": "!",
+     "nth": 0,
+     "has": "keyword.operator.negation"
+    },
+    {
+     "find": "(3)",
+     "nth": 0,
+     "has": "constant.numeric"
+    },
+    {
+     "find": "('a b')",
+     "nth": 0,
+     "has": "string.quoted.single"
+    },
+    {
+     "find": "<x>",
+     "nth": 0,
+     "has": "string.unquoted"
+    },
+    {
+     "find": "[1,2]",
+     "nth": 0,
+     "has": "meta.structure.list"
+    },
+    {
+     "find": "{a=>1}",
+     "nth": 0,
+     "has": "meta.structure.dictionary"
+    },
+    {
+     "find": "｢t｣",
+     "nth": 0,
+     "has": "string.quoted.other"
+    },
+    {
+     "find": "'str'",
+     "nth": 0,
+     "has": "string.quoted.single"
+    },
+    {
+     "find": "\"str\"",
+     "nth": 0,
+     "has": "string.quoted.double"
+    }
+   ]
+  },
+  {
+   "id": "continuation",
+   "code": "=for para\n=   :id<x>\ntext\n",
+   "expect": [
+    {
+     "find": "=",
+     "nth": 1,
+     "has": "punctuation.definition.continuation"
+    },
+    {
+     "find": "id",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "continuation-after-text",
+   "code": "=for para\ntext\n=   :id<x>\n",
+   "expect": [
+    {
+     "find": "id",
+     "nth": 0,
+     "hasNot": "entity.other.attribute-name"
+    },
+    {
+     "find": "=",
+     "nth": 1,
+     "hasNot": "punctuation.definition.continuation"
+    }
+   ]
+  },
+  {
+   "id": "abbreviated-data",
+   "code": "=Name :id<x> rest\n",
+   "expect": [
+    {
+     "find": "Name",
+     "nth": 0,
+     "has": "entity.name.tag.custom"
+    },
+    {
+     "find": "id",
+     "nth": 0,
+     "hasNot": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "name-underscore",
+   "code": "=begin _X\ntext\n=end _X\n",
+   "expect": [
+    {
+     "find": "_X",
+     "nth": 0,
+     "has": "entity.name.tag"
+    }
+   ]
+  },
+  {
+   "id": "name-unicode",
+   "code": "=begin étage\ntext\n=end étage\n",
+   "expect": [
+    {
+     "find": "étage",
+     "nth": 0,
+     "has": "entity.name.tag.custom"
+    }
+   ]
+  },
+  {
+   "id": "name-hyphen",
+   "code": "=begin data-x\ntext\n=end data-x\n",
+   "expect": [
+    {
+     "find": "data-x",
+     "nth": 0,
+     "has": "entity.name.tag.custom"
+    },
+    {
+     "find": "text",
+     "nth": 0,
+     "hasNot": "markup.raw"
+    }
+   ]
+  },
+  {
+   "id": "heading",
+   "code": "=head1 Title with B<bold>\n",
+   "expect": [
+    {
+     "find": "Title",
+     "nth": 0,
+     "has": "markup.heading"
+    },
+    {
+     "find": "bold",
+     "nth": 0,
+     "has": "markup.heading"
+    },
+    {
+     "find": "bold",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "heading-then-paragraph",
+   "code": "=head1 Title\n\ntext\n",
+   "expect": [
+    {
+     "find": "text",
+     "nth": 0,
+     "hasNot": "markup.heading"
+    }
+   ]
+  },
+  {
+   "id": "comment-then-paragraph",
+   "code": "=comment note\n\ntext\n",
+   "expect": [
+    {
+     "find": "note",
+     "nth": 0,
+     "has": "comment.block"
+    },
+    {
+     "find": "text",
+     "nth": 0,
+     "hasNot": "comment.block"
+    }
+   ]
+  },
+  {
+   "id": "task-items",
+   "code": "=item [x] task\n=item [ ] task\n",
+   "expect": [
+    {
+     "find": "[x]",
+     "nth": 0,
+     "has": "constant.language.task"
+    },
+    {
+     "find": "[ ]",
+     "nth": 0,
+     "has": "constant.language.task"
+    }
+   ]
+  },
+  {
+   "id": "nesting",
+   "code": "B<one I<two> three>\n",
+   "expect": [
+    {
+     "find": "two",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "two",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "three",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "three",
+     "nth": 0,
+     "hasNot": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "nesting-guillemets",
+   "code": "B«up I«in»»\n",
+   "expect": [
+    {
+     "find": "in",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "in",
+     "nth": 0,
+     "has": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "multiline-bold",
+   "code": "B<across\nlines> after\n",
+   "expect": [
+    {
+     "find": "lines",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "code-no-codes",
+   "code": "C<A B<x> tail> after\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    },
+    {
+     "find": "tail",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-double-angles",
+   "code": "C<< $a<b> >> after\n",
+   "expect": [
+    {
+     "find": "b",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-double-nested",
+   "code": "C<< $a<<b>> tail >> after\n",
+   "expect": [
+    {
+     "find": "tail",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-triple",
+   "code": "C<<< a >> b >>> after\n",
+   "expect": [
+    {
+     "find": "b",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-quadruple",
+   "code": "C<<<<x>>>> after\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "named-block",
+   "code": "=begin MyBlock\nB<x>\n=end MyBlock\nB<back>\n",
+   "expect": [
+    {
+     "find": "MyBlock",
+     "nth": 0,
+     "has": "entity.name.tag.custom"
+    },
+    {
+     "find": "B<x>",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    },
+    {
+     "find": "back",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "link-label",
+   "code": "L<label|https://x>\n",
+   "expect": [
+    {
+     "find": "label",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "https://x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "link-address",
+   "code": "L<https://x>\n",
+   "expect": [
+    {
+     "find": "https://x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "link-first-bar",
+   "code": "L<a|b|c>\n",
+   "expect": [
+    {
+     "find": "a",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "b|c",
+     "nth": 0,
+     "has": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "link-nested-bar",
+   "code": "L<B<a|b>|doc:x :title('a|b')>\n",
+   "expect": [
+    {
+     "find": "a|b",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "a|b",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "title",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "('a|b')",
+     "nth": 0,
+     "has": "string.quoted.single"
+    }
+   ]
+  },
+  {
+   "id": "backlink",
+   "code": "W<term|defn:term>\n",
+   "expect": [
+    {
+     "find": "term",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "defn:term",
+     "nth": 0,
+     "has": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "link-attribute-bar",
+   "code": "L<doc:x :title('a|b')>\n",
+   "expect": [
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "hasNot": "string.other.link"
+    },
+    {
+     "find": "title",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "link-bar-next-line",
+   "code": "L<label\n|doc:x> after\n",
+   "expect": [
+    {
+     "find": "label",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "recover-at-directive",
+   "code": "B<open\n\n=head1 Next\n",
+   "expect": [
+    {
+     "find": "Next",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "recover-innermost",
+   "code": "C< open < pair\n=head1 Next\n",
+   "expect": [
+    {
+     "find": "Next",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    },
+    {
+     "find": "Next",
+     "nth": 0,
+     "has": "markup.heading"
+    }
+   ]
+  },
+  {
+   "id": "recover-at-spaces",
+   "code": "=for para\nB<x\n \nafter\n",
+   "expect": [
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "limit-enclosing-closer",
+   "code": "B<outer I«child> tail\n",
+   "expect": [
+    {
+     "find": "tail",
+     "nth": 0,
+     "has": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "limit-empty-line-continuation",
+   "code": "=for para\n\n=  :id<x>\n",
+   "expect": [
+    {
+     "find": "id",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "code-body",
+   "code": "=begin code\nB<x>\n=end other\n=end code\nB<back>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    },
+    {
+     "find": "=end other",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "=end",
+     "nth": 1,
+     "has": "keyword.control.directive"
+    },
+    {
+     "find": "back",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "comment-body",
+   "code": "=begin comment\n=begin code\ncomment text\n=end comment\nB<back>\n",
+   "expect": [
+    {
+     "find": "comment text",
+     "nth": 0,
+     "has": "comment.block"
+    },
+    {
+     "find": "=begin code",
+     "nth": 0,
+     "has": "comment.block"
+    },
+    {
+     "find": "back",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "paragraph-code-spaces",
+   "code": "=for code\nX\n \nafter\n",
+   "expect": [
+    {
+     "find": "X",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "paragraph-code-directive",
+   "code": "=for code\n=head1 Title\n",
+   "expect": [
+    {
+     "find": "Title",
+     "nth": 0,
+     "has": "markup.heading"
+    },
+    {
+     "find": "Title",
+     "nth": 0,
+     "hasNot": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "limit-paragraph-code-empty-line",
+   "code": "=for code\nX\n\nafter\n",
+   "expect": [
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "simple-table",
+   "code": "=begin table\nA | B\n====|====\n=fro | B<word>\n=end table\n",
+   "expect": [
+    {
+     "find": "====|====",
+     "nth": 0,
+     "has": "punctuation.separator.table"
+    },
+    {
+     "find": "fro",
+     "nth": 0,
+     "hasNot": "entity.name.tag"
+    },
+    {
+     "find": "word",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "structured-table",
+   "code": "=begin table :caption('Team')\n=begin row\n=begin cell\nName\n=end cell\n=for cell :rowspan<2>\nAlice\n=end row\n=begin row\n=begin cell\n=begin code\n=cell sample\n=end code\n=end cell\n=end row\n=end table\n",
+   "expect": [
+    {
+     "find": "row",
+     "nth": 0,
+     "has": "entity.name.tag"
+    },
+    {
+     "find": "cell",
+     "nth": 0,
+     "has": "entity.name.tag"
+    },
+    {
+     "find": "rowspan",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "=cell sample",
+     "nth": 0,
+     "has": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "output-markup",
+   "code": "=output R<name> and K<R<inner>>\n",
+   "expect": [
+    {
+     "find": "name",
+     "nth": 0,
+     "has": "variable.other"
+    },
+    {
+     "find": "inner",
+     "nth": 0,
+     "has": "variable.other"
+    },
+    {
+     "find": "inner",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "output-delimited",
+   "code": "=begin output\nB<before\n \nafter>\n=end output\n",
+   "expect": [
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "picture-abbreviated",
+   "code": "=picture photo.png\nCaption with I<x>\n",
+   "expect": [
+    {
+     "find": "photo.png",
+     "nth": 0,
+     "has": "string.unquoted.source"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "picture-delimited",
+   "code": "=begin picture :id<p>\n=   :caption<c>\n \nphoto.png\nCaption with I<x>\n=end picture\n",
+   "expect": [
+    {
+     "find": "caption",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "photo.png",
+     "nth": 0,
+     "has": "string.unquoted.source"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "Caption",
+     "nth": 0,
+     "hasNot": "string.unquoted.source"
+    }
+   ]
+  },
+  {
+   "id": "config-operand",
+   "code": "=config C<> :allow<B>\n",
+   "expect": [
+    {
+     "find": "=config",
+     "nth": 0,
+     "has": "keyword.control.directive"
+    },
+    {
+     "find": "C<>",
+     "nth": 0,
+     "has": "entity.name.tag.markup"
+    },
+    {
+     "find": "allow",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "alias",
+   "code": "=alias NAME text B<boldx>\n=   more B<boldy>\n",
+   "expect": [
+    {
+     "find": "NAME",
+     "nth": 0,
+     "has": "variable.other.alias"
+    },
+    {
+     "find": "boldx",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "boldy",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "include-attribute",
+   "code": "=include file:./a.podlite :mime-type('text/podlite')\n",
+   "expect": [
+    {
+     "find": "file:./a.podlite",
+     "nth": 0,
+     "has": "string.unquoted.source"
+    },
+    {
+     "find": "mime-type",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "include-predicate",
+   "code": "=include doc:File1 | data[ :x(in file:none.podlite | defn) ]\n",
+   "expect": [
+    {
+     "find": "doc:File1",
+     "nth": 0,
+     "has": "string.unquoted.source"
+    },
+    {
+     "find": ":x",
+     "nth": 0,
+     "has": "string.unquoted.selector"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "include-attribute-then-selection",
+   "code": "=include file:./x.txt :mime-type<text/markdown> | head2\n",
+   "expect": [
+    {
+     "find": "mime-type",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "| head2",
+     "nth": 0,
+     "has": "string.unquoted.selector"
+    }
+   ]
+  },
+  {
+   "id": "include-selection-only",
+   "code": "=include data[ :x(in file:none.podlite | defn) ]\n",
+   "expect": [
+    {
+     "find": ":x",
+     "nth": 0,
+     "has": "string.unquoted.selector"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "boundary",
+   "code": "=boundary :caption<Two>\n",
+   "expect": [
+    {
+     "find": "=boundary",
+     "nth": 0,
+     "has": "keyword.control.directive"
+    },
+    {
+     "find": "caption",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "set-value",
+   "code": "=set :caption first B<one\n=   two>\n=para after\n",
+   "expect": [
+    {
+     "find": "=",
+     "nth": 1,
+     "has": "markup.bold",
+     "note": "limit: inside an open markup code the continuation sign is code text"
+    },
+    {
+     "find": "one",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "two",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "set-attributes",
+   "code": "=set :id<x>\n=   :folded<true>\n",
+   "expect": [
+    {
+     "find": "folded",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "=",
+     "nth": 1,
+     "has": "punctuation.definition.continuation"
+    }
+   ]
+  },
+  {
+   "id": "abbreviated-no-continuation",
+   "code": "=para :id<data>\n=  :id<x>\n",
+   "expect": [
+    {
+     "find": "id",
+     "nth": 1,
+     "hasNot": "entity.other.attribute-name"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-0",
+   "code": "  =begin code\n  YYY\n  =end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-1",
+   "code": "  =begin code\n  YYY\n=end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-2",
+   "code": " =begin code\n YYY\n\t=end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-3",
+   "code": "\t=begin code\n\tYYY\n        =end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-inner",
+   "code": "=begin code\n  =end code\nYYY\n=end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-indent-deeper",
+   "code": "  =begin code\n    =end code\nYYY\n  =end code\nB<after>\n",
+   "expect": [
+    {
+     "find": "YYY",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "end-whole-name",
+   "code": "=begin data\nX\n=end data-table\nB<mid>\n=end data\n",
+   "expect": [
+    {
+     "find": "mid",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "mid",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "limit-end-dedent-first",
+   "code": "  =begin code\nX\n=end code\nB<mid>\n  =end code\n",
+   "expect": [
+    {
+     "find": "mid",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "implicit-start",
+   "code": "  B<x>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "implicit-after-spaces",
+   "code": "intro\n \n  B<x>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "implicit-after-text",
+   "code": "intro\n  B<x>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "limit-implicit-after-empty-line",
+   "code": "intro\n\n  B<x>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "implicit-in-para",
+   "code": "=begin para\n  B<x>\n=end para\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "implicit-exit",
+   "code": "  B<x>\n  I<y>\nnormal B<z>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "y",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "z",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "normal",
+     "nth": 0,
+     "hasNot": "markup.raw.block"
+    }
+   ]
+  },
+  {
+   "id": "implicit-directive-exit",
+   "code": "  code\n  =head1 X\n",
+   "expect": [
+    {
+     "find": "code",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "X",
+     "nth": 0,
+     "hasNot": "markup.raw.block"
+    },
+    {
+     "find": "X",
+     "nth": 0,
+     "has": "markup.heading"
+    }
+   ]
+  },
+  {
+   "id": "verbatim-code-v",
+   "code": "V<B<x>>\n",
+   "expect": [
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    },
+    {
+     "find": "x",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "nested-closer-indent",
+   "code": "  =begin nested\ntext\n=end nested\nB<back>\n",
+   "expect": [
+    {
+     "find": "back",
+     "nth": 0,
+     "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "nested-closer-deeper",
+   "code": "=begin nested\ntext\n  =end nested\n  code\n",
+   "expect": [
+    {
+     "find": "code",
+     "nth": 0,
+     "has": "markup.raw.block",
+     "note": "closed: an indented line at the root is implicit code"
+    }
+   ]
+  },
+  {
+   "id": "pod-heading-paragraph",
+   "code": "=begin pod\n=head1 A heading\n\nThis is Podlite too.\n=end pod\n",
+   "expect": [
+    {
+     "find": "heading",
+     "nth": 0,
+     "has": "markup.heading"
+    },
+    {
+     "find": "This",
+     "nth": 0,
+     "hasNot": "markup.heading"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-B",
+   "code": "text B<wordB> end\n",
+   "expect": [
+    {
+     "find": "wordB",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "B<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-I",
+   "code": "text I<wordI> end\n",
+   "expect": [
+    {
+     "find": "wordI",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "I<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-U",
+   "code": "text U<wordU> end\n",
+   "expect": [
+    {
+     "find": "wordU",
+     "nth": 0,
+     "has": "markup.underline"
+    },
+    {
+     "find": "U<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.underline"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-O",
+   "code": "text O<wordO> end\n",
+   "expect": [
+    {
+     "find": "wordO",
+     "nth": 0,
+     "has": "markup.strikethrough"
+    },
+    {
+     "find": "O<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.strikethrough"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-K",
+   "code": "text K<wordK> end\n",
+   "expect": [
+    {
+     "find": "wordK",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "K<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-T",
+   "code": "text T<wordT> end\n",
+   "expect": [
+    {
+     "find": "wordT",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "T<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-C",
+   "code": "text C<wordC> end\n",
+   "expect": [
+    {
+     "find": "wordC",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "C<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "markup.inline.raw"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-Z",
+   "code": "text Z<wordZ> end\n",
+   "expect": [
+    {
+     "find": "wordZ",
+     "nth": 0,
+     "has": "comment.block"
+    },
+    {
+     "find": "Z<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "comment.block"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-G",
+   "code": "text G<wordG> end\n",
+   "expect": [
+    {
+     "find": "wordG",
+     "nth": 0,
+     "has": "comment.block"
+    },
+    {
+     "find": "G<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "comment.block"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-E",
+   "code": "text E<wordE> end\n",
+   "expect": [
+    {
+     "find": "wordE",
+     "nth": 0,
+     "has": "constant.character.entity"
+    },
+    {
+     "find": "E<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "constant.character.entity"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-A",
+   "code": "text A<wordA> end\n",
+   "expect": [
+    {
+     "find": "wordA",
+     "nth": 0,
+     "has": "variable.other"
+    },
+    {
+     "find": "A<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "variable.other"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-R",
+   "code": "text R<wordR> end\n",
+   "expect": [
+    {
+     "find": "wordR",
+     "nth": 0,
+     "has": "variable.other"
+    },
+    {
+     "find": "R<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "variable.other"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-D",
+   "code": "text D<wordD> end\n",
+   "expect": [
+    {
+     "find": "wordD",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "D<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-F",
+   "code": "text F<wordF> end\n",
+   "expect": [
+    {
+     "find": "wordF",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "F<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-H",
+   "code": "text H<wordH> end\n",
+   "expect": [
+    {
+     "find": "wordH",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "H<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-J",
+   "code": "text J<wordJ> end\n",
+   "expect": [
+    {
+     "find": "wordJ",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "J<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-M",
+   "code": "text M<wordM> end\n",
+   "expect": [
+    {
+     "find": "wordM",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "M<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-N",
+   "code": "text N<wordN> end\n",
+   "expect": [
+    {
+     "find": "wordN",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "N<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-P",
+   "code": "text P<wordP> end\n",
+   "expect": [
+    {
+     "find": "wordP",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "P<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-S",
+   "code": "text S<wordS> end\n",
+   "expect": [
+    {
+     "find": "wordS",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "S<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-X",
+   "code": "text X<wordX> end\n",
+   "expect": [
+    {
+     "find": "wordX",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "X<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-Y",
+   "code": "text Y<wordY> end\n",
+   "expect": [
+    {
+     "find": "wordY",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "Y<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  }
+ ]
+}

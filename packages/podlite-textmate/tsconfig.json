@@ -1,0 +1,17 @@
+{
+  "include": ["src"],
+  "exclude": ["lib", "t"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "declaration": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "composite": true
+  }
+}

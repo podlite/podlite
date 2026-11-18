@@ -1742,6 +1742,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@podlite/textmate@workspace:packages/podlite-textmate":
+  version: 0.0.0-use.local
+  resolution: "@podlite/textmate@workspace:packages/podlite-textmate"
+  dependencies:
+    shiki: ^3.21.0
+  languageName: unknown
+  linkType: soft
+
 "@podlite/to-jsx@workspace:*, @podlite/to-jsx@workspace:packages/podlite-to-jsx":
   version: 0.0.0-use.local
   resolution: "@podlite/to-jsx@workspace:packages/podlite-to-jsx"

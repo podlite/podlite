@@ -1,0 +1,59 @@
+{
+  "name": "@podlite/textmate",
+  "version": "0.0.0",
+  "description": "TextMate grammar for Podlite markup, for shiki and other TextMate highlighters",
+  "main": "./lib/index.js",
+  "module": "./esm/index.js",
+  "types": "./lib/index.d.ts",
+  "sideEffects": false,
+  "homepage": "https://podlite.org",
+  "bugs": {
+    "url": "https://github.com/podlite/podlite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/podlite/podlite.git",
+    "directory": "packages/podlite-textmate"
+  },
+  "license": "MIT",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/podlite"
+  },
+  "scripts": {
+    "build": "yarn g:build && node ./scripts/write-json.mjs",
+    "test": "yarn g:jest  --passWithNoTests"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./podlite.tmLanguage.json": "./lib/podlite.tmLanguage.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "esm",
+    "README.md",
+    "CHANGELOG.podlite",
+    "LICENSE"
+  ],
+  "keywords": [
+    "podlite",
+    "textmate",
+    "tmlanguage",
+    "grammar",
+    "shiki",
+    "syntax-highlighting",
+    "markup-language"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "shiki": "^3.21.0"
+  }
+}

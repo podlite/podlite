@@ -1,0 +1,13 @@
+=head1 Enhanced with Podlite
+
+=begin nested :notice<note>
+This notification block doesn't exist in pure Markdown, 
+but it's seamlessly integrated here!
+=end nested
+
+=table
+Name        | Role           | Superpower
+============|================|=====================
+Alice       | Developer      | Debugging telepathy
+Bob         | Designer       | Perfect color vision  
+Carol       | Manager        | Meeting time control

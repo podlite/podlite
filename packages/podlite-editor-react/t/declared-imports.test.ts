@@ -17,7 +17,7 @@ const run = (pkgDir: string): { code: number; out: string } => {
 
 // Packages whose manifests are known to match their code. The rest of the monorepo
 // is not clean yet, so the gate names what it guards instead of checking everything
-const GUARDED = ['podlite-editor-react', 'podlite-publisher']
+const GUARDED = ['podlite-editor-react', 'podlite-publisher', 'podlite-textmate']
 
 describe('a guarded package declares what it imports', () => {
   for (const pkg of GUARDED) {
