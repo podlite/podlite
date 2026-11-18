@@ -518,6 +518,8 @@ export interface BlockPod extends Block {
 
 export interface BlockData extends Block {
   name: 'data'
+  // the body as written, kept when :allow has read markup codes in it
+  dataText?: string
 }
 
 export interface BlockComment extends Block {

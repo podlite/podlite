@@ -465,6 +465,9 @@
                     "type": "string",
                     "const": "data"
                 },
+                "dataText": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "const": "block"

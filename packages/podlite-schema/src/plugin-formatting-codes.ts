@@ -187,7 +187,11 @@ const middle: ParserPlugin = opt => tree => {
         },
         ':block': (node, ctx) => transformerBlocks(node, { ...ctx, allowedIn, allowFromTable: passesAllow }),
       })
-      return { ...n, content: transformer(n.content, inner) }
+      const read_ = { ...n, content: transformer(n.content, inner) }
+      // the body of a data block stays as written for those who read it as data
+      if (name !== 'data') return read_
+      const body = (Array.isArray(n.content) ? n.content : []).find(c => c && c.type === 'verbatim')
+      return body && typeof body.value === 'string' ? { ...read_, dataText: body.value } : read_
     },
   })
   // a document needs no enclosing block, so the top level is a scope of its own

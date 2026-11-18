@@ -2,6 +2,10 @@
 
 =head1 Upcoming
 
+=item C<=table data:> reads a C<:mime-type> that C<=config data> gives the data block, as a C<=data-table> and a selector do
+
+=item a selector reads the body of a C<=data> block with C<:allow> as written, as a table does; such a block keeps its body as written in the new field C<dataText>
+
 =item a C<=data-table> reading content of a type that is not CSV or TSV shows it as a code block, as C<=table data:> does
 
 =item such a code block is literal and stands at the place of the table that reads it, covered when the source or the table is masked

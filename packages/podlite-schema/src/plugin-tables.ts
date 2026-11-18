@@ -166,10 +166,12 @@ export function findDataBlockByKey(tree, key) {
   return found
 }
 
+// the body of a data block as written: its verbatim text, or the copy kept once :allow read codes in it
 export function extractDataText(dataNode) {
   if (!dataNode || !Array.isArray(dataNode.content)) return ''
   const verbatim = dataNode.content.find(c => c && c.type === 'verbatim')
-  return verbatim && typeof verbatim.value === 'string' ? verbatim.value : ''
+  if (verbatim && typeof verbatim.value === 'string') return verbatim.value
+  return typeof dataNode.dataText === 'string' ? dataNode.dataText : ''
 }
 
 // Detect whether the =table body is a single-line source reference like
@@ -739,13 +741,16 @@ export default (opt: { config?: ConfigScope } = {}) =>
       if (block.name === 'table') scopes.set(block, { ...scope })
       if (block.name === 'data') dataScopes.set(block, { ...scope })
     })
-    // the header of every =data block, the one a =config gives it as well
-    for (const [dataBlock, scope] of dataScopes) {
+    // the format of a =data block: its own, one =set gave it, or one =config data gives it
+    const mimeOfData = dataBlock => {
       const own = makeAttrs(dataBlock, {})
-      const mime = own.exists('mime-type')
-        ? own.getFirstValue('mime-type')
-        : makeAttrs({ config: scope.data || [] }, {}).getFirstValue('mime-type')
-      const { type, params } = parseMimeType(mime)
+      if (own.exists('mime-type')) return own.getFirstValue('mime-type')
+      return makeAttrs({ config: (dataScopes.get(dataBlock) || {}).data || [] }, {}).getFirstValue('mime-type')
+    }
+    // the header of every =data block, the one a =config gives it as well
+    for (const dataBlock of dataScopes.keys()) {
+      const own = makeAttrs(dataBlock, {})
+      const { type, params } = parseMimeType(mimeOfData(dataBlock))
       const key = own.getFirstValue('key')
       reportHeaderOf(type, params, key ? `=data :key<${key}>` : '=data', dataBlock, report)
     }
@@ -784,7 +789,7 @@ export default (opt: { config?: ConfigScope } = {}) =>
           // whatever is built out of a covered =data block is covered as well,
           // otherwise the table is a way to read what the cover hides
           const carryCover = built => (isMaskedData(dataBlock) ? { ...built, guarded: true } : built)
-          const rawMime = makeAttrs(dataBlock, {}).getFirstValue('mime-type')
+          const rawMime = mimeOfData(dataBlock)
           const { type: mimeType, params: mimeParams } = parseMimeType(rawMime)
           const isCsv = mimeType === 'text/csv'
           const isTsv = mimeType === 'text/tab-separated-values'
