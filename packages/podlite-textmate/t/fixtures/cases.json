@@ -737,6 +737,42 @@
    ]
   },
   {
+   "id": "abbreviated-rows-and-cells",
+   "code": "=begin table\n    =row :header\n        =for cell :row-span(2)\n        Date\n        =cell I<first>\n=end table\n",
+   "expect": [
+    {
+     "find": "row",
+     "nth": 0,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "=for",
+     "nth": 0,
+     "has": "keyword.control.directive"
+    },
+    {
+     "find": "cell",
+     "nth": 0,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "row-span",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "cell",
+     "nth": 1,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "first",
+     "nth": 0,
+     "has": "markup.italic"
+    }
+   ]
+  },
+  {
    "id": "output-markup",
    "code": "=output R<name> and K<R<inner>>\n",
    "expect": [

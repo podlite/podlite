@@ -411,10 +411,17 @@ const itemLine: GrammarRule = {
 const cellMarkers: GrammarRule = {
   patterns: [
     {
-      begin: R`^([ \t]*)(=for|=)(row|cell)${AFTER_NAME}(.*)$`,
+      begin: R`^([ \t]*)(=for)[ \t]+(row|cell)${AFTER_NAME}(.*)$`,
       beginCaptures: { 2: { name: DIRECTIVE }, 3: { name: 'entity.name.tag.standard.podlite' }, 4: ATTRIBUTES },
       end: END_PARAGRAPH,
       patterns: [header, { include: '#inline-paragraph' }],
+    },
+    {
+      // the rest of an abbreviated row or cell is its text
+      begin: R`^([ \t]*)(=)(row|cell)${AFTER_NAME}`,
+      beginCaptures: { 2: { name: SIGN }, 3: { name: 'entity.name.tag.standard.podlite' } },
+      end: END_PARAGRAPH,
+      patterns: [{ include: '#inline-paragraph' }],
     },
   ],
 }
