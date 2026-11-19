@@ -29,7 +29,7 @@
   },
   {
    "id": "attribute-forms",
-   "code": "=for para :!flag :n(3) :q('a b') :w<x> :l[1,2] :h{a=>1} :s｢t｣ :k'str' :d\"str\"\ntext\n",
+   "code": "=for para :!flag :n(3) :q('a b') :w<x> :l('a','b') :t(True) :h{a=>1} :g{:a<x>, :b(42), :c} :s｢t｣ :k'str' :d\"str\"\ntext\n",
    "expect": [
     {
      "find": "!",
@@ -52,11 +52,6 @@
      "has": "string.unquoted"
     },
     {
-     "find": "[1,2]",
-     "nth": 0,
-     "has": "meta.structure.list"
-    },
-    {
      "find": "{a=>1}",
      "nth": 0,
      "has": "meta.structure.dictionary"
@@ -75,6 +70,37 @@
      "find": "\"str\"",
      "nth": 0,
      "has": "string.quoted.double"
+    },
+    {
+     "find": "('a','b')",
+     "nth": 0,
+     "has": "meta.structure.list"
+    },
+    {
+     "find": "(True)",
+     "nth": 0,
+     "has": "constant.language.boolean"
+    },
+    {
+     "find": "{:a<x>, :b(42), :c}",
+     "nth": 0,
+     "has": "meta.structure.dictionary"
+    }
+   ]
+  },
+  {
+   "id": "square-brackets-not-a-value",
+   "code": "=for para :l[1,2]\ntext\n",
+   "expect": [
+    {
+     "find": "l",
+     "nth": 0,
+     "has": "entity.other.attribute-name"
+    },
+    {
+     "find": "[1,2]",
+     "nth": 0,
+     "hasNot": "meta.structure.list"
     }
    ]
   },
@@ -452,6 +478,37 @@
      "find": "back",
      "nth": 0,
      "has": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "test-block",
+   "code": "=begin test :id<heading-carries-its-level>\n=begin fixture\n=head2 Overview\n=end fixture\n=for assert :caption('a second-level heading')\nhead2\n=end test\n",
+   "expect": [
+    {
+     "find": "test",
+     "nth": 0,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "fixture",
+     "nth": 0,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "=head2 Overview",
+     "nth": 0,
+     "has": "markup.raw.block"
+    },
+    {
+     "find": "assert",
+     "nth": 0,
+     "has": "entity.name.tag.standard"
+    },
+    {
+     "find": "head2",
+     "nth": 1,
+     "has": "markup.raw.block"
     }
    ]
   },
@@ -1812,6 +1869,27 @@
     },
     {
      "find": "Y<",
+     "nth": 0,
+     "has": "punctuation.definition.markup"
+    },
+    {
+     "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    }
+   ]
+  },
+  {
+   "id": "code-letter-Q",
+   "code": "text Q<wordQ> end\n",
+   "expect": [
+    {
+     "find": "wordQ",
+     "nth": 0,
+     "has": "meta.markup"
+    },
+    {
+     "find": "Q<",
      "nth": 0,
      "has": "punctuation.definition.markup"
     },

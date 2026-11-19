@@ -54,16 +54,17 @@ const SEMANTIC_NAME = R`[\p{Lu}_][\p{Lu}\p{Nd}_]*(?:['-][\p{Lu}_][\p{Lu}\p{Nd}_]
 const MIXED_CASE_NAME = R`(?=[\p{L}\p{Nd}_'-]*\p{Ll})(?=[\p{L}\p{Nd}_'-]*\p{Lu})${NAME}`
 
 const RAW_NAMES: NameSet = {
-  standard: 'data-table|code|data|formula|markdown',
+  // fixture, assert and resource are the verbatim children of =test (specification 3.0)
+  standard: 'data-table|code|data|formula|markdown|fixture|assert|resource',
   semantic: false,
-  // the test-suite blocks of the implementation, and named blocks, whose body goes to a plug-in
-  custom: `assert|fixture|resource|${MIXED_CASE_NAME}`,
+  // named blocks, whose body goes to a plug-in
+  custom: MIXED_CASE_NAME,
 }
 const COMMENT_NAMES: NameSet = { standard: 'comment', semantic: false, custom: NEVER }
 const TABLE_NAMES: NameSet = { standard: 'table', semantic: false, custom: NEVER }
 const PICTURE_NAMES: NameSet = { standard: 'picture', semantic: false, custom: NEVER }
 const TEXT_NAMES: NameSet = {
-  standard: R`pod|para|nested|defn|input|output|toc|row|cell|item\d*|head\d+`,
+  standard: R`pod|para|nested|defn|input|output|toc|row|cell|test|item\d*|head\d+`,
   semantic: true,
   custom: NAME,
 }
@@ -136,7 +137,8 @@ const CODE_KINDS: Kind[] = [
   { letters: 'ZG', name: 'comment.block.podlite', content: 'plain' },
   { letters: 'E', name: 'constant.character.entity.podlite', content: 'markup' },
   { letters: 'AR', name: 'variable.other.podlite', content: 'markup' },
-  { letters: 'DFHJMNPSXY', name: 'meta.markup.podlite', content: 'markup' },
+  // Q and Y are reserved; written anyway, they are read as markup codes (specification 3.0)
+  { letters: 'DFHJMNPQSXY', name: 'meta.markup.podlite', content: 'markup' },
 ]
 
 const CODE_SIGN = 'punctuation.definition.markup.podlite'
@@ -238,13 +240,13 @@ const attributes: GrammarRule = {
         { match: R`\G<[^>]*>`, name: 'string.unquoted.podlite' },
         { match: R`\G«[^»]*»`, name: 'string.unquoted.podlite' },
         { match: R`\G\(\s*[-+]?\d+(?:\.\d+)?\s*\)`, name: 'constant.numeric.podlite' },
+        { match: R`\G\(\s*(?:True|False)\s*\)`, name: 'constant.language.boolean.podlite' },
         { match: R`\G\(\s*'(?:[^'\\]|\\.)*'\s*\)`, name: 'string.quoted.single.podlite' },
         { match: R`\G\(\s*"(?:[^"\\]|\\.)*"\s*\)`, name: 'string.quoted.double.podlite' },
         { match: R`\G\([^)]*\)`, name: 'meta.structure.list.podlite' },
         { match: R`\G'(?:[^'\\]|\\.)*'`, name: 'string.quoted.single.podlite' },
         { match: R`\G"(?:[^"\\]|\\.)*"`, name: 'string.quoted.double.podlite' },
         { match: R`\G｢[^｣]*｣`, name: 'string.quoted.other.podlite' },
-        { match: R`\G\[[^\]]*\]`, name: 'meta.structure.list.podlite' },
         { match: R`\G\{[^}]*\}`, name: 'meta.structure.dictionary.podlite' },
       ],
     },

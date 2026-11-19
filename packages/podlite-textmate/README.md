@@ -47,4 +47,8 @@ the grammar. So:
   starting a code block;
 - a code or data block closes at `=end NAME` with an indent no deeper than its opener's;
 - the body of `=begin markdown` and code with `:lang` are not highlighted with their
-  own grammars, and `:allow` is not taken into account.
+  own grammars, and `:allow` is not taken into account;
+- a value in parentheses or braces that goes on over a continuation line, which the
+  draft of specification 3.0 allows, is coloured on its first line only;
+- a nested markup code left unclosed, as `I«` in `B<outer I«child> tail`, runs to the end
+  of the block; specification 3.0 reads its angles as text of the enclosing code.
