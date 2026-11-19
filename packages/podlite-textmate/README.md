@@ -4,7 +4,7 @@ A TextMate grammar for [Podlite](https://podlite.org) markup. It colours directi
 block names, attributes and markup codes, keeps code and data blocks raw, and follows
 the [Podlite specification 2.0](https://podlite.org/v2.0/specification).
 
-The language is `podlite`, with `pod6` and `rakudoc` as aliases. The scope name is
+The language is `podlite`, with `pod6` as an alias. The scope name is
 `text.podlite`.
 
 ## Install

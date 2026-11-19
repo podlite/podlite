@@ -62,7 +62,7 @@ export type ExtendedLanguage = BundledLanguage | 'txt'
 
 // Podlite has no grammar in shiki; these names load the one of @podlite/textmate
 const PODLITE = 'podlite'
-const podliteNames = new Set([PODLITE, 'pod6', 'rakudoc'])
+const podliteNames = new Set([PODLITE, 'pod6'])
 
 // Language aliases mapping
 const languageAliases: Record<string, ExtendedLanguage> = {

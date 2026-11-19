@@ -58,7 +58,7 @@ beforeEach(() => {
 })
 
 describe('Podlite names', () => {
-  it.each(['podlite', 'POD6', 'rakudoc'])('%s is the Podlite grammar', async name => {
+  it.each(['podlite', 'POD6', 'Podlite'])('%s is the Podlite grammar', async name => {
     expect(await fresh().normalizeLanguage(name)).toBe('podlite')
   })
 
@@ -72,7 +72,7 @@ describe('Podlite names', () => {
     const adapter = fresh()
     let release = () => {}
     mockShiki.hold = new Promise<void>(resolve => (release = resolve))
-    const both = Promise.all([adapter.getHighlighter('pod6'), adapter.getHighlighter('rakudoc')])
+    const both = Promise.all([adapter.getHighlighter('pod6'), adapter.getHighlighter('podlite')])
     await new Promise(resolve => setTimeout(resolve, 0))
     release()
     await both
@@ -83,7 +83,7 @@ describe('Podlite names', () => {
     const adapter = fresh()
     await adapter.getHighlighter('podlite')
     await adapter.getHighlighter('pod6')
-    await adapter.getHighlighter('rakudoc')
+    await adapter.getHighlighter('PODLITE')
     expect(grammarLoads()).toHaveLength(1)
   })
 })
@@ -93,6 +93,13 @@ describe('other languages are left as they were', () => {
     const adapter = fresh()
     expect(await adapter.normalizeLanguage('js')).toBe('js')
     expect(await adapter.normalizeLanguage('javascript')).toBe('javascript')
+  })
+
+  it('rakudoc is not taken for Podlite', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(await fresh().normalizeLanguage('rakudoc')).toBe('txt')
+    expect(grammarLoads()).toEqual([])
+    warn.mockRestore()
   })
 
   it('raku stays the language of shiki', async () => {

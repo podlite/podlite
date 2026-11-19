@@ -49,7 +49,7 @@ const sample = ${JSON.stringify(sample)}
 const result = {}
 for (const [entry, grammar] of [['import', podliteGrammar], ['json', json], ['require', fromRequire]]) {
   const h = await createHighlighter({ langs: [grammar], themes: ['github-dark'] })
-  for (const lang of ['podlite', 'pod6', 'rakudoc']) {
+  for (const lang of ['podlite', 'pod6']) {
     const { tokens } = h.codeToTokens(sample, { lang, theme: 'github-dark' })
     const colour = text => tokens.flat().find(t => t.content === text)?.color
     result[entry + ' ' + lang] = [colour('=begin'), colour('nested'), colour('notice')]
@@ -74,7 +74,7 @@ export default registration
   it('colours the three named pieces through every entry and under every language name', () => {
     const result = JSON.parse(out)
     const entries = Object.keys(result)
-    expect(entries).toHaveLength(9)
+    expect(entries).toHaveLength(6)
     for (const entry of entries) {
       const [directive, name, attribute] = result[entry]
       expect([entry, new Set([directive, name, attribute]).size]).toEqual([entry, 3])

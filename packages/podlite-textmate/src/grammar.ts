@@ -562,7 +562,7 @@ export const podliteGrammar: PodliteGrammar = {
   name: 'podlite',
   displayName: 'Podlite',
   scopeName: 'text.podlite',
-  aliases: ['pod6', 'rakudoc'],
+  aliases: ['pod6'],
   patterns: [{ include: '#root' }],
   repository,
 }
