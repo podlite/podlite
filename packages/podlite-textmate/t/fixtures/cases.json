@@ -587,6 +587,37 @@
    ]
   },
   {
+   "id": "link-label-nested-twice",
+   "code": "L<B<I<nested>>|doc:x> after\n",
+   "expect": [
+    {
+     "find": "nested",
+     "nth": 0,
+     "has": "markup.bold"
+    },
+    {
+     "find": "nested",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "nested",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.underline.link"
+    }
+   ]
+  },
+  {
    "id": "backlink",
    "code": "W<term|defn:term>\n",
    "expect": [
@@ -1592,7 +1623,7 @@
     {
      "find": "wordG",
      "nth": 0,
-     "has": "comment.block"
+     "has": "meta.markup"
     },
     {
      "find": "G<",
@@ -1601,6 +1632,11 @@
     },
     {
      "find": "end",
+     "nth": 0,
+     "hasNot": "meta.markup"
+    },
+    {
+     "find": "wordG",
      "nth": 0,
      "hasNot": "comment.block"
     }

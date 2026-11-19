@@ -134,11 +134,12 @@ const CODE_KINDS: Kind[] = [
   { letters: 'C', name: 'markup.inline.raw.podlite', content: 'plain' },
   // V changes how its content is read, not how it looks
   { letters: 'V', content: 'plain' },
-  { letters: 'ZG', name: 'comment.block.podlite', content: 'plain' },
+  { letters: 'Z', name: 'comment.block.podlite', content: 'plain' },
   { letters: 'E', name: 'constant.character.entity.podlite', content: 'markup' },
   { letters: 'AR', name: 'variable.other.podlite', content: 'markup' },
-  // Q and Y are reserved; written anyway, they are read as markup codes (specification 3.0)
-  { letters: 'DFHJMNPQSXY', name: 'meta.markup.podlite', content: 'markup' },
+  // G guards its content from being shown, it is not a comment; Q and Y are reserved and,
+  // written anyway, are read as markup codes (specification 3.0)
+  { letters: 'DFGHJMNPQSXY', name: 'meta.markup.podlite', content: 'markup' },
 ]
 
 const CODE_SIGN = 'punctuation.definition.markup.podlite'
@@ -178,7 +179,8 @@ const LINK_LABEL = 'string.other.link.podlite'
 const linkRules = (d: Delimiter, ctx: Context): GrammarRule[] => {
   const close = exactClose(d)
   const text = d.key === 'g' ? R`(?:(?![ \t]:)[^«»|])` : R`(?:(?![ \t]:)[^<>|])`
-  const nested = d.key === 'g' ? R`(?:«[^«»]*»)` : R`(?:<[^<>]*>)`
+  // codes inside the label, nested two deep
+  const nested = d.key === 'g' ? R`(?:«(?:[^«»]|«[^«»]*»)*»)` : R`(?:<(?:[^<>]|<[^<>]*>)*>)`
   const address: GrammarRule = {
     begin: R`(?<=[^ \t])|^|(?=\S)`,
     end: R`(?=[ \t]+:)|(?=${close})|(?:${ctx.recover})`,
