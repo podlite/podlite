@@ -661,6 +661,18 @@
    ]
   },
   {
+   "id": "limit-link-label-wide-delimiters",
+   "code": "L<B<<I<<D<<U<<deep>>>>>>>>|doc:x> after\n",
+   "expect": [
+    {
+     "find": "deep",
+     "nth": 0,
+     "has": "markup.underline.link",
+     "note": "limit: each angle of a wide delimiter counts toward the four levels"
+    }
+   ]
+  },
+  {
    "id": "backlink",
    "code": "W<term|defn:term>\n",
    "expect": [

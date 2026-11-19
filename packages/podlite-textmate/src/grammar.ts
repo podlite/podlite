@@ -177,7 +177,8 @@ const LINK_TARGET = 'markup.underline.link.podlite'
 const LINK_LABEL = 'string.other.link.podlite'
 
 // A TextMate lookahead cannot recurse, so codes inside a link label are matched by a pattern
-// built to a fixed depth; a label with codes nested deeper is read as an address
+// built to a fixed depth of angles, each angle of a wide delimiter counting as one; a label
+// nested deeper is read as an address
 const LABEL_NESTING = 4
 const nestedPattern = (open: string, close: string, depth: number): string =>
   depth <= 1
