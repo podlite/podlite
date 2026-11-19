@@ -287,6 +287,59 @@
    ]
   },
   {
+   "id": "adjacent-closers",
+   "code": "B<a I<b>> after\n",
+   "expect": [
+    {
+     "find": "b",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.italic"
+    }
+   ]
+  },
+  {
+   "id": "adjacent-closers-raw",
+   "code": "B<a C<b>> after\n",
+   "expect": [
+    {
+     "find": "b",
+     "nth": 0,
+     "has": "markup.inline.raw"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
+   "id": "adjacent-closers-double",
+   "code": "B<<a I<b>>> after\n",
+   "expect": [
+    {
+     "find": "b",
+     "nth": 0,
+     "has": "markup.italic"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.bold"
+    }
+   ]
+  },
+  {
    "id": "code-no-codes",
    "code": "C<A B<x> tail> after\n",
    "expect": [

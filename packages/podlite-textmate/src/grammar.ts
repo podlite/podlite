@@ -118,7 +118,9 @@ const DELIMITERS: Delimiter[] = [
 ]
 
 const exactOpen = (d: Delimiter): string => (d.key === 'g' ? '«' : R`(?<!<)${d.open}(?!<)`)
-const exactClose = (d: Delimiter): string => (d.key === 'g' ? '»' : R`(?<!>)${d.close}(?!>)`)
+// A run of closing angles closes, nearest first, whatever is still open (specification 3.0),
+// so a closer is matched by its width alone: in B<a I<b>> the first > closes I, the second B
+const exactClose = (d: Delimiter): string => (d.key === 'g' ? '»' : d.close)
 
 type Kind = { letters: string; name?: string; content: 'markup' | 'plain' }
 
