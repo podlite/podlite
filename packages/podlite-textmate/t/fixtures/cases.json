@@ -618,6 +618,49 @@
    ]
   },
   {
+   "id": "link-label-nested-four",
+   "code": "L<B<I<D<U<deep>>>>|doc:x> after\n",
+   "expect": [
+    {
+     "find": "deep",
+     "nth": 0,
+     "has": "string.other.link"
+    },
+    {
+     "find": "deep",
+     "nth": 0,
+     "has": "markup.underline"
+    },
+    {
+     "find": "doc:x",
+     "nth": 0,
+     "has": "markup.underline.link"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.underline.link"
+    }
+   ]
+  },
+  {
+   "id": "limit-link-label-nested-five",
+   "code": "L<B<I<D<U<O<deep>>>>>|doc:x> after\n",
+   "expect": [
+    {
+     "find": "deep",
+     "nth": 0,
+     "has": "markup.underline.link",
+     "note": "limit: codes nested deeper than four make the label an address"
+    },
+    {
+     "find": "after",
+     "nth": 0,
+     "hasNot": "markup.underline.link"
+    }
+   ]
+  },
+  {
    "id": "backlink",
    "code": "W<term|defn:term>\n",
    "expect": [

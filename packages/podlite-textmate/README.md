@@ -50,5 +50,6 @@ the grammar. So:
   own grammars, and `:allow` is not taken into account;
 - a value in parentheses or braces that goes on over a continuation line, which the
   draft of specification 3.0 allows, is coloured on its first line only;
+- in a link label, markup codes nested more than four deep make the label read as an address;
 - a nested markup code left unclosed, as `I«` in `B<outer I«child> tail`, runs to the end
   of the block; specification 3.0 reads its angles as text of the enclosing code.

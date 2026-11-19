@@ -176,11 +176,18 @@ const LINK_LETTERS = 'LW'
 const LINK_TARGET = 'markup.underline.link.podlite'
 const LINK_LABEL = 'string.other.link.podlite'
 
+// A TextMate lookahead cannot recurse, so codes inside a link label are matched by a pattern
+// built to a fixed depth; a label with codes nested deeper is read as an address
+const LABEL_NESTING = 4
+const nestedPattern = (open: string, close: string, depth: number): string =>
+  depth <= 1
+    ? `(?:${open}[^${open}${close}]*${close})`
+    : `(?:${open}(?:[^${open}${close}]|${nestedPattern(open, close, depth - 1)})*${close})`
+
 const linkRules = (d: Delimiter, ctx: Context): GrammarRule[] => {
   const close = exactClose(d)
   const text = d.key === 'g' ? R`(?:(?![ \t]:)[^«»|])` : R`(?:(?![ \t]:)[^<>|])`
-  // codes inside the label, nested two deep
-  const nested = d.key === 'g' ? R`(?:«(?:[^«»]|«[^«»]*»)*»)` : R`(?:<(?:[^<>]|<[^<>]*>)*>)`
+  const nested = d.key === 'g' ? nestedPattern('«', '»', LABEL_NESTING) : nestedPattern('<', '>', LABEL_NESTING)
   const address: GrammarRule = {
     begin: R`(?<=[^ \t])|^|(?=\S)`,
     end: R`(?=[ \t]+:)|(?=${close})|(?:${ctx.recover})`,
