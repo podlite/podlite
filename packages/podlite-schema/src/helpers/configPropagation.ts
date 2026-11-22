@@ -79,9 +79,13 @@ const walk = (
   }
 }
 
+// a name such as __proto__ is a block name too: read only what the scope itself holds
+const ownDefaults = (config: ConfigScope, key: string) =>
+  Object.prototype.hasOwnProperty.call(config, key) ? config[key] : undefined
+
 const applyDefaults = (block: ScopedBlock, config: ConfigScope): void => {
   for (const key of lookupKeys(block)) {
-    const defaults = config[key]
+    const defaults = ownDefaults(config, key)
     if (defaults && defaults.length) {
       block.config = mergeDefaults(block.config, defaults)
     }
@@ -89,7 +93,7 @@ const applyDefaults = (block: ScopedBlock, config: ConfigScope): void => {
 }
 
 const applyImplicitDefaults: ImplicitVisit = (node, name, config) => {
-  const defaults = config[name]
+  const defaults = ownDefaults(config, name)
   if (defaults && defaults.length) node.config = mergeDefaults(node.config, defaults)
 }
 

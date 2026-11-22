@@ -1,12 +1,9 @@
 
 {
   // the following names: MyBlock, myBlock are use for extending pod6
+  // a capital and a small letter; a script without case gives no named block
   function isNamedBlock(name) {
-    return (
-        name !== name.toLowerCase() 
-            && 
-        name !== name.toUpperCase() 
-      )
+    return /[\p{Lu}\p{Lt}]/u.test(name) && /\p{Ll}/u.test(name)
   }
 
   // the body of these blocks is kept as written
@@ -20,7 +17,7 @@
 
   // the following names: =AUTHOR  =DESCRIPTION are reserved
   function isSemanticBlock(name) {
-    return name === name.toUpperCase()
+    return /\p{Lu}/u.test(name) && name === name.toUpperCase()
   }
 
   // the columns an indent takes; a tab moves on to the next multiple of 8
@@ -264,7 +261,7 @@ array_items =
           first:item rest:( ( hs+ / gap ',' gap ) i:item { return i } )*
                             { return flattenDeep([ first, ...rest ]) }
 
-identifierKey = $([a-zA-Z0-9]+[a-zA-Z0-9_-]*)
+identifierKey = $( ( identifierStart / [0-9] ) ( identifierPart / '-' / "'" &identifierStart )* )
 
 // $k1=>$v1,$k2=>$v2 or the option form, read by the rules of the marker line
 pair_item =
@@ -297,7 +294,7 @@ angle_list =
 
 array_sp = all:( _ i:item _ {return i})* { return all }/ res:item {return  [res]} / _ {return []}
 
-attributes =  allow_attribute / _ ':' isFalse:[!]? key:identifier value:(
+attributes =  allow_attribute / _ ':' isFalse:[!]? key:optionName value:(
   
   '{' gap  hash:array_pairs gap '}' { return { value:hash, type:"map" } }
   /
@@ -744,7 +741,7 @@ alias_replacement_text =
 // `=  ` continuation lines. A continuation starting with `:` holds new
 // attributes, any other continuation extends the current alias value.
 setLineAttrs = attrs:attributes+ _ EOL { return { kind:'attrs', attrs } }
-setLineAlias = _ ':' name:identifier hs+ value:$((!EOL .)+) EOL { return { kind:'alias', name, value } }
+setLineAlias = _ ':' name:optionName hs+ value:$((!EOL .)+) EOL { return { kind:'alias', name, value } }
 setContLine = '=' hs+ seg:( setLineAttrs / v:$((!EOL .)*) EOL { return { kind:'value', value:v } } ) { return seg }
 
 setDirective =
@@ -879,7 +876,14 @@ paragraphBlock =
             }
   } 
 
-identifier = $([a-zA-Z][a-zA-Z0-9_-]*)
+// a letter or underscore, then letters, digits, underscores and hyphens of any script,
+// with a single apostrophe allowed before a letter
+identifier = $( identifierStart ( identifierPart / '-' / "'" &identifierStart )* )
+identifierChar = $( [\uD800-\uDBFF] [\uDC00-\uDFFF] / . )
+identifierStart = c:identifierChar &{ return /^[\p{L}_]$/u.test(c) }
+identifierPart = c:identifierChar &{ return /^[\p{L}\p{M}\p{N}_]$/u.test(c) }
+// the name of an option: an apostrophe after it opens a quoted value, as in :u'a b'
+optionName = $( identifierStart ( identifierPart / '-' )* )
 
 ___ "whitespace"
   = [\r\n \t\u000C]*

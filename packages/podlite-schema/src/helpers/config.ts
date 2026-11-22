@@ -28,8 +28,9 @@ export const makeAttrs = (node, ctx: Context = {}): Attr => {
   }
   let result = {}
   ;[...config, ...configured].map(a => {
-    if (!result.hasOwnProperty(a.name)) {
-      result[a.name] = []
+    // an own property even for a name such as __proto__, which plain assignment would not make
+    if (!Object.prototype.hasOwnProperty.call(result, a.name)) {
+      Object.defineProperty(result, a.name, { value: [], enumerable: true, writable: true, configurable: true })
     }
     if (a.type === 'array') {
       result[a.name].push(...a.value)
@@ -43,7 +44,7 @@ export const makeAttrs = (node, ctx: Context = {}): Attr => {
    *
    *  for example: attrs.exists('caption')
    */
-  resfn.exists = name => result.hasOwnProperty(name)
+  resfn.exists = name => Object.prototype.hasOwnProperty.call(result, name)
 
   /**
    * return array for prop

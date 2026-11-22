@@ -8,6 +8,8 @@
 
 =item a leading tab in the margin reaches the next multiple of 8 columns when deciding whether indented text is code
 
+=item block names, option names and selector patterns take letters and digits of any script, and a block name takes an apostrophe followed by a letter, as in C<Part'Deux>
+
 =head1 0.0.86
 
 =item C<=table data:> reads a C<:mime-type> that C<=config data> gives the data block, as a C<=data-table> and a selector do

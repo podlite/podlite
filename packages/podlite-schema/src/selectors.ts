@@ -85,8 +85,22 @@ export type ValueSpec =
   | { kind: 'paren'; value: string }
   | { kind: 'in'; value: string }
 
-const isIdentStart = (c: string): boolean => /[a-zA-Z_]/.test(c)
-const isIdentCont = (c: string): boolean => /[a-zA-Z0-9_-]/.test(c)
+// an identifier: a letter or underscore, then letters, digits, underscores and hyphens
+// of any script, with a single apostrophe allowed before a letter
+const IDENT_START = /^[\p{L}_]$/u
+const IDENT_PART = /^[\p{L}\p{M}\p{N}_]$/u
+const charAt = (s: string, i: number): string => String.fromCodePoint(s.codePointAt(i) ?? 0)
+const identifierEnd = (s: string, i: number, apostrophe = true): number => {
+  if (i >= s.length || !IDENT_START.test(charAt(s, i))) return i
+  let j = i + charAt(s, i).length
+  while (j < s.length) {
+    const c = charAt(s, j)
+    if (IDENT_PART.test(c) || c === '-') j += c.length
+    else if (apostrophe && c === "'" && j + 1 < s.length && IDENT_START.test(charAt(s, j + 1))) j += 1
+    else break
+  }
+  return j
+}
 
 type Typed = { value: unknown; type?: string }
 
@@ -265,9 +279,10 @@ const parseCondition = (raw: string): Condition | undefined => {
     i += 1
   }
 
-  if (i >= s.length || !isIdentStart(s[i])) return undefined
   const nameStart = i
-  while (i < s.length && isIdentCont(s[i])) i++
+  // an option name takes no apostrophe: one after it opens a quoted value
+  i = identifierEnd(s, i, false)
+  if (i === nameStart) return undefined
   const attrName = s.slice(nameStart, i)
 
   if (i >= s.length) return { modifier, attrName }
@@ -342,11 +357,9 @@ const parsePattern = (raw: string): Pattern | undefined => {
   if (s[0] === '*') {
     blockType = '*'
     i = 1
-  } else if (isIdentStart(s[0])) {
-    let j = 1
-    while (j < s.length && isIdentCont(s[j])) j++
-    blockType = s.slice(0, j)
-    i = j
+  } else if (identifierEnd(s, 0) > 0) {
+    i = identifierEnd(s, 0)
+    blockType = s.slice(0, i)
   } else {
     return undefined
   }
