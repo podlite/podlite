@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item an ordinary paragraph written directly inside C<=test> is a block of the document: a selector finds it, C<=set> and C<=config> reach it, and the C<:allow> of the test does not limit its markup codes
+
 =head1 0.0.86
 
 =item C<=table data:> reads a C<:mime-type> that C<=config data> gives the data block, as a C<=data-table> and a selector do

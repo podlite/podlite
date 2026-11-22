@@ -10,10 +10,9 @@ the settings of C<=config> and the assignments of C<=set>.
 */
 import { isSemanticBlock } from './makeTransformer'
 
-// Within these blocks text written without a marker is a paragraph and lines
-// set in from the margin are a code block. Anywhere else a para node is the
-// text of the block around it: of an explicit =para, of a heading.
-const IMPLICIT_HOLDERS = new Set(['root', 'pod', 'item', 'defn', 'nested', 'cell'])
+// Within these blocks text written without a marker is a paragraph; elsewhere a
+// para node is the text of the block around it, an explicit =para or a heading.
+const IMPLICIT_HOLDERS = new Set(['root', 'pod', 'item', 'defn', 'nested', 'test', 'cell'])
 
 export type Walked = { type?: string; name?: string; content?: unknown; text?: unknown }
 

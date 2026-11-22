@@ -121,6 +121,33 @@ describe('=set reaches a paragraph and code written without a marker', () => {
   })
 })
 
+const test = (body: string, attrs = '') => `=begin test :id<t>${attrs}\n${body}\n\n=assert para\n=end test\n`
+
+describe('a paragraph written directly inside a test', () => {
+  it('is a block a selector finds', () => {
+    expect(texts(select('para', test('An ordinary paragraph.')))).toEqual(['An ordinary paragraph.'])
+  })
+
+  it('takes the settings of para', () => {
+    const src = `=config para :lang<fr>\n\n${test('An ordinary paragraph.')}`
+    expect(texts(select('para[ :lang<fr> ]', src))).toEqual(['An ordinary paragraph.'])
+  })
+
+  it('takes a =set written before it in the test', () => {
+    const src = test('=set :x<1>\n\nAn ordinary paragraph.')
+    expect(texts(select('para[ :x<1> ]', src))).toEqual(['An ordinary paragraph.'])
+    expect(select('assert[ :x<1> ]', src)).toHaveLength(0)
+  })
+
+  it('reads its markup codes whatever the test allows', () => {
+    expect(html(test('An B<ordinary> I<paragraph>.', ' :allow<I>'))).toContain('<strong>ordinary</strong>')
+  })
+
+  it('leaves the assertions of the test to be found', () => {
+    expect(select('assert', test('An ordinary paragraph.'))).toHaveLength(1)
+  })
+})
+
 describe('a paragraph and code written without a marker render with their settings', () => {
   it('a masked paragraph is hidden in production and shown in draft', () => {
     const src = pod('=config para :masked\n\nSecretword.')
