@@ -138,3 +138,71 @@ describe('an implicit code block keeps as before', () => {
     expect(getFromTree(item, (n: any) => n && n.type === 'para')).toHaveLength(1)
   })
 })
+
+const kinds = (src: string) =>
+  (read(src) as any).content
+    .filter((n: any) => n.type === 'block')
+    .map((b: any) => b.content.filter((n: any) => n.type === 'code' || n.type === 'para').map((n: any) => n.type))
+
+// Specification.pod6, Code blocks: implicit code within =pod, =item, =defn, =nested or a semantic block
+describe('text set in from the margin of a block', () => {
+  it.each([['SYNOPSIS'], ['AUTHORS'], ['DESCRIPTION']])('is code in the semantic block %s', name => {
+    expect(kinds(`=begin ${name}\nPlain.\n\n    sample\n=end ${name}\n`)).toEqual([['para', 'code']])
+  })
+
+  it('is code in =begin nested, as before', () => {
+    expect(kinds('=begin nested\nPlain.\n\n    sample\n=end nested\n')).toEqual([['para', 'code']])
+  })
+
+  it('stays a paragraph in =begin para and in a test', () => {
+    expect(kinds('=begin para\nPlain.\n\n    sample\n=end para\n')).toEqual([['para', 'para']])
+    expect(kinds('=begin test\nPlain.\n\n    sample\n\n=assert para\n=end test\n')).toEqual([['para', 'para']])
+  })
+})
+
+// Specification.pod6, General syntactic structure: leading tabs align to tabstops every 8 characters
+describe('a leading tab in the margin', () => {
+  it('reaches the next multiple of 8, so a tab and a space go past a margin of 8 spaces', () => {
+    expect(kinds('        =begin nested\n\t x\n        =end nested\n')).toEqual([['code']])
+  })
+
+  it('takes as many columns as 8 spaces, so a tab alone stays at a margin of 8 spaces', () => {
+    expect(kinds('        =begin nested\n\tx\n        =end nested\n')).toEqual([['para']])
+  })
+
+  it('counts columns, not characters, in the margin of the block and of the line', () => {
+    const src = ' \t=begin nested\n\t B<x>\n \t=end nested\n'
+    expect(kinds(src)).toEqual([['code']])
+    expect(codeOf(src).text).toBe('B<x>\n')
+  })
+
+  it('of a directive is as wide as 8 spaces of the line under it', () => {
+    expect(kinds('\t=begin pod\n        Ask.\n\t=end pod\n')).toEqual([['para']])
+  })
+})
+
+// Specification.pod6, Definition lists: the first non-blank line of content is the term
+describe('the first line of a =begin defn', () => {
+  it('is its term when it is set in past the margin', () => {
+    const tree: any = read('        =begin defn\n\t TERM\n\n        Definition.\n        =end defn\n')
+    const terms = getFromTree(tree, (n: any) => n && n.name === 'term') as any[]
+    expect(terms.map(t => t.text)).toEqual(['TERM'])
+    expect(String(toHtml({}).run(tree))).toContain('Definition.')
+  })
+
+  it('leaves the rest of its indented lines as code that starts on the next line', () => {
+    const src = '        =begin defn\n\t TERM\n\t sample\n        =end defn\n'
+    const code = codeOf(src)
+    expect(code.text).toBe('sample\n')
+    expect(code.location.start.line).toBe(3)
+    expect(src.slice(code.location.start.offset, code.location.end.offset)).toBe('\t sample\n')
+  })
+
+  it('ends its term at a lone carriage return', () => {
+    const terms = getFromTree(
+      read('=begin defn\n  TERM\r  B<x>\n=end defn\n'),
+      (n: any) => n && n.name === 'term',
+    ) as any[]
+    expect(terms.map(t => t.text)).toEqual(['TERM'])
+  })
+})

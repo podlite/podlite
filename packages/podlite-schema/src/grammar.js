@@ -445,9 +445,7 @@ function peg$parse(input, options) {
                                     }},
       peg$c172 = function(vmargin, name, config, nodes) { return nodes},
       peg$c173 = function(vmargin, name, config, tvmargin, text) {
-            const type = name.match(/pod|nested|item|code|defn/) 
-                        && 
-                        (tvmargin.length - vmargin.length) > 0 ? 'code' : 'para'
+            const type = holdsImplicitCode(name) && widthOf(tvmargin) > widthOf(vmargin) ? 'code' : 'para'
             return {
                     text,
                     margin:tvmargin,
@@ -8426,6 +8424,17 @@ function peg$parse(input, options) {
     // the following names: =AUTHOR  =DESCRIPTION are reserved
     function isSemanticBlock(name) {
       return name === name.toUpperCase()
+    }
+
+    // the columns an indent takes; a tab moves on to the next multiple of 8
+    function widthOf(indent) {
+      return [...indent].reduce((column, ch) => (ch === '\t' ? (Math.floor(column / 8) + 1) * 8 : column + 1), 0)
+    }
+
+    // the blocks in which text set in from the margin is code; a =begin code read
+    // here, not as verbatim, keeps its indented text as code
+    function holdsImplicitCode(name) {
+      return ['pod', 'nested', 'defn', 'code'].includes(name) || /^item\d*$/.test(name) || isSemanticBlock(name)
     }
 
     // nested lists in one list, in time that grows with the items; a value that is not a list is taken as concat takes it

@@ -16,7 +16,12 @@ const middle: ParserPlugin = () => tree => {
   const visit_node = (node: Node, context: { margin?: string; nest?: any } = {}) => {
     // if( (node.type || "").match(/(code|text)/) ) {
     if (node.type == 'code' || node.type == 'text') {
-      if (node.margin && context.margin && context.margin.length > 0 && context.margin.length == node.margin.length) {
+      if (
+        node.margin &&
+        context.margin &&
+        widthOf(context.margin) > 0 &&
+        widthOf(context.margin) == widthOf(node.margin)
+      ) {
         ;(node as any).type = 'para'
       }
       if (node.type === 'code') {

@@ -19,7 +19,34 @@ export default () => tree => {
       let termComesFirst = true
       for (let i = 0; i < count; i++) {
         const item = content[i]
-        if (item.type === 'para' && !isFirstParaProcessed) {
+        // the term is the first line even when an indent made the parser read it as code;
+        // the rest stays code and starts on the next line of the source
+        if (item.type === 'code' && !isFirstParaProcessed) {
+          const verbatim = item.content[0]
+          const value: string = verbatim.value
+          const end = value.match(/\r\n|\r|\n/)
+          const term = end ? value.slice(0, end.index) : value
+          const rest = end ? value.slice(end.index + end[0].length) : ''
+          const newTermPara = { type: 'para', name: 'term', text: term, content: [{ type: 'text', value: term }] }
+          if (termComesFirst) applyNumberedShorthand(node, newTermPara)
+          newContent.push(newTermPara)
+          if (rest !== '') {
+            verbatim.value = rest
+            item.text = rest
+            const start = item.location && item.location.start
+            if (start && end)
+              item.location = {
+                ...item.location,
+                start: {
+                  offset: start.offset + String(item.margin || '').length + term.length + end[0].length,
+                  line: start.line + 1,
+                  column: 1,
+                },
+              }
+            newContent.push(item)
+          }
+          isFirstParaProcessed = true
+        } else if (item.type === 'para' && !isFirstParaProcessed) {
           // get text content
           const textNode = item.content[0]
           const text = textNode.value

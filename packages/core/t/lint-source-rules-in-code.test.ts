@@ -54,6 +54,7 @@ describe('unclosed-markup-code in code', () => {
     ['implicit code in =begin pod', '=begin pod\ntext\n\n  B<open\n=end pod\n'],
     ['implicit code in =pod', '=pod\n\ntext\n\n  B<open\n'],
     ['implicit code in =begin item', '=begin item\nfirst\n\n  B<open\n=end item\n'],
+    ['implicit code in a semantic block', '=begin SYNOPSIS\nfirst\n\n  B<open\n=end SYNOPSIS\n'],
     ['implicit code with CRLF', '=begin pod\r\ntext\r\n\r\n  B<open\r\n=end pod\r\n'],
     ['implicit code on the last line without a newline', 'text\n\n  B<open'],
     ['a short code block with a line of =begin after a no-break space', '=for code\n\u00a0=begin para\nB<open\n'],
@@ -74,7 +75,6 @@ describe('unclosed-markup-code in code', () => {
   it.each([
     ['after implicit code', '=begin pod\n  B<code\n=para B<outside\n=end pod\n', [3]],
     ['in a paragraph', '=para B<open\n', [1]],
-    ['in indented text of a semantic block, read as text', '=begin SYNOPSIS\nfirst\n\n  B<open\n=end SYNOPSIS\n', [4]],
     ['in indented text of an abbreviated item', '=item first\n  B<open\n', [2]],
   ])('warns %s', (_, src, lines) => {
     expect(unclosed(src)).toEqual(lines)

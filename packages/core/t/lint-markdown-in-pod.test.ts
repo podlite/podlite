@@ -169,6 +169,7 @@ describe('markdown-in-pod and implicit code', () => {
       ['=begin item', '=begin item\nfirst\n\n  # comment\n=end item\n'],
       ['=begin nested', '=begin nested\ntext\n\n  # comment\n=end nested\n'],
       ['=begin defn', '=begin defn\nTERM\nBody.\n\n  # comment\n=end defn\n'],
+      ['a semantic block', '=begin SYNOPSIS\nfirst\n\n  # x\n=end SYNOPSIS\n'],
       ['bold in =begin pod', '=begin pod\ntext\n\n  **bold**\n=end pod\n'],
       ['code after =end para', '=begin pod\n=begin para\nx\n=end para\n  **code**\n=end pod\n'],
       ['code after =set', '=begin pod\n=set :lang<en>\n  **code**\n=end pod\n'],
@@ -192,7 +193,6 @@ describe('markdown-in-pod and implicit code', () => {
     it.each([
       ['a heading without an indent', '=begin pod\n# heading\n=end pod\n', 2],
       ['indented text in =begin para', '=begin para\nfirst\n\n  # x\n=end para\n', 4],
-      ['indented text in a semantic block, read as text', '=begin SYNOPSIS\nfirst\n\n  # x\n=end SYNOPSIS\n', 4],
       ['a line after the code ends at its first column', '=begin pod\n  code\n=head1 **text**\n=end pod\n', 3],
       ['a paragraph after code', '=begin pod\nfirst\n\n  **code**\n=para **text**\n=end pod\n', 5],
     ])('%s', (_, src, line) => {
