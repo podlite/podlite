@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.79
+
 =item C<markdownLinkTargets> gives the destinations of the links, images and reference definitions of Markdown text, outside code
 
 =head1 0.0.77

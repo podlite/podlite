@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.20
+
 =item blocks in C<:lang<podlite>> or C<:lang<pod6>> are highlighted with the grammar of
 C<@podlite/textmate>, loaded only when such a block is shown; until now they came out as plain text
 

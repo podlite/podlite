@@ -2,6 +2,83 @@
 
 =head1 Upcoming
 
+=head1 0.0.106
+
+
+=head2 podlite
+
+=item C<podlite lint> has the rule C<table-source-conflict>, an error for a data table given both C<:src> and a body; C<podlite test> does not hold C<:absent> over such a table
+
+=item C<podlite lint> rule C<dead-definitions> counts a C<data:> key as used only where the document may read it, not in prose, comments or code, and takes the whole key, dots included
+
+=item C<podlite lint> has the rule C<table-header-invalid>, an error for a C<header> of CSV or TSV data the norm does not know, which switching off or muting C<table-shape> does not silence; content that is not CSV is a warning of C<table-shape>
+
+=item C<podlite convert> prints the reports of the tables of the document to stderr, with the file, the line and the severity
+
+=head2 @podlite/editor-react
+
+=item the editor shows the parser diagnostics of severity C<error>, such as C<table-header-invalid>, as errors
+
+=head2 @podlite/highlight
+
+=item blocks in C<:lang<podlite>> or C<:lang<pod6>> are highlighted with the grammar of
+C<@podlite/textmate>, loaded only when such a block is shown; until now they came out as plain text
+
+=head2 @podlite/markdown
+
+=item C<markdownLinkTargets> gives the destinations of the links, images and reference definitions of Markdown text, outside code
+
+=head2 @podlite/mcp
+
+=item C<podlite_validate> counts the error C<table-header-invalid> of a CSV or TSV C<header> the norm does not know, so such a document is no longer C<ok>
+
+=item Moved to C<zod> 4.6.6 or later, which fixes memory exhaustion when validating oversized collections
+
+=item A tool call with an argument that the tool's schema does not name is now refused with an error
+
+=item The messages for invalid tool arguments have changed wording
+
+=head2 @podlite/schema
+
+=item C<=table data:> reads a C<:mime-type> that C<=config data> gives the data block, as a C<=data-table> and a selector do
+
+=item a selector reads the body of a C<=data> block with C<:allow> as written, as a table does; such a block keeps its body as written in the new field C<dataText>
+
+=item a C<=data-table> reading content of a type that is not CSV or TSV shows it as a code block, as C<=table data:> does
+
+=item such a code block is literal and stands at the place of the table that reads it, covered when the source or the table is masked
+
+=item a C<=data-table> with C<:columns> reports the rows of its source that are wider or narrower than the source, numbered by their place in the source
+
+=item a C<=data-table> given both C<:src> and a body, a blank line too, is the error C<table-source-conflict> and an empty table
+
+=item C<dataKeysOfSelector> gives the keys of C<=data> blocks a selector reads through C<in data:KEY>, and C<detectSourceReference> is exported
+
+=item C<:rename> names columns of the source, by name or by place, whatever C<:columns> shows
+
+=item without a header row, C<:rename> labels the other columns by their place and keeps every row as data
+
+=item a C<:rename> key that the source or C<:columns> does not have is an error, as are two names for one column
+
+=item CSV and TSV data are read as norm 3.0 says, by C<=table data:>, C<=data-table> and a selector alike: an empty line and a line of spaces are rows, the spaces at the edge of a field belong to the cell and to the value a selector reads, a quoted empty field at the end of CSV is a row, and a CR in TSV ends a line only before an LF
+
+=item without a C<header> parameter the first row of CSV or TSV data is the header; another value, an empty one too, is reported once as the error C<table-header-invalid> at the block it is written on, read or not, and the data is read with the header, while a selector reading such a column fails as a format error
+
+=item CSV with a quote inside an unquoted field, text after a closing quote, a quote left open or a carriage return outside quotes that does not end a line is shown as a code block in place of the table, with the warning C<table-source-not-csv>; the code block keeps C<:masked> and reads no markup codes; a selector fails on it as a format error
+
+=item C<ParseDiagnostic> may now have the severity C<error>, and the schemas name C<table-header-invalid> and C<table-source-not-csv>
+
+=item a value of C<:columns> in quotes keeps its edge spaces and names a column, even if it holds digits
+
+=item a table read from a C<=data> block that C<=config data> marks C<:masked> is covered, as is a C<=data-table> reading a covered block through C<:src>
+
+=item the warning about a padded row of a table read from CSV or TSV, or written with C<=row> blocks, no longer advises a blank line between rows
+
+=head2 @podlite/textmate
+
+=item the first release: a TextMate grammar for Podlite markup, C<podliteGrammar> for shiki and the same grammar as
+C<podlite.tmLanguage.json>; the language is C<podlite>, with C<pod6> as an alias
+
 =head1 0.0.105
 
 

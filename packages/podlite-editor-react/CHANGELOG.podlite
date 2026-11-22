@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.92
+
 =item the editor shows the parser diagnostics of severity C<error>, such as C<table-header-invalid>, as errors
 
 =head1 0.0.91

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.86
+
 =item C<=table data:> reads a C<:mime-type> that C<=config data> gives the data block, as a C<=data-table> and a selector do
 
 =item a selector reads the body of a C<=data> block with C<:allow> as written, as a table does; such a block keeps its body as written in the new field C<dataText>

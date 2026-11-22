@@ -2,5 +2,7 @@
 
 =head1 Upcoming
 
+=head1 0.0.1
+
 =item the first release: a TextMate grammar for Podlite markup, C<podliteGrammar> for shiki and the same grammar as
 C<podlite.tmLanguage.json>; the language is C<podlite>, with C<pod6> as an alias

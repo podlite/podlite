@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.36
+
 =item C<podlite_validate> counts the error C<table-header-invalid> of a CSV or TSV C<header> the norm does not know, so such a document is no longer C<ok>
 
 =item Moved to C<zod> 4.6.6 or later, which fixes memory exhaustion when validating oversized collections
