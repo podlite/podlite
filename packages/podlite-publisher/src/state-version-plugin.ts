@@ -19,8 +19,27 @@ const plugin = (appVersion?: string, indexFilePath?: string): PodliteWebPlugin =
       return prev + CRC32.str(getTextContentFromNode(current.node))
     }, '')
   }
+  const isFile = (path: string): boolean => {
+    try {
+      return fs.statSync(path).isFile()
+    } catch {
+      return false
+    }
+  }
+  // the pictures of each record in order, as the images plugin read them; without
+  // it, the files it found
+  const getImagesVersion = (ctx): string =>
+    Array.isArray(ctx.imageSources)
+      ? ctx.imageSources
+          .map(
+            ({ file, kind, address }) =>
+              `${CRC32.str(`${file}\u0000${kind}\u0000${address}`)}` +
+              (kind === 'local' && isFile(address) ? `${CRC32.buf(new Uint8Array(fs.readFileSync(address)))}` : ''),
+          )
+          .join('')
+      : ''
   const getAssetPaths = (ctx): string[] => {
-    const paths: string[] = Object.keys(ctx.imagesMap || {})
+    const paths: string[] = Array.isArray(ctx.imageSources) ? [] : Object.keys(ctx.imagesMap || {})
     const indexPage = indexFilePath ? records.find(item => item.file === indexFilePath) : undefined
     if (indexPage) {
       const [pod] = getFromTree(indexPage.node, 'pod')
@@ -38,8 +57,8 @@ const plugin = (appVersion?: string, indexFilePath?: string): PodliteWebPlugin =
   const getAssetsVersion = (ctx): string => {
     return getAssetPaths(ctx).reduce((prev, path) => {
       // a missing file contributes its path, so adding the file later moves the sum
-      return prev + (fs.existsSync(path) ? CRC32.buf(new Uint8Array(fs.readFileSync(path))) : CRC32.str(path))
-    }, '')
+      return prev + (isFile(path) ? CRC32.buf(new Uint8Array(fs.readFileSync(path))) : CRC32.str(path))
+    }, getImagesVersion(ctx))
   }
   const onProcess = (recs: publishRecord[]) => {
     crc_sum += getStateVersion(recs)

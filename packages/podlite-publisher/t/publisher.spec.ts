@@ -102,6 +102,7 @@ it('main publish logic: process files', () => {
   expect(resCtx).toMatchInlineSnapshot(`
     Object {
       "componensMap": Object {},
+      "imageSources": Array [],
       "imagesMap": Object {},
       "nextPublishTime": undefined,
       "siteData": Object {

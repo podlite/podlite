@@ -1,6 +1,7 @@
 import { processFile } from '../src/node-utils'
 import { PluginConfig, processPlugin } from '../src'
-import imagesPlugin, { readOrientation } from '../src/images-plugin'
+import imagesPlugin, { imageSourceOf, readOrientation } from '../src/images-plugin'
+import { toHtml, toMarkdown } from '@podlite/schema'
 import * as fs from 'fs'
 import * as os from 'os'
 import pathMod from 'path'
@@ -22,6 +23,18 @@ it('imagesPlugin: extract images', () => {
   const [res, ctx] = processPlugin(config, [t1], tctx)
   expect(ctx).toMatchInlineSnapshot(`
     Object {
+      "imageSources": Array [
+        Object {
+          "address": "t/image-plugin/open_and_browsing.mp4",
+          "file": "t/image-plugin/virtualFile.podlite",
+          "kind": "local",
+        },
+        Object {
+          "address": "t/image-plugin/open_and_browsing.png",
+          "file": "t/image-plugin/virtualFile.podlite",
+          "kind": "local",
+        },
+      ],
       "imagesMap": Object {
         "t/image-plugin/open_and_browsing.mp4": "iimage_plugin_open_and_browsing_mp4",
         "t/image-plugin/open_and_browsing.png": "iimage_plugin_open_and_browsing_png",
@@ -98,5 +111,43 @@ describe('image orientation', () => {
 
   it('says nothing about a file that is not a photo', () => {
     expect(readOrientation(writeTemp('podlite-orientation-notjpeg.bin', Buffer.from('plain text')))).toBeNull()
+  })
+})
+
+describe('the address of a picture the images plugin reads', () => {
+  const from = '/site/posts/p.podlite'
+  it.each([
+    ['https://example.com/image.jpg', { kind: 'remote' }],
+    ['HTTPS://example.com/a.png', { kind: 'remote' }],
+    ['http://example.com/a.png', { kind: 'remote' }],
+    ['ftp://example.com/a.png', { kind: 'remote' }],
+    ['foo+bar.2-x:logo', { kind: 'remote' }],
+    ['//cdn.test/a.png', { kind: 'remote' }],
+    ['data:Logo', { kind: 'data' }],
+    ['DATA:image/png;base64,AAAA', { kind: 'data' }],
+    ['file:/local/image.png', { kind: 'local', path: '/local/image.png' }],
+    ['file:///local/image.png', { kind: 'local', path: '/local/image.png' }],
+    ['file://localhost/local/image.png', { kind: 'local', path: '/local/image.png' }],
+    ['FILE:///tmp/a%20b.png', { kind: 'local', path: '/tmp/a b.png' }],
+    ['file:img/x.png', { kind: 'local', path: '/site/posts/img/x.png' }],
+    ['file:https:logo.png', { kind: 'local', path: '/site/posts/https:logo.png' }],
+    ['file:a%20b.png', { kind: 'local', path: '/site/posts/a b.png' }],
+    ['file:a%FFb.png', { kind: 'local', path: '/site/posts/a%FFb.png' }],
+    ['file://host/share/x.png', { kind: 'remote' }],
+    ['file:/a%2Fb.png', { kind: 'remote' }],
+    ['img/x.png', { kind: 'local', path: '/site/posts/img/x.png' }],
+    ['../img/x.png', { kind: 'local', path: '/site/img/x.png' }],
+    ['/abs/x.png', { kind: 'local', path: '/abs/x.png' }],
+    ['C:/media/a.png', { kind: 'local', path: '/site/posts/C:/media/a.png' }],
+    ['img/cover:v2.png', { kind: 'local', path: '/site/posts/img/cover:v2.png' }],
+  ])('reads %s', (src, expected) => {
+    expect(imageSourceOf(src, from)).toEqual(expected)
+  })
+
+  it('reads a relative file: path from the file an include brought it from', () => {
+    expect(imageSourceOf('file:img/x.png', '/site/posts/part/fig.podlite')).toEqual({
+      kind: 'local',
+      path: '/site/posts/part/img/x.png',
+    })
   })
 })
