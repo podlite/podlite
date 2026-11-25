@@ -5,6 +5,7 @@ import { itemHierarchyRule } from './item-hierarchy'
 import { testUnderRuleRule } from './test-under-rule'
 import { idUniqueRule } from './id-unique'
 import { mediaAbsoluteFileRule } from './media-absolute-file'
+import { pictureSourceLineRule } from './picture-source-line'
 import { linkTargetResolvesRule } from './link-target-resolves'
 import { linkFileResolvesRule } from './link-file-resolves'
 import { linkNotEmptyRule } from './link-not-empty'
@@ -29,6 +30,7 @@ export const DEFAULT_RULES: Rule[] = [
   testUnderRuleRule,
   idUniqueRule,
   mediaAbsoluteFileRule,
+  pictureSourceLineRule,
   linkTargetResolvesRule,
   linkFileResolvesRule,
   linkNotEmptyRule,
