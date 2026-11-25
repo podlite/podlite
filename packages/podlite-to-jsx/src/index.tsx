@@ -26,6 +26,7 @@ import {
   isTitleBlock,
   linkTarget,
   sameDocTarget,
+  imageAddress,
 } from '@podlite/schema'
 import { Toc, Plugin, pluginCleanLocation as clean_plugin, parseOpt, expandAlias } from '@podlite/schema'
 import {
@@ -494,15 +495,19 @@ const mapToReact = (makeComponent: JSXHelper, opts: MapToReactOptions = {}): Par
     image: nodeContent,
     ':image': setFn((node, ctx) => {
       const hook = opts.imageSrc
+      const src = imageAddress(node, ctx)
       const written = writtenValue(node.alt)
       const alt = written === undefined ? undefined : covered(node, ctx, written)
       const title = typeof node.title === 'string' ? covered(node, ctx, node.title) : undefined
-      if (hook) {
+      // a computed data URL holds the picture itself, and a resolver would keep it after the mode changes
+      if (hook && src === node.src) {
         return mkComponent(({ key }) => (
           <HookedImage key={key} src={node.src} alt={alt} title={title} hook={hook} baseDir={opts.imageBaseDir} />
         ))
       }
-      return mkComponent(({ children, key }) => <img key={key} src={node.src} alt={alt} title={title} />)
+      return mkComponent(({ children, key }) => (
+        <img key={key} src={typeof src === 'string' ? src : undefined} alt={alt} title={title} />
+      ))
     }),
 
     ':text': (writer, processor) => (node: Text, ctx, interator) => {

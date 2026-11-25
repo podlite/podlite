@@ -31,6 +31,36 @@ it('imagesPlugin: extract images', () => {
   `)
 })
 
+it('imagesPlugin: leaves a data: address out of the files to copy', () => {
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC'
+  const file = `
+=begin pod
+=for picture :src<data:Logo>
+
+=para P<ready|DATA:image/png;base64,${png}>
+
+=picture local.png
+
+=begin data :key<Logo> :mime-type<image/png> :encoding<base64>
+${png}
+=end data
+=end pod
+`
+  const record = processFile('t/image-plugin/data.podlite', file)
+  const [res, ctx] = processPlugin({ plugin: imagesPlugin(), includePatterns: '.*' }, [record], tctx)
+  expect(Object.keys(ctx.imagesMap)).toEqual(['t/image-plugin/local.png'])
+  const images: any[] = []
+  const walk = (node: any) => {
+    if (Array.isArray(node)) return node.forEach(walk)
+    if (!node || typeof node !== 'object') return
+    if (node.type === 'image') images.push(node)
+    if (node.content && typeof node.content === 'object') walk(node.content)
+  }
+  walk(res[0].node)
+  expect(images.map(i => i.src)).toEqual(['data:Logo', `DATA:image/png;base64,${png}`, 'iimage_plugin_local_png'])
+  expect(images[0].dataUrl).toBe(`data:image/png;base64,${png}`)
+})
+
 const jpegWithOrientation = (value: number): Buffer => {
   const tiff = Buffer.alloc(26)
   tiff.write('II', 0, 'ascii')

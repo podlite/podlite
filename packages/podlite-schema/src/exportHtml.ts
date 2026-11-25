@@ -14,6 +14,7 @@ import { isNamedBlock } from './helpers/makeTransformer'
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
+import { imageAddress } from './data-source'
 import { isCovered } from './guard'
 import { titleParts, isTitleBlock } from './title'
 import htmlWriter from './writerHtml'
@@ -599,7 +600,7 @@ const rules = {
   ':toc-list': setFn((node, ctx) => wrapContent(`<ul class="toc-list listlevel${node.level}">`, '</ul>')),
   ':toc-item': setFn((node, ctx) => wrapContent('<li class="toc-item">', '</li>')),
   ':image': (writer, processor) => (node, ctx, interator) => {
-    const src = quoteValue(String(applyImageBase(node.src, ctx?.base) ?? ''))
+    const src = quoteValue(String(applyImageBase(imageAddress(node, ctx), ctx?.base) ?? ''))
     // html reads a missing alt as "this image is part of the content" and an empty
     // one as "decorative", so an alternative text the author never wrote is left out
     const altText = writtenValue(node.alt)

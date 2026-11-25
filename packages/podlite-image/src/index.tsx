@@ -18,6 +18,8 @@ import {
   isCovered,
   maskText,
   toFragment,
+  imageAddress,
+  isDataAddress,
 } from '@podlite/schema'
 
 type ImageSrcResolver = (src: string, baseDir?: string) => string | Promise<string>
@@ -48,6 +50,21 @@ const HookedImage: React.FC<{
   if (resolved == null) return null
   return render ? render(resolved) : <img src={resolved} alt={alt} />
 }
+// one =set gave holds its codes already, one written as an attribute is text,
+// and the text under the source line reads codes
+const captionOf = (
+  node: { caption?: PodNode },
+  conf: ReturnType<typeof makeAttrs>,
+  captionText: string,
+): PodNode | undefined => {
+  if (node.caption) return node.caption
+  if (conf.exists('caption')) {
+    const written = String(conf.getFirstValue('caption') ?? '')
+    return written ? mkCaption([{ type: 'text', value: written }]) : undefined
+  }
+  return captionText ? mkCaption(parseFormattingCodes(captionText, {})) : undefined
+}
+
 const Image: Plugin = {
   toAst: (_, processor) => (node, ctx) => {
     if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
@@ -74,18 +91,22 @@ const Image: Plugin = {
         // node and reached every image below that had none of its own.
         const imageLink = conf.exists('link') ? conf.getFirstValue('link') : undefined
         const resultContent: Array<PodNode> = [mkImage(imageSrc, imageAlt, imageLink)]
-        // make caption: one =set gave holds its codes already, one written as an
-        // attribute is text, and the text under the source line reads codes
-        const written = conf.exists('caption') ? String(conf.getFirstValue('caption') ?? '') : ''
-        if ((node as any).caption) {
-          resultContent.push((node as any).caption)
-        } else if (conf.exists('caption')) {
-          if (written) resultContent.push(mkCaption([{ type: 'text', value: written }]))
-        } else if (captionText) {
-          resultContent.push(mkCaption(parseFormattingCodes(captionText, {})))
-        }
+        const made = captionOf(node, conf, captionText)
+        if (made) resultContent.push(made)
 
         return { ...node, content: resultContent /* content_: node.content */ }
+      }
+      // a block with no content takes its source from :src
+      if (!content) {
+        const conf = makeAttrs(node, ctx)
+        if (!conf.exists('src')) return node
+        const image = mkImage(
+          conf.getFirstValue('src'),
+          conf.exists('alt') ? conf.getFirstValue('alt') : undefined,
+          conf.exists('link') ? conf.getFirstValue('link') : undefined,
+        )
+        const caption = captionOf(node, conf, '')
+        return { ...node, content: caption ? [image, caption] : [image] }
       }
       return node
     }
@@ -110,7 +131,7 @@ const Image: Plugin = {
           const hint =
             typeof node.title === 'string' ? (isCovered(node, ctx) ? maskText(node.title) : node.title) : undefined
           const title = hint === undefined ? '' : ` title="${quoteAttribute(hint)}"`
-          writer.writeRaw(`<img src="${quoteAttribute(String(node.src ?? ''))}"${alt}${title}/>`)
+          writer.writeRaw(`<img src="${quoteAttribute(String(imageAddress(node, ctx) ?? ''))}"${alt}${title}/>`)
           if (linkTo) {
             writer.writeRaw('</a>')
           }
@@ -146,7 +167,13 @@ const Image: Plugin = {
           const linkTo = ctx.link
           const hook = ctx.imageSrc as ImageSrcResolver | undefined
           const baseDir = ctx.imageBaseDir as string | undefined
-          const isVideo = node.src.match(/(mp4|mov)$/)
+          const address = imageAddress(node, ctx)
+          // a computed data URL says its type; a data:Key reference names no file
+          const computedType = address !== node.src ? /^data:([^;,]+)/.exec(String(address))?.[1] : undefined
+          const isVideo = computedType
+            ? computedType.startsWith('video/')
+            : !isDataAddress(node.src) && Boolean(node.src?.match(/(mp4|mov)$/))
+          const videoType = computedType ?? 'video/mp4'
           const written = writtenValue(node.alt)
           const alt = written !== undefined && isCovered(node, ctx) ? maskText(written) : written
           // the hint a reader shows over the picture, hidden as its text is
@@ -157,16 +184,18 @@ const Image: Plugin = {
               isVideo ? (
                 <video controls key={key}>
                   {' '}
-                  <source src={src} type="video/mp4" />{' '}
+                  <source src={src} type={videoType} />{' '}
                 </video>
               ) : (
                 <img key={key} src={src} alt={alt} title={title} />
               )
-            const Img = hook ? (
-              <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={baseDir} render={renderInner} />
-            ) : (
-              renderInner(node.src)
-            )
+            // a computed data URL holds the picture itself, and a resolver would keep it after the mode changes
+            const Img =
+              hook && address === node.src ? (
+                <HookedImage key={key} src={node.src} alt={alt} hook={hook} baseDir={baseDir} render={renderInner} />
+              ) : (
+                renderInner(address ?? node.src)
+              )
             return linkTo ? (
               <a key={key} href={linkTo}>
                 {Img}

@@ -79,6 +79,8 @@ export default {}
   const processNode = (node: PodNode, file: string) => {
     const rules = {
       ':image': node => {
+        // a data: address is no file to copy
+        if (typeof node.src === 'string' && /^data:/i.test(node.src)) return node
         // process copy files to assets
         // '../assets/'
         // a picture an include brought is found from the file it was written in

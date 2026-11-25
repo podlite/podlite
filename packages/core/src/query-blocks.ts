@@ -97,7 +97,9 @@ export const podliteText = (block: any, text: string, sections: WeakMap<object, 
   }
   if (block?.type === 'block' && block.name === 'cell') return cellText(block)
   const root: any = { type: 'block', name: 'pod', margin: '', content: [block] }
-  return toMarkdown({ renderMode: 'draft' }).run(root).toString()
+  return toMarkdown({ renderMode: 'draft', context: { asWritten: true } })
+    .run(root)
+    .toString()
 }
 
 /*

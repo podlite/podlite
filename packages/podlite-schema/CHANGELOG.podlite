@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a picture whose source is C<data:Key> gets in C<dataUrl> the data URL of the first C<=data> block with that key in the same document, when its type and body can be read, and C<dataGuarded> when that block is covered; C<src> keeps the reference as written; HTML and Markdown write the data URL, and the reference as written outside draft mode when the block or the picture itself is covered; new exports C<isDataAddress>, C<dataKeyOf>, C<resolveDataSource>, C<resolveDataImages>, C<imageAddress>
+
 =head1 0.0.87
 
 =item an ordinary paragraph written directly inside C<=test> is a block of the document: a selector finds it, C<=set> and C<=config> reach it, and the C<:allow> of the test does not limit its markup codes

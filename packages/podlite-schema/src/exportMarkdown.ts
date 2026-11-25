@@ -14,6 +14,7 @@ import {
 import makeAttrs, { codeConfigWithDefaults } from './helpers/config'
 import { mergeConfigSettings } from './helpers/configPropagation'
 import { applyImageBase } from './image-base'
+import { imageAddress } from './data-source'
 import writerMarkdown from './writerMarkdown'
 import clean_plugin from './plugin-clean-location'
 import { expandAlias } from './helpers/alias'
@@ -1023,7 +1024,7 @@ const rules = {
     const inCode = writer.codeDepth > 0
     const bracketed = covered(node, ctx, writtenValue(node.alt) ?? '').replace(/([[\]\\])/g, '\\$1')
     const alt = inCode ? bracketed : keepReferences(bracketed)
-    const src = markdownAddress(String(applyImageBase(node.src, ctx?.base) ?? ''), inCode)
+    const src = markdownAddress(String(applyImageBase(imageAddress(node, ctx), ctx?.base) ?? ''), inCode)
     const title = typeof node.title === 'string' ? quotedTitle(covered(node, ctx, node.title), inCode) : ''
     writer.writeRaw(`![${alt}](${src}${title})`)
   },

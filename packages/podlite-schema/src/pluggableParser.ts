@@ -6,6 +6,7 @@ import { propagateConfigDefaults, ConfigScope } from './helpers/configPropagatio
 import { attachHeadingNumberPrefix } from './helpers/headingNumbering'
 import { promoteOrderedLists } from './helpers/itemNumbering'
 import { markGuarded } from './guard'
+import { resolveDataImages } from './data-source'
 import { applyFoldedSections } from './folded-sections'
 import { assignHeadingKeys } from './helpers/headingKeys'
 import { placeInSource, lineStarts } from './codes/place'
@@ -148,6 +149,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
         promoteOrderedLists(resultAfter.interator)
         attachHeadingNumberPrefix(resultAfter.interator)
         markGuarded(resultAfter.interator)
+        resolveDataImages(resultAfter.interator)
         resultAfter.interator = applyFoldedSections(resultAfter.interator)
       }
       return resultAfter
@@ -158,6 +160,7 @@ export const podlitePluggable: (params?: podlitePluggableOpt) => Podlite = ({ pl
       promoteOrderedLists(result.interator)
       attachHeadingNumberPrefix(result.interator)
       markGuarded(result.interator)
+      resolveDataImages(result.interator)
       result.interator = applyFoldedSections(result.interator)
     }
     return result

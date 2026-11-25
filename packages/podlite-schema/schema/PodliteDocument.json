@@ -2753,6 +2753,15 @@
                 },
                 "title": {
                     "type": "string"
+                },
+                "dataUrl": {
+                    "type": "string"
+                },
+                "dataGuarded": {
+                    "type": "boolean"
+                },
+                "guarded": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -3372,23 +3381,7 @@
                 "content": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "image"
-                            },
-                            "src": {
-                                "type": "string"
-                            },
-                            "alt": {
-                                "type": "string"
-                            }
-                        },
-                        "required": [
-                            "src",
-                            "type"
-                        ]
+                        "$ref": "#/definitions/Image"
                     }
                 }
             },

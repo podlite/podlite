@@ -134,6 +134,11 @@ export interface Image {
   link?: string
   // the hint a reader shows over the picture, as Markdown writes it after the address
   title?: string
+  // the data URL of the =data block a data:Key source names
+  dataUrl?: string
+  // that =data block is covered
+  dataGuarded?: boolean
+  guarded?: boolean
 }
 
 // A paragraph the parser builds rather than reads: it carries its content and
@@ -331,7 +336,7 @@ export interface FormattingCodeM {
 export interface FormattingCodeP {
   type: 'fcode'
   name: 'P'
-  content: Array<{ type: 'image'; src: string; alt?: string }>
+  content: Array<Image>
 }
 
 // Q<> and Y<> are reserved: shown as written, with the delimiters they were written with

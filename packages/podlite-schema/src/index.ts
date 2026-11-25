@@ -274,4 +274,5 @@ export { testCaption, testFoldedByAuthor, canOwnTest, mayHoldTests } from './tes
 export { tocTitleText } from './toc-caption'
 export type { SelectorDoc, ParsedSelector, SelectorOptions } from './selectors'
 export { applyImageBase } from './image-base'
+export { isDataAddress, dataKeyOf, resolveDataSource, resolveDataImages, imageAddress } from './data-source'
 export { version } from './version'

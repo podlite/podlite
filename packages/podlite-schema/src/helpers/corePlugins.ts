@@ -3,13 +3,14 @@ import { writtenValue } from '../ast-helpers'
 import { isCovered } from '../guard'
 import { maskText } from './handlers'
 import { quoteAttribute } from './html-attr'
+import { imageAddress } from '../data-source'
 
 export const core = {
   ':image': {
     toHtml: writer => (node, ctx) => {
       if (typeof node !== 'string' && 'type' in node && node.type === 'image') {
         writer.writeRaw(`<img`)
-        writer.writeRaw(` src="${quoteAttribute(String(node.src ?? ''))}"`)
+        writer.writeRaw(` src="${quoteAttribute(String(imageAddress(node, ctx) ?? ''))}"`)
         // html reads a missing alt as "this image is part of the content" and an
         // empty one as "decorative", so an alternative text the author never wrote
         // is left out

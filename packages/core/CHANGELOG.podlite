@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite convert> writes a picture of C<data:Key> with the data URL of its C<=data> block in the same document, when that block resolves and neither it nor the picture is covered
+
 =head1 0.0.99
 
 =item C<podlite lint> has the rule C<table-source-conflict>, an error for a data table given both C<:src> and a body; C<podlite test> does not hold C<:absent> over such a table

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a picture of C<data:Key> whose C<=data> block resolves is written with its data URL (the reference as written outside draft mode when the block or the picture is covered), a video by the type in that URL; a C<=picture> with C<:src> and no content gives the picture of C<:src>
+
 =head1 0.0.82
 
 =item React 19 is accepted as a peer: C<react> and C<react-dom> are C<^16.0.0 || ^17.0.0 || ^18 || ^19>
