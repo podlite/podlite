@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.0.87
+
 =item an ordinary paragraph written directly inside C<=test> is a block of the document: a selector finds it, C<=set> and C<=config> reach it, and the C<:allow> of the test does not limit its markup codes
 
 =item text set in from the margin of a delimited semantic block, such as C<=begin SYNOPSIS>, is a code block, as it is in C<=begin nested>, and the first line of a C<=defn> stays its term however far it is set in

@@ -2,6 +2,19 @@
 
 =head1 Upcoming
 
+=head1 0.0.107
+
+
+=head2 @podlite/schema
+
+=item an ordinary paragraph written directly inside C<=test> is a block of the document: a selector finds it, C<=set> and C<=config> reach it, and the C<:allow> of the test does not limit its markup codes
+
+=item text set in from the margin of a delimited semantic block, such as C<=begin SYNOPSIS>, is a code block, as it is in C<=begin nested>, and the first line of a C<=defn> stays its term however far it is set in
+
+=item a leading tab in the margin reaches the next multiple of 8 columns when deciding whether indented text is code
+
+=item block names, option names and selector patterns take letters and digits of any script, and a block name takes an apostrophe followed by a letter, as in C<Part'Deux>
+
 =head1 0.0.106
 
 
