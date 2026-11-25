@@ -6,15 +6,17 @@ import {
   SUPPORTED_PASTE_MIME,
   SUPPORTED_DROP_MIME,
 } from './imagePaste'
+import { sourceOption } from './pictureSource'
 
-function insertPicture(view: EditorView, path: string): void {
+// exported for the checks
+export function insertPicture(view: EditorView, path: string): void {
   const pos = view.state.selection.main.head
   const doc = view.state.doc
   const before = pos > 0 ? doc.sliceString(pos - 1, pos) : '\n'
   const after = pos < doc.length ? doc.sliceString(pos, pos + 1) : '\n'
   const leading = before === '\n' ? '' : '\n'
   const trailing = after === '\n' ? '\n' : '\n\n'
-  const insert = `${leading}=picture ${path}${trailing}`
+  const insert = `${leading}=for picture ${sourceOption(path)}${trailing}`
   view.dispatch({
     changes: { from: pos, to: pos, insert },
     selection: { anchor: pos + insert.length },

@@ -106,7 +106,10 @@ const readingTexts = (ast: PodliteDocument, source: string, fileType: FileType):
       const ref = detectSourceReference(n)
       if (ref && ref.scheme === 'data') add(`data:${ref.target}`)
     }
-    if (n.type === 'block' && n.name === 'picture') {
+    // the body of =picture is its caption, its source only :src; =Image keeps its
+    // source on the first line
+    if (n.type === 'block' && n.name === 'picture') codedTexts(textOf(n)).forEach(add)
+    if (n.type === 'block' && n.name === 'Image') {
       const [head = '', ...caption] = textOf(n)
         .split('\n')
         .filter(line => line.trim() !== '')

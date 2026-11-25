@@ -132,7 +132,7 @@ describe('what stays as it was', () => {
   })
 
   it('keeps a picture, an =Html block and a boundary of the author', () => {
-    expect(markdown('=begin picture :caption<Cap>\nx.png\n=end picture\n\n=para After\n')).toBe(
+    expect(markdown('=begin picture :caption<Cap> :src<x.png>\n=end picture\n\n=para After\n')).toBe(
       '![](x.png)\n\nCap\n\nAfter\n\n',
     )
     expect(markdown('=Html <br>\n\n=para After\n')).toBe('```\n<br>\n```\n\nAfter\n\n')

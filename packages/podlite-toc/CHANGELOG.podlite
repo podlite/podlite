@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the entry of a picture is its C<:caption>, empty when the option is empty, and else its caption, a caption of several paragraphs read with a space between them
+
 =head1 0.0.78
 
 =item the entry of an item is its first element after blank lines and settings, so an item whose text starts after a blank line is listed by its text

@@ -458,7 +458,7 @@ describe('runQuery over the tree convert reads', () => {
   it('gives a block with no place in the file as Markdown, and a row of data as one line', () => {
     const f = write(
       'doc.podlite',
-      '=pod\n\n=for picture :caption<Nice>\nimg.png\n\n=begin data :key<people> :mime-type("text/csv; header=absent")\n"A|B",1\nAda,36\n=end data\n\n=table data:people\n',
+      '=pod\n\n=for picture :caption<Nice> :src<img.png>\n\n=begin data :key<people> :mime-type("text/csv; header=absent")\n"A|B",1\nAda,36\n=end data\n\n=table data:people\n',
     )
     expect([q('caption', f).output, q('row', f).output, q('cell', f).output]).toEqual([
       'Nice',

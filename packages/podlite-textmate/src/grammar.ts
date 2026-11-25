@@ -342,27 +342,15 @@ const tableRow = (ctx: Context): GrammarRule => ({
 
 const SOURCE = 'string.unquoted.source.podlite'
 
+// the body of a picture is its caption, codes and all; its source is only the :src option
 const pictureRule = (form: Form): GrammarRule => {
   const inside = form === 'begin' ? 'delimited' : 'paragraph'
-  const stop = form === 'begin' ? R`^(?=[ \t]*=end[ \t])` : END_PARAGRAPH
   return {
     begin: marker(directiveOf(form), PICTURE_NAMES),
-    beginCaptures: markerCaptures(keywordOf(form), restOf(form, { name: SOURCE })),
+    beginCaptures: markerCaptures(keywordOf(form), restOf(form, { patterns: [{ include: '#inline-paragraph' }] })),
     end: ending(form, false),
     endCaptures: closerCaptures,
-    patterns:
-      form === '='
-        ? [{ include: `#inline-${inside}` }]
-        : [
-            header,
-            // the first line with text is the source; everything after it, up to the end, is the caption
-            {
-              begin: R`^[ \t]*(\S.*?)[ \t]*$`,
-              beginCaptures: { 1: { name: SOURCE } },
-              end: stop,
-              patterns: [{ include: `#inline-${inside}` }],
-            },
-          ],
+    patterns: form === '=' ? [{ include: `#inline-${inside}` }] : [header, { include: `#inline-${inside}` }],
   }
 }
 

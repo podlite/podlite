@@ -4,6 +4,7 @@
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { podliteImages, imageLineOf, forgetResolvedImages } from '../src/imageDecorations'
+import { podliteTreeLang } from '../src/podliteMarkdown'
 
 const render = (doc: string, display: Parameters<typeof podliteImages>[0]): HTMLElement => {
   const state = EditorState.create({ doc, extensions: [podliteImages(display)] })
@@ -28,7 +29,23 @@ beforeEach(() => forgetResolvedImages())
 describe('the line that names a picture', () => {
   it('is recognised in its abbreviated form', () => {
     expect(imageLineOf('=Image photo.png')).toBe('photo.png')
-    expect(imageLineOf('=picture ./media/shot.jpg')).toBe('./media/shot.jpg')
+  })
+
+  it('takes the address of a picture from its :src option', () => {
+    expect(imageLineOf('=for picture :src<./media/shot.jpg>')).toBe('./media/shot.jpg')
+    expect(imageLineOf('=begin picture :id<f> :src<shot.jpg> :caption<Shot>')).toBe('shot.jpg')
+    expect(imageLineOf("=for picture :src('media/a shot.jpg')")).toBe('media/a shot.jpg')
+    expect(imageLineOf('=for picture :src("it\'s.jpg")')).toBe("it's.jpg")
+  })
+
+  it('takes no :src written inside the value of another option', () => {
+    expect(imageLineOf('=for picture :caption("label :src<fake>") :src<real.png>')).toBe('real.png')
+    expect(imageLineOf('=for picture :caption("label :src<fake>")')).toBeNull()
+  })
+
+  it('takes no address from the text of a picture, which is its caption', () => {
+    expect(imageLineOf('=picture ./media/shot.jpg')).toBeNull()
+    expect(imageLineOf('=for picture :caption<Shot>')).toBeNull()
   })
 
   it('is recognised written as a paragraph block', () => {
@@ -54,8 +71,17 @@ describe('showing the picture in the body', () => {
   })
 
   it('shows one for every line that names a picture', () => {
-    const dom = render('=Image one.png\n\ntext\n\n=picture two.jpg\n', { show: true })
+    const dom = render('=Image one.png\n\ntext\n\n=for picture :src<two.jpg>\n', { show: true })
     expect(shown(dom)).toHaveLength(2)
+  })
+
+  it('shows none for a picture written inside a block taken as written', () => {
+    const doc = '=begin code\n=for picture :src<two.jpg>\n=end code\n\n=for picture :src<one.jpg>\n'
+    const state = EditorState.create({ doc, extensions: [podliteTreeLang(), podliteImages({ show: true })] })
+    const view = new EditorView({ state, parent: document.body })
+    const images = [...view.dom.querySelectorAll('.cm-pod-image img')].map(img => img.getAttribute('src'))
+    view.destroy()
+    expect(images).toEqual(['one.jpg'])
   })
 
   it('leaves a document naming no picture untouched', () => {

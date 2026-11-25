@@ -101,6 +101,9 @@ describe('a data key is used only where the document reads it', () => {
     ['a picture code in a comment', '=comment P<data:k>\n'],
     ['a link in Z<>', 'Z<L<data:k>>\n'],
     ['a Markdown link in code', '=begin markdown\n```\n[x](data:k)\n[r]: data:k\n```\n=end markdown\n'],
+    ['the text of an abbreviated picture, which is its caption', '=picture data:k\n'],
+    ['the first line of a picture body', '=begin picture :src<x.png>\n\ndata:k\n=end picture\n'],
+    ['an address after a description in a picture body', '=picture Logo data:k\n'],
   ])('does not count %s', (_, use) => {
     expect(count(`${block()}${use}`)).toBe(1)
   })
@@ -109,7 +112,8 @@ describe('a data key is used only where the document reads it', () => {
     ['a table', '=table data:k\n'],
     ['a data table', '=for data-table :src<data:k>\n'],
     ['a source set for the next block', '=set :src<data:k>\n=for data-table\n'],
-    ['a picture', '=picture data:k\n'],
+    ['an =Image source', '=Image data:k\n'],
+    ['an =Image source after its description', '=Image Logo data:k\n'],
     ['a picture source', '=for picture :src<data:k>\nalt\n'],
     ['an inline picture', 'See P<alt|data:k>.\n'],
     ['a link to a column', 'See L<x|data:k#name>.\n'],
@@ -119,19 +123,19 @@ describe('a data key is used only where the document reads it', () => {
     ['a nested selector operand', '=include file:x.podlite | X[ :a(in file:g.podlite | defn[ :b(in data:k) ]) ]\n'],
     ['a contents selector', '=toc X[ :a(in data:k#name) ]\n'],
     ['an assertion', '=begin test :id<t>\n=for assert\nX[ :a(in data:k) ]\n=end test\n'],
-    ['a picture whose source follows a blank line', '=begin picture\n\ndata:k\n=end picture\n'],
+    ['an =Image whose source follows a blank line', '=begin Image\n\ndata:k\n=end Image\n'],
+    ['a picture code on the first line of a picture body', '=begin picture :src<x.png>\nP<alt|data:k>\n=end picture\n'],
     ['a link an alias holds', '=alias R L<read|data:k>\n\nA<R>\n'],
     ['a picture an alias holds', '=alias R P<alt|data:k>\n\nA<R>\n'],
     ['a Markdown link and image', '=begin markdown\n[x](data:k) ![alt](data:k)\n=end markdown\n'],
     ['a Markdown reference link', '=begin markdown\nSee [x][ref].\n\n[ref]: data:k\n=end markdown\n'],
     ['a Markdown reference in a list', '=begin markdown\n- See [x][ref].\n\n  [ref]: data:k\n=end markdown\n'],
     ['a Markdown image by reference in a quote', '=begin markdown\n> ![a][r]\n>\n> [r]: data:k\n=end markdown\n'],
-    ['a caption given by =set', '=set :caption L<read|data:k>\n=picture file:x.png\n'],
-    ['a picture address after its description', '=picture Logo data:k\n'],
+    ['a caption given by =set', '=set :caption L<read|data:k>\n=for picture :src<file:x.png>\n'],
     ['a picture link', '=for picture :link<data:k>\nfile:x.png\n'],
     ['a link with a coded label an alias holds', '=alias R L<B<read>|data:k>\n\nA<R>\n'],
     ['a link in double angles an alias holds', '=alias R L<<data:k>>\n\nA<R>\n'],
-    ['a picture code in guillemets in a caption', '=picture file:x.png\nSee P«data:k»\n'],
+    ['a picture code in guillemets in a caption', '=for picture :src<file:x.png>\nSee P«data:k»\n'],
     ['a link an alias named comment holds', '=alias comment L<data:k>\n\nA<comment>\n'],
   ])('counts %s', (_, use) => {
     expect(count(`${block()}${use}`)).toBe(0)
@@ -146,7 +150,7 @@ describe('a data key is used only where the document reads it', () => {
 
   it('takes the whole key, dots and all', () => {
     expect(count(`${block('k.v2')}=table data:k.v2\n`)).toBe(0)
-    expect(count(`${block('Logo.png')}=picture data:Logo.png\n`)).toBe(0)
+    expect(count(`${block('Logo.png')}=for picture :src<data:Logo.png>\n`)).toBe(0)
   })
 
   it('says the key is never used, without claiming its spelling appears nowhere', () => {

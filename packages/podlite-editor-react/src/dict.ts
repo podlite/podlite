@@ -48,7 +48,7 @@ const dict: Dict[] = [
   },
   {
     displayText: 'picture 🏷',
-    text: `=picture #{https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true}
+    text: `=for picture :src<#{https://github.com/zag/podlite-desktop/blob/master/dist-assets/linux-icon/256x256.png?raw=true}>
 `,
   },
   {

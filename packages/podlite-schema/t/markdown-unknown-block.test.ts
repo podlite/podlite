@@ -71,16 +71,16 @@ describe('a block without a rule of its own in markdown output', () => {
   })
 
   it('writes a picture with its plugin, its caption as a paragraph, and the next paragraph on its own', () => {
-    expect(markdown('=begin picture\nx.png\nAudit B<bold>\n=end picture\n\n=para After\n')).toBe(
+    expect(markdown('=begin picture :src<x.png>\nAudit B<bold>\n=end picture\n\n=para After\n')).toBe(
       '![](x.png)\n\nAudit **bold**\n\nAfter\n\n',
     )
     expect(markdown('=begin Image\nx.png\nCap\n=end Image\n=para After\n')).toBe('![](x.png)\n\nCap\n\nAfter\n\n')
-    expect(markdown('=picture x.png\n\n=para After\n')).toBe('![](x.png)\n\nAfter\n\n')
+    expect(markdown('=for picture :src<x.png>\n\n=para After\n')).toBe('![](x.png)\n\nAfter\n\n')
   })
 
   it('separates the caption of a picture in a cell of a frame', () => {
     const doc =
-      '=begin table\n=begin row\n=begin cell\n=begin picture\nx.png\nCap\n=end picture\n=end cell\n=cell Tail\n=end row\n=end table\n'
+      '=begin table\n=begin row\n=begin cell\n=begin picture :src<x.png>\nCap\n=end picture\n=end cell\n=cell Tail\n=end row\n=end table\n'
     expect(markdown(doc)).toContain('<td>\n\n![](x.png)\n\nCap\n\n</td>\n<td>\n\nTail\n\n</td>')
   })
 

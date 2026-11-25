@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item the body of C<=picture> is highlighted as its caption, codes and all, with no line taken for the source
+
 =head1 0.0.1
 
 =item the first release: a TextMate grammar for Podlite markup, C<podliteGrammar> for shiki and the same grammar as

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item C<podlite lint> takes the source of a C<=picture> only from C<:src>: C<dead-definitions> counts the codes of its whole body and no longer its first line, C<media-absolute-file> no longer reads the first line as the source; C<=Image> keeps its first line; the hint of C<image-named-block> names C<=for picture :src<address>>
+
 =item C<podlite convert> writes a picture of C<data:Key> with the data URL of its C<=data> block in the same document, when that block resolves and neither it nor the picture is covered
 
 =head1 0.0.99

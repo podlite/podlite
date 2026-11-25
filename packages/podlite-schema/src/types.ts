@@ -185,12 +185,14 @@ export interface BlockPicture extends Omit<Block, 'content'> {
   name: 'picture'
   caption?: BlockCaption
   link?: string
-  content: [Image, BlockCaption?]
+  // a picture without a source keeps its caption, or nothing
+  content: [Image, BlockCaption?] | [BlockCaption] | []
 }
 
 export interface BlockCaption extends Omit<Block, 'content' | 'location' | 'margin' | 'config' | 'id' | 'caption'> {
   name: 'caption'
-  content: Array<Node>
+  // the codes of one paragraph, or the paragraphs of a caption of several
+  content: Array<Node> | Array<ParaBuilt>
 }
 export interface RootBlock extends Omit<Block, 'location'> {
   name: 'root'

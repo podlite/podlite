@@ -13,7 +13,7 @@ describe('image src resolution via ctx.imageSrc (data provider pattern)', () => 
     render(
       <Podlite>
         {`=begin pod
-=picture relative/foo.png
+=for picture :src<relative/foo.png>
 A caption
 =end pod
 `}
@@ -27,7 +27,7 @@ A caption
     render(
       <Podlite imageSrc={imageSrc}>
         {`=begin pod
-=picture relative/foo.png
+=for picture :src<relative/foo.png>
 A caption
 =end pod
 `}
@@ -56,7 +56,7 @@ A caption
     render(
       <Podlite imageSrc={imageSrc} imageBaseDir="/abs/host/dir">
         {`=begin pod
-=picture foo.png
+=for picture :src<foo.png>
 =end pod
 `}
       </Podlite>,
@@ -69,7 +69,7 @@ A caption
     render(
       <Podlite imageSrc={imageSrc}>
         {`=begin pod
-=picture foo.png
+=for picture :src<foo.png>
 =end pod
 `}
       </Podlite>,
@@ -83,7 +83,7 @@ A caption
     render(
       <Podlite imageSrc={imageSrc}>
         {`=begin pod
-=picture clip.mp4
+=for picture :src<clip.mp4>
 =end pod
 `}
       </Podlite>,

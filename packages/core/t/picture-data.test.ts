@@ -181,7 +181,7 @@ describe('a data: reference left as written', () => {
   }
 
   it('leaves file and remote sources as they were', () => {
-    const out = html('=picture local.png\n\n=para P<r|https://example.org/r.png>')
+    const out = html('=for picture :src<local.png>\n\n=para P<r|https://example.org/r.png>')
     expect(images(out)[0]).toContain('src="local.png"')
     expect(images(out)[1]).toContain('src="https://example.org/r.png"')
   })

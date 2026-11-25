@@ -12,18 +12,28 @@ describe('media-absolute-file rule', () => {
   })
 
   it('flags an absolute picture path', () => {
-    const v = check('=picture /media/hero.png\n')
+    const v = check('=for picture :src</media/hero.png>\n')
     expect(v).toHaveLength(1)
     expect(v[0].severity).toBe('info')
     expect(v[0].message).toContain('/media/hero.png')
   })
 
   it('flags an absolute file: picture path', () => {
-    expect(check('=picture file:/media/hero.png\n')).toHaveLength(1)
+    expect(check('=for picture :src<file:/media/hero.png>\n')).toHaveLength(1)
   })
 
   it('flags an absolute path given via the src attribute', () => {
     expect(check('=for picture :src</media/hero.png>\ncaption\n')).toHaveLength(1)
+  })
+
+  it('flags an absolute path =set or =config gives', () => {
+    expect(check('=set :src</media/hero.png>\n=picture Caption.\n')).toHaveLength(1)
+    expect(check('=config picture :src</media/hero.png>\n=picture Caption.\n')).toHaveLength(1)
+  })
+
+  it('does not read the first line of a picture as its source', () => {
+    expect(check('=picture file:/media/hero.png\n')).toEqual([])
+    expect(check('=begin picture\n/media/hero.png\n=end picture\n')).toEqual([])
   })
 
   it('flags an absolute path in an =Image block', () => {
@@ -31,15 +41,15 @@ describe('media-absolute-file rule', () => {
   })
 
   it('leaves a relative picture path alone', () => {
-    expect(check('=picture demo.png\n')).toEqual([])
-    expect(check('=picture ../assets/demo.png\n')).toEqual([])
+    expect(check('=for picture :src<demo.png>\n')).toEqual([])
+    expect(check('=for picture :src<../assets/demo.png>\n')).toEqual([])
   })
 
   it('leaves an https picture alone', () => {
-    expect(check('=picture https://example.com/i.jpg\n')).toEqual([])
+    expect(check('=for picture :src<https://example.com/i.jpg>\n')).toEqual([])
   })
 
   it('leaves a data picture alone', () => {
-    expect(check('=picture data:Logo\n')).toEqual([])
+    expect(check('=for picture :src<data:Logo>\n')).toEqual([])
   })
 })

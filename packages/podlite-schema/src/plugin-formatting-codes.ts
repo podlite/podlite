@@ -132,6 +132,8 @@ const middle: ParserPlugin = opt => tree => {
       if (name === 'fixture') return n
       // a markdown body is Markdown whatever :allow says
       if (name === 'markdown') return n
+      // the body of a picture is its caption, and the picture plugin reads all its codes
+      if (name === 'picture') return n
 
       // A table owns rows, and the text sits in the cells, so :allow written on
       // the table reaches them. The nearest declaration wins: cell, row, table.

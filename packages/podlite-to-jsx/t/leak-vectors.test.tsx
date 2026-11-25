@@ -63,7 +63,7 @@ describe('paths hidden content does not take onto the page', () => {
 
   it('hidden data does not reach a picture that names it', () => {
     // a picture does not read =data at all yet, so nothing is shown in either mode
-    const doc = '=begin data :key<img> :masked\nGlimdata\n=end data\n\n=picture data:img'
+    const doc = '=begin data :key<img> :masked\nGlimdata\n=end data\n\n=for picture :src<data:img>\n'
     expect(page(doc)).not.toContain('Glimdata')
   })
 

@@ -1002,12 +1002,17 @@
   },
   {
    "id": "picture-abbreviated",
-   "code": "=picture photo.png\nCaption with I<x>\n",
+   "code": "=picture photo.png I<y>\nCaption with I<x>\n",
    "expect": [
     {
      "find": "photo.png",
      "nth": 0,
-     "has": "string.unquoted.source"
+     "hasNot": "string.unquoted.source"
+    },
+    {
+     "find": "y",
+     "nth": 0,
+     "has": "markup.italic"
     },
     {
      "find": "x",
@@ -1018,17 +1023,17 @@
   },
   {
    "id": "picture-delimited",
-   "code": "=begin picture :id<p>\n=   :caption<c>\n \nphoto.png\nCaption with I<x>\n=end picture\n",
+   "code": "=begin picture :id<p>\n=   :src<photo.png>\n \nphoto.png\nCaption with I<x>\n=end picture\n",
    "expect": [
     {
-     "find": "caption",
+     "find": "src",
      "nth": 0,
      "has": "entity.other.attribute-name"
     },
     {
      "find": "photo.png",
-     "nth": 0,
-     "has": "string.unquoted.source"
+     "nth": 1,
+     "hasNot": "string.unquoted.source"
     },
     {
      "find": "x",

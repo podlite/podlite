@@ -56,7 +56,7 @@ describe('paths hidden content does not take through a renderer', () => {
 
   it('hidden data does not reach a picture that names it', () => {
     // a picture does not read =data at all yet, so nothing is shown in either mode
-    const doc = '=begin data :key<img> :masked\nGlimdata\n=end data\n\n=picture data:img'
+    const doc = '=begin data :key<img> :masked\nGlimdata\n=end data\n\n=for picture :src<data:img>\n'
     expect(html(doc)).not.toContain('Glimdata')
     expect(markdown(doc)).not.toContain('Glimdata')
   })
@@ -226,9 +226,11 @@ describe('the caption of a table of contents in html', () => {
   })
 
   it('hides a hidden word of a picture caption =set gives in the entry of the picture', () => {
-    const out = html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture\na.png')
+    const out = html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture :src<a.png>\n')
     expect(out).not.toContain('Secret')
-    expect(html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture\na.png', 'draft')).toContain('Secret')
+    expect(html('=toc picture\n\n=set :caption Public G<Secret>\n=for picture :src<a.png>\n', 'draft')).toContain(
+      'Secret',
+    )
   })
 
   it('hides a word an alias brings into it', () => {

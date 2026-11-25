@@ -84,7 +84,7 @@ describe('the lines of a quote in markdown output', () => {
   })
 
   it('keeps the caption of a picture inside the quote and the item', () => {
-    const picture = '=begin picture :caption<Cap>\nx.png\n=end picture\n'
+    const picture = '=begin picture :caption<Cap> :src<x.png>\n=end picture\n'
     expect(markdown(`=begin nested\n${picture}=end nested\n` + After)).toBe('> ![](x.png)\n>\n> Cap\n\nAfter\n\n')
     expect(markdown(`=begin item\n${picture}=end item\n` + After)).toBe('- ![](x.png)\n\n  Cap\n\nAfter\n\n')
   })

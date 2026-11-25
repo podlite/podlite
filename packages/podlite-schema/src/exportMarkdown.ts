@@ -348,7 +348,7 @@ const isPluginPicture = node =>
   (node.name === 'picture' || node.name === 'Image') &&
   node.sourceFormat !== 'markdown' &&
   Array.isArray(node.content) &&
-  node.content[0]?.type === 'image'
+  (node.content[0]?.type === 'image' || node.content[0]?.name === 'caption' || node.content.length === 0)
 const isPluginMarkdown = node =>
   (node.name === 'markdown' || node.name === 'Markdown') &&
   node.sourceFormat !== 'markdown' &&
@@ -370,14 +370,20 @@ const blockWithoutRule = (writer, node, ctx, interator): boolean => {
     return true
   }
   if (isPluginPicture(node)) {
-    const [image, ...rest] = node.content
-    writeWithBoundary(writer, () => {
-      interator([image], ctx)
-      writer.writeRaw('\n')
-    })
+    const [image, ...rest] = node.content[0]?.type === 'image' ? node.content : [undefined, ...node.content]
+    if (image)
+      writeWithBoundary(writer, () => {
+        interator([image], ctx)
+        writer.writeRaw('\n')
+      })
+    // a caption of several paragraphs is written as that many paragraphs
+    const paragraphs = part =>
+      part.content.every(child => child?.type === 'para') ? part.content.map(child => child.content) : [part.content]
     rest.forEach(part =>
       part?.type === 'block' && part.name === 'caption'
-        ? writeWithBoundary(writer, () => paragraph(writer, ctx, () => interator(part.content, ctx)))
+        ? paragraphs(part).forEach(content =>
+            writeWithBoundary(writer, () => paragraph(writer, ctx, () => interator(content, ctx))),
+          )
         : interator([part], ctx),
     )
     return true

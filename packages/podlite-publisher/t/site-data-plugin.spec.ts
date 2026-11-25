@@ -166,7 +166,7 @@ it('the site data carries the map of images the images plugin found', () => {
     't/image-plugin/virtualFile.podlite',
     `
 =begin pod
-=picture open_and_browsing.png
+=for picture :src<open_and_browsing.png>
 =end pod
 `,
   )

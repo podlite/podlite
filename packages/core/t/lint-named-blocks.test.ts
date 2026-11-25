@@ -52,11 +52,11 @@ describe('image-named-block rule', () => {
       '=begin pod\n=Image media/a.png\n\n=for Image\nmedia/b.png\n\n=begin Image\nmedia/c.png\n=end Image\n=end pod\n'
     const v = check(imageNamedBlockRule, src)
     expect(v).toHaveLength(3)
-    expect(v[0].message).toBe('=Image is not in the specification; a picture is written =picture')
+    expect(v[0].message).toBe('=Image is not in the specification; a picture is written =for picture :src<address>')
   })
 
   it('leaves =picture alone', () => {
-    expect(check(imageNamedBlockRule, '=begin pod\n=picture media/a.png\n=end pod\n')).toEqual([])
+    expect(check(imageNamedBlockRule, '=begin pod\n=for picture :src<media/a.png>\n=end pod\n')).toEqual([])
   })
 
   it('is turned off by its slug without touching the directive rule', () => {

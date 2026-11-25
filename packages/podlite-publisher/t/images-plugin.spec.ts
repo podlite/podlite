@@ -9,7 +9,7 @@ const tctx = { testing: true }
 const file1 = `
 =begin pod 
 =Image open_and_browsing.mp4
-=picture open_and_browsing.png
+=for picture :src<open_and_browsing.png>
 =end pod
 `
 
@@ -39,7 +39,7 @@ it('imagesPlugin: leaves a data: address out of the files to copy', () => {
 
 =para P<ready|DATA:image/png;base64,${png}>
 
-=picture local.png
+=for picture :src<local.png>
 
 =begin data :key<Logo> :mime-type<image/png> :encoding<base64>
 ${png}

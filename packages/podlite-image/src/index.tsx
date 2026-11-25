@@ -65,19 +65,57 @@ const captionOf = (
   return captionText ? mkCaption(parseFormattingCodes(captionText, {})) : undefined
 }
 
+// blank is what the norm calls it, horizontal whitespace only (\h), with \r left by CRLF line ends
+const blank = /^[\t\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]*$/
+
+// The body of a picture is its caption, read as written. A body of several paragraphs
+// keeps them apart; one of a single paragraph stays the run of text it always was.
+const bodyCaption = (text: string): PodNode | undefined => {
+  const paragraphs: string[][] = [[]]
+  for (const line of text.split('\n')) {
+    if (!blank.test(line)) paragraphs[paragraphs.length - 1].push(line)
+    else if (paragraphs[paragraphs.length - 1].length > 0) paragraphs.push([])
+  }
+  const written = paragraphs.filter(lines => lines.length > 0)
+  if (written.length === 0) return undefined
+  if (written.length === 1) return mkCaption(parseFormattingCodes(text, {}))
+  return mkCaption(written.map(lines => ({ type: 'para', content: parseFormattingCodes(lines.join('\n'), {}) })))
+}
+
+// =picture takes its source only from :src, and its whole body is the caption; a
+// written body goes ahead of :caption, which stays the title of the block
+const picture = (node, ctx) => {
+  const conf = makeAttrs(node, ctx)
+  const body = node.content
+    .map(part => (part && typeof part === 'object' && 'value' in part ? part.value : ''))
+    .join('')
+  const src = conf.exists('src') ? conf.getFirstValue('src') : undefined
+  const content: Array<PodNode> = []
+  if (typeof src === 'string' && src !== '')
+    content.push(
+      mkImage(
+        src,
+        conf.exists('alt') ? conf.getFirstValue('alt') : undefined,
+        conf.exists('link') ? conf.getFirstValue('link') : undefined,
+      ),
+    )
+  const caption = bodyCaption(body) ?? captionOf(node, conf, '')
+  if (caption) content.push(caption)
+  return { ...node, content }
+}
+
 const Image: Plugin = {
   toAst: (_, processor) => (node, ctx) => {
     if (typeof node !== 'string' && 'type' in node && 'content' in node && node.type === 'block') {
       const content = node.content[0]
-      if (content && typeof content !== 'string' && content.type === 'image') {
+      if (content && typeof content !== 'string' && (content.type === 'image' || content.name === 'caption')) {
         return node
       }
+      if (node.name === 'picture') return picture(node, ctx)
+      // =Image is no block of the norm and keeps its reading: the first non-blank line is the source
       if (content && typeof content !== 'string' && 'location' in node && 'value' in content) {
         // get src and alt text
-        // the source is the first non-blank line; blank is what the norm calls it,
-        // horizontal whitespace only (\h), with \r left by CRLF line ends
         const lines = content.value.split('\n')
-        const blank = /^[\t\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]*$/
         const first = lines.findIndex(line => !blank.test(line))
         const [data, ...caption] = first < 0 ? lines : lines.slice(first)
         const captionText = caption.join('\n')

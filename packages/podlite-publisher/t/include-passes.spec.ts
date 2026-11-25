@@ -135,7 +135,7 @@ describe('two passes of the include plugin', () => {
   it('stops when the last pass places a picture or a link', () => {
     const made = processFile(
       'virtual/site-data-plugin.podlite',
-      `=begin pod\n=for NAME :id<${SITE_DATA_DOCUMENT}>\nSITE DATA\n\n=picture ./a.png\n\nSee L<b|file:./b.podlite>.\n=end pod\n`,
+      `=begin pod\n=for NAME :id<${SITE_DATA_DOCUMENT}>\nSITE DATA\n\n=for picture :src<./a.png>\n\nSee L<b|file:./b.podlite>.\n=end pod\n`,
     )
     const page = processFile('site/page.podlite', `=begin pod\n=include doc:${SITE_DATA_DOCUMENT}\n=end pod\n`)
     const { first, last } = includePasses({ catalogue: [page] })

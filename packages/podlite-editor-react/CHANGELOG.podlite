@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=item a pasted or dropped picture and the completion of C<=picture> are written C<=for picture :src<address>>, quoting a source with a space or an angle bracket; the inline picture of C<=picture> is taken from the C<:src> on the line that opens it, and none is shown for a line inside a block taken as written
+
 =head1 0.0.92
 
 =item the editor shows the parser diagnostics of severity C<error>, such as C<table-header-invalid>, as errors

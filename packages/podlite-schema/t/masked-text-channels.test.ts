@@ -57,7 +57,7 @@ describe('text a renderer writes from a hidden block is hidden with it', () => {
   })
 
   it('hides the alternative text of a picture', () => {
-    const doc = '=for picture :masked :alt<Altz>\nimg.png'
+    const doc = '=for picture :masked :alt<Altz> :src<img.png>\n'
     hiddenIn(html, doc, ['Altz'])
     hiddenIn(htmlOwnRules, doc, ['Altz'])
     hiddenIn(markdown, doc, ['Altz'])

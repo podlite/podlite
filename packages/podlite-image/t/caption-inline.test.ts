@@ -24,7 +24,7 @@ const captionOf = (str: string) => findCaption(parse(str))
 
 describe('picture caption is parsed as inline content', () => {
   it('keeps a block directive name as literal text instead of swallowing the caption', () => {
-    const caption = captionOf(`=for picture :caption('=data-table — CSV in, table out')\nimg.png`)
+    const caption = captionOf(`=for picture :caption('=data-table — CSV in, table out') :src<img.png>\n`)
     expect(caption).toBeTruthy()
     const dump = JSON.stringify(caption.content)
     expect(dump).toContain('=data-table — CSV in, table out')
@@ -33,30 +33,30 @@ describe('picture caption is parsed as inline content', () => {
 
   it('resolves formatting codes in a caption =set gives', () => {
     for (const set of ['=set :caption B<bold> label', "=set :caption('B<bold> label')"]) {
-      const caption = captionOf(`${set}\n=for picture\nimg.png`)
+      const caption = captionOf(`${set}\n=for picture :src<img.png>\n`)
       const bold = caption.content.find((n: any) => n.type === 'fcode' && n.name === 'B')
       expect(bold).toBeTruthy()
     }
   })
 
   it('resolves entities in a caption =set gives', () => {
-    const caption = captionOf(`=set :caption E<lt>x\n=for picture\nimg.png`)
+    const caption = captionOf(`=set :caption E<lt>x\n=for picture :src<img.png>\n`)
     const entity = caption.content.find((n: any) => n.type === 'fcode' && n.name === 'E')
     expect(entity).toBeTruthy()
   })
 
   it('reads the first value of a list =set gives, as before', () => {
-    const caption = captionOf(`=set :caption('B<orbit>', 'other')\n=for picture\nimg.png`)
+    const caption = captionOf(`=set :caption('B<orbit>', 'other')\n=for picture :src<img.png>\n`)
     expect(caption.content.some((n: any) => n.type === 'fcode' && n.name === 'B')).toBe(true)
   })
 
   it('takes a caption written on the picture for text', () => {
-    const caption = captionOf(`=for picture :caption('Scheme of B<orbit> E<lt>')\nimg.png`)
+    const caption = captionOf(`=for picture :caption('Scheme of B<orbit> E<lt>') :src<img.png>\n`)
     expect(caption.content).toEqual([{ type: 'text', value: 'Scheme of B<orbit> E<lt>' }])
   })
 
   it('reads the codes of the caption under the source line', () => {
-    const caption = captionOf(`=begin picture\nimg.png\nScheme of B<orbit>\n=end picture`)
+    const caption = captionOf(`=begin picture :src<img.png>\nScheme of B<orbit>\n=end picture`)
     expect(caption.content.some((n: any) => n.type === 'fcode' && n.name === 'B')).toBe(true)
   })
 })

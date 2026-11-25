@@ -39,7 +39,7 @@ export const imageNamedBlockRule: Rule = {
     blocksNamed(ast, name => name === 'Image').map(node => ({
       rule: IMAGE_NAMED_BLOCK_RULE_ID,
       severity: 'warning',
-      message: '=Image is not in the specification; a picture is written =picture',
+      message: '=Image is not in the specification; a picture is written =for picture :src<address>',
       location: node.location,
     })),
 }

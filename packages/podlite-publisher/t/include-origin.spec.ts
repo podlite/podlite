@@ -45,7 +45,7 @@ const chapter = [
   ),
   processFile(
     'site/ch/one.podlite',
-    "=begin pod\n=useReact {Chart} from './chart.tsx'\n\n=picture ./img/a.png\n\nSee L<two|file:./two.podlite>.\n=end pod\n",
+    "=begin pod\n=useReact {Chart} from './chart.tsx'\n\n=for picture :src<./img/a.png>\n\nSee L<two|file:./two.podlite>.\n=end pod\n",
   ),
   processFile('site/ch/two.podlite', '=begin pod :puburl<two>\n=TITLE Two\n=end pod\n'),
 ]
@@ -402,7 +402,7 @@ describe('the site data', () => {
         'site/post.podlite',
         '=begin pod :pubdate<2026-10-01> :puburl<post>\n=TITLE Post\n\n=include file:./parts/fig.podlite\n=end pod\n',
       ),
-      processFile('site/parts/fig.podlite', '=begin pod\n=picture ./a.png\n=end pod\n'),
+      processFile('site/parts/fig.podlite', '=begin pod\n=for picture :src<./a.png>\n=end pod\n'),
       processFile('site/contents.podlite', `=begin pod\n=include doc:${SITE_DATA_DOCUMENT}#articles\n=end pod\n`),
     ]
     const { first, last } = includePasses({ catalogue: items })
@@ -426,7 +426,8 @@ describe('the site data', () => {
     const store = res.find(r => r.file === 'virtual/site-data-plugin.podlite')!
     const [data] = getFromTree(store.node, 'data').map(n => String(getTextContentFromNode(n as PodNode)))
     expect(data).toContain('parts_a_png')
-    expect(data).not.toContain('"./a.png"')
+    // the image carries the address the plugin made; the :src option keeps what the author wrote
+    expect(data).not.toContain('"type":"image","src":"./a.png"')
     // the last pass places what the site data plugin made in the page that includes it
     const contents = res.find(r => r.file === 'site/contents.podlite')!
     expect(getFromTree(contents.node, 'include')).toHaveLength(0)

@@ -52,7 +52,7 @@ describe('a caption =set gives', () => {
   })
 
   it('is read for a picture, whose body is not', () => {
-    const picture = findBlock(parsed('=set :caption Scheme of B<orbit>\n=for picture\na.png\n'), 'picture')
+    const picture = findBlock(parsed('=set :caption Scheme of B<orbit>\n=for picture :src<a.png>\n'), 'picture')
     expect(codesIn(picture.caption)).toEqual(['B'])
   })
 

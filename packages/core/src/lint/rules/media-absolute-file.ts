@@ -9,9 +9,11 @@ const firstLine = (value: string): string =>
     .map(line => line.trim())
     .find(line => line.length > 0) || ''
 
-const pictureSource = (node: { config?: unknown; content?: unknown }): string => {
+const pictureSource = (node: { name?: string; config?: unknown; content?: unknown }): string => {
   const attrs = makeAttrs(node)
   if (attrs.exists('src')) return String(attrs.getFirstValue('src'))
+  // =picture takes its source only from :src; =Image keeps it on the first line
+  if (node.name === 'picture') return ''
   const content = Array.isArray(node.content) ? node.content : []
   for (const child of content) {
     if (child && typeof (child as { value?: unknown }).value === 'string') {
@@ -35,7 +37,7 @@ export const mediaAbsoluteFileRule: Rule = {
     const pictures = getFromTree(ast, node => {
       const n = node as { type?: string; name?: string }
       return n.type === 'block' && (n.name === 'picture' || n.name === 'Image')
-    }) as Array<{ location?: Violation['location']; config?: unknown; content?: unknown }>
+    }) as Array<{ location?: Violation['location']; name?: string; config?: unknown; content?: unknown }>
     const violations: Violation[] = []
     for (const node of pictures) {
       const src = pictureSource(node)

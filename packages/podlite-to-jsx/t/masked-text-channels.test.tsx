@@ -67,7 +67,7 @@ describe('text the page writes from a hidden block is hidden with it', () => {
   })
 
   it('hides the alternative text of a picture', () => {
-    hidden('=for picture :masked :alt<Altz>\nimg.png', ['Altz'])
+    hidden('=for picture :masked :alt<Altz> :src<img.png>\n', ['Altz'])
   })
 
   it('hides the title and the file name written on a link', () => {

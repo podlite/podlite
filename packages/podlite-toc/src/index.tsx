@@ -74,6 +74,15 @@ const entryOf = (node: PodNode): TocEntry => {
           return { text: getTextContentFromNode(first), source: [first] }
         }
       }
+      // a picture is titled by its :caption even when it is empty, and else by its
+      // caption, a caption of several paragraphs read with a space between them
+      if (node.name === 'picture') {
+        if (conf.exists('caption')) return { text: getTextContentFromNode(conf.getFirstValue('caption')), source: null }
+        const [captionNode] = getFromTree(node, 'caption')
+        const parts = (captionNode as any)?.content
+        if (Array.isArray(parts) && parts.length > 0 && parts.every(part => part?.type === 'para'))
+          return { text: parts.map(part => getTextContentFromNode(part)).join(' '), source: null }
+      }
       if (conf.exists('caption')) {
         const caption = getTextContentFromNode(conf.getFirstValue('caption'))
         if (caption) return { text: caption, source: null }
