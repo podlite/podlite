@@ -2,6 +2,30 @@
 
 =head1 Upcoming
 
+=head2 Migration from 0.0.x
+
+This release reads C<=picture> by the norm 3.0 and changes the form of its node in the tree, so the version moves to 0.1.0.
+
+=item C<=picture> takes its source only from C<:src>, written on the block or given by C<=set> or C<=config>. An abbreviated
+C<=picture photo.png> is now a caption with no picture. Write C<=for picture :src<photo.png>> instead; C<podlite lint> reports such
+blocks with the rule C<picture-source-line>.
+
+=item The whole body of C<=picture> is its caption, the first line included. A body of several paragraphs is a caption of several
+C<para> nodes. C<:caption> gives the caption only when the body is empty; it stays the title of the block and its entry in a table of
+contents.
+
+=item In the tree, C<BlockPicture.content> is C<[Image, BlockCaption?]>, C<[BlockCaption]> or C<[]>: there is an C<image> node only
+when C<:src> is a non-empty string. Code that took C<content[0]> for the image checks its type. C<BlockCaption.content> holds inline
+nodes, or C<para> nodes for a caption of several paragraphs.
+
+=item An C<image> node may carry C<dataUrl> and C<dataGuarded> for a C<data:Key> source; C<imageAddress(node, ctx)> gives the
+address to show.
+
+=item C<=Image>, which the norm does not define, keeps its source on the first line.
+
+=item C<@podlite/publisher> keeps a remote picture address as written and reads C<file:> as a URI; the version of a site is computed
+from the pictures of each record, so every site built with it rebuilds once.
+
 =head1 0.0.107
 
 
