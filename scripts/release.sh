@@ -3,6 +3,7 @@ set -euo pipefail
 
 # Podlite monorepo release script
 # Usage: yarn release [--dry-run]
+# RELEASE_BUMP=minor moves the middle number of every version instead of the last one
 
 DRY_RUN=""
 if [[ "${1:-}" == "--dry-run" ]]; then
@@ -37,7 +38,7 @@ if [[ -n "$DRY_RUN" ]]; then
   echo ""
   echo "=== DRY RUN: would do the following ==="
   echo "1. yarn workspaces foreach --no-private run g:set-upversion (bump package versions)"
-  echo "2. npm version patch --no-git-tag-version (bump root version)"
+  echo "2. npm version ${RELEASE_BUMP:-patch} --no-git-tag-version (bump root version)"
   echo "3. node scripts/extract-changelog.mjs --aggregate (per-package changelogs → root)"
   echo "4. node scripts/extract-changelog.mjs --update (rename Upcoming → version)"
   echo "5. yarn install (versions changed, lockfile follows)"
@@ -54,7 +55,7 @@ echo "→ Bumping package versions..."
 yarn workspaces foreach --no-private -v run g:set-upversion
 
 echo "→ Bumping root version..."
-npm version patch --no-git-tag-version
+npm version "${RELEASE_BUMP:-patch}" --no-git-tag-version
 
 # Step 4: Aggregate per-package changelogs → root
 echo "→ Aggregating changelogs..."

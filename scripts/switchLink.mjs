@@ -70,8 +70,15 @@ async function upVersionPackage() {
   return pkg
 }
 
+// RELEASE_BUMP=minor moves the middle number and starts the last one again, as a
+// change of the tree form asks; the patch number moves otherwise
 function incrementVersion(version) {
   const versionParts = version.split('.')
+  if (process.env.RELEASE_BUMP === 'minor') {
+    versionParts[1] = (parseInt(versionParts[1]) + 1).toString()
+    versionParts[2] = '0'
+    return versionParts.join('.')
+  }
   const lastPart = parseInt(versionParts[versionParts.length - 1])
   versionParts[versionParts.length - 1] = (lastPart + 1).toString()
   return versionParts.join('.')
