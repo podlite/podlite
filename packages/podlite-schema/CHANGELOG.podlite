@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item a C<=picture> block holds an image only when its C<:src> is a non-empty string: its C<content> is C<[Image, BlockCaption?]>, C<[BlockCaption]> or C<[]>, and a caption of several paragraphs holds them as C<para> nodes; Markdown writes such a caption as paragraphs and a picture without a source as its caption; the code reading plugin leaves the body of a picture to the picture plugin, also under C<:allow>
 
 =item a picture whose source is C<data:Key> gets in C<dataUrl> the data URL of the first C<=data> block with that key in the same document, when its type and body can be read, and C<dataGuarded> when that block is covered; C<src> keeps the reference as written; HTML and Markdown write the data URL, and the reference as written outside draft mode when the block or the picture itself is covered; new exports C<isDataAddress>, C<dataKeyOf>, C<resolveDataSource>, C<resolveDataImages>, C<imageAddress>

@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item C<podlite lint> has the rule C<picture-source-line>, a warning for a C<=picture> with no C<:src> whose first line of text ends in a path to an image or a video, or in a C<data:>, C<http:>, C<https:>, C<ftp:> or C<file:> address: such a line gave the source before, and now the whole body is the caption
 
 =item C<podlite lint> takes the source of a C<=picture> only from C<:src>: C<dead-definitions> counts the codes of its whole body and no longer its first line, C<media-absolute-file> no longer reads the first line as the source; C<=Image> keeps its first line; the hint of C<image-named-block> names C<=for picture :src<address>>

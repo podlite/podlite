@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item a picture with a remote address (C<https:>, C<http:>, any scheme but C<file:>, or C<//>) keeps its address and is not taken for a file to copy; a C<file:> address is read as a URI, from the file of the reference when it has no slash; the version of the site follows the pictures of each record in order, remote and C<data:> addresses included, and no longer stops on an address that names a directory; the module of imports quotes each path whole
 
 =item a picture with a C<data:> source is not taken for a file to copy

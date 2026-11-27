@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item a picture of C<data:Key> whose C<=data> block resolves is written with its data URL without asking C<imageSrc>; when the block or the picture is covered, outside draft mode the reference as written goes to C<imageSrc> when it is given, as before
 
 =head1 0.0.89

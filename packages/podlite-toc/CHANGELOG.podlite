@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item the entry of a picture is its C<:caption>, empty when the option is empty, and else its caption, a caption of several paragraphs read with a space between them
 
 =head1 0.0.78

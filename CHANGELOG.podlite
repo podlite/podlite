@@ -2,29 +2,50 @@
 
 =head1 Upcoming
 
-=head2 Migration from 0.0.x
+=head1 0.1.0
 
-This release reads C<=picture> by the norm 3.0 and changes the form of its node in the tree, so the version moves to 0.1.0.
 
-=item C<=picture> takes its source only from C<:src>, written on the block or given by C<=set> or C<=config>. An abbreviated
-C<=picture photo.png> is now a caption with no picture. Write C<=for picture :src<photo.png>> instead; C<podlite lint> reports such
-blocks with the rule C<picture-source-line>.
+=head2 podlite
 
-=item The whole body of C<=picture> is its caption, the first line included. A body of several paragraphs is a caption of several
-C<para> nodes. C<:caption> gives the caption only when the body is empty; it stays the title of the block and its entry in a table of
-contents.
+=item C<podlite lint> has the rule C<picture-source-line>, a warning for a C<=picture> with no C<:src> whose first line of text ends in a path to an image or a video, or in a C<data:>, C<http:>, C<https:>, C<ftp:> or C<file:> address: such a line gave the source before, and now the whole body is the caption
 
-=item In the tree, C<BlockPicture.content> is C<[Image, BlockCaption?]>, C<[BlockCaption]> or C<[]>: there is an C<image> node only
-when C<:src> is a non-empty string. Code that took C<content[0]> for the image checks its type. C<BlockCaption.content> holds inline
-nodes, or C<para> nodes for a caption of several paragraphs.
+=item C<podlite lint> takes the source of a C<=picture> only from C<:src>: C<dead-definitions> counts the codes of its whole body and no longer its first line, C<media-absolute-file> no longer reads the first line as the source; C<=Image> keeps its first line; the hint of C<image-named-block> names C<=for picture :src<address>>
 
-=item An C<image> node may carry C<dataUrl> and C<dataGuarded> for a C<data:Key> source; C<imageAddress(node, ctx)> gives the
-address to show.
+=item C<podlite convert> writes a picture of C<data:Key> with the data URL of its C<=data> block in the same document, when that block resolves and neither it nor the picture is covered
 
-=item C<=Image>, which the norm does not define, keeps its source on the first line.
+=head2 @podlite/editor-react
 
-=item C<@podlite/publisher> keeps a remote picture address as written and reads C<file:> as a URI; the version of a site is computed
-from the pictures of each record, so every site built with it rebuilds once.
+=item a pasted or dropped picture and the completion of C<=picture> are written C<=for picture :src<address>>, quoting a source with a space or an angle bracket; the inline picture of C<=picture> is taken from the C<:src> on the line that opens it, and none is shown for a line inside a block taken as written
+
+=head2 @podlite/image
+
+=item C<=picture> is read by the norm: its source is only C<:src>, written on it or given by C<=set> or C<=config>, and its whole body is the caption, the first line included; an abbreviated C<=picture> without C<:src> from C<=set> or C<=config> has no picture, its text is the caption; a written body gives the caption ahead of C<:caption>, which stays the title of the block; a caption of several paragraphs keeps them apart; C<:allow> on a picture no longer drops its body; C<=Image>, which the norm does not define, keeps its source on the first line
+
+=item a picture of C<data:Key> whose C<=data> block resolves is written with its data URL (the reference as written outside draft mode when the block or the picture is covered), a video by the type in that URL; a C<=picture> with C<:src> and no content gives the picture of C<:src>
+
+=head2 @podlite/publisher
+
+=item a picture with a remote address (C<https:>, C<http:>, any scheme but C<file:>, or C<//>) keeps its address and is not taken for a file to copy; a C<file:> address is read as a URI, from the file of the reference when it has no slash; the version of the site follows the pictures of each record in order, remote and C<data:> addresses included, and no longer stops on an address that names a directory; the module of imports quotes each path whole
+
+=item a picture with a C<data:> source is not taken for a file to copy
+
+=head2 @podlite/schema
+
+=item a C<=picture> block holds an image only when its C<:src> is a non-empty string: its C<content> is C<[Image, BlockCaption?]>, C<[BlockCaption]> or C<[]>, and a caption of several paragraphs holds them as C<para> nodes; Markdown writes such a caption as paragraphs and a picture without a source as its caption; the code reading plugin leaves the body of a picture to the picture plugin, also under C<:allow>
+
+=item a picture whose source is C<data:Key> gets in C<dataUrl> the data URL of the first C<=data> block with that key in the same document, when its type and body can be read, and C<dataGuarded> when that block is covered; C<src> keeps the reference as written; HTML and Markdown write the data URL, and the reference as written outside draft mode when the block or the picture itself is covered; new exports C<isDataAddress>, C<dataKeyOf>, C<resolveDataSource>, C<resolveDataImages>, C<imageAddress>
+
+=head2 @podlite/textmate
+
+=item the body of C<=picture> is highlighted as its caption, codes and all, with no line taken for the source
+
+=head2 @podlite/to-jsx
+
+=item a picture of C<data:Key> whose C<=data> block resolves is written with its data URL without asking C<imageSrc>; when the block or the picture is covered, outside draft mode the reference as written goes to C<imageSrc> when it is given, as before
+
+=head2 @podlite/toc
+
+=item the entry of a picture is its C<:caption>, empty when the option is empty, and else its caption, a caption of several paragraphs read with a space between them
 
 =head1 0.0.107
 

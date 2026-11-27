@@ -1,6 +1,6 @@
 {
   "name": "@podlite/textmate",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "TextMate grammar for Podlite markup, for shiki and other TextMate highlighters",
   "main": "./lib/index.js",
   "module": "./esm/index.js",

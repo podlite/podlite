@@ -2,6 +2,8 @@
 
 =head1 Upcoming
 
+=head1 0.1.0
+
 =item C<=picture> is read by the norm: its source is only C<:src>, written on it or given by C<=set> or C<=config>, and its whole body is the caption, the first line included; an abbreviated C<=picture> without C<:src> from C<=set> or C<=config> has no picture, its text is the caption; a written body gives the caption ahead of C<:caption>, which stays the title of the block; a caption of several paragraphs keeps them apart; C<:allow> on a picture no longer drops its body; C<=Image>, which the norm does not define, keeps its source on the first line
 
 =item a picture of C<data:Key> whose C<=data> block resolves is written with its data URL (the reference as written outside draft mode when the block or the picture is covered), a video by the type in that URL; a C<=picture> with C<:src> and no content gives the picture of C<:src>
